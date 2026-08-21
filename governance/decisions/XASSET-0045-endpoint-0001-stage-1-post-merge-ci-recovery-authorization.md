@@ -48,15 +48,20 @@ authorization mechanism nevertheless already names it, and whose single authoriz
 is spent. Nothing in `XASSET-0043` §F, `XASSET-0044` §L, or any earlier filing authorizes a unit to
 recover from that state.
 
-**This decision authorizes exactly one such unit. It performs no part of the recovery.**
+**This decision authorizes exactly one such unit and performs no part of the recovery.** It does
+perform one narrow, separately principal-authorized, test-only enabling correction — see §K.
 
 ## Decision
 
 ### A. Determination — `POST_MERGE_CI_RECOVERY_AUTHORIZED`
 
 Exactly one future, separate recovery/reconciliation unit is authorized, bounded by §§F–J and
-forbidden everything in §K. This filing performs no recovery, edits no load-bearing implementation,
-and adds no activation authority of any kind.
+forbidden everything in §H.
+
+This filing is **governance plus one narrow, separately principal-authorized, test-only enabling
+correction** (§K). It performs **no** part of the recovery, edits no load-bearing implementation, no
+runner, no result validator, no universe module, no canonical artifact, and no protected portfolio
+path, and adds **no activation authority of any kind**.
 
 ### B. The defect, reproduced read-only before anything was authorized
 
@@ -177,15 +182,20 @@ The authorized unit **must**:
 live repository state at the time it is filed** — never predicted, reserved, or assumed here. This
 decision deliberately names no successor identifier.
 
-**G.2 — Correct the real-repository guard against a closed, immutable range.** The guard must compare
-the immutable closed range
+**G.2 — Preserve and independently re-prove the corrected immutable-range guard.** The guard was
+repaired by **this** filing under the separate principal authorization recorded in §K, so the future
+unit does **not** perform that correction again. It must instead **preserve** the repaired guard and
+**independently re-prove** that it still compares the immutable closed range
 
 ```
 0709d2f05ab031ecb6f69c40465ed4a227983aed  ->  9c2821ab9e0e0dff09f5a03da5a6034775b00750
 ```
 
-rather than any moving merge-base involving current `HEAD` or `origin/main`. The corrected guard must
-not depend on where `HEAD` or `origin/main` point when it runs.
+rather than any moving merge-base involving current `HEAD` or `origin/main`, and that it still does
+not depend on where `HEAD` or `origin/main` point when it runs. Re-proving means running it and
+confirming the property from repository truth — never citing this filing's word for it. The guard may
+not be deleted, skipped, `xfail`ed, weakened, or re-anchored to any moving reference; it may only be
+strengthened.
 
 **G.3 — Prove the merge identity.** The accepted head `9c2821ab…` must be proven to be the **second
 parent** of merge `f5dedce1d1d3116ed8a6845c4447388c85a5414c`, and its tree proven **byte-identical**
@@ -279,11 +289,35 @@ its own adversarial mechanism-based supporting artifact, catalog and `WS-0014` r
 synchronization, and full verification evidence. It must not self-review, self-accept, mark itself
 ready, merge itself, or post its own lifecycle closure.
 
-### K. Scope of this filing
+### K. Scope of this filing — governance plus one narrow, separately authorized enabling correction
 
-This filing is **design-only**. It edits no load-bearing implementation, no runner, no result
-validator, no universe module, no canonical artifact, and no protected portfolio path. It does not
-correct the failing guard — correcting it is the authorized unit's work, not this one's.
+This filing is **not** purely design-only, and does not claim to be.
+
+It performs **one** narrow, **test-only** enabling correction: the real-repository historical guard in
+`test_overlap_model_validator.py` is re-anchored from `merge-base(HEAD, origin/main)` to the immutable
+closed range `0709d2f0…` → `9c2821ab…`, together with the merge's exact two-parent ordering and
+byte-identical accepted-head/merge trees.
+
+**The authority for that correction is not created by this decision.** `XASSET-0045` cannot authorize
+its own enabling repair without circularity. The authority is a **separate, explicit principal
+authorization**, given after independent FULL review `4989608238` returned `CHANGES REQUIRED` with
+one BLOCKING finding: the filing as reviewed required successful merge-commit CI (§M.6) while
+simultaneously declaring that CI necessarily impossible (§N as reviewed), so its own effectivity was
+unattainable and the unit it authorizes could never lawfully begin. That principal authorization
+superseded **only** the prior instruction barring this filing from editing that test file. Every other
+scope limit and every Stage-1 prohibition remained, and remains, fully operative.
+
+The correction is **strictly narrowing in effect**: every conjunct the previous guard proved is still
+proved, and the parent-ordering and tree-identity proofs are new. Nothing was deleted, skipped,
+`xfail`ed, weakened, or replaced with a less falsifiable assertion. `_resolve_pr_base_sha` is
+deliberately **unchanged** and still serves the live working-tree guard, whose subject genuinely is a
+moving base.
+
+Beyond that one test-only correction, this filing still edits **no** load-bearing implementation, no
+runner, no result validator, no universe module, no canonical artifact, no operational-authorization
+mechanism, and no protected portfolio path — and adds no production, canonical, lane, results, or
+Stage-1 authority of any kind. The corrected file is independently confirmed **not** to be a member of
+`LOAD_BEARING_RELPATHS`.
 
 ### L. Relation to `XASSET-0029` §E — not an activation PR
 
@@ -313,16 +347,27 @@ not; principal acceptance does not; merge does not.
 returns `False`, the lane is still `ABSENT`, `ATTEMPT_1` is still intact and unconsumed, and no
 `stage1_results.yaml` exists.
 
-### N. Disclosed — this filing's own CI will fail on the pre-existing defect
+### N. Correction history — the reviewed head's failure, and its repair
 
-The guard described in §B fails on **every** branch taken from `f5dedce1…`, including this one:
-adding a new decision file yields status `A`, which the guard skips, leaving `modified == []` and the
-same mismatch. This filing is **explicitly barred** from editing
-`test_overlap_model_validator.py` — correcting it is the authorized unit's work under §G.2.
+**Retained as adverse history, not erased.** At reviewed head
+`e6e4874aca34f383f99cb130da3b45625d8c9aa3`, exact-head CI run `32443765403` / job `96659425926`
+completed **`failure`** with `1 failed, 10292 passed` — the single failure being the §B defect, then
+still uncorrected in this branch. That run and its result stand exactly as recorded.
 
-This failure is therefore **pre-existing, reproduced, disclosed, and not introduced by this PR**. It
-is disclosed here rather than worked around, and it is not a reason to weaken, skip, or delete the
-guard.
+At that head this filing was barred from editing `test_overlap_model_validator.py`, so the defect
+reproduced on this branch too: a newly added decision file is status `A`, which the guard skips,
+leaving `modified == []`. Independent FULL review `4989608238` correctly identified the consequence
+as **BLOCKING** — §M.6 requires successful merge-commit CI while §N as reviewed declared that CI
+necessarily impossible, an unattainable effectivity chain.
+
+**That premise is now removed, not weakened.** Under the separate principal authorization recorded in
+§K, the guard has been re-anchored to the immutable closed range, and this filing's CI is expected to
+be **green**. §M.6 is unchanged and remains fully required — a red corrected-head CI is a stop, not
+an accepted deviation.
+
+Nothing here retroactively repairs PR #344's own failed merge-commit CI. Run `32439614683` / job
+`96647501864` at merge `f5dedce1…` remains immutable adverse history (§D, §G.5), `XASSET-0044`
+remains not effective, and `XASSET-0043` remains spent.
 
 ## Rationale
 
@@ -332,8 +377,16 @@ fail-closed stop is a **separately authorized** recovery unit, not an improvised
 lifecycle operation that is barred from editing files.
 
 Authority for that unit had to come from somewhere. `XASSET-0043`'s single grant is spent (§E) and
-`XASSET-0044` is not effective (§D), so no existing decision could carry it. Filing a narrow,
-design-only authorization is the smallest lawful step that unblocks the recovery without deciding it.
+`XASSET-0044` is not effective (§D), so no existing decision could carry it. Filing a narrow
+authorization is the smallest lawful step that unblocks the recovery without deciding it.
+
+The filing as first reviewed went one step too far in the other direction. By barring itself from the
+one test correction its own effectivity depended on, it made §M.6 unattainable — an authorization
+that could never take effect, and so a future unit that could never lawfully begin. Independent FULL
+review `4989608238` found that deadlock BLOCKING, and the principal separately authorized exactly the
+narrow, test-only repair needed to break it (§K). Breaking a deadlock is not the same as widening
+scope: the repair touches one non-load-bearing test, proves strictly more than it did before, and
+leaves every production, canonical, lane, and Stage-1 boundary exactly where it was.
 
 Separating authorization from execution also preserves reviewability: the recovery's own decision,
 PR, review, acceptance, merge, CI, and closure are all still ahead of it, each independently gated.
@@ -341,9 +394,17 @@ Nothing here shortens that chain, and nothing here touches the outcome surface.
 
 ## Alternatives Considered
 
-**Correct the guard in this filing.** Rejected: it would collapse authorization and execution into
-one unit, and this session is explicitly bounded to design-only work. It would also leave the
-correction unreviewed as a correction.
+**Correct the guard in this filing.** Originally rejected — it appeared to collapse authorization
+and execution into one unit. **That rejection was wrong, and review `4989608238` showed why:** the
+production recovery and this filing's own enabling repair are different things. Leaving the guard
+broken did not preserve separation; it made this authorization permanently inert. **Now adopted**,
+under separate explicit principal authority, bounded to the one test-only correction §K describes.
+The production rebinding — the actual recovery — remains entirely with the future unit.
+
+**Repair the guard by loosening it instead** (skip, `xfail`, delete the exercised-exactly assertion,
+or relax the status filter). Rejected outright: the property is sound and was never the problem; only
+its anchor moved. Loosening would trade a false-red for a false-green and destroy the one-use
+protection the allowance depends on.
 
 **Re-run the failed CI job.** Rejected on the condition's own words: §L.6 names the exact merge SHA
 and excludes runs against any other commit; a re-run cannot alter the recorded failure of run

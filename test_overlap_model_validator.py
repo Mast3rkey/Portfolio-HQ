@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import os
 import subprocess
 from pathlib import Path
 
@@ -26,6 +27,9 @@ import yaml
 import overlap_model_validator as ov
 
 REPO_ROOT = Path(__file__).resolve().parent
+#: This file's own source, read by the AST hygiene checks below so they inspect the
+#: real suite rather than a re-implementation of it.
+SUITE_SOURCE_PATH = Path(__file__).resolve()
 
 
 # ── fixtures ─────────────────────────────────────────────────────────────
@@ -939,6 +943,154 @@ AUTHORIZED_DECISION_MODIFICATIONS = {
 }
 
 
+# ── BLOCKING 1 (review 4989608238): the HISTORICAL proof needs IMMUTABLE anchors ────────
+#
+# ``test_real_repository_governance_decisions_pass_the_repaired_check`` asserted that the
+# one-use allowance above was EXACTLY EXERCISED -- a genuinely valuable property, and the
+# reason the allowance cannot linger as dead permission. But it resolved the range it
+# measured through ``_resolve_pr_base_sha``, i.e. ``git merge-base(HEAD, origin/main)``.
+# That base MOVES. On PR #344's own branch it was ``0709d2f0…`` and the assertion held; on
+# merged ``main`` the merge-base of HEAD and origin/main IS the merge commit, so the
+# comparison is empty, ``modified == []``, and the assertion fails describing nothing real.
+# It could only fail AFTER its own merge, which is why every pre-merge check passed.
+#
+# The subject of this assertion is HISTORY -- a transition inside a closed, merged pull
+# request -- so it is now anchored to that closed range by exact object identity and reads
+# no moving reference at all. ``_resolve_pr_base_sha`` is deliberately UNCHANGED and still
+# serves ``_assert_no_unauthorized_change_since_base``, whose subject genuinely is "this
+# working tree versus this PR's base" and for which a live base is correct.
+#
+# Repaired under fresh, explicit principal authorization, recorded in ``XASSET-0045``. The
+# repair is narrower than the original: every conjunct the old check proved is still
+# proved, and the merge's parentage and tree identity are now proved as well.
+
+#: PR #344's base -- the ``XASSET-0043`` merge, and the closed range's first endpoint.
+CLOSED_RANGE_BASE_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
+#: PR #344's accepted head -- the exact commit its final clean review examined.
+CLOSED_RANGE_ACCEPTED_HEAD = "9c2821ab9e0e0dff09f5a03da5a6034775b00750"
+#: PR #344's merge commit.
+CLOSED_RANGE_MERGE_SHA = "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
+#: The tree carried by BOTH the accepted head and the merge -- zero merge drift.
+CLOSED_RANGE_MERGE_TREE = "bd9ce6694261a7b4fb664a5121d04571f9606924"
+
+
+def _commit_exists(repo_root: Path, sha: str) -> bool:
+    return subprocess.run(
+        ["git", "cat-file", "-e", f"{sha}^{{commit}}"],
+        cwd=repo_root, capture_output=True, text=True,
+    ).returncode == 0
+
+
+def _assert_authorized_decision_transitions_over_closed_range(
+    *,
+    base_sha: str,
+    accepted_head: str,
+    merge_sha: str,
+    merge_tree: str,
+    authorized: dict[str, dict[str, str]] = AUTHORIZED_DECISION_MODIFICATIONS,
+    repo_root: Path = REPO_ROOT,
+) -> list[str]:
+    """Prove the one-use governance-decision allowance over an IMMUTABLE closed range.
+
+    Every anchor is an explicit argument. Nothing here reads ``HEAD``, ``origin/main``,
+    ``merge-base``, or any other reference that moves as the repository advances, so the
+    property is invariant on the PR branch, on merged ``main`` where ``HEAD == origin/main``,
+    and after ``main`` advances further.
+
+    An unresolvable object is a REFUSAL, never a skip -- the caller is responsible for
+    deciding whether a genuinely truncated checkout is an environment precondition.
+
+    Returns the list of paths proven modified, so the caller can require the allowance to
+    have been exactly exercised rather than carried as dead permission.
+    """
+    # -- the range and the merge must actually exist -------------------------------------
+    for label, sha in (
+        ("base", base_sha), ("accepted head", accepted_head), ("merge", merge_sha),
+    ):
+        assert _commit_exists(repo_root, sha), (
+            f"closed-range {label} {sha} is not a resolvable commit in this repository"
+        )
+
+    # -- the merge must have exactly two parents, in the correct order -------------------
+    parents = subprocess.run(
+        ["git", "rev-list", "--parents", "-n", "1", merge_sha],
+        cwd=repo_root, capture_output=True, text=True, check=True,
+    ).stdout.split()
+    assert parents[0] == merge_sha, parents
+    assert len(parents) == 3, (
+        f"merge {merge_sha} must have exactly two parents, found {len(parents) - 1}: {parents[1:]}"
+    )
+    assert parents[1] == base_sha, (
+        f"merge {merge_sha} first parent is {parents[1]}, expected base {base_sha}"
+    )
+    assert parents[2] == accepted_head, (
+        f"merge {merge_sha} second parent is {parents[2]}, expected accepted head {accepted_head}"
+    )
+
+    # -- zero merge drift: accepted-head tree and merge tree are byte-identical -----------
+    head_tree = subprocess.run(
+        ["git", "rev-parse", f"{accepted_head}^{{tree}}"],
+        cwd=repo_root, capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    real_merge_tree = subprocess.run(
+        ["git", "rev-parse", f"{merge_sha}^{{tree}}"],
+        cwd=repo_root, capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    assert head_tree == merge_tree, (
+        f"accepted-head tree {head_tree} is not the expected {merge_tree}"
+    )
+    assert real_merge_tree == merge_tree, (
+        f"merge tree {real_merge_tree} is not the expected {merge_tree} -- merge drift"
+    )
+
+    # -- the closed-range diff itself ----------------------------------------------------
+    result = subprocess.run(
+        ["git", "diff", "--name-status", base_sha, accepted_head, "--", "governance/decisions"],
+        cwd=repo_root, capture_output=True, text=True, check=True,
+    )
+    modified: list[str] = []
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        status, _, rest = line.partition("\t")
+        # An ADDITION is always permitted -- authoring a new decision is the routine,
+        # expected behavior of a governance-authoring session. Unchanged rule.
+        if status.startswith("A"):
+            continue
+        path = rest.strip()
+        transition = authorized.get(path)
+        assert transition is not None, (
+            f"expected only newly-added or separately-authorized governance decisions, "
+            f"found: {line}"
+        )
+        # A rename or copy carries TWO tab-separated paths, so it can never match a
+        # single known path above; a delete or type-change is refused here.
+        assert status == "M", (
+            f"only a MODIFICATION may be authorized here, never a rename, copy, delete "
+            f"or type-change: {line}"
+        )
+        # The allowance is bound to ONE transition. Each conjunct is independently
+        # required, and both ends are read from the CLOSED RANGE -- never the working
+        # tree, which is not what a historical proof is about.
+        assert transition["base_sha"] == base_sha, (
+            f"allowance for {path} is bound to base {transition['base_sha']}, "
+            f"not to the range base {base_sha}"
+        )
+        assert _blob_at(repo_root, base_sha, path) == transition["old_blob"], (
+            f"{path} at range base is not the authorized old blob {transition['old_blob']}"
+        )
+        assert _blob_at(repo_root, accepted_head, path) == transition["new_blob"], (
+            f"{path} at range head is not the authorized new blob {transition['new_blob']}"
+        )
+        modified.append(path)
+
+    # The authorized exception must be genuinely exercised, not carried as dead permission.
+    assert modified == list(authorized), (
+        f"the authorized modification set is not exactly what the closed range changed: {modified}"
+    )
+    return modified
+
+
 def test_governance_decision_files_untouched():
     """No pre-existing governance/decisions/*.md file is modified, renamed,
     or deleted by this PR -- the newly authorized decision file(s) this PR
@@ -1089,36 +1241,462 @@ def test_unauthorized_change_since_base_skips_when_origin_main_unresolvable(tmp_
 
 
 def test_real_repository_governance_decisions_pass_the_repaired_check():
-    """Real-repository proof (not synthetic): this PR's own base..working-
-    tree diff under governance/decisions/ contains exactly the newly
-    authored XASSET-0012 decision file (status A) and no modification of
-    any pre-existing decision -- the exact scenario the repaired check
-    exists to permit."""
-    base_sha = _resolve_pr_base_sha()
-    if base_sha is None:
-        pytest.skip("origin/main not resolvable in this environment")
+    """Real-repository proof (not synthetic) that the one-use governance-decision
+    allowance was EXACTLY EXERCISED -- anchored to the immutable closed range of the
+    merged PR #344, not to any moving reference.
+
+    Re-anchored under review 4989608238's BLOCKING 1 and fresh explicit principal
+    authorization (see ``XASSET-0045``). The property proved is strictly larger than
+    before: the closed-range diff, the one-use blob transition at BOTH range endpoints,
+    the merge's exact two-parent ordering, and byte-identical accepted-head/merge trees.
+
+    Invariant by construction on the PR branch, on merged ``main`` where
+    ``HEAD == origin/main``, and after ``main`` advances -- proved directly by
+    ``test_closed_range_proof_is_invariant_to_head_and_origin_main``.
+    """
+    present = [
+        _commit_exists(REPO_ROOT, sha)
+        for sha in (CLOSED_RANGE_BASE_SHA, CLOSED_RANGE_ACCEPTED_HEAD, CLOSED_RANGE_MERGE_SHA)
+    ]
+    if not any(present):
+        pytest.skip("PR #344's closed range is not present in this checkout")
+    modified = _assert_authorized_decision_transitions_over_closed_range(
+        base_sha=CLOSED_RANGE_BASE_SHA,
+        accepted_head=CLOSED_RANGE_ACCEPTED_HEAD,
+        merge_sha=CLOSED_RANGE_MERGE_SHA,
+        merge_tree=CLOSED_RANGE_MERGE_TREE,
+    )
+    assert modified == list(AUTHORIZED_DECISION_MODIFICATIONS)
+
+
+def test_the_repaired_check_reads_no_moving_reference():
+    """The repair's whole point: neither the historical assertion nor the helper it
+    delegates to may consult ``HEAD``, ``origin/main``, or ``merge-base``. Checked over
+    the parsed AST rather than by substring scan, so the explanatory comments above --
+    which necessarily NAME those references -- cannot make this pass or fail."""
+    source = SUITE_SOURCE_PATH.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    for name in (
+        "_assert_authorized_decision_transitions_over_closed_range",
+        "test_real_repository_governance_decisions_pass_the_repaired_check",
+    ):
+        node = next(
+            n for n in ast.walk(tree)
+            if isinstance(n, ast.FunctionDef) and n.name == name
+        )
+        literals = {
+            c.value for c in ast.walk(node)
+            if isinstance(c, ast.Constant) and isinstance(c.value, str)
+        }
+        for moving in ("HEAD", "origin/main", "merge-base"):
+            assert moving not in literals, f"{name} still consults {moving!r}"
+        called = {
+            c.func.id for c in ast.walk(node)
+            if isinstance(c, ast.Call) and isinstance(c.func, ast.Name)
+        }
+        assert "_resolve_pr_base_sha" not in called, f"{name} still calls _resolve_pr_base_sha"
+
+
+def test_resolve_pr_base_sha_is_still_used_by_the_working_tree_guard():
+    """The repair removed the moving resolver from the HISTORICAL assertion only. The
+    live working-tree guard's subject genuinely is "this working tree versus this PR's
+    base", for which a live base is correct -- so the resolver must survive there, not be
+    deleted repository-wide."""
+    source = SUITE_SOURCE_PATH.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    node = next(
+        n for n in ast.walk(tree)
+        if isinstance(n, ast.FunctionDef) and n.name == "_assert_no_unauthorized_change_since_base"
+    )
+    called = {
+        c.func.id for c in ast.walk(node)
+        if isinstance(c, ast.Call) and isinstance(c.func, ast.Name)
+    }
+    assert "_resolve_pr_base_sha" in called
+
+
+# ── the repaired closed-range proof: refusals, and invariance to moving refs ─────────────
+#
+# Every refusal below drives the REAL helper through its real public signature. The
+# synthetic cases build a disposable repository so the diff itself can be controlled
+# (status, blob ends, omission, an extra modified decision) -- things the real closed
+# range cannot be made to exhibit without rewriting history.
+
+
+def _synthetic_closed_range(tmp_path: Path, *, second_decision: bool = False):
+    """A disposable base -> head -> merge shaped exactly like a real governance PR.
+
+    Returns ``(run, anchors, authorized)`` where ``anchors`` carries the closed range and
+    ``authorized`` is the one-use allowance proven over it.
+    """
+    run = _init_synthetic_repo(tmp_path)
+    decisions = tmp_path / "governance" / "decisions"
+    decisions.mkdir(parents=True)
+    kept = decisions / "KEEP-0001.md"
+    kept.write_text("untouched pre-existing decision\n")
+    target = decisions / "TARGET-0001.md"
+    target.write_text("original\n")
+    if second_decision:
+        (decisions / "OTHER-0001.md").write_text("another pre-existing decision\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "base")
+    base = run("rev-parse", "HEAD").stdout.strip()
+
+    target.write_text("authorized rewrite\n")
+    if second_decision:
+        (decisions / "OTHER-0001.md").write_text("unauthorized rewrite\n")
+    (decisions / "NEW-0002.md").write_text("newly authored decision\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "head")
+    head = run("rev-parse", "HEAD").stdout.strip()
+
+    # A real two-parent merge, built with plumbing so no working tree is disturbed.
+    tree = run("rev-parse", f"{head}^{{tree}}").stdout.strip()
+    merge = run("commit-tree", tree, "-p", base, "-p", head, "-m", "merge").stdout.strip()
+
+    anchors = {
+        "base_sha": base,
+        "accepted_head": head,
+        "merge_sha": merge,
+        "merge_tree": tree,
+    }
+    authorized = {
+        "governance/decisions/TARGET-0001.md": {
+            "base_sha": base,
+            "old_blob": run("rev-parse", f"{base}:governance/decisions/TARGET-0001.md").stdout.strip(),
+            "new_blob": run("rev-parse", f"{head}:governance/decisions/TARGET-0001.md").stdout.strip(),
+        },
+    }
+    return run, anchors, authorized
+
+
+def _prove(tmp_path: Path, anchors, authorized):
+    return _assert_authorized_decision_transitions_over_closed_range(
+        authorized=authorized, repo_root=tmp_path, **anchors
+    )
+
+
+def test_synthetic_closed_range_proof_passes_on_a_well_formed_range(tmp_path):
+    """The positive control: without it, every refusal below could pass vacuously."""
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    assert _prove(tmp_path, anchors, authorized) == ["governance/decisions/TARGET-0001.md"]
+
+
+def test_closed_range_proof_refuses_an_unresolvable_object(tmp_path):
+    """An unresolvable anchor is a REFUSAL, never a silent skip.
+
+    ``pytest.raises(AssertionError)`` alone is NOT sufficient here: ``pytest.skip`` raises a
+    ``BaseException`` subclass, so a helper downgraded from "refuse" to "skip" would mark this
+    test SKIPPED and leave the suite green. The skip path is therefore an explicit failure.
+    """
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    anchors["accepted_head"] = "0" * 40
+    try:
+        _prove(tmp_path, anchors, authorized)
+    except AssertionError as exc:
+        assert "not a resolvable commit" in str(exc)
+    except BaseException as exc:  # noqa: BLE001 -- pytest.skip.Exception is a BaseException
+        pytest.fail(
+            f"an unresolvable anchor must REFUSE, not raise {type(exc).__name__}: {exc}"
+        )
+    else:
+        pytest.fail("an unresolvable anchor was accepted")
+
+
+def test_closed_range_proof_refuses_a_deletion_of_the_allow_listed_path(tmp_path):
+    """The ``status == "M"`` conjunct, reached only for the ALLOW-LISTED path.
+
+    A deletion or rename of any OTHER decision is refused earlier, by the membership check,
+    so neither exercises the status rule. Deleting the one allow-listed file is the case that
+    does -- and it must still be refused, because an allowance to MODIFY is not an allowance
+    to remove.
+    """
+    run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    (tmp_path / "governance" / "decisions" / "TARGET-0001.md").unlink()
+    run("add", "-A")
+    run("commit", "-q", "-m", "delete the allow-listed decision")
+    head = run("rev-parse", "HEAD").stdout.strip()
+    tree = run("rev-parse", "HEAD^{tree}").stdout.strip()
+    anchors = {
+        "base_sha": anchors["base_sha"],
+        "accepted_head": head,
+        "merge_tree": tree,
+        "merge_sha": run(
+            "commit-tree", tree, "-p", anchors["base_sha"], "-p", head, "-m", "m",
+        ).stdout.strip(),
+    }
+    with pytest.raises(AssertionError, match="only a MODIFICATION may be authorized"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_wrong_base_endpoint(tmp_path):
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    anchors["base_sha"] = anchors["accepted_head"]
+    with pytest.raises(AssertionError):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_wrong_head_endpoint(tmp_path):
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    anchors["accepted_head"] = anchors["base_sha"]
+    with pytest.raises(AssertionError):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_wrong_second_parent(tmp_path):
+    """A merge whose second parent is not the accepted head is refused, even when the
+    tree happens to match."""
+    run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    # A DISTINCT decoy commit: git collapses two identical -p arguments into one parent,
+    # which would test the parent-count branch instead of the parent-identity branch.
+    decoy = run(
+        "commit-tree", anchors["merge_tree"], "-p", anchors["base_sha"], "-m", "decoy",
+    ).stdout.strip()
+    assert decoy != anchors["accepted_head"]
+    wrong = run(
+        "commit-tree", anchors["merge_tree"],
+        "-p", anchors["base_sha"], "-p", decoy, "-m", "wrong second parent",
+    ).stdout.strip()
+    anchors["merge_sha"] = wrong
+    with pytest.raises(AssertionError, match="second parent"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_reversed_parent_order(tmp_path):
+    run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    reversed_merge = run(
+        "commit-tree", anchors["merge_tree"],
+        "-p", anchors["accepted_head"], "-p", anchors["base_sha"], "-m", "reversed",
+    ).stdout.strip()
+    anchors["merge_sha"] = reversed_merge
+    with pytest.raises(AssertionError, match="first parent"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_wrong_parent_count(tmp_path):
+    run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    single = run(
+        "commit-tree", anchors["merge_tree"], "-p", anchors["base_sha"], "-m", "one parent",
+    ).stdout.strip()
+    anchors["merge_sha"] = single
+    with pytest.raises(AssertionError, match="exactly two parents"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_merge_tree_drift(tmp_path):
+    """A merge that did not carry exactly what was reviewed is refused."""
+    run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    drifted_tree = run("rev-parse", f"{anchors['base_sha']}^{{tree}}").stdout.strip()
+    drifted = run(
+        "commit-tree", drifted_tree,
+        "-p", anchors["base_sha"], "-p", anchors["accepted_head"], "-m", "drifted merge",
+    ).stdout.strip()
+    anchors["merge_sha"] = drifted
+    with pytest.raises(AssertionError, match="merge drift"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_wrong_expected_tree(tmp_path):
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    anchors["merge_tree"] = "1" * 40
+    with pytest.raises(AssertionError, match="accepted-head tree"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_wrong_old_blob(tmp_path):
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    path = "governance/decisions/TARGET-0001.md"
+    authorized[path] = {**authorized[path], "old_blob": "2" * 40}
+    with pytest.raises(AssertionError, match="authorized old blob"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_wrong_new_blob(tmp_path):
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    path = "governance/decisions/TARGET-0001.md"
+    authorized[path] = {**authorized[path], "new_blob": "3" * 40}
+    with pytest.raises(AssertionError, match="authorized new blob"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_an_allowance_bound_to_another_base(tmp_path):
+    """The one-use binding: an allowance granted for a different base cannot be reused."""
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    path = "governance/decisions/TARGET-0001.md"
+    authorized[path] = {**authorized[path], "base_sha": "4" * 40}
+    with pytest.raises(AssertionError, match="bound to base"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_deletion(tmp_path):
+    run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    (tmp_path / "governance" / "decisions" / "KEEP-0001.md").unlink()
+    run("add", "-A")
+    run("commit", "-q", "-m", "delete a pre-existing decision")
+    anchors["accepted_head"] = run("rev-parse", "HEAD").stdout.strip()
+    anchors["merge_tree"] = run("rev-parse", "HEAD^{tree}").stdout.strip()
+    anchors["merge_sha"] = run(
+        "commit-tree", anchors["merge_tree"],
+        "-p", anchors["base_sha"], "-p", anchors["accepted_head"], "-m", "m",
+    ).stdout.strip()
+    with pytest.raises(AssertionError, match="newly-added or separately-authorized"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_rename(tmp_path):
+    run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    decisions = tmp_path / "governance" / "decisions"
+    (decisions / "KEEP-0001.md").rename(decisions / "KEEP-0001-renamed.md")
+    run("add", "-A")
+    run("commit", "-q", "-m", "rename a pre-existing decision")
+    anchors["accepted_head"] = run("rev-parse", "HEAD").stdout.strip()
+    anchors["merge_tree"] = run("rev-parse", "HEAD^{tree}").stdout.strip()
+    anchors["merge_sha"] = run(
+        "commit-tree", anchors["merge_tree"],
+        "-p", anchors["base_sha"], "-p", anchors["accepted_head"], "-m", "m",
+    ).stdout.strip()
+    with pytest.raises(AssertionError):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_an_extra_modified_decision(tmp_path):
+    """A second modified pre-existing decision is never covered by a one-path allowance."""
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path, second_decision=True)
+    with pytest.raises(AssertionError, match="newly-added or separately-authorized"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_refuses_a_dead_allowance(tmp_path):
+    """An allowance the range never exercised is dead permission, and is refused."""
+    run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    # A range in which TARGET-0001.md is untouched: base -> a head that only ADDS.
+    decisions = tmp_path / "governance" / "decisions"
+    (decisions / "TARGET-0001.md").write_text("original\n")
+    (decisions / "ADDED-0003.md").write_text("only an addition\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "addition only, allowance unexercised")
+    head = run("rev-parse", "HEAD").stdout.strip()
+    tree = run("rev-parse", "HEAD^{tree}").stdout.strip()
+    anchors = {
+        "base_sha": anchors["base_sha"],
+        "accepted_head": head,
+        "merge_tree": tree,
+        "merge_sha": run(
+            "commit-tree", tree, "-p", anchors["base_sha"], "-p", head, "-m", "m",
+        ).stdout.strip(),
+    }
+    with pytest.raises(AssertionError, match="not exactly what the closed range changed"):
+        _prove(tmp_path, anchors, authorized)
+
+
+def test_closed_range_proof_permits_additions(tmp_path):
+    """Additions remain treated by the existing rule -- permitted, never counted as a
+    modification. The well-formed range already contains one (`NEW-0002.md`)."""
+    _run, anchors, authorized = _synthetic_closed_range(tmp_path)
+    assert _prove(tmp_path, anchors, authorized) == ["governance/decisions/TARGET-0001.md"]
+
+
+def _shared_clone(tmp_path: Path) -> Path:
+    """An isolated clone with its OWN refs, borrowing this repository's object store.
+
+    Isolation matters: `git worktree` shares the ref namespace, so moving `origin/main`
+    inside one would move it for the real repository too.
+    """
+    dst = tmp_path / "clone"
     result = subprocess.run(
-        ["git", "diff", "--name-status", base_sha, "--", "governance/decisions"],
-        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+        ["git", "clone", "--quiet", "--shared", "--no-checkout", str(REPO_ROOT), str(dst)],
+        capture_output=True, text=True,
     )
-    lines = [line for line in result.stdout.splitlines() if line.strip()]
-    modified: list[str] = []
-    for line in lines:
-        status, _, rest = line.partition("\t")
-        if status.startswith("A"):
-            continue
-        assert rest.strip() in AUTHORIZED_DECISION_MODIFICATIONS, (
-            f"expected only newly-added or separately-authorized governance decisions, "
-            f"found: {line}"
-        )
-        assert status.startswith("M"), (
-            f"only a MODIFICATION may be authorized here, never a rename, copy or delete: {line}"
-        )
-        modified.append(rest.strip())
-    # The authorized exception must be genuinely exercised, not carried as dead permission.
-    assert modified == list(AUTHORIZED_DECISION_MODIFICATIONS), (
-        f"the authorized modification set is not exactly what this branch changed: {modified}"
+    if result.returncode != 0:
+        pytest.skip(f"could not create an isolated clone: {result.stderr.strip()}")
+    return dst
+
+
+@pytest.mark.parametrize("scenario", ["branch", "merged_main", "later_main"])
+def test_closed_range_proof_is_invariant_to_head_and_origin_main(tmp_path, scenario):
+    """The repaired property must hold identically on the PR branch, on merged ``main``
+    where ``HEAD == origin/main`` (the exact condition that broke the old guard), and
+    after ``main`` advances beyond the merge.
+
+    Run against a real repository whose ``HEAD`` and ``origin/main`` are genuinely moved,
+    in an ISOLATED clone so the real repository's refs are never touched.
+    """
+    if not _commit_exists(REPO_ROOT, CLOSED_RANGE_MERGE_SHA):
+        pytest.skip("PR #344's merge is not present in this checkout")
+    clone = _shared_clone(tmp_path)
+
+    def git(*args) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=clone, capture_output=True, text=True, check=True,
+        ).stdout.strip()
+
+    if scenario == "branch":
+        head = CLOSED_RANGE_ACCEPTED_HEAD
+        main = CLOSED_RANGE_BASE_SHA
+    elif scenario == "merged_main":
+        head = main = CLOSED_RANGE_MERGE_SHA
+    else:
+        tree = git("rev-parse", f"{CLOSED_RANGE_MERGE_SHA}^{{tree}}")
+        later = subprocess.run(
+            ["git", "commit-tree", tree, "-p", CLOSED_RANGE_MERGE_SHA, "-m", "later main"],
+            cwd=clone, capture_output=True, text=True, check=True,
+            env={**os.environ,
+                 "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+                 "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"},
+        ).stdout.strip()
+        head = main = later
+
+    git("update-ref", "HEAD", head)
+    git("update-ref", "refs/remotes/origin/main", main)
+    assert git("rev-parse", "HEAD") == head
+    assert git("rev-parse", "origin/main") == main
+    if scenario != "branch":
+        # The exact condition that made the old moving-anchor guard collapse.
+        assert git("merge-base", "HEAD", "origin/main") == git("rev-parse", "HEAD")
+
+    modified = _assert_authorized_decision_transitions_over_closed_range(
+        base_sha=CLOSED_RANGE_BASE_SHA,
+        accepted_head=CLOSED_RANGE_ACCEPTED_HEAD,
+        merge_sha=CLOSED_RANGE_MERGE_SHA,
+        merge_tree=CLOSED_RANGE_MERGE_TREE,
+        repo_root=clone,
     )
+    assert modified == list(AUTHORIZED_DECISION_MODIFICATIONS)
+
+
+def test_the_invariance_scenarios_cover_branch_merged_and_later_main():
+    """Coverage pin. Dropping a scenario from the parametrisation would silently stop
+    proving the very condition the repair exists for -- merged ``main``, where the old
+    guard collapsed -- while the remaining scenarios kept passing."""
+    source = SUITE_SOURCE_PATH.read_text(encoding="utf-8")
+    node = next(
+        n for n in ast.walk(ast.parse(source))
+        if isinstance(n, ast.FunctionDef)
+        and n.name == "test_closed_range_proof_is_invariant_to_head_and_origin_main"
+    )
+    scenarios: set[str] = set()
+    for decorator in node.decorator_list:
+        for arg in getattr(decorator, "args", []):
+            if isinstance(arg, (ast.List, ast.Tuple)):
+                scenarios |= {
+                    e.value for e in arg.elts
+                    if isinstance(e, ast.Constant) and isinstance(e.value, str)
+                }
+    assert scenarios == {"branch", "merged_main", "later_main"}, scenarios
+
+
+def test_the_real_repository_refs_were_not_disturbed_by_the_invariance_simulation():
+    """Defence in depth for the isolation above: the real repository's ``origin/main``
+    must still be PR #344's merge after these simulations run."""
+    if not _commit_exists(REPO_ROOT, CLOSED_RANGE_MERGE_SHA):
+        pytest.skip("PR #344's merge is not present in this checkout")
+    resolved = subprocess.run(
+        ["git", "rev-parse", "origin/main"],
+        cwd=REPO_ROOT, capture_output=True, text=True,
+    )
+    if resolved.returncode != 0:
+        pytest.skip("origin/main not resolvable in this environment")
+    assert resolved.stdout.strip() == CLOSED_RANGE_MERGE_SHA
 
 
 # ── no dimension_type / source_mechanism confusion between mechanical and

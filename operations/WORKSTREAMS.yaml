@@ -15628,7 +15628,12 @@ workstreams:
         status: in_progress
         pr: 345
         description: >-
-          DESIGN-ONLY AUTHORIZATION. XASSET-0045 authorizes EXACTLY ONE future, separate
+          GOVERNANCE AUTHORIZATION PLUS ONE NARROW, SEPARATELY PRINCIPAL-AUTHORIZED, TEST-ONLY
+          ENABLING CORRECTION (amended after independent FULL review 4989608238 -- see the
+          xasset0045-bounded-correction gate below; this entry originally read DESIGN-ONLY and
+          described the filing as barred from editing test_overlap_model_validator.py, both of which
+          the separate principal authorization superseded). XASSET-0045 authorizes EXACTLY ONE
+          future, separate
           recovery/reconciliation unit for the STOPPED XASSET-0044 rebinding, and performs no part of
           that recovery itself. PR #344 merged at f5dedce1d1d3116ed8a6845c4447388c85a5414c with
           exactly two parents in order (0709d2f05ab031ecb6f69c40465ed4a227983aed then
@@ -15673,17 +15678,68 @@ workstreams:
           creation, arming, claim, gate evaluation, execution, recovery execution, results work or
           protected RISK access. This filing edits no load-bearing implementation, runner, result
           validator, universe module, canonical artifact or protected portfolio path, and does NOT
-          itself correct the failing guard. DISCLOSED: the SS-B defect fails on every branch taken
-          from f5dedce1, including this one, because a newly added decision file is status A and is
-          skipped, leaving modified == []; this filing is explicitly barred from editing
-          test_overlap_model_validator.py, so that pre-existing failure is reproduced and disclosed,
-          never worked around, weakened, skipped or deleted. Universe remains 680 constructions over
+          itself perform the production recovery. CORRECTED after review 4989608238: at the
+          reviewed head the SS-B defect also fired on this branch, because a newly added decision
+          file is status A and is skipped, leaving modified == []. That is now REPAIRED rather than
+          merely disclosed -- see the bounded correction gate below. Nothing was worked around,
+          weakened, skipped or deleted. Universe remains 680 constructions over
           48 cells with aggregate hash
           73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane ABSENT,
           new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
           stage1_results.yaml exists. XASSET-0027 SS-P.1 remains one and unspent; XASSET-0040 stays
           spent as STOPPED_BEFORE_ATTESTATION. This gate is deliberately in_progress while its own
           pull request is unmerged: a filing does not mark its own unmerged work complete.
+      - gate: xasset0045-bounded-correction-after-full-review-4989608238
+        status: in_progress
+        pr: 345
+        description: >-
+          BOUNDED CORRECTION after independent FULL exact-head review 4989608238 (CHANGES REQUIRED --
+          1 BLOCKING / 0 MAJOR / 1 MINOR / 0 NOTE) anchored to reviewed head
+          e6e4874aca34f383f99cb130da3b45625d8c9aa3. BLOCKING 1: the filing could NEVER become
+          effective. SS-M.6 requires successful merge-commit CI at its own exact future merge SHA,
+          while SS-N as reviewed declared that same CI necessarily impossible on every branch derived
+          from f5dedce1 and barred the filing from repairing it -- a closed deadlock, evidenced by
+          exact-head CI run 32443765403 / job 96659425926 (failure, 1 failed / 10292 passed) and
+          reproduced here by building a real two-parent merge in an ISOLATED clone, where
+          merge-base(HEAD, origin/main) equals HEAD, the comparison is empty and modified == [].
+          Under a SEPARATE, EXPLICIT PRINCIPAL AUTHORIZATION -- which superseded ONLY the prior
+          instruction barring this filing from editing test_overlap_model_validator.py, leaving every
+          other scope limit and every Stage-1 prohibition fully operative -- the historical
+          real-repository guard was re-anchored from merge-base(HEAD, origin/main) to the IMMUTABLE
+          CLOSED RANGE 0709d2f05ab031ecb6f69c40465ed4a227983aed ->
+          9c2821ab9e0e0dff09f5a03da5a6034775b00750. The repaired guard additionally proves that merge
+          f5dedce1d1d3116ed8a6845c4447388c85a5414c has exactly two parents in correct order with
+          9c2821ab as the exact second parent, and that accepted-head and merge trees are
+          byte-identical at bd9ce6694261a7b4fb664a5121d04571f9606924 -- so it proves strictly MORE
+          than before. The one-use XASSET-0042 transition (old blob
+          e4cda7a5042da68f347598a62d9e6d5cfc40ae55, new blob
+          b08a625a5adb840e9576e5cd9218be24e63bd57e, status M) is still required to be exactly
+          exercised and never dead permission; additions remain permitted by the existing rule; every
+          other pre-existing decision remains protected. _resolve_pr_base_sha is DELIBERATELY
+          UNCHANGED and still serves the live working-tree guard, whose subject genuinely is a moving
+          base. Nothing was deleted, skipped, xfailed, weakened or replaced with a less falsifiable
+          assertion. Invariance is proved by RUNNING the repaired property on the PR branch, on a
+          merged-main state where HEAD == origin/main, and after later main advancement, inside an
+          isolated clone so the real repository's refs are never touched. XASSET-0045 is amended to
+          state honestly that it is governance PLUS this one test-only enabling correction, that the
+          authority for the correction is the separate principal authorization and is NOT created by
+          XASSET-0045 itself, and SS-G.2 now requires the future recovery unit to PRESERVE and
+          INDEPENDENTLY RE-PROVE the corrected guard rather than perform a correction already
+          completed here. The future unit still performs the successor operational lifecycle
+          rebinding. PR #344's failed run 32439614683 / job 96647501864 remains immutable adverse
+          history and is NOT retroactively repaired; XASSET-0044 remains ineffective; XASSET-0043
+          remains spent; SS-M still requires successful exact-merge CI, and a red corrected-head CI is
+          a stop, not an accepted deviation. A combined non-deadlock guard now refuses the CONJUNCTION
+          the reviewed head passed only because nothing tested the two halves together. MINOR 1: the
+          durable PR body was stale at 75 tests / 5 files against an actual 93 / 11 and is refreshed
+          at the corrected head, preserving the reviewed-head red CI as correction history. NO
+          production, canonical, runner, result-validator, universe, portfolio, lane, results or
+          Stage-1 authority is added: test_overlap_model_validator.py is independently confirmed NOT a
+          member of LOAD_BEARING_RELPATHS, the universe remains 680 constructions over 48 cells with
+          aggregate hash 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane
+          ABSENT, new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and
+          no stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

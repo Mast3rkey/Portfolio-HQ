@@ -80,6 +80,14 @@ PRINCIPAL_ACCEPTANCE_COMMENT = "5364401900"
 POST_MERGE_VERIFICATION_COMMENT = "5364422640"
 AUDITABLE_STOP_COMMENT = "5364490220"
 
+#: The independent FULL review that found the effectivity deadlock BLOCKING, and under which
+#: the principal separately authorized this filing's one narrow, test-only enabling correction.
+REVIEW_THAT_REQUIRED_THE_CORRECTION = "4989608238"
+#: This PR's own reviewed head, and its RED exact-head CI -- retained as correction history.
+REVIEWED_HEAD_SHA = "e6e4874aca34f383f99cb130da3b45625d8c9aa3"
+REVIEWED_HEAD_CI_RUN = "32443765403"
+REVIEWED_HEAD_CI_JOB = "96659425926"
+
 #: The guard whose moving anchor caused the failure, and its exact failing assertion line.
 FAILING_GUARD_FILE = "test_overlap_model_validator.py"
 FAILING_GUARD_LINE = 1119
@@ -108,7 +116,6 @@ PROTECTED_RELPATHS = (
     "level1_endpoint_evidence_preregistration_validator.py",
     "research/level1_endpoint_evidence/PROTOCOL_V1.md",
     "research/level1_endpoint_evidence/pre_registration.yaml",
-    "test_overlap_model_validator.py",
     "allocate.py",
     "margin_state.py",
     "levels.py",
@@ -117,6 +124,13 @@ PROTECTED_RELPATHS = (
     "gates.yaml",
     "issuer_lookthrough.yaml",
 )
+
+#: The ONE file this filing lawfully corrects, under the separate principal authorization
+#: recorded in XASSET-0045 §K after review 4989608238's BLOCKING finding. It is deliberately
+#: NOT in PROTECTED_RELPATHS any more -- but it is not unguarded either: the tests below
+#: require the change to be present, to be exactly the narrow re-anchoring authorized, and to
+#: leave the moving resolver in place for the live working-tree guard it legitimately serves.
+ENABLING_CORRECTION_RELPATH = "test_overlap_model_validator.py"
 
 
 def _git(*args: str) -> str:
@@ -204,13 +218,31 @@ def catalog_entry():
 
 
 class TestDefectIsAMovingAnchor:
-    def test_the_failing_guard_and_line_exist_and_are_the_named_assertion(self):
-        """The named file/line must really carry the named assertion. A stale line number
-        would let this whole authorization describe something that no longer exists."""
-        source = (ROOT / FAILING_GUARD_FILE).read_text(encoding="utf-8").splitlines()
-        line = source[FAILING_GUARD_LINE - 1]
-        assert "assert modified ==" in line, line
-        assert "AUTHORIZED_DECISION_MODIFICATIONS" in line, line
+    def test_the_historical_failure_location_is_recorded_by_the_decision(self):
+        """At the reviewed head the defect sat at ``FAILING_GUARD_FILE:FAILING_GUARD_LINE``.
+        That location is now HISTORY -- the correction rewrote the guard -- so the check is
+        that the decision records it faithfully, not that the line still holds the defect.
+        Superseding ``test_the_failing_guard_and_line_exist_and_are_the_named_assertion``,
+        which verified the pre-correction location and would now assert a fiction."""
+        text = DECISION_PATH.read_text(encoding="utf-8")
+        assert f"{FAILING_GUARD_FILE}:{FAILING_GUARD_LINE}" in text
+        assert FAILING_GUARD_TEST in text
+
+    def test_the_corrected_guard_exists_and_delegates_to_the_closed_range_helper(self):
+        """The live half of the superseded check: the named test still exists, and it now
+        proves the property through the immutable-range helper rather than inline against a
+        moving base."""
+        source = (ROOT / FAILING_GUARD_FILE).read_text(encoding="utf-8")
+        node = next(
+            n for n in ast.walk(ast.parse(source))
+            if isinstance(n, ast.FunctionDef) and n.name == FAILING_GUARD_TEST
+        )
+        called = {
+            c.func.id for c in ast.walk(node)
+            if isinstance(c, ast.Call) and isinstance(c.func, ast.Name)
+        }
+        assert "_assert_authorized_decision_transitions_over_closed_range" in called
+        assert "_resolve_pr_base_sha" not in called
 
     def test_the_guard_resolves_its_base_through_a_moving_merge_base(self):
         """The defect's mechanism: the base is a function of HEAD and origin/main, so it
@@ -421,7 +453,10 @@ class TestClosedRangeIsExactAndImmutable:
         )
 
     def test_the_corrected_guard_must_not_depend_on_where_head_points(self, decision_flat_lower):
-        assert "must not depend on where `head` or `origin/main` point" in decision_flat_lower
+        assert (
+            "still does not depend on where `head` or `origin/main` point when it runs"
+            in decision_flat_lower
+        )
 
     def test_the_one_use_transition_conjuncts_stay_independently_required(self, decision_text):
         assert AUTHORIZED_OLD_BLOB in decision_text
@@ -474,8 +509,14 @@ class TestSuccessorLifecycleAnchorRequired:
 
 
 class TestAdverseHistoryPreserved:
-    def test_the_failed_run_must_be_retained_by_exact_identity(self, decision_flat_lower):
-        assert "immutable adverse history" in decision_flat_lower
+    def test_the_failed_run_must_be_retained_by_exact_identity(self, decision_text):
+        """Pinned in BOTH sections that carry it. The decision states the immutability twice,
+        so a check on the bare phrase survives corruption of either statement alone."""
+        assert (
+            "**G.5 — Preserve the original failed run as immutable adverse history.**"
+            in _section(decision_text, "G")
+        )
+        assert "remains immutable adverse history" in _section(decision_text, "N")
 
     def test_every_forbidden_disposal_of_the_failed_run_is_named(self, decision_flat_lower):
         lowered = decision_flat_lower
@@ -569,16 +610,40 @@ class TestZeroActivationAuthority:
 
 
 # ======================================================================================
-# 9 -- The filing itself is design-only
+# 9 -- The filing is governance PLUS one narrow, separately authorized enabling correction
+#
+# Replaces the previous "design-only / does not correct the guard" pins, which review
+# 4989608238 found BLOCKING: taken with §M.6 they made this authorization permanently
+# unattainable. They are not deleted -- they are replaced by truthful pins on what the
+# filing now actually does, and on the boundaries the correction must not cross.
 # ======================================================================================
 
 
-class TestFilingIsDesignOnly:
-    def test_the_decision_declares_itself_design_only(self, decision_flat_lower):
-        assert "design-only" in decision_flat_lower
+class TestFilingIsGovernancePlusOneEnablingCorrection:
+    def test_the_decision_does_not_claim_to_be_purely_design_only(self, decision_flat_lower):
+        assert "is **not** purely design-only, and does not claim to be" in decision_flat_lower
 
-    def test_the_decision_does_not_correct_the_guard_itself(self, decision_flat_lower):
-        assert "does not correct the failing guard" in decision_flat_lower
+    def test_the_decision_states_the_correction_it_performs(self, decision_flat_lower):
+        k = _section(DECISION_PATH.read_text(encoding="utf-8"), "K").lower()
+        assert "test-only" in k
+        assert "re-anchored" in k
+        assert FAILING_GUARD_FILE in k
+
+    def test_the_authority_for_the_correction_is_not_created_by_this_decision(self, decision_text):
+        """The circularity guard. XASSET-0045 may not be its own enabling authority."""
+        k = _section(decision_text, "K")
+        assert "**The authority for that correction is not created by this decision.**" in k
+        assert "cannot authorize its own enabling repair without circularity" in k
+        assert "separate, explicit principal authorization" in k
+        assert REVIEW_THAT_REQUIRED_THE_CORRECTION in k
+
+    def test_the_correction_is_recorded_as_strictly_narrowing(self, decision_text):
+        k = _section(decision_text, "K")
+        assert "strictly narrowing in effect" in k
+        assert (
+            "Nothing was deleted, skipped, `xfail`ed, weakened, or replaced with a less "
+            "falsifiable assertion." in k
+        )
 
     def test_no_protected_path_was_touched_by_this_filing(self):
         """Proven against git, not asserted: this branch changes none of them."""
@@ -588,25 +653,141 @@ class TestFilingIsDesignOnly:
         overlap = changed & set(PROTECTED_RELPATHS)
         assert overlap == set(), overlap
 
+    def test_the_enabling_correction_was_actually_performed(self):
+        """The correction must be real. A decision claiming a repair it did not make is the
+        same class of untruth review 4989608238 found, pointing the other way."""
+        if not _git_ok("rev-parse", "--verify", "origin/main"):
+            pytest.skip("origin/main not resolvable in this environment")
+        changed = set(_git("diff", "--name-only", "origin/main").splitlines())
+        assert ENABLING_CORRECTION_RELPATH in changed
+
+    def test_the_corrected_file_is_not_load_bearing(self):
+        """The correction may not reach the bound execution surface."""
+        import level1_stage1_execution_authorization as auth
+
+        assert ENABLING_CORRECTION_RELPATH not in auth.LOAD_BEARING_RELPATHS
+
+    def test_the_corrected_guard_is_anchored_to_the_exact_closed_range(self):
+        """Read from the corrected file itself, not from the decision's description of it."""
+        import test_overlap_model_validator as guard
+
+        assert guard.CLOSED_RANGE_BASE_SHA == PR344_BASE_SHA
+        assert guard.CLOSED_RANGE_ACCEPTED_HEAD == PR344_ACCEPTED_HEAD
+        assert guard.CLOSED_RANGE_MERGE_SHA == PR344_MERGE_SHA
+        assert guard.CLOSED_RANGE_MERGE_TREE == PR344_MERGE_TREE
+
+    def test_the_closed_range_anchors_are_plain_string_literals(self):
+        """The AST check above inspects the FUNCTIONS. A moving reference could still be
+        smuggled in by making an anchor CONSTANT computed -- e.g. assigning it from
+        ``git merge-base HEAD origin/main`` at import time. Each anchor must therefore be a
+        literal string, checked over the module's own AST."""
+        source = (ROOT / ENABLING_CORRECTION_RELPATH).read_text(encoding="utf-8")
+        wanted = {
+            "CLOSED_RANGE_BASE_SHA", "CLOSED_RANGE_ACCEPTED_HEAD",
+            "CLOSED_RANGE_MERGE_SHA", "CLOSED_RANGE_MERGE_TREE",
+        }
+        seen: set[str] = set()
+        for node in ast.parse(source).body:
+            if not isinstance(node, ast.Assign):
+                continue
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id in wanted:
+                    assert isinstance(node.value, ast.Constant) and isinstance(node.value.value, str), (
+                        f"{target.id} is not a plain string literal"
+                    )
+                    assert len(node.value.value) == 40, target.id
+                    seen.add(target.id)
+        assert seen == wanted, wanted - seen
+
+    def test_the_corrected_guard_reads_no_moving_reference(self):
+        """The whole point of the repair, verified over the corrected file's own AST."""
+        source = (ROOT / ENABLING_CORRECTION_RELPATH).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        for name in (
+            "_assert_authorized_decision_transitions_over_closed_range",
+            "test_real_repository_governance_decisions_pass_the_repaired_check",
+        ):
+            node = next(
+                n for n in ast.walk(tree)
+                if isinstance(n, ast.FunctionDef) and n.name == name
+            )
+            literals = {
+                c.value for c in ast.walk(node)
+                if isinstance(c, ast.Constant) and isinstance(c.value, str)
+            }
+            for moving in ("HEAD", "origin/main", "merge-base"):
+                assert moving not in literals, f"{name} still consults {moving!r}"
+
+    def test_the_moving_resolver_survives_for_the_live_working_tree_guard(self):
+        """The repair removed the moving resolver from the HISTORICAL assertion only. Deleting
+        it repository-wide would break a guard whose subject legitimately IS a moving base."""
+        import test_overlap_model_validator as guard
+
+        assert callable(guard._resolve_pr_base_sha)
+        source = (ROOT / ENABLING_CORRECTION_RELPATH).read_text(encoding="utf-8")
+        node = next(
+            n for n in ast.walk(ast.parse(source))
+            if isinstance(n, ast.FunctionDef)
+            and n.name == "_assert_no_unauthorized_change_since_base"
+        )
+        called = {
+            c.func.id for c in ast.walk(node)
+            if isinstance(c, ast.Call) and isinstance(c.func, ast.Name)
+        }
+        assert "_resolve_pr_base_sha" in called
+
     def test_the_universe_identity_is_unchanged(self, decision_text):
         assert str(UNIVERSE_CONSTRUCTIONS) in decision_text
         assert str(UNIVERSE_CELLS) in decision_text
         assert UNIVERSE_AGGREGATE_HASH in decision_text
 
-    def test_the_pre_existing_guard_failure_is_disclosed_not_worked_around(self, decision_text):
-        """Honesty pin: the filing must disclose that its own CI fails on the same defect,
-        and must not claim to have fixed, skipped, or avoided it."""
-        flat_lower = _flat(decision_text).lower()
-        assert "pre-existing, reproduced, disclosed, and not introduced by this pr" in flat_lower
-        assert "explicitly barred" in flat_lower
-        assert FAILING_GUARD_TEST in decision_text
-        assert FAILING_GUARD_FILE in decision_text
+    def test_the_reviewed_head_failure_is_retained_as_adverse_history(self, decision_text):
+        """The red reviewed-head run is correction history and must not be erased."""
+        n = _section(decision_text, "N")
+        assert REVIEWED_HEAD_SHA in n
+        assert REVIEWED_HEAD_CI_RUN in n
+        assert REVIEWED_HEAD_CI_JOB in n
+        assert "Retained as adverse history, not erased" in n
 
-    def test_the_disclosed_failure_mechanism_is_correct(self, decision_flat):
-        """The disclosure must name the real reason -- status ``A`` is skipped -- rather than
-        a vague 'CI may fail'."""
-        assert "status `A`" in decision_flat
-        assert "modified == []" in decision_flat
+    def test_the_filing_no_longer_claims_its_own_ci_must_fail(self, decision_text):
+        """The BLOCKING premise itself. Any surviving form of "this PR's CI necessarily
+        fails" re-creates the deadlock, whatever wording it uses."""
+        flat_lower = _flat(decision_text).lower()
+        for claim in (
+            "this filing's own ci will fail",
+            "this pr's own ci will fail",
+            "expect exact-head ci to show",
+            "fails on **every** branch taken from",
+            "necessarily fails",
+            "must continue failing",
+            "explicitly barred from editing",
+        ):
+            assert claim not in flat_lower, claim
+
+    def test_pr344s_failed_run_is_still_immutable_adverse_history(self, decision_text):
+        """Removing this filing's own failure premise must not touch PR #344's.
+
+        Identity presence alone is too weak: §N states the non-repair twice, so a check on
+        the identities plus the phrase "immutable adverse history" survives corruption of the
+        operative sentence. That sentence is therefore pinned directly, and the repair claim
+        is refused as a concept.
+        """
+        flat = _flat(decision_text)
+        assert FAILED_CI_RUN in flat
+        assert FAILED_CI_JOB in flat
+        assert "immutable adverse history" in flat.lower()
+        n = _section(decision_text, "N")
+        assert (
+            "Nothing here retroactively repairs PR #344's own failed merge-commit CI." in n
+        )
+        for claim in ("retroactively repairs", "retroactively repaired", "now considered repaired"):
+            occurrences = flat.lower().count(claim)
+            if claim == "retroactively repairs":
+                # Permitted exactly once, and only inside the NEGATION pinned above.
+                assert occurrences == 1, occurrences
+                assert f"Nothing here {claim} PR #344" in flat, claim
+            else:
+                assert occurrences == 0, claim
 
 
 # ======================================================================================
@@ -690,8 +871,42 @@ class TestCatalogAndRegisterSynchronisation:
         ):
             assert identity in description, identity
 
-    def test_the_gate_states_the_authorization_is_design_only(self, gate):
-        assert "DESIGN-ONLY AUTHORIZATION" in gate["description"]
+    def test_the_gate_states_the_authorization_and_its_one_correction(self, gate):
+        """Supersedes ``test_the_gate_states_the_authorization_is_design_only``. The register
+        must describe what the filing actually is -- governance plus one narrow, separately
+        authorized, test-only enabling correction -- and must retain the historical note that
+        it originally read DESIGN-ONLY, so the change is visible rather than silent."""
+        description = gate["description"]
+        assert "GOVERNANCE AUTHORIZATION PLUS ONE NARROW" in description
+        assert "TEST-ONLY" in description
+        assert "originally read DESIGN-ONLY" in description
+        # The amending review must be named in the amendment note itself, not merely
+        # somewhere in the gate: the identity appears more than once here.
+        assert (
+            "amended after independent FULL review "
+            f"{REVIEW_THAT_REQUIRED_THE_CORRECTION}" in description
+        )
+
+    def test_the_bounded_correction_gate_records_the_blocking_finding(self, ws0014):
+        """The correction gate is additive, following PR #344's own precedent, and must
+        name the finding, its authority, and the boundaries the correction did not cross."""
+        gates = {g.get("gate"): g for g in ws0014["milestones"]}
+        gate = gates[f"xasset0045-bounded-correction-after-full-review-{REVIEW_THAT_REQUIRED_THE_CORRECTION}"]
+        assert gate["status"] == "in_progress"
+        assert gate["pr"] == 345
+        description = gate["description"]
+        assert "could NEVER become" in description
+        assert "SEPARATE, EXPLICIT PRINCIPAL AUTHORIZATION" in description
+        assert "IMMUTABLE" in description
+        assert PR344_BASE_SHA in description
+        assert PR344_ACCEPTED_HEAD in description
+        assert REVIEWED_HEAD_CI_RUN in description
+        assert REVIEWED_HEAD_CI_JOB in description
+        assert FAILED_CI_RUN in description
+        assert "NOT retroactively repaired" in description
+        # Flattened once, then asserted conjunctively -- an or-fallback pair here would be
+        # satisfiable by whichever half happened to match and could hide the other.
+        assert "NOT a member of LOAD_BEARING_RELPATHS" in _flat(description)
 
     def test_the_gate_states_exactly_one_future_unit(self, gate):
         assert "EXACTLY ONE future" in gate["description"]
@@ -783,6 +998,7 @@ KNOWN_40_HEX = frozenset(
         PR344_MERGE_TREE,
         AUTHORIZED_OLD_BLOB,
         AUTHORIZED_NEW_BLOB,
+        REVIEWED_HEAD_SHA,
     }
 )
 
@@ -794,6 +1010,9 @@ KNOWN_LONG_DIGITS = frozenset(
         PRINCIPAL_ACCEPTANCE_COMMENT,
         POST_MERGE_VERIFICATION_COMMENT,
         AUDITABLE_STOP_COMMENT,
+        REVIEW_THAT_REQUIRED_THE_CORRECTION,
+        REVIEWED_HEAD_CI_RUN,
+        REVIEWED_HEAD_CI_JOB,
     }
 )
 
@@ -866,6 +1085,55 @@ class TestRulesArePinnedWhereTheyAreOperative:
         g = _section(decision_text, "G")
         assert "**G.6 — Establish a lawful successor lifecycle anchor.**" in g
 
+    def test_g12_forbids_weakening_in_its_own_section(self, decision_text):
+        """§G.12's operative sentence, pinned where it lives. Three passages in the decision
+        use similar words, so a bare-phrase check survives corruption of this one."""
+        g = _section(decision_text, "G")
+        assert (
+            "**G.12 — Weaken nothing.** No existing assertion may be deleted, skipped, "
+            "`xfail`ed, weakened, or replaced with a less falsifiable one." in g
+        )
+
+    def test_k_states_the_scope_boundary_the_correction_did_not_cross(self, decision_text):
+        """The sentence that keeps the enabling correction from becoming a scope grant."""
+        k = _section(decision_text, "K")
+        assert (
+            "Beyond that one test-only correction, this filing still edits **no** load-bearing "
+            "implementation, no runner, no result validator, no universe module, no canonical "
+            "artifact, no operational-authorization mechanism, and no protected portfolio path"
+            in k
+        )
+
+    def test_g2_requires_preservation_and_re_proof_not_a_repeat_correction(self, decision_text):
+        """G.2 was rewritten by this correction. The future unit must PRESERVE and RE-PROVE
+        the repaired guard; instructing it to perform a correction already completed here
+        would make the filing untruthful in the opposite direction."""
+        g = _section(decision_text, "G")
+        assert (
+            "**G.2 — Preserve and independently re-prove the corrected immutable-range guard.**"
+            in g
+        )
+        assert "so the future unit does **not** perform that correction again" in g
+        assert "may only be strengthened" in g
+
+    def test_the_enabling_correction_grants_no_recovery_or_stage_1_authority(self, decision_text):
+        """The correction must not be stretched into production authority. Its being
+        principal-authorized says nothing about arming, recovery, or Stage 1."""
+        flat = _flat(decision_text)
+        flat_lower = flat.lower()
+        for grant in (
+            "may also perform production recovery",
+            "and arm stage 1",
+            "authorizes production recovery",
+            "authorizes the recovery itself",
+            "permits arming",
+        ):
+            assert grant not in flat_lower, grant
+        k = _section(decision_text, "K")
+        assert (
+            "adds no production, canonical, lane, results, or Stage-1 authority of any kind" in k
+        )
+
     def test_g7_binds_rebinding_to_strict_necessity_verbatim(self, decision_text):
         g = _section(decision_text, "G")
         assert (
@@ -923,3 +1191,81 @@ class TestRulesArePinnedWhereTheyAreOperative:
         g = _section(decision_text, "G")
         assert "**G.1 — File its own decision.**" in g
         assert "never predicted, reserved, or assumed here" in g
+
+
+# ======================================================================================
+# 16 -- The decision cannot deadlock its own effectivity
+#
+# Review 4989608238's BLOCKING finding, pinned as a CONJUNCTION rather than as two
+# separate facts. The reviewed head satisfied each half individually -- §M.6 required
+# successful exact-merge CI, and §N declared that CI impossible -- and passed, because
+# nothing tested them TOGETHER. This is that missing test.
+# ======================================================================================
+
+
+#: Any wording that asserts this filing's own CI cannot succeed. Each re-creates the
+#: deadlock regardless of phrasing, so the check is over the concept, not one sentence.
+SELF_DEFEATING_CI_CLAIMS = (
+    "this filing's own ci will fail",
+    "this pr's own ci will fail",
+    "its own ci will fail",
+    "necessarily fails",
+    "necessarily fail",
+    "must continue failing",
+    "cannot pass ci",
+    "can never pass ci",
+    "fails on **every** branch taken from",
+    "fails on every branch taken from",
+    "explicitly barred from editing",
+    "does not correct the failing guard",
+)
+
+
+class TestTheDecisionCannotDeadlockItsOwnEffectivity:
+    def test_the_successful_ci_effectivity_requirement_is_present(self, decision_text):
+        """Half one of the conjunction. Removing it would 'resolve' the deadlock by
+        abandoning the requirement -- which is not a resolution."""
+        m = _section(decision_text, "M")
+        assert "**successful merge-commit CI whose `head_sha` is the exact merge SHA**" in m
+        assert "not a run against any other commit" in m
+
+    def test_no_self_defeating_ci_claim_survives_anywhere(self, decision_text):
+        """Half two. Any surviving form makes half one unattainable."""
+        flat_lower = _flat(decision_text).lower()
+        for claim in SELF_DEFEATING_CI_CLAIMS:
+            assert claim not in flat_lower, claim
+
+    def test_the_conjunction_itself_is_refused(self, decision_text):
+        """THE test the reviewed head lacked: requiring successful exact-merge CI while
+        also declaring that CI impossible is refused as a combination, not merely as two
+        independently-checked halves."""
+        flat = _flat(decision_text)
+        flat_lower = flat.lower()
+        requires_successful_ci = (
+            "**successful merge-commit CI whose `head_sha` is the exact merge SHA**" in flat
+        )
+        declares_ci_impossible = any(c in flat_lower for c in SELF_DEFEATING_CI_CLAIMS)
+        assert not (requires_successful_ci and declares_ci_impossible), (
+            "deadlock: the decision requires successful exact-merge CI and simultaneously "
+            "declares its own CI impossible, so it could never become effective"
+        )
+        # And the half that must hold, holds -- so this is not satisfied vacuously by
+        # dropping the requirement instead of the impossibility claim.
+        assert requires_successful_ci
+
+    def test_the_deadlock_is_recorded_as_the_reason_for_the_correction(self, decision_text):
+        """The fix must be traceable to the finding, not silently applied."""
+        k = _section(decision_text, "K")
+        assert REVIEW_THAT_REQUIRED_THE_CORRECTION in k
+        assert "unattainable" in k.lower()
+
+    def test_the_correction_did_not_weaken_the_effectivity_chain(self, decision_text):
+        """All seven §M conditions must still be present and conjunctive."""
+        m = _section(decision_text, "M")
+        for n in range(1, 8):
+            assert f" {n}. " in f" {m}", n
+        assert "**None is individually sufficient.**" in m
+
+    def test_a_red_corrected_head_ci_is_a_stop_not_an_accepted_deviation(self, decision_text):
+        n = _section(decision_text, "N")
+        assert "a red corrected-head CI is a stop, not an accepted deviation" in n
