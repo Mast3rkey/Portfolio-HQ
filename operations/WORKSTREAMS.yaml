@@ -15476,7 +15476,7 @@ workstreams:
           RE-ANCHORED to closed, immutable commit ranges and none is deleted, skipped, xfailed or
           relaxed; two mutation pins are added so the re-anchoring cannot pass vacuously. Identities
           recomputed ONCE after every authorized byte stabilized: module
-          da6035d4ff7722b6cc5dfc054adefc9b83f486800cd9fc57c961488c8203778d, derivation validator
+          f89c38d49d160795795a73627777c7174d84a61583fc9ed6b5aa921648ee8df1, derivation validator
           b3a87e4f8b828d420795348642c977a9f0585eafa9262a4be48df406f770233d, PROTOCOL_V1.md
           1ad1d060d5bf970288844b05b94e1fd38c3cc9cc87afc1481a45ed1b315d0c84, pre_registration.yaml
           898c329d9941c5c24ff2a800f842e860c63e2e500acc4257eb14646c1012d82f. Rebinding is NOT arming: this adds ZERO
@@ -15543,6 +15543,46 @@ workstreams:
           behaviour, canonical construction input, universe identity, runner, result validator,
           protected path or ATTEMPT_1 state is touched, and no gate is evaluated for any
           construction. Stage 1 remains UNARMED and NOT EXECUTABLE, lane ABSENT,
+          new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
+          stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
+      - gate: xasset0044-third-bounded-correction-after-delta-review-4988858926
+        status: in_progress
+        pr: 344
+        description: >-
+          Third bounded correction of PR #344 after an independent exact-head DELTA review over
+          a6b7d284fb19d1d1451d5b4879610f434e0d9d1c -> be4c2d33f2b431c6064fed182086f33dd374db04
+          confirmed the prior corrections hold and returned CHANGES REQUIRED -- 0 BLOCKING / 1
+          MAJOR / 1 MINOR / 0 NOTE. Both reproduced before editing. MAJOR 1: all three
+          lifecycle-closure body checks used raw substring containment, which proves only that a
+          character sequence appears somewhere -- reproduced through verify_lifecycle_against_truth,
+          a body whose only mentions were <merge>0, <run>0 and <job>0 returned no errors, because
+          each real sequence sits inside a different longer identifier, and a job id that merely
+          contains the real job id is a DIFFERENT job. Replaced with ONE shared boundary-aware
+          mechanism, body_names_identity, used by all three so merge SHA, run id and job id cannot
+          drift apart into three separately-worded checks again: an identity counts as named only
+          where the characters immediately before AND after are not identity characters, using an
+          explicit ASCII class rather than \w so the boundary is deterministic, with regex
+          metacharacters escaped so an identity is a literal token and never a pattern. Genuine
+          bodies still pass -- backticks, spaces, commas, full stops, parentheses, brackets, braces,
+          newlines and =/; separators are all boundaries, and the canonical body plus four other
+          ordinary phrasings are pinned as accepted, so strictness was not bought by rejecting real
+          evidence. MINOR 1: this unit's own second correction had added an assertion reading
+          'ALL_SIX_GATES in STAGE_1_BLOCKING_PREREQUISITE or True', which can never fail -- the
+          blocking prerequisite does NOT contain ALL_SIX_GATES, so the fallback masked a false
+          premise while the test's own name claimed byte identity. Replaced with the exact value it
+          meant to preserve,
+          XASSET_0044_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION, rather than
+          deleting the clause and losing the coverage it claimed, and a hygiene guard was added so
+          the shape cannot recur silently -- implemented over the parsed AST rather than a substring
+          scan, since a text search would flag the very comments explaining the defect, and itself
+          proven falsifiable against synthetic source. The recorded-field exact checks, actor and
+          pull-request authentication, strict chronology on both conjuncts, the closed schema and
+          every existing refusal case are preserved. No outcome-producing behaviour, canonical
+          construction input, universe membership, order or hash, runner, result validator,
+          protected path, lane state or ATTEMPT_1 is touched, and no gate is evaluated for any
+          construction. Universe remains 680 constructions over 48 cells with aggregate hash
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane ABSENT,
           new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
           stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
           request is unmerged: a filing does not mark its own unmerged work complete.

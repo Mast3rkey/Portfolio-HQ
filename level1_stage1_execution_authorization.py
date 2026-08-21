@@ -166,6 +166,7 @@ import builtins
 import hashlib
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -2127,6 +2128,43 @@ def verify_lifecycle_against_truth(
     return tuple(errors)
 
 
+#: MAJOR 1 (delta review 4988858926): characters which, ADJACENT to an identity, mean the body
+#: carries a LARGER token that merely contains it rather than naming the identity itself. Written
+#: as an explicit ASCII class rather than ``\w`` so the boundary is deterministic and does not
+#: shift with the Unicode database. Merge SHAs are hex and CI run/job ids are decimal, so every
+#: superset substitution the review named -- a leading or trailing hex character or digit, and an
+#: identity embedded inside a larger alphanumeric token -- is adjacency by one of these.
+_IDENTITY_BOUNDARY_CLASS = "[0-9A-Za-z_]"
+
+
+def body_names_identity(body: Any, identity: Any) -> bool:
+    """Does ``body`` name ``identity`` as a COMPLETE, unambiguous token?
+
+    The ONE mechanism all three lifecycle-closure body identities share, so merge SHA, CI run id
+    and CI job id cannot drift apart into three separately-worded checks again.
+
+    This replaces raw substring containment, which proved only that a character sequence appears
+    SOMEWHERE. Reproduced through the public verifier before this correction: a closure body whose
+    only merge/run/job mentions were ``<merge>0``, ``<run>0`` and ``<job>0`` returned no errors,
+    because each real sequence sits inside a different, longer identifier. A job id that merely
+    contains the real job id is a DIFFERENT job, and a closure naming it does not identify the job
+    whose completion it claims to follow.
+
+    Boundary-aware, in both directions: an identity is named only where the characters immediately
+    before and after it are not identity characters. Ordinary punctuation and whitespace -- the
+    backticks, commas, spaces and full stops a genuine closure body uses -- are boundaries, so the
+    canonical body is still accepted.
+    """
+    if not isinstance(body, str) or not isinstance(identity, str) or not identity:
+        return False
+    pattern = (
+        f"(?<!{_IDENTITY_BOUNDARY_CLASS})"
+        + re.escape(identity)
+        + f"(?!{_IDENTITY_BOUNDARY_CLASS})"
+    )
+    return re.search(pattern, body) is not None
+
+
 def _verify_lifecycle_closure(
     evidence: Mapping[str, Any],
     *,
@@ -2217,28 +2255,29 @@ def _verify_lifecycle_closure(
         "authorization.lifecycle_evidence.lifecycle_closure.closed_job_id",
         errors,
     )
-    body = closure.get("body") or ""
-    if isinstance(merge_sha, str) and merge_sha and merge_sha not in body:
-        errors.append(
-            f"governance truth: lifecycle-closure record {closure_id} does not name the merge "
-            f"SHA {merge_sha!r}"
-        )
-    if run_id and run_id not in body:
-        errors.append(
-            f"governance truth: lifecycle-closure record {closure_id} does not name the "
-            f"merge-commit CI run {run_id!r}"
-        )
     # MAJOR 1 part 1 (delta review 4987958687): the correction declared that the durable body
-    # records AND NAMES the exact merge and CI run/JOB identities, but only the run was required.
-    # Reproduced through verify_lifecycle_against_truth before correcting: a body naming the merge
-    # and run while omitting the job -- and a body carrying a SUBSTITUTED job -- both returned no
-    # errors. A run can carry more than one job, so naming the run alone does not identify the job
-    # whose completion the closure claims to follow.
-    if job_id and job_id not in body:
-        errors.append(
-            f"governance truth: lifecycle-closure record {closure_id} does not name the "
-            f"merge-commit CI job {job_id!r}"
-        )
+    # records AND NAMES the exact merge and CI run/JOB identities, but only the merge and run were
+    # required. Reproduced before correcting: a body naming the merge and run while OMITTING the
+    # job -- and one carrying a SUBSTITUTED job -- both returned no errors. A run can carry more
+    # than one job, so naming the run alone does not identify the job whose completion the closure
+    # claims to follow.
+    #
+    # MAJOR 1 (delta review 4988858926): all three are now authenticated as COMPLETE TOKENS through
+    # the single shared ``body_names_identity`` mechanism. Raw substring containment proved only
+    # that a sequence appears somewhere, so supersets such as ``<merge>0``, ``<run>0`` and
+    # ``<job>0`` -- reproduced through the public verifier -- satisfied every check at once while
+    # naming three identifiers that are none of them. Each identity is independently required.
+    body = closure.get("body") or ""
+    for identity, what in (
+        (merge_sha if isinstance(merge_sha, str) else "", "merge SHA"),
+        (run_id, "merge-commit CI run"),
+        (job_id, "merge-commit CI job"),
+    ):
+        if identity and not body_names_identity(body, identity):
+            errors.append(
+                f"governance truth: lifecycle-closure record {closure_id} does not name the "
+                f"{what} {identity!r} as a complete token"
+            )
 
     # --- chronology: strictly after BOTH the post-merge verification and CI completion ----
     closed_at = _instant(closure.get("created_at"))

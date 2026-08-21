@@ -1503,7 +1503,15 @@ class TestOperatorStatusReasonNamesTheSeventhCondition:
             "MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION",
         )
         assert "ALL_SIX_GATES" in PREREG.STAGE_1_EXECUTION_PRECONDITION
-        assert "ALL_SIX_GATES" in PREREG.STAGE_1_BLOCKING_PREREQUISITE or True
+        # MINOR 1 (delta review 4988858926): this line previously read
+        #     assert "ALL_SIX_GATES" in PREREG.STAGE_1_BLOCKING_PREREQUISITE or True
+        # which can never fail. The blocking prerequisite does NOT contain "ALL_SIX_GATES" -- the
+        # left operand is false -- so the fallback masked a false premise while the test's own name
+        # claimed byte identity. Replaced with the exact value, which is what the test meant to
+        # preserve, rather than merely deleting the clause and losing the coverage it claimed.
+        assert PREREG.STAGE_1_BLOCKING_PREREQUISITE == (
+            "XASSET_0044_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+        )
         # every predecessor-named canonical string keeps its own generation
         assert "XASSET_0037" in PREREG.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0037
 
@@ -1515,6 +1523,284 @@ class TestOperatorStatusReasonNamesTheSeventhCondition:
     def test_the_requirement_is_not_smuggled_into_the_gate_tuple(self):
         assert A.LIFECYCLE_CLOSURE_STATUS_REQUIREMENT not in A.REQUIRED_LIFECYCLE_GATES
         assert len(A.REQUIRED_LIFECYCLE_GATES) == 6
+
+
+def _closure_body(body: str):
+    """A governance stand-in whose lifecycle-closure record carries exactly ``body``."""
+    gov = H.FakeGovernance()
+    gov.comments = dict(gov.comments)
+    gov.comments[H.CLOSURE_ID] = dict(gov.comments[H.CLOSURE_ID], body=body)
+    return gov
+
+
+class TestClosureBodyIdentitiesAreCompleteTokens:
+    """MAJOR 1 (delta review 4988858926) -- substring containment is not identity.
+
+    Reproduced through the public ``verify_lifecycle_against_truth`` path before correcting: a
+    closure body whose only mentions were ``<merge>0``, ``<run>0`` and ``<job>0`` returned no
+    errors, because each real sequence sits inside a different, longer identifier. A job id that
+    merely CONTAINS the real job id is a different job, so such a body does not identify the job
+    whose completion the closure claims to follow.
+
+    All three identities now go through one shared boundary-aware mechanism, so they cannot drift
+    apart into three separately-worded checks again.
+    """
+
+    NOT_A_TOKEN = "as a complete token"
+
+    # --- the genuine body must still be accepted -------------------------------------------
+
+    def test_the_canonical_body_is_accepted(self):
+        result = A.validate_authorization_document(_valid_document(), H.sources())
+        assert result.valid, result.errors
+
+    @pytest.mark.parametrize("body_template", [
+        "Lifecycle closure for merge `{m}`, run {r}, job {j}.",
+        "Closure: merge {m} run {r} job {j}",
+        "Closure (merge {m}) [run {r}] {{job {j}}}",
+        "merge {m}\nrun {r}\njob {j}",
+        "merge={m}; run={r}; job={j}",
+    ])
+    def test_ordinary_punctuation_and_whitespace_are_boundaries(self, body_template):
+        """The mechanism must not reject genuine bodies to achieve strictness."""
+        gov = _closure_body(body_template.format(m=H.MERGE, r=H.RUN_ID, j=H.JOB_ID))
+        result = A.validate_authorization_document(
+            _valid_document(), H.sources(governance=gov)
+        )
+        assert result.valid, result.errors
+
+    # --- the exact case the review reproduced ----------------------------------------------
+
+    def test_the_reviews_superset_body_is_refused(self):
+        """All three identities present ONLY inside a longer token, exactly as reported."""
+        gov = _closure_body(
+            f"Lifecycle closure for merge `{H.MERGE}0`, run {H.RUN_ID}0, job {H.JOB_ID}0."
+        )
+        _refused(_valid_document(), self.NOT_A_TOKEN, governance=gov)
+
+    # --- one extra character before and after EACH identity ---------------------------------
+
+    @pytest.mark.parametrize("extra", ["a", "f", "0", "9"])
+    def test_a_hex_character_before_the_merge_sha_is_refused(self, extra):
+        gov = _closure_body(f"merge `{extra}{H.MERGE}`, run {H.RUN_ID}, job {H.JOB_ID}")
+        _refused(_valid_document(), "merge SHA", governance=gov)
+
+    @pytest.mark.parametrize("extra", ["a", "f", "0", "9"])
+    def test_a_hex_character_after_the_merge_sha_is_refused(self, extra):
+        gov = _closure_body(f"merge `{H.MERGE}{extra}`, run {H.RUN_ID}, job {H.JOB_ID}")
+        _refused(_valid_document(), "merge SHA", governance=gov)
+
+    @pytest.mark.parametrize("extra", ["0", "1", "7", "9"])
+    def test_a_digit_before_the_run_id_is_refused(self, extra):
+        gov = _closure_body(f"merge `{H.MERGE}`, run {extra}{H.RUN_ID}, job {H.JOB_ID}")
+        _refused(_valid_document(), "merge-commit CI run", governance=gov)
+
+    @pytest.mark.parametrize("extra", ["0", "1", "7", "9"])
+    def test_a_digit_after_the_run_id_is_refused(self, extra):
+        gov = _closure_body(f"merge `{H.MERGE}`, run {H.RUN_ID}{extra}, job {H.JOB_ID}")
+        _refused(_valid_document(), "merge-commit CI run", governance=gov)
+
+    @pytest.mark.parametrize("extra", ["0", "1", "7", "9"])
+    def test_a_digit_before_the_job_id_is_refused(self, extra):
+        gov = _closure_body(f"merge `{H.MERGE}`, run {H.RUN_ID}, job {extra}{H.JOB_ID}")
+        _refused(_valid_document(), "merge-commit CI job", governance=gov)
+
+    @pytest.mark.parametrize("extra", ["0", "1", "7", "9"])
+    def test_a_digit_after_the_job_id_is_refused(self, extra):
+        gov = _closure_body(f"merge `{H.MERGE}`, run {H.RUN_ID}, job {H.JOB_ID}{extra}")
+        _refused(_valid_document(), "merge-commit CI job", governance=gov)
+
+    # --- embedded inside larger tokens, and concatenated ------------------------------------
+
+    def test_identities_embedded_in_larger_alphanumeric_tokens_are_refused(self):
+        gov = _closure_body(f"X{H.MERGE}X Y{H.RUN_ID}Y Z{H.JOB_ID}Z")
+        _refused(_valid_document(), self.NOT_A_TOKEN, governance=gov)
+
+    def test_identities_concatenated_together_are_refused(self):
+        """Each identity is adjacent to the next, so none of the three is a complete token."""
+        gov = _closure_body(f"{H.MERGE}{H.RUN_ID}{H.JOB_ID}")
+        _refused(_valid_document(), self.NOT_A_TOKEN, governance=gov)
+
+    def test_an_underscore_joined_suffix_is_refused(self):
+        gov = _closure_body(f"merge `{H.MERGE}`, run {H.RUN_ID}_2, job {H.JOB_ID}")
+        _refused(_valid_document(), "merge-commit CI run", governance=gov)
+
+    # --- omission and unrelated substitution, preserved from the prior round -----------------
+
+    @pytest.mark.parametrize("drop,fragment", [
+        ("merge", "merge SHA"),
+        ("run", "merge-commit CI run"),
+        ("job", "merge-commit CI job"),
+    ])
+    def test_omitting_each_identity_is_refused(self, drop, fragment):
+        parts = {
+            "merge": f"merge `{H.MERGE}`",
+            "run": f"run {H.RUN_ID}",
+            "job": f"job {H.JOB_ID}",
+        }
+        del parts[drop]
+        _refused(
+            _valid_document(), fragment,
+            governance=_closure_body("Closure for " + ", ".join(parts.values()) + "."),
+        )
+
+    @pytest.mark.parametrize("swap,replacement,fragment", [
+        ("merge", "c" * 40, "merge SHA"),
+        ("run", "1234567890", "merge-commit CI run"),
+        ("job", "1234567890", "merge-commit CI job"),
+    ])
+    def test_an_unrelated_substituted_identity_is_refused(self, swap, replacement, fragment):
+        parts = {
+            "merge": f"merge `{H.MERGE}`",
+            "run": f"run {H.RUN_ID}",
+            "job": f"job {H.JOB_ID}",
+        }
+        parts[swap] = {
+            "merge": f"merge `{replacement}`",
+            "run": f"run {replacement}",
+            "job": f"job {replacement}",
+        }[swap]
+        _refused(
+            _valid_document(), fragment,
+            governance=_closure_body("Closure for " + ", ".join(parts.values()) + "."),
+        )
+
+    # --- the mechanism itself, directly ------------------------------------------------------
+
+    def test_the_mechanism_is_shared_by_all_three_identities(self):
+        """One mechanism, so the three checks cannot drift apart again."""
+        source = (ROOT / "level1_stage1_execution_authorization.py").read_text(encoding="utf-8")
+        assert source.count("body_names_identity(body, identity)") == 1
+        assert "not in body" not in source
+
+    @pytest.mark.parametrize("body,identity,expected", [
+        ("abc 1234 def", "1234", True),
+        ("abc `1234` def", "1234", True),
+        ("abc 1234, def", "1234", True),
+        ("abc\n1234\ndef", "1234", True),
+        ("abc 12345 def", "1234", False),
+        ("abc 01234 def", "1234", False),
+        ("abc x1234 def", "1234", False),
+        ("abc 1234x def", "1234", False),
+        ("abc 1234_ def", "1234", False),
+        ("abc _1234 def", "1234", False),
+        ("abc def", "1234", False),
+        ("abc 1234 def", "", False),
+        ("abc 1234 def", None, False),
+        (None, "1234", False),
+    ])
+    def test_body_names_identity_boundary_behaviour(self, body, identity, expected):
+        assert A.body_names_identity(body, identity) is expected
+
+    def test_the_mechanism_treats_regex_metacharacters_literally(self):
+        """An identity is a literal token, never a pattern: a body must not match by wildcard."""
+        assert A.body_names_identity("run a.c", "a.c") is True
+        assert A.body_names_identity("run abc", "a.c") is False
+
+
+def _unconditional_or_fallbacks(source: str) -> list[str]:
+    """Assertions made unfalsifiable by a constant-truthy disjunct: ``assert X or True``.
+
+    THE detection mechanism -- module level, and used by BOTH the live-corpus guard below and the
+    falsifiability proofs beside it. An earlier draft re-implemented this logic inside the proof,
+    so disabling the real check changed nothing and two mutation probes went MISSED: the guard was
+    decoration. Sharing one function is what makes those probes bite.
+    """
+    offenders = []
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.Assert):
+            continue
+        test = node.test
+        if isinstance(test, ast.BoolOp) and isinstance(test.op, ast.Or):
+            for value in test.values:
+                if isinstance(value, ast.Constant) and bool(value.value):
+                    offenders.append(
+                        f"line {node.lineno}: `or {value.value!r}` makes the assertion vacuous"
+                    )
+    return offenders
+
+
+def _bare_truthy_assertions(source: str) -> list[str]:
+    """``assert True`` / ``assert 1`` / ``assert "text"`` -- assert nothing about the system.
+
+    Shared for the same reason as above.
+    """
+    return [
+        f"line {n.lineno}: bare truthy constant {n.test.value!r}"
+        for n in ast.walk(ast.parse(source))
+        if isinstance(n, ast.Assert)
+        and isinstance(n.test, ast.Constant)
+        and bool(n.test.value)
+    ]
+
+
+class TestSuiteHygieneNoUnconditionalFallbacks:
+    """MINOR 1 (delta review 4988858926) -- an assertion that cannot fail is not coverage.
+
+    A vacuous ``or True`` reached this suite and survived a full review round while its own test
+    name claimed byte identity. Deleting the clause alone would have removed the false premise but
+    also the coverage it claimed, so the assertion was replaced with the exact value AND this guard
+    was added so the shape cannot recur silently.
+
+    Implemented over the parsed AST, not a substring scan: a text search would flag this very
+    docstring and every explanatory comment about the defect, which is how such a guard becomes
+    unusable and then gets deleted.
+    """
+
+    SUITE = Path(__file__)
+
+    def _source(self) -> str:
+        return self.SUITE.read_text(encoding="utf-8")
+
+    def test_no_assertion_is_unconditionally_true(self):
+        offenders = _unconditional_or_fallbacks(self._source())
+        assert offenders == [], "unconditionally-true assertions found:\n" + "\n".join(offenders)
+
+    def test_no_assertion_is_a_bare_truthy_constant(self):
+        offenders = _bare_truthy_assertions(self._source())
+        assert offenders == [], "vacuous constant assertions found:\n" + "\n".join(offenders)
+
+    def test_the_or_fallback_detector_is_falsifiable(self):
+        """A hygiene guard that cannot detect its own target is decoration. Exercises the REAL
+        detector against synthetic source, so disabling it fails here."""
+        assert len(_unconditional_or_fallbacks('assert "X" in y or True\n')) == 1
+        assert len(_unconditional_or_fallbacks("assert True or check()\n")) == 1
+        assert len(_unconditional_or_fallbacks("assert value or 1\n")) == 1
+        assert len(_unconditional_or_fallbacks('assert value or "text"\n')) == 1
+        # genuine disjunctions of real expressions are untouched
+        assert _unconditional_or_fallbacks("assert a or b\n") == []
+        assert _unconditional_or_fallbacks("assert a == 1 or a == 2\n") == []
+        # a falsey constant disjunct narrows nothing but also hides nothing
+        assert _unconditional_or_fallbacks("assert check() or False\n") == []
+        # and the guard must not fire on non-assert code
+        assert _unconditional_or_fallbacks("x = y or True\n") == []
+
+    def test_the_bare_constant_detector_is_falsifiable(self):
+        """Likewise for the second detector, exercising the real function."""
+        assert len(_bare_truthy_assertions("assert True\n")) == 1
+        assert len(_bare_truthy_assertions("assert 1\n")) == 1
+        assert len(_bare_truthy_assertions('assert "text"\n')) == 1
+        assert _bare_truthy_assertions("assert False\n") == []
+        assert _bare_truthy_assertions("assert 0\n") == []
+        assert _bare_truthy_assertions("assert check()\n") == []
+        assert _bare_truthy_assertions("x = True\n") == []
+
+    def test_the_detectors_see_this_suites_real_source(self):
+        """Not vacuous by reading an empty or wrong file: the real source must parse to a large
+        number of real assertions, so a clean result means CHECKED-and-clean."""
+        statements = [
+            n for n in ast.walk(ast.parse(self._source())) if isinstance(n, ast.Assert)
+        ]
+        assert len(statements) > 200, len(statements)
+
+    def test_the_blocking_prerequisite_assertion_is_now_falsifiable(self):
+        """The specific line MINOR 1 named: it must compare against a real, wrong-able value."""
+        real = PREREG.STAGE_1_BLOCKING_PREREQUISITE
+        assert real == (
+            "XASSET_0044_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+        )
+        # and the premise the vacuous clause masked is recorded as the falsehood it was
+        assert "ALL_SIX_GATES" not in real
 
 
 class TestNoSectionIsVacuous:

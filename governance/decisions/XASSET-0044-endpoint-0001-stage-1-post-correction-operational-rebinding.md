@@ -232,7 +232,7 @@ Accordingly:
 bound (XASSET-0037 merged tree, historical)          sha256  8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8
 intermediate, superseded head 7573147e (historical)  sha256  03d842126913bf2d62aa5d7c070ecca236926ec847102da82414ee51e7422734
 XASSET-0042 final, closed at PR #342 (historical)    sha256  749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7
-CURRENT_MODULE_SHA256: da6035d4ff7722b6cc5dfc054adefc9b83f486800cd9fc57c961488c8203778d
+CURRENT_MODULE_SHA256: f89c38d49d160795795a73627777c7174d84a61583fc9ed6b5aa921648ee8df1
 ```
 
 ### M. Bounded correction after independent FULL review `4986931575`
@@ -341,6 +341,58 @@ The verdict is untouched: the reason changes, `new_execution_is_authorized()` st
 membership, order or hash, runner, result validator, protected path, lane state, or `ATTEMPT_1` is
 touched, and no gate is evaluated for any construction. Both corrections make the mechanism
 **stricter**, never more permissive. Stage 1 remains **UNARMED** and **NOT EXECUTABLE**.
+
+
+### O. Third bounded correction after independent DELTA review `4988858926`
+
+A further exact-head DELTA review over `a6b7d284…` → `be4c2d33…` confirmed the §N corrections hold
+— missing and unrelated job ids refused, equality with both the job's `completed_at` and the
+run-time fallback refused, a one-second-later closure still accepted, the status reason naming the
+seventh condition while retaining all six accepted gate strings — and returned **CHANGES REQUIRED —
+0 BLOCKING / 1 MAJOR / 1 MINOR** on the correction itself. Both were **reproduced before editing**.
+
+**MAJOR 1 — "exact identity" was still substring containment.** All three body checks had the form
+`if identity and identity not in body`, which proves only that a character sequence appears
+*somewhere*. Reproduced through `verify_lifecycle_against_truth`: a closure body whose only mentions
+were `<merge>0`, `<run>0` and `<job>0` returned **no errors**, because each real sequence sits inside
+a different, longer identifier. A job id that merely *contains* the real job id is a **different
+job** — so such a body does not identify the job whose completion the closure claims to follow,
+which is the precise thing §N added the check for.
+
+Replaced with **one shared, boundary-aware mechanism**, `body_names_identity`, used by all three so
+merge SHA, run id and job id cannot drift apart into three separately-worded checks again. An
+identity counts as named only where the characters immediately before **and** after it are not
+identity characters — an explicit ASCII class rather than `\w`, so the boundary is deterministic and
+does not shift with the Unicode database. Merge SHAs are hex and CI ids decimal, so every superset
+the review named — a leading or trailing hex character or digit, and an identity embedded in a
+larger alphanumeric token — is adjacency by one of those. Regex metacharacters in an identity are
+escaped, so an identity is a literal token and never a pattern.
+
+**Genuine bodies still pass.** Backticks, spaces, commas, full stops, parentheses, brackets, braces,
+newlines and `=`/`;` separators are all boundaries; the canonical body and four other ordinary
+phrasings are pinned as accepted, so strictness was not bought by rejecting real evidence.
+
+**MINOR 1 — a vacuous assertion of this unit's own making.** §N added
+
+```
+assert "ALL_SIX_GATES" in PREREG.STAGE_1_BLOCKING_PREREQUISITE or True
+```
+
+which can never fail. The blocking prerequisite does **not** contain `ALL_SIX_GATES` — the left
+operand is false — so the fallback masked a false premise while the test's own name claimed byte
+identity. Replaced with the **exact value** it meant to preserve,
+`XASSET_0044_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION`, rather than deleting
+the clause and losing the coverage it claimed — and a **hygiene guard** was added so the shape cannot
+recur silently. The guard works over the parsed AST, not a substring scan, because a text search
+would flag this very paragraph and every comment explaining the defect; it is itself proven
+falsifiable against synthetic source, and it also refuses bare truthy-constant assertions.
+
+**Nothing else moved.** No outcome-producing behaviour, canonical construction input, universe
+membership, order or hash, runner, result validator, protected path, lane state, or `ATTEMPT_1` is
+touched, and no gate is evaluated for any construction. The recorded-field exact checks, actor and
+pull-request authentication, strict chronology on both conjuncts, the closed schema, and every
+existing refusal case are preserved. This correction makes the mechanism **stricter**, never more
+permissive. Stage 1 remains **UNARMED** and **NOT EXECUTABLE**.
 
 
 ### I. Authority withheld — absolute
