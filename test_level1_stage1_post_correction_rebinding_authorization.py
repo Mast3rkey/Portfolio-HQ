@@ -102,6 +102,10 @@ PR_BASE_SHA = "5fbfc94d7333e552bd2654261e0c57134a172e31"
 #: SS-I.4 names, applied here to XASSET-0043's own suite. Immutable, so it cannot be satisfied by
 #: editing anything today.
 PR_MERGE_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
+#: ADDED BY XASSET-0045: PR #344 has since merged, so WS-0014's single shared
+#: `last_verified_main_sha` advances to ITS merge. `PR_MERGE_SHA` above is retained
+#: unchanged as the closed predecessor anchor this decision authorizes against.
+XASSET0044_MERGE_SHA = "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
 
 #: A real, immutable, historical commit pair in which a protected path GENUINELY changed --
 #: PR #342's base and its merge, across which the authorization module was lawfully corrected.
@@ -1508,17 +1512,18 @@ class TestCatalogAndRegisterSynchronisation:
         """`active_branch`, `active_pr` and `last_verified_main_sha` are WS-0014's SINGLE SHARED
         live self-reference fields. PR #342 has merged at `5fbfc94d`, so under `OPS-0001`'s
         Active-GitHub-fields rule they lawfully advance to the unit that is now live."""
-        # ADVANCED BY XASSET-0044, on exactly the terms the docstring above already states: these
-        # are WS-0014's SINGLE SHARED live fields, PR #343 has since merged at `0709d2f0`, and
-        # under OPS-0001's Active-GitHub-fields rule they lawfully advance again to whatever unit
-        # is now live. What this test protects -- that they point at the LIVE work rather than at a
-        # closed one -- is unchanged, so it is asserted against the closed values it must NOT still
-        # be showing, plus the current anchor.
+        # ADVANCED AGAIN BY XASSET-0045, on exactly the terms the docstring above already states:
+        # these are WS-0014's SINGLE SHARED live fields, PR #344 has since merged at `f5dedce1`,
+        # and under OPS-0001's Active-GitHub-fields rule they lawfully advance again to whatever
+        # unit is now live. What this test protects -- that they point at the LIVE work rather than
+        # at a closed one -- is unchanged, so it is asserted against the closed values it must NOT
+        # still be showing, plus the current anchor, which is now EXACT rather than a floor.
         assert ws0014["active_branch"] != ACTIVE_BRANCH
         assert ws0014["active_pr"] != XASSET0043_ACTIVE_PR
         assert ws0014["last_verified_main_sha"] != CORRECTION_MERGE_SHA
-        assert ws0014["last_verified_main_sha"] == PR_MERGE_SHA
-        assert str(ws0014["last_verified_date"]) >= "2026-08-20"
+        assert ws0014["last_verified_main_sha"] != PR_MERGE_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0044_MERGE_SHA
+        assert str(ws0014["last_verified_date"]) >= "2026-08-21"
         # PR #343's own closed record survives in the register as history, not as live state.
         register = REGISTER_PATH.read_text(encoding="utf-8")
         assert ACTIVE_BRANCH in register

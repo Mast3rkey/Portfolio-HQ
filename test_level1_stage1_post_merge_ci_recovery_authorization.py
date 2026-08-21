@@ -144,6 +144,20 @@ def _flat(text: str) -> str:
     return " ".join(text.split())
 
 
+def _section(text: str, letter: str) -> str:
+    """The body of one lettered Decision subsection, flattened.
+
+    Scoping an assertion to the section where a claim is OPERATIVE is what makes it
+    mutation-sensitive: a phrase that also appears in a summary elsewhere can no longer
+    satisfy a check on the section that actually carries the rule.
+    """
+    marker = f"\n### {letter}. "
+    assert marker in text, f"section {letter} is missing"
+    body = text.split(marker, 1)[1]
+    body = re.split(r"\n### [A-N]\. |\n## ", body, maxsplit=1)[0]
+    return _flat(body)
+
+
 @pytest.fixture(scope="module")
 def decision_text() -> str:
     return DECISION_PATH.read_text(encoding="utf-8")
@@ -748,3 +762,164 @@ class TestNoSectionIsVacuous:
                 for value in test.values:
                     if isinstance(value, ast.Constant) and bool(value.value):
                         pytest.fail(f"constant-truthy disjunct at line {node.lineno}")
+
+
+# ======================================================================================
+# 14 -- Every identity in the decision is a KNOWN identity
+#
+# Existence checks ("this SHA appears somewhere") cannot detect a corrupted occurrence
+# while a correct one survives elsewhere. These close that gap from the other side: the
+# decision may contain NO identity-shaped token that is not on an explicit whitelist, so
+# altering any occurrence of any SHA, run id, or job id produces an unknown token and
+# fails. Mutation-pinned by M05/M09/M10/M11.
+# ======================================================================================
+
+
+KNOWN_40_HEX = frozenset(
+    {
+        PR344_BASE_SHA,
+        PR344_ACCEPTED_HEAD,
+        PR344_MERGE_SHA,
+        PR344_MERGE_TREE,
+        AUTHORIZED_OLD_BLOB,
+        AUTHORIZED_NEW_BLOB,
+    }
+)
+
+KNOWN_LONG_DIGITS = frozenset(
+    {
+        FAILED_CI_RUN,
+        FAILED_CI_JOB,
+        FINAL_CLEAN_REVIEW,
+        PRINCIPAL_ACCEPTANCE_COMMENT,
+        POST_MERGE_VERIFICATION_COMMENT,
+        AUDITABLE_STOP_COMMENT,
+    }
+)
+
+
+class TestEveryIdentityIsKnown:
+    def test_no_unknown_40_hex_identity_appears(self, decision_text):
+        found = set(re.findall(r"\b[0-9a-f]{40}\b", decision_text))
+        assert found - KNOWN_40_HEX == set(), found - KNOWN_40_HEX
+
+    def test_every_known_40_hex_identity_is_actually_used(self, decision_text):
+        """The whitelist may not carry a value the decision never cites -- otherwise a
+        deleted identity would pass unnoticed."""
+        found = set(re.findall(r"\b[0-9a-f]{40}\b", decision_text))
+        assert KNOWN_40_HEX - found == set(), KNOWN_40_HEX - found
+
+    def test_no_unknown_long_digit_identity_appears(self, decision_text):
+        found = set(re.findall(r"\b[0-9]{9,11}\b", decision_text))
+        assert found - KNOWN_LONG_DIGITS == set(), found - KNOWN_LONG_DIGITS
+
+    def test_every_known_long_digit_identity_is_actually_used(self, decision_text):
+        found = set(re.findall(r"\b[0-9]{9,11}\b", decision_text))
+        assert KNOWN_LONG_DIGITS - found == set(), KNOWN_LONG_DIGITS - found
+
+    def test_the_only_64_hex_token_is_the_universe_hash(self, decision_text):
+        found = set(re.findall(r"\b[0-9a-f]{64}\b", decision_text))
+        assert found == {UNIVERSE_AGGREGATE_HASH}, found
+
+    def test_the_closed_range_arrow_names_both_endpoints_together(self, decision_text):
+        """§G.2's range must name BOTH endpoints in one transition, not two loose SHAs."""
+        g2 = _section(decision_text, "G")
+        assert f"{PR344_BASE_SHA} -> {PR344_ACCEPTED_HEAD}" in g2
+
+
+# ======================================================================================
+# 15 -- Each rule is pinned in the SECTION that carries it
+#
+# Mutation-pinned by M02/M03/M18/M19/M21/M25-M29/M32: every one of these survived an
+# existence-only check because the same words appear in more than one place.
+# ======================================================================================
+
+
+class TestRulesArePinnedWhereTheyAreOperative:
+    def test_l6s_exclusion_is_quoted_in_both_d_and_m(self, decision_text):
+        phrase = "not a run against any other commit"
+        assert phrase in _section(decision_text, "D")
+        assert phrase in _section(decision_text, "M")
+
+    def test_permanent_unsatisfiability_is_stated_in_d(self, decision_text):
+        """Pinned to the BOLDED operative claim, not to the bare phrase. §D states the same
+        idea twice, so a check on the phrase alone survives corruption of the operative
+        sentence -- exactly the gap mutation M03 exploited."""
+        d = _section(decision_text, "D")
+        assert (
+            "`MERGE_COMMIT_CI_SUCCESS` is **permanently unsatisfiable for PR #344**" in d
+        )
+        assert "cannot become effective through PR #344" in d
+
+    def test_d_requires_a_successor_anchor_rather_than_repair_or_waiting(self, decision_text):
+        """Pinned to §D's own operative sentence. The `§G.6` heading alone is not enough:
+        §D is where the anchor is required INSTEAD of repairing or waiting out the failed
+        run, and mutation M18 survived a heading-only check."""
+        d = _section(decision_text, "D")
+        assert (
+            "The recovery unit must therefore establish a **lawful successor lifecycle "
+            "anchor** (§G.6) rather than attempt to repair, re-run, reinterpret, or wait "
+            "out the failed run." in d
+        )
+
+    def test_g6_requires_the_successor_anchor_by_name(self, decision_text):
+        g = _section(decision_text, "G")
+        assert "**G.6 — Establish a lawful successor lifecycle anchor.**" in g
+
+    def test_g7_binds_rebinding_to_strict_necessity_verbatim(self, decision_text):
+        g = _section(decision_text, "G")
+        assert (
+            "The operational-authorization mechanism may be rebound **only** to the extent "
+            "the successor lifecycle anchor requires." in g
+        )
+        assert "may not be made more permissive in any respect" in g
+
+    def test_g5_forbids_relabelling_the_failed_run(self, decision_text):
+        g = _section(decision_text, "G")
+        assert "It **may never** be relabelled successful" in g
+
+    def test_g10_forbids_a_moving_guard_verbatim(self, decision_text):
+        g = _section(decision_text, "G")
+        assert (
+            "**No moving `HEAD`/`origin/main` guard may claim historical byte identity**" in g
+        )
+
+    def test_g8_forbids_re_pointing_predecessor_evidence(self, decision_text):
+        g = _section(decision_text, "G")
+        assert "never erased, overwritten, or silently re-pointed" in g
+
+    def test_every_withheld_capability_is_its_own_h_bullet(self, decision_text):
+        """Each prohibition must survive as a BULLET, not merely as a word somewhere in the
+        section -- the exact gap M25-M29 exploited."""
+        h = _section(decision_text, "H")
+        for bullet in (
+            "- perform renewed readiness verification;",
+            "- perform renewed drift verification;",
+            "- perform or authorize **Step 11**;",
+            "- generate, pre-stage, or validate any **attestation**;",
+            "- create lane state, write `AUTHORIZATION_ROOT`, or write the lane ledger;",
+            "- **arm** Stage 1, or set `stage_1_executability.executable` to anything but `false`;",
+            "- **claim** or consume `ATTEMPT_1`;",
+            "- evaluate any gate for any registered construction;",
+            "- execute Stage 1, perform recovery execution, or perform any results work;",
+            "- access protected `RISK` evidence.",
+        ):
+            assert bullet in h, bullet
+
+    def test_i_requires_a_stop_rather_than_proceeding(self, decision_text):
+        i = _section(decision_text, "I")
+        assert (
+            "it must **stop and disclose** rather than proceed, assume, or downgrade the "
+            "requirement." in i
+        )
+        assert "is a **stop**, not a judgement call" in i
+
+    def test_f_grants_exactly_one_unit_in_its_own_section(self, decision_text):
+        f = _section(decision_text, "F")
+        assert "**exactly one** future, separate, bounded pull request" in f
+        assert "It is one unit and one pull request." in f
+
+    def test_g1_requires_a_separate_decision_under_an_unverified_identifier(self, decision_text):
+        g = _section(decision_text, "G")
+        assert "**G.1 — File its own decision.**" in g
+        assert "never predicted, reserved, or assumed here" in g

@@ -15626,7 +15626,7 @@ workstreams:
           request is unmerged: a filing does not mark its own unmerged work complete.
       - gate: xasset0045-post-merge-ci-recovery-authorization
         status: in_progress
-        pr: null
+        pr: 345
         description: >-
           DESIGN-ONLY AUTHORIZATION. XASSET-0045 authorizes EXACTLY ONE future, separate
           recovery/reconciliation unit for the STOPPED XASSET-0044 rebinding, and performs no part of
@@ -16792,7 +16792,7 @@ workstreams:
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
     active_branch: claude/xasset-0045-filing-9yxavw
-    active_pr: null
+    active_pr: 345
     last_verified_main_sha: f5dedce1d1d3116ed8a6845c4447388c85a5414c
     last_verified_date: "2026-08-21"
     authorized_by: >

@@ -87,6 +87,10 @@ BOUNDARY_ADDITIONS = (
 
 #: The bytes this rebinding is measured against. Its own base is the XASSET-0043 merge.
 PR_BASE_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
+#: ADDED BY XASSET-0045: the register's shared live "where main is now" field after
+#: THIS decision's own pull request merged. Distinct from PR_BASE_SHA above, which
+#: remains this decision's own unchanged closed anchor.
+XASSET0045_MAIN_SHA = "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
 
 #: A real, immutable historical commit pair across which a protected path GENUINELY changed --
 #: PR #342's base and merge -- so the base->head comparison can never pass vacuously.
@@ -1091,9 +1095,16 @@ class TestCatalogAndRegisterSynchronisation:
         assert current in register.replace("\n", "").replace(" ", "")
 
     def test_the_workstream_posture_is_unchanged(self, ws0014):
+        # ADVANCED BY XASSET-0045: `last_verified_main_sha` is WS-0014's SINGLE SHARED live
+        # self-reference field, not this decision's anchor. PR #344 merged at `f5dedce1`, so
+        # under OPS-0001's Active-GitHub-fields rule it lawfully advances to the unit that is
+        # now live. `PR_BASE_SHA` -- the anchor THIS decision authorizes against -- is
+        # unchanged, and is asserted here to be exactly what it must no longer be showing, so
+        # the field is still pinned to an exact value at both ends rather than relaxed.
         assert ws0014["status"] == "proposed"
         assert ws0014["priority"] == "secondary"
-        assert ws0014["last_verified_main_sha"] == PR_BASE_SHA
+        assert ws0014["last_verified_main_sha"] != PR_BASE_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0045_MAIN_SHA
 
 
 # ======================================================================================
