@@ -306,6 +306,17 @@ class TestFrozenInputsUnchanged:
             "XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md",
             "governance/decisions/"
             "XASSET-0044-endpoint-0001-stage-1-post-correction-operational-rebinding.md",
+            # EXTENDED AGAIN BY XASSET-0047 / XASSET-0046 SS-G.6. The post-merge-CI recovery
+            # rebinds the lifecycle anchor onto its own decision and pull request, because
+            # XASSET-0044's anchor is permanently unusable -- its own merge-commit CI failed at
+            # the exact merge SHA its effectivity condition names. The two additions are the
+            # authority for that recovery and the recovery's own decision, on precisely the
+            # footing XASSET-0043 and XASSET-0044 already occupy. NOTHING was removed: every path
+            # above, including XASSET-0044's own decision, is still retained.
+            "governance/decisions/"
+            "XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md",
+            "governance/decisions/"
+            "XASSET-0047-endpoint-0001-stage-1-post-merge-ci-recovery-reconciliation.md",
         }
         # No REAL results artifact is load-bearing, because none exists.
         assert "stage1_results" not in " ".join(A.LOAD_BEARING_RELPATHS).lower()

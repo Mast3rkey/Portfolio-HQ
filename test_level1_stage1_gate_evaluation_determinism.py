@@ -758,6 +758,14 @@ class TestLoadBearingReauthorizationDependency:
             "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
             "governance/decisions/XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md",
             "governance/decisions/XASSET-0044-endpoint-0001-stage-1-post-correction-operational-rebinding.md",
+            # FURTHER AMENDED BY XASSET-0047's post-merge-CI recovery, filed under XASSET-0046
+            # SS-G.6 after XASSET-0044's own merge-commit CI failed permanently at the exact merge
+            # SHA its effectivity condition names. The invariant is unchanged and still exact:
+            # SS-D's six enumerated paths are all retained above, and every addition remains
+            # EXACTLY outcome-producing code plus each authorizing decision -- here, the recovery's
+            # own authorization and the recovery itself. Each is bound by DIRECT MEMBERSHIP.
+            "governance/decisions/XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md",
+            "governance/decisions/XASSET-0047-endpoint-0001-stage-1-post-merge-ci-recovery-reconciliation.md",
         }
         # Every addition beyond SS-D's six is either outcome-producing code or a governance
         # decision file. Nothing else may enter the trust boundary by this route.

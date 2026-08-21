@@ -171,6 +171,25 @@ class FakeGit:
                 A.REBINDING_AUTHORIZING_MERGE_BASE,
                 A.REBINDING_AUTHORIZING_ACCEPTED_HEAD,
             ),
+            # EXTENDED BY XASSET-0047. The recovery verifies THREE further merges from git --
+            # its own authority (XASSET-0046 / PR #346) and the two STOPPED lifecycles it
+            # supersedes as the anchor (XASSET-0044 / PR #344 and XASSET-0045 / PR #345) -- so an
+            # honest stand-in vouches for each separately rather than letting an unknown anchor
+            # pass. These are the REAL identities, so the fixture agrees with the object store.
+            # Serving the stopped merges here is NOT treating them as effective: the module
+            # verifies them as history and refuses them as authority, and both facts are proven.
+            A.RECOVERY_AUTHORIZING_MERGE_SHA: (
+                A.RECOVERY_AUTHORIZING_MERGE_BASE,
+                A.RECOVERY_AUTHORIZING_ACCEPTED_HEAD,
+            ),
+            A.STOPPED_REBINDING_MERGE_SHA: (
+                A.STOPPED_REBINDING_MERGE_BASE,
+                A.STOPPED_REBINDING_ACCEPTED_HEAD,
+            ),
+            A.STOPPED_RECOVERY_AUTHORIZATION_MERGE_SHA: (
+                A.STOPPED_RECOVERY_AUTHORIZATION_MERGE_BASE,
+                A.STOPPED_RECOVERY_AUTHORIZATION_ACCEPTED_HEAD,
+            ),
         }
         self.blobs = {}
         for rel in A.LOAD_BEARING_RELPATHS:
@@ -195,6 +214,15 @@ class FakeGit:
             A.CORRECTED_MODULE_ACCEPTED_HEAD: "c" * 40,
             A.REBINDING_AUTHORIZING_MERGE_SHA: "a" * 39 + "z",
             A.REBINDING_AUTHORIZING_ACCEPTED_HEAD: "a" * 39 + "z",
+            # XASSET-0047: each added merge's tree equals its accepted head's tree, which is
+            # exactly the zero-merge-drift property the module PROVES rather than assumes. Three
+            # DISTINCT synthetic trees, so a swap between the three new entries is still caught.
+            A.RECOVERY_AUTHORIZING_MERGE_SHA: "6" * 40,
+            A.RECOVERY_AUTHORIZING_ACCEPTED_HEAD: "6" * 40,
+            A.STOPPED_REBINDING_MERGE_SHA: "7" * 40,
+            A.STOPPED_REBINDING_ACCEPTED_HEAD: "7" * 40,
+            A.STOPPED_RECOVERY_AUTHORIZATION_MERGE_SHA: "8" * 40,
+            A.STOPPED_RECOVERY_AUTHORIZATION_ACCEPTED_HEAD: "8" * 40,
             A.CORRECTION_AUTHORIZING_MERGE_SHA: "4" * 40,
             A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD: "4" * 40,
         }
@@ -512,13 +540,26 @@ class TestObsoleteLifecycleCannotAuthorize:
         assert A.AUTHORIZING_PULL_REQUEST != A.PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST
 
     def test_the_bound_pull_request_provenance_is_disclosed_not_flattered(self):
-        """The constant must not claim an authoring order it did not have."""
+        """The constant must not claim an authoring order it did not have.
+
+        ADVANCED BY XASSET-0047, and STRICTLY STRENGTHENED. XASSET-0037's disclosure was that the
+        number was written in advance as the next-sequential guess and then verified. XASSET-0047's
+        anchor was bound differently and says so: the branch's first commit carried an impossible
+        sentinel, the real number was read back from live GitHub after the draft was opened, and
+        only then was it bound. The property under test is unchanged -- the module must state its
+        OWN true provenance and may not flatter it -- so this is bound at BOTH ends: the current
+        disclosure must be present, and the superseded one must be gone, so a copy-forward of
+        XASSET-0037's wording onto a differently-obtained number cannot pass.
+        """
         raw = (ROOT / "level1_stage1_execution_authorization.py").read_text(encoding="utf-8")
         # The note is a wrapped comment block, so compare on content rather than line breaks.
         source = " ".join(raw.replace("#:", " ").split())
-        assert "FIRST WRITTEN before the draft pull request existed" in source
-        assert "VERIFIED against the real draft once it was opened" in source
-        assert "The load-bearing property is the verification, not the authoring order" in source
+        assert "NOT written in advance as the next sequential guess" in source
+        assert "an impossible pull-request number that can never validate" in source
+        assert "that number was read back from live GitHub" in source
+        assert "only then was it bound here and re-verified against the live" in source
+        # The superseded XASSET-0037 wording must NOT survive on a number it does not describe.
+        assert "FIRST WRITTEN before the draft pull request existed" not in source
 
 
 # ======================================================================================
@@ -1457,15 +1498,44 @@ class TestReviewedMinorFindings:
             "operations/WORKSTREAMS.yaml",
             "governance/decisions/"
             "XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
-            "level1_stage1_execution_authorization.py",
         ],
     )
     def test_every_surface_states_the_true_provenance(self, relative):
+        """XASSET-0037's own surfaces, which describe XASSET-0037's own number.
+
+        NARROWED BY XASSET-0047 -- in coverage of THIS phrase only, never in coverage of the
+        property. ``level1_stage1_execution_authorization.py`` no longer carries XASSET-0037's
+        number and must not carry XASSET-0037's provenance sentence for a number obtained a
+        different way; its own current provenance is pinned, at both ends, by
+        :meth:`TestObsoleteLifecycleCannotAuthorize.
+        test_the_bound_pull_request_provenance_is_disclosed_not_flattered` and by
+        :meth:`test_the_module_surface_states_its_own_current_provenance` immediately below, so
+        no surface lost a provenance assertion. The two register/decision surfaces here are
+        accepted history and are unchanged.
+        """
         collapsed = " ".join(
             (ROOT / relative).read_text(encoding="utf-8").replace("#:", " ").replace("*", "").split()
         ).lower()
         assert "first written before the draft" in collapsed, relative
         assert "verified against the real draft" in collapsed, relative
+
+    def test_the_module_surface_states_its_own_current_provenance(self):
+        """The coverage the parametrisation above gave up, restored in its current true form.
+
+        Written as its own test rather than as a third parameter because the module's provenance
+        sentence is NOT the same sentence, and pretending it were is exactly the copy-forward this
+        pair of guards exists to refuse.
+        """
+        collapsed = " ".join(
+            (ROOT / "level1_stage1_execution_authorization.py")
+            .read_text(encoding="utf-8")
+            .replace("#:", " ")
+            .replace("*", "")
+            .split()
+        ).lower()
+        assert "not written in advance as the next sequential guess" in collapsed
+        assert "read back from live github" in collapsed
+        assert "first written before the draft" not in collapsed
 
     def test_the_register_names_the_verified_number(self):
         register = (ROOT / "operations/WORKSTREAMS.yaml").read_text(encoding="utf-8")

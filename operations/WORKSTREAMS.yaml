@@ -15814,6 +15814,113 @@ workstreams:
           new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
           stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
           request #346 is unmerged: a filing does not mark its own unmerged work complete.
+      - gate: xasset0046-post-merge-verification
+        status: complete
+        pr: 346
+        description: >-
+          LANE M FACTUAL SYNCHRONISATION, recorded by XASSET-0047 rather than by editing the gate
+          above, whose text is accepted history from while that unit was live. Independently
+          re-verified against live git and live GitHub: PR #346 is merged and closed, accepted head
+          0964dc2bd6ab3be8282193f76fa04c764198db0f, base 2f8cdebe14925021171b9779453946be1f69b506,
+          merge commit 0b76c09f8d1aba01780b4f06fdd692f7393fbfd3 with exactly two parents in that
+          order, and merge tree a2a05c8308b3d6efe27e2517d0859934c65660a6 byte-identical to the
+          accepted-head tree -- ZERO MERGE DRIFT. Superseded FULL review 4995297886 at
+          243dec3b0b45d4395b665f093c87122c86df8150 (1 BLOCKING, resolved by revert, retained as
+          adverse correction history); final clean DELTA review 4995648329 at the accepted head, 0
+          BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE; principal exact-head acceptance 5372996734;
+          immediate post-merge verification 5373011071; merge-commit CI run 32507225897 / job
+          96849995233 with run head_sha AND job head_sha each equal to the exact merge SHA, event
+          push, attempt 1, completed/success, 10504 passed; final post-CI lifecycle closure
+          5373106008. ALL SEVEN SS-M CONDITIONS ARE CLOSED, so XASSET-0046 IS EFFECTIVE and its SS-F
+          grant of EXACTLY ONE recovery/reconciliation unit is available -- and is spent by
+          XASSET-0047 below. Nothing about the two stopped predecessors changed: XASSET-0044 and
+          XASSET-0045 remain not effective, runs 32439614683 / job 96647501864 and 32490789238 / job
+          96797667282 remain immutable adverse history, and neither lifecycle closure may be posted
+          retrospectively.
+      - gate: xasset0047-post-merge-ci-recovery-reconciliation
+        status: in_progress
+        pr: 347
+        description: >-
+          THE ONE RECOVERY/RECONCILIATION UNIT XASSET-0046 SS-F AUTHORIZED, filed as its own
+          decision and performed in one coherent pull request. Its substantive act is narrow: the
+          operational-authorization mechanism's LIFECYCLE ANCHOR is rebound from XASSET-0044 / PR
+          #344 -- whose own merge-commit CI failed permanently at merge
+          f5dedce1d1d3116ed8a6845c4447388c85a5414c -- onto XASSET-0047 and this pull request.
+          WHY THE OLD ANCHOR WAS PERMANENTLY UNUSABLE, not merely stale: verify_lifecycle_against_truth
+          authenticates the AUTHORIZING pull request's own lifecycle, whose fifth gate is
+          MERGE_COMMIT_CI_SUCCESS at the exact merge SHA, and that run is recorded as failed and is
+          immutable. EXACT CLOSED TRANSITIONS: AUTHORIZING_DECISION "XASSET-0044" -> "XASSET-0047";
+          AUTHORIZING_PULL_REQUEST 344 -> this pull request's own GitHub-issued number, NEVER
+          guessed (the branch's first commit carried the impossible sentinel 0, the draft was
+          opened, GitHub issued its number, that number was read back from live GitHub and only then
+          bound and re-verified); REVIEWED_BASE_SHA 0709d2f05ab031ecb6f69c40465ed4a227983aed ->
+          0b76c09f8d1aba01780b4f06fdd692f7393fbfd3, which is XASSET-0046's own merge and is enforced
+          as an equality against RECOVERY_AUTHORIZING_MERGE_SHA; LOAD_BEARING_RELPATHS 14 -> 16, the
+          two additions being the XASSET-0046 and XASSET-0047 decision files, bound by DIRECT
+          MEMBERSHIP, with NOTHING removed -- XASSET-0044's own decision file stays, because a
+          stopped lifecycle is not an invalidated one, and XASSET-0045's is deliberately NOT added
+          because it authorizes nothing. THREE NEW IDENTITY FAMILIES, none interchangeable: the
+          RECOVERY authority (XASSET-0046 / PR #346), and the two STOPPED lifecycles (XASSET-0044 /
+          PR #344 and XASSET-0045 / PR #345) with their exact merges, accepted heads, bases and
+          failed run/job identities. All three merges are verified from git for exact parent order,
+          zero tree drift and ancestry; verifying a stopped lifecycle is not treating it as
+          effective. FOUR NEW REFUSALS, each independently required and each proved: an
+          ineffective decision may not be the authorizing decision; a stopped lifecycle's pull
+          request may not be the authorizing pull request; a merge already recorded as having
+          FAILED its own merge-commit CI may not be the authorized merge; and the canonical pins
+          must still equal the pins XASSET-0044 left, which is how SS-G.9's canonical freeze stops
+          being a promise and becomes a check. BOUNDED CORRECTION, MAJOR 1 of independent full
+          review 4997532748: that fourth refusal was first filed SOURCE-VACUOUS -- the historical
+          identity was bound as dict(CANONICAL_PINS), so a source-level edit to a current pin
+          literal was rebuilt into it during import, the two stayed equal, and the refusal returned
+          clean; only a post-import monkeypatch of one name was ever detected. Reproduced through
+          the real mechanism before correcting, in an isolated copy, with the real canonical files
+          never touched. XASSET_0044_CANONICAL_PINS is now bound to XASSET-0044's exact historical
+          literals, written out independently exactly as every predecessor pin mapping already was
+          and never derived, copied, aliased, unpacked or comprehended from CANONICAL_PINS. The two
+          mappings remain EQUAL IN VALUE, which SS-G.9 requires: being equal was never the defect,
+          being equal BY CONSTRUCTION was. The correction is proved structurally from the module's
+          own AST against six known-bad derived forms and a known-good independent form,
+          behaviourally by editing one pin literal in source and re-importing in a fresh
+          interpreter in BOTH directions with an unedited control run, and by pinning both
+          historical literal values in a third external copy so a lockstep edit is still caught;
+          the pre-existing runtime monkeypatch test is KEPT, since the review called it
+          insufficient rather than wrong. No canonical byte, current pin value, universe value,
+          outcome-producing byte, anchor constant or boundary path changed in the correction.
+          STRICT NECESSITY, per SS-G.7 and SS-G.9: only the
+          lifecycle anchor moved. PROTOCOL_V1.md, pre_registration.yaml, the derivation module, the
+          runner, the result validator and the universe are UNCHANGED, so no third link was added to
+          the exact closed package -> successor -> rebound transition; the canonical charter's
+          rebound_by and effective_structural_authorization_source still name XASSET-0044, which
+          remains literally true because XASSET-0044 is still the last decision that amended those
+          canonical BYTES and this unit amends none of them. That residual wording tension is
+          DISCLOSED in SS-F and carried forward in SS-K, not resolved by an edit this unit may not
+          make. SS-G.11 DISCHARGED: the origin/main skip guard on
+          test_on_merged_main_the_moving_base_collapses_to_head_itself was classified on this unit's
+          own evidence -- both operands of its merge-base are the same pinned commit and origin/main
+          appears nowhere in the computation -- and REPRODUCED BY EXECUTION in an isolated clone with
+          origin removed, where the proof succeeded completely while the guard would have skipped it.
+          The guard is removed, the genuine object-presence precondition is KEPT, the function is now
+          a declared historical proof, and the superseded exclusion pin is replaced by an inclusion
+          pin so the change is loud rather than silent. Two further historical claims measured against
+          moving subjects were found by this unit's own audit and re-anchored to closed ranges.
+          SS-G.2 DISCHARGED: both corrected guards remain anchored to
+          f5dedce1d1d3116ed8a6845c4447388c85a5414c -> 61e629f0f655ce8ca4ccd7eaa370d132d593515c and
+          the overlap-model repair to 0709d2f05ab031ecb6f69c40465ed4a227983aed ->
+          9c2821ab9e0e0dff09f5a03da5a6034775b00750, all re-proved independently from the object
+          store and re-run under five simulated ref states in ISOLATED CLONES, never a git worktree.
+          CURRENT_MODULE_SHA256: e5b509ca74734bffea788d4e7499699356395216285e941164ccf21b6159c924 -- recomputed ONCE after every permitted byte
+          stabilised, never mid-correction and never carried forward. ZERO ACTIVATION AUTHORITY: no
+          readiness verification, drift verification, Step 11, attestation, lane creation, arming,
+          claim, gate evaluation, execution, recovery execution or results work is performed or
+          authorized. stage_1_executability.executable stays permanently false, the universe remains
+          680 constructions over 48 cells with aggregate hash
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane ABSENT,
+          new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
+          stage1_results.yaml exists. XASSET-0027 SS-P.1 remains one and unspent; XASSET-0040 remains
+          spent as STOPPED_BEFORE_ATTESTATION; XASSET-0046 SS-F's single grant is spent by this unit
+          and authorizes no further one. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -16921,9 +17028,9 @@ workstreams:
       remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
-    active_branch: claude/xasset-0045-test-governance-103t6t
-    active_pr: 346
-    last_verified_main_sha: 2f8cdebe14925021171b9779453946be1f69b506
+    active_branch: claude/xasset-0046-recovery-b31nba
+    active_pr: 347
+    last_verified_main_sha: 0b76c09f8d1aba01780b4f06fdd692f7393fbfd3
     last_verified_date: "2026-08-21"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

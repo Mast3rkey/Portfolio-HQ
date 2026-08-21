@@ -699,20 +699,29 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0046: PR #345 has since merged at `2f8cdebe`, so these
         # shared fields advance once more, to the reauthorization unit that is now live. Each
         # stays an exact value, never relaxed to a range or a placeholder.
-        assert ws0014["active_branch"] == "claude/xasset-0045-test-governance-103t6t"
+        # ADVANCED AGAIN BY XASSET-0047: PR #346 has since merged at `0b76c09f`, so these
+        # shared fields advance once more, to the post-merge-CI recovery unit that is now
+        # live. Each stays an exact value, and every superseded value is retained below as a
+        # negative pin, so the field is bound at BOTH ends rather than only at one.
+        assert ws0014["active_branch"] == "claude/xasset-0046-recovery-b31nba"
         assert ws0014["last_verified_main_sha"] == (
-            "2f8cdebe14925021171b9779453946be1f69b506"
+            "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
         )
         assert str(ws0014["last_verified_date"]) == "2026-08-21"
-        # PR #343's, #344's and #345's own closed records survive in the register as history,
-        # not as live state.
+        # PR #343's, #344's, #345's and #346's own closed records survive in the register as
+        # history, not as live state.
         assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
+        assert ws0014["active_branch"] != "claude/xasset-0045-test-governance-103t6t"
         assert ws0014["last_verified_main_sha"] != (
             "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
+        )
+        assert ws0014["last_verified_main_sha"] != (
+            "2f8cdebe14925021171b9779453946be1f69b506"
         )
         assert ws0014["active_pr"] != XASSET0043_ACTIVE_PR
         assert ws0014["active_pr"] != 344
         assert ws0014["active_pr"] != 345
+        assert ws0014["active_pr"] != 346
 
     def test_register_still_parses_and_ws0014_is_unique(self, ws0014):
         assert ws0014["id"] == "WS-0014"

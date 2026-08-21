@@ -101,6 +101,11 @@ XASSET0045_MAIN_SHA = "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
 #: self-reference moved. The assertion stays EXACT, and gains a negative pin so the field is
 #: bound at BOTH ends rather than only at one.
 XASSET0046_MAIN_SHA = "2f8cdebe14925021171b9779453946be1f69b506"
+#: ADVANCED BY XASSET-0047: PR #346 merged at `0b76c09f`, so the register's shared live
+#: "where main is now" field lawfully advanced again under OPS-0001's Active-GitHub-fields
+#: rule. The anchor each decision authorizes against is unchanged; only the shared
+#: self-reference moved. The assertion stays EXACT and is bound at BOTH ends.
+XASSET0047_MAIN_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 #: WS-0014's shared `active_pr` while THIS rebinding-authorization unit is the live work.
 #: Set to the real GitHub number issued when the pull request was opened, verified
 #: against live GitHub afterwards, never left as a guess.
@@ -115,6 +120,11 @@ XASSET0045_ACTIVE_PR = 345
 #: GitHub issued for this reauthorization unit and verified against the live pull request
 #: after opening, never guessed.
 XASSET0046_ACTIVE_PR = 346
+#: ADVANCED BY XASSET-0047. WS-0014's single shared `active_pr`, set from the real number
+#: GitHub issued for this recovery unit -- never guessed: the branch's first commit carried
+#: the impossible sentinel 0, the draft was opened, and the issued number was read back from
+#: live GitHub before being bound here.
+XASSET0047_ACTIVE_PR = 347
 
 #: The three values accepted authority already fixes as exact constants, and the only three
 #: ``XASSET-0038`` restates. Everything else in its checklist derives from the merged tree.
@@ -158,6 +168,15 @@ EXPECTED_LOAD_BEARING = tuple(sorted((
     "XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md",
     "governance/decisions/"
     "XASSET-0044-endpoint-0001-stage-1-post-correction-operational-rebinding.md",
+    # EXTENDED AGAIN BY XASSET-0047, 14 -> 16, under XASSET-0046 SS-G.6. The two additions are the
+    # authority for the post-merge-CI recovery and the recovery's own decision, bound by DIRECT
+    # MEMBERSHIP on the footing XASSET-0043 and XASSET-0044 already occupy. Nothing is removed:
+    # the original ten and XASSET-0044's own four are all still here, and the sorted comparison
+    # below is unchanged in kind and still EXACT.
+    "governance/decisions/"
+    "XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md",
+    "governance/decisions/"
+    "XASSET-0047-endpoint-0001-stage-1-post-merge-ci-recovery-reconciliation.md",
 )))
 
 #: The five Python modules inside those ten paths, each independently able to affect the 680
@@ -709,7 +728,12 @@ class TestThisFilingMutatesNothingLoadBearing:
     def test_load_bearing_set_is_exactly_the_ten_xasset_0037_bound(self) -> None:
         assert set(A.LOAD_BEARING_RELPATHS) == set(EXPECTED_LOAD_BEARING)
         # EXTENDED BY XASSET-0044, 10 -> 14, by direct membership; nothing removed.
-        assert len(A.LOAD_BEARING_RELPATHS) == 14
+        # EXTENDED AGAIN BY XASSET-0047, 14 -> 16, likewise by direct membership and likewise
+        # removing nothing. The exact set equality above is the load-bearing check and is
+        # unchanged in kind; this count is bound at BOTH ends so neither a silent shrink back to
+        # the previous size nor an unexplained further growth passes.
+        assert len(A.LOAD_BEARING_RELPATHS) == 16
+        assert len(A.LOAD_BEARING_RELPATHS) != 14
 
     @pytest.mark.parametrize("relative", EXPECTED_LOAD_BEARING)
     def test_each_load_bearing_path_still_exists(self, relative: str) -> None:
@@ -827,7 +851,8 @@ class TestCatalogAndRegisterSynchronisation:
         # since merged, so the register's live self-reference lawfully advanced again. The anchor
         # this decision authorizes against is unchanged and is still `MERGE_SHA`, and its own merge
         # is still `SUCCESSOR_MERGE_SHA`; only the register's "where main is now" field moved.
-        assert workstream["last_verified_main_sha"] == XASSET0046_MAIN_SHA
+        assert workstream["last_verified_main_sha"] == XASSET0047_MAIN_SHA
+        assert workstream["last_verified_main_sha"] != XASSET0046_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0045_MAIN_SHA
         assert MERGE_SHA != CURRENT_MAIN_SHA
         assert SUCCESSOR_MERGE_SHA != CURRENT_MAIN_SHA
@@ -835,7 +860,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0046_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0047_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0046_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0045_ACTIVE_PR
 
 

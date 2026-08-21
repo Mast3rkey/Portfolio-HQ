@@ -181,6 +181,12 @@ PR345_CORRECTION_STATUS = "M"
 #: the non-vacuity pin so that widening either one alone is caught by the other.
 PR345_CHANGED_FILE_COUNT = 12
 
+#: ADDED BY XASSET-0047: the merge that made XASSET-0046 effective, and this repository's
+#: ``main`` after PR #346. WS-0014's shared live "where main is now" field advances to it under
+#: OPS-0001's Active-GitHub-fields rule; every anchor THIS decision authorizes against is
+#: unchanged.
+XASSET0047_MAIN_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+
 #: XASSET-0045's OWN failed merge-commit CI run and job, at PR345_MERGE_SHA. Immutable adverse
 #: history, on exactly the footing PR #344's own failed run occupies: never re-run, relabelled,
 #: waived, or represented as successful.
@@ -192,14 +198,18 @@ XASSET0045_FAILED_CI_JOB = "96797667282"
 #: not in a skip guard, because a historical proof that can be silenced by where a live ref
 #: points is not a proof of history.
 #:
-#: ``test_on_merged_main_the_moving_base_collapses_to_head_itself`` is deliberately ABSENT,
-#: and its absence is a scope fact rather than a technical one. That pre-existing test carries
-#: an ``origin/main`` skip guard which an earlier revision of this filing removed -- a THIRD
+#: ``test_on_merged_main_the_moving_base_collapses_to_head_itself`` WAS deliberately absent, and
+#: its absence was a scope fact rather than a technical one. That pre-existing test carried an
+#: ``origin/main`` skip guard which an earlier revision of XASSET-0046 removed -- a THIRD
 #: correction, outside a principal authorization expressly bounded to exactly two. Independent
-#: FULL review 4995297886 found that BLOCKING, the correction was reverted, and the function is
-#: byte-identical to its state at this pull request's base again. Declaring it here would
-#: reimpose by test what the filing has no authority to change, so it stays out until some
-#: future unit is separately authorized to touch it.
+#: FULL review 4995297886 found that BLOCKING, the correction was reverted, and XASSET-0046 §G.11
+#: carried the observation forward as a requirement on the recovery unit rather than acting on it.
+#:
+#: XASSET-0047 IS THAT UNIT, and it classified the use on its own evidence, reproduced the
+#: behaviour by execution in an isolated clone before changing anything, and corrected it under
+#: SS-G.11's own operative duty to re-anchor every historical use in the files it touches. The
+#: function is therefore DECLARED here now -- loudly, in the same filing that corrected it, which
+#: is exactly what the superseded exclusion pin existed to force.
 HISTORICAL_PROOF_FUNCTIONS = frozenset({
     "_assert_pr345_closed_range_facts",
     "test_the_enabling_correction_was_actually_performed",
@@ -208,6 +218,7 @@ HISTORICAL_PROOF_FUNCTIONS = frozenset({
     "test_the_authorized_transition_matches_its_bound_blob_identities",
     "test_merge_drift_is_affirmatively_excluded_from_the_object_store",
     "test_the_accepted_head_is_the_second_parent_of_the_merge",
+    "test_on_merged_main_the_moving_base_collapses_to_head_itself",
 })
 
 #: String literals that name a MOVING reference. Deliberately a small, explicit, closed set of
@@ -433,9 +444,27 @@ class TestDefectIsAMovingAnchor:
 
     def test_on_merged_main_the_moving_base_collapses_to_head_itself(self):
         """On merged ``main`` the merge-base of HEAD and origin/main IS the merge commit, so
-        the comparison is empty. This is the whole failure, reproduced from real git."""
-        if not _git_ok("rev-parse", "--verify", "origin/main"):
-            pytest.skip("origin/main not resolvable in this environment")
+        the comparison is empty. This is the whole failure, reproduced from real git.
+
+        CORRECTED UNDER XASSET-0047, per XASSET-0046 SS-G.11. This function's subject is
+        immutable history and its computation is fully pinned: BOTH operands of the ``merge-base``
+        below are the same immutable commit, and ``origin/main`` appears nowhere in the
+        computation, in either operand, or in the assertion. It nevertheless carried an
+        ``origin/main`` skip guard, so a live reference could silence a proof about immutable
+        history for a reason unrelated to that history.
+
+        CLASSIFIED ON THIS UNIT'S OWN EVIDENCE, not on SS-G.11's word, and REPRODUCED BY EXECUTION
+        before being changed: in an isolated clone with ``origin`` removed so ``origin/main`` is
+        genuinely unresolvable, and with PR #344's merge present, ``merge-base`` returned
+        ``f5dedce1...`` and the diff was empty -- the proof succeeded completely, and the removed
+        guard would have skipped it anyway.
+
+        The remaining guard is KEPT and is a genuine environment precondition: in a truncated
+        checkout the pinned commit may be absent, which is the same treatment
+        :func:`_pr345_range_is_present` already gives that case. Removing a skip that could
+        silence a PASSING proof makes this guard strictly harder to satisfy -- it now always
+        runs -- which is a strengthening under XASSET-0046 SS-G.13, never a relaxation.
+        """
         if not _git_ok("cat-file", "-e", f"{PR344_MERGE_SHA}^{{commit}}"):
             pytest.skip("PR #344's merge commit is not present in this checkout")
         base = _git("merge-base", PR344_MERGE_SHA, PR344_MERGE_SHA)
@@ -657,12 +686,35 @@ class TestSuccessorLifecycleAnchorRequired:
         assert "AUTHORIZING_PULL_REQUEST = 344" in decision_text
         assert "REVIEWED_BASE_SHA" in decision_text
 
-    def test_production_really_does_bind_pr_344_today(self):
-        """Not a claim about the repository -- a check of it."""
+    def test_production_no_longer_binds_the_stopped_lifecycle(self):
+        """Not a claim about the repository -- a check of it.
+
+        ADVANCED BY XASSET-0047, which is the unit XASSET-0046 §G.6 authorized and which
+        PERFORMED the rebinding this class exists to require. The subject here is LIVE state, so
+        it moved when the anchor lawfully moved; XASSET-0046's own §G.6 text, which grounds the
+        requirement in what production bound at the time, is immutable and is still asserted
+        verbatim by :meth:`test_the_reason_is_the_current_production_binding` above.
+
+        Bound at BOTH ends. The stopped lifecycle's anchor must be GONE -- a silent revert to an
+        anchor whose merge-commit CI failed permanently is the exact regression this refuses --
+        and the current anchor must be present and must not be either stopped decision.
+        """
         module = (ROOT / "level1_stage1_execution_authorization.py").read_text(encoding="utf-8")
-        assert 'AUTHORIZING_DECISION = "XASSET-0044"' in module
-        assert "AUTHORIZING_PULL_REQUEST = 344" in module
-        assert f'REVIEWED_BASE_SHA = "{PR344_BASE_SHA}"' in module
+        # The permanently unusable anchor is gone, in all three of its parts.
+        assert 'AUTHORIZING_DECISION = "XASSET-0044"' not in module
+        assert "AUTHORIZING_PULL_REQUEST = 344" not in module
+        assert f'REVIEWED_BASE_SHA = "{PR344_BASE_SHA}"' not in module
+        # ... and the live module binds the successor anchor instead.
+        import level1_stage1_execution_authorization as auth
+
+        assert auth.AUTHORIZING_DECISION == "XASSET-0047"
+        assert auth.AUTHORIZING_DECISION not in auth.PERMANENTLY_INEFFECTIVE_DECISIONS
+        assert auth.AUTHORIZING_PULL_REQUEST not in auth.PERMANENTLY_INEFFECTIVE_PULL_REQUESTS
+        assert auth.REVIEWED_BASE_SHA == auth.RECOVERY_AUTHORIZING_MERGE_SHA
+        # The stopped lifecycle is PRESERVED as history, by exact identity, not erased.
+        assert auth.STOPPED_REBINDING_DECISION == "XASSET-0044"
+        assert auth.STOPPED_REBINDING_PULL_REQUEST == 344
+        assert auth.STOPPED_REBINDING_MERGE_BASE == PR344_BASE_SHA
 
     def test_rebinding_is_bounded_to_strict_necessity(self, decision_flat_lower):
         assert "only as strictly necessary" in decision_flat_lower
@@ -1129,11 +1181,16 @@ class TestCatalogAndRegisterSynchronisation:
         # anchor THIS decision authorizes against is unchanged; only the shared
         # self-reference moved. Bound at BOTH ends -- the exact current value, and the closed
         # value it must no longer be showing.
-        assert ws0014["last_verified_main_sha"] == PR345_MERGE_SHA
+        # ADVANCED AGAIN BY XASSET-0047, identically: PR #346 has since merged at `0b76c09f`,
+        # so the shared fields advance once more to the recovery unit that is now live. Every
+        # superseded value is retained below as a negative pin, so nothing is relaxed.
+        assert ws0014["last_verified_main_sha"] == XASSET0047_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != PR345_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR344_MERGE_SHA
         assert str(ws0014["last_verified_date"]) == "2026-08-21"
         assert ws0014["active_branch"] != "claude/xasset-0043-rebinding-7ywmdx"
         assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
+        assert ws0014["active_branch"] != "claude/xasset-0045-test-governance-103t6t"
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self, register, ws0014):
         assert ws0014["status"] == "proposed"
@@ -1610,11 +1667,15 @@ def test_the_declared_proof_set_covers_both_corrected_assertions():
         "_assert_pr345_closed_range_facts",
     ):
         assert required in HISTORICAL_PROOF_FUNCTIONS, required
-    assert len(HISTORICAL_PROOF_FUNCTIONS) >= 7
-    # Scope pin: re-adding the reverted function would reimpose the third correction by test.
+    assert len(HISTORICAL_PROOF_FUNCTIONS) >= 8
+    # ADVANCED BY XASSET-0047, and the direction matters. The superseded pin refused the function
+    # because XASSET-0046 lacked authority to correct its skip guard, so declaring it would have
+    # reimposed by test what that filing could not do. XASSET-0047 corrected the guard under
+    # XASSET-0046 §G.11's own operative duty, so the declaration is now REQUIRED rather than
+    # forbidden -- and it is required EXACTLY, so silently dropping it again would fail here.
     assert (
         "test_on_merged_main_the_moving_base_collapses_to_head_itself"
-        not in HISTORICAL_PROOF_FUNCTIONS
+        in HISTORICAL_PROOF_FUNCTIONS
     )
     assert "origin/main" in MOVING_REFERENCE_LITERALS
     assert "HEAD" in MOVING_REFERENCE_LITERALS
