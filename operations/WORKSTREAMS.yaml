@@ -15742,7 +15742,7 @@ workstreams:
           request is unmerged: a filing does not mark its own unmerged work complete.
       - gate: xasset0046-post-merge-ci-recovery-reauthorization
         status: in_progress
-        pr: null
+        pr: 346
         description: >-
           GOVERNANCE REAUTHORIZATION PLUS TWO NARROW, SEPARATELY PRINCIPAL-AUTHORIZED, TEST-ONLY
           HISTORICAL-PROOF CORRECTIONS. XASSET-0045's own merge-commit CI FAILED at its exact merge
@@ -15806,9 +15806,8 @@ workstreams:
           over 48 cells with aggregate hash
           73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane ABSENT,
           new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
-          stage1_results.yaml exists. This gate is deliberately in_progress with pr null while its
-          own pull request is unopened and unmerged: a filing does not mark its own unmerged work
-          complete.
+          stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
+          request #346 is unmerged: a filing does not mark its own unmerged work complete.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -16917,7 +16916,7 @@ workstreams:
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
     active_branch: claude/xasset-0045-test-governance-103t6t
-    active_pr: null
+    active_pr: 346
     last_verified_main_sha: 2f8cdebe14925021171b9779453946be1f69b506
     last_verified_date: "2026-08-21"
     authorized_by: >

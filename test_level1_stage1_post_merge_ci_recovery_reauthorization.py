@@ -103,6 +103,10 @@ PR345_PRINCIPAL_ACCEPTANCE = "5370936620"
 PR345_POST_MERGE_VERIFICATION = "5370989769"
 PR345_AUDITABLE_STOP = "5371158269"
 
+#: THIS unit's own pull request, set from the real number GitHub issued and verified against
+#: live GitHub after opening, never predicted.
+THIS_PULL_REQUEST = 346
+
 #: The guard whose moving anchor caused the failure, and its exact failing assertion line.
 FAILING_GUARD_LINE = 662
 FAILING_GUARD_TEST = "test_the_enabling_correction_was_actually_performed"
@@ -857,7 +861,7 @@ class TestCatalogAndRegisterSynchronisation:
         """A filing may not mark its own unmerged work complete -- a MAJOR finding on
         ``TIER-0001`` for exactly this shape."""
         assert gate["status"] == "in_progress"
-        assert gate.get("pr") is None
+        assert gate["status"] != "complete"
 
     def test_the_register_gate_records_the_bounded_scope(self, gate):
         text = " ".join(str(v) for v in gate.values()).lower()
@@ -882,8 +886,14 @@ class TestCatalogAndRegisterSynchronisation:
         `OPS-0001`'s Active-GitHub-fields rule."""
         assert ws0014["last_verified_main_sha"] == PR345_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR345_BASE_SHA
+        # Exact, set from the real number GitHub issued and verified against the live pull
+        # request after opening -- never guessed, and never relaxed to a range.
+        assert ws0014["active_pr"] == THIS_PULL_REQUEST
         assert ws0014["active_pr"] != 345
         assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
+
+    def test_the_gate_records_this_units_own_pull_request(self, gate):
+        assert gate["pr"] == THIS_PULL_REQUEST
 
 
 # ======================================================================================

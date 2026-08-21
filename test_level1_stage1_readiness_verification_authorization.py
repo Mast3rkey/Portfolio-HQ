@@ -111,6 +111,10 @@ XASSET0044_ACTIVE_PR = 344
 #: ADVANCED BY XASSET-0045. WS-0014's single shared `active_pr`, set from the real number
 #: GitHub issued and verified against the live pull request after opening, never guessed.
 XASSET0045_ACTIVE_PR = 345
+#: ADVANCED BY XASSET-0046. WS-0014's single shared `active_pr`, set from the real number
+#: GitHub issued for this reauthorization unit and verified against the live pull request
+#: after opening, never guessed.
+XASSET0046_ACTIVE_PR = 346
 
 #: The three values accepted authority already fixes as exact constants, and the only three
 #: ``XASSET-0038`` restates. Everything else in its checklist derives from the merged tree.
@@ -831,7 +835,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0045_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0046_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0045_ACTIVE_PR
 
 
 # --------------------------------------------------------------------------------------------------

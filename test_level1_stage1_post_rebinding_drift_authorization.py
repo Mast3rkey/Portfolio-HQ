@@ -123,6 +123,10 @@ XASSET0044_ACTIVE_PR = 344
 #: ADVANCED BY XASSET-0045. WS-0014's single shared `active_pr`, set from the real number
 #: GitHub issued and verified against the live pull request after opening, never guessed.
 XASSET0045_ACTIVE_PR = 345
+#: ADVANCED BY XASSET-0046. WS-0014's single shared `active_pr`, set from the real number
+#: GitHub issued for this reauthorization unit and verified against the live pull request
+#: after opening, never guessed.
+XASSET0046_ACTIVE_PR = 346
 STEP10_EVIDENCE_COMMENT = "5341448714"
 STEP10_DETERMINATION = "STEP_10_NO_DRIFT"
 
@@ -965,7 +969,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0045_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0046_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0045_ACTIVE_PR
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))
