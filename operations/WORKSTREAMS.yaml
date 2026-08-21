@@ -15476,7 +15476,7 @@ workstreams:
           RE-ANCHORED to closed, immutable commit ranges and none is deleted, skipped, xfailed or
           relaxed; two mutation pins are added so the re-anchoring cannot pass vacuously. Identities
           recomputed ONCE after every authorized byte stabilized: module
-          513bd0cb33e6a9b174cbcd462094fb93011a90cae0cd5bd60c6e852d37ac057b, derivation validator
+          da6035d4ff7722b6cc5dfc054adefc9b83f486800cd9fc57c961488c8203778d, derivation validator
           b3a87e4f8b828d420795348642c977a9f0585eafa9262a4be48df406f770233d, PROTOCOL_V1.md
           1ad1d060d5bf970288844b05b94e1fd38c3cc9cc87afc1481a45ed1b315d0c84, pre_registration.yaml
           898c329d9941c5c24ff2a800f842e860c63e2e500acc4257eb14646c1012d82f. Rebinding is NOT arming: this adds ZERO
@@ -15543,6 +15543,44 @@ workstreams:
           behaviour, canonical construction input, universe identity, runner, result validator,
           protected path or ATTEMPT_1 state is touched, and no gate is evaluated for any
           construction. Stage 1 remains UNARMED and NOT EXECUTABLE, lane ABSENT,
+          new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
+          stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
+      - gate: xasset0044-second-bounded-correction-after-delta-review-4987958687
+        status: in_progress
+        pr: 344
+        description: >-
+          Second bounded correction of PR #344 after an independent exact-head DELTA review over
+          c07120d695b1750c85912c0d2851416db519353f -> a6b7d284fb19d1d1451d5b4879610f434e0d9d1c
+          confirmed all three original findings corrected and returned CHANGES REQUIRED -- 0
+          BLOCKING / 1 MAJOR / 1 MINOR / 0 NOTE against the correction itself. Both were reproduced
+          through the public mechanisms before anything was edited. MAJOR 1 part 1: Gate 8 required
+          the durable closure body to name the merge SHA and CI run but never the JOB, so a body
+          omitting the job -- and one carrying a SUBSTITUTED job -- both returned no errors through
+          verify_lifecycle_against_truth. A CI run can carry more than one job, so naming the run
+          does not identify the job whose completion the closure claims to follow; the body must now
+          name the exact job id, and merge, run and job are each independently required. MAJOR 1
+          part 2: the CI chronology branch rejected closed_at < finished_at, which is "not before"
+          rather than the "strictly after" the code comment, XASSET-0044 SS-L and SS-M all state, so
+          a closure timestamp EQUAL to the job's completed_at passed -- reproduced against both the
+          job's own time and the run.updated_at fallback. GitHub timestamps are second-resolution,
+          so an equal instant cannot distinguish closed-after-CI from closed-in-the-same-second, and
+          an unprovable ordering is not a proven one; the comparison is now closed_at <=
+          finished_at. The post-merge-verification conjunct was already strict and is unchanged, and
+          is pinned so this correction cannot have loosened it. MINOR 1: with no attestation,
+          lane_state_at / new_execution_is_authorized printed only REQUIRED_LIFECYCLE_GATES -- the
+          intentionally preserved six-item predecessor tuple -- so the operator-facing explanation
+          understated what Gate 8 now enforces. Corrected SEPARATELY, exactly as the review
+          required: REQUIRED_LIFECYCLE_GATES and every canonical ..._ALL_SIX_GATES_... and
+          predecessor-named string stay BYTE-IDENTICAL, and a new
+          LIFECYCLE_CLOSURE_STATUS_REQUIREMENT states the seventh condition in the CURRENT status
+          reason, spliced in beside -- never instead of -- the six accepted gates. The verdict is
+          untouched: the explanation changes, new_execution_is_authorized() still returns False. No
+          outcome-producing behaviour, canonical construction input, universe membership, order or
+          hash, runner, result validator, protected path, lane state or ATTEMPT_1 is touched, and no
+          gate is evaluated for any construction. Both corrections make the mechanism STRICTER,
+          never more permissive. Universe remains 680 constructions over 48 cells with aggregate
+          hash 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane ABSENT,
           new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
           stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
           request is unmerged: a filing does not mark its own unmerged work complete.

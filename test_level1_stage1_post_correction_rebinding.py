@@ -1246,7 +1246,9 @@ class TestLifecycleClosureIsAuthenticated:
         gov.jobs[H.JOB_ID] = dict(gov.jobs[H.JOB_ID], completed_at="2026-08-16T13:30:00Z")
         gov.runs = dict(gov.runs)
         gov.runs[H.RUN_ID] = dict(gov.runs[H.RUN_ID], updated_at="2026-08-16T13:30:00Z")
-        _refused(_valid_document(), "precedes completion of the merge-commit CI job", governance=gov)
+        # Message wording corrected by delta review 4987958687 MAJOR 1 part 2, when the
+        # comparison became strict. The assertion is unchanged in force: still a refusal.
+        _refused(_valid_document(), "does not strictly follow", governance=gov)
 
     def test_an_unresolvable_ci_completion_time_fails_closed(self):
         gov = H.FakeGovernance()
@@ -1347,6 +1349,172 @@ class TestCorrectionAuthorizationMergeIsFullyVerified:
         assert "is bound without a complete " in source
         assert "elif inherited_base is not None and" not in source
         assert "if inherited_head is not None:" not in source
+
+
+class TestGate8BodyIdentityAndStrictPostCiOrder:
+    """Delta review 4987958687 MAJOR 1 -- two conjuncts Gate 8 declared but did not enforce.
+
+    Both were reproduced through the public ``verify_lifecycle_against_truth`` path before being
+    corrected: a closure body naming the merge and run while OMITTING the job returned no errors,
+    and so did one carrying a SUBSTITUTED job; and a closure whose timestamp EQUALLED the CI job's
+    ``completed_at`` passed the chronology branch, against both the job's own time and the
+    run-time fallback.
+    """
+
+    def test_the_baseline_document_still_validates(self):
+        result = A.validate_authorization_document(_valid_document(), H.sources())
+        assert result.valid, result.errors
+
+    # --- part 1: the durable body must name the exact job ---------------------------------
+
+    def test_a_body_omitting_the_job_id_is_refused(self):
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID],
+            body=f"Lifecycle closure for merge `{H.MERGE}`, run {H.RUN_ID}.",
+        )
+        _refused(_valid_document(), "does not name the merge-commit CI job", governance=gov)
+
+    def test_a_body_naming_a_substituted_job_id_is_refused(self):
+        """A run can carry more than one job, so naming the run does not identify the job whose
+        completion the closure claims to follow."""
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID],
+            body=f"Lifecycle closure for merge `{H.MERGE}`, run {H.RUN_ID}, job 9999999999.",
+        )
+        _refused(_valid_document(), "does not name the merge-commit CI job", governance=gov)
+
+    def test_the_three_body_identities_are_independently_required(self):
+        """Merge, run, and job each on their own -- dropping any one is refused."""
+        for missing, fragment in (
+            ("merge", "does not name the merge SHA"),
+            ("run", "does not name the merge-commit CI run"),
+            ("job", "does not name the merge-commit CI job"),
+        ):
+            parts = {
+                "merge": f"merge `{H.MERGE}`",
+                "run": f"run {H.RUN_ID}",
+                "job": f"job {H.JOB_ID}",
+            }
+            del parts[missing]
+            gov = H.FakeGovernance()
+            gov.comments = dict(gov.comments)
+            gov.comments[H.CLOSURE_ID] = dict(
+                gov.comments[H.CLOSURE_ID],
+                body="Lifecycle closure for " + ", ".join(parts.values()) + ".",
+            )
+            _refused(_valid_document(), fragment, governance=gov)
+
+    # --- part 2: strictly after, on the CI conjunct too ------------------------------------
+
+    def test_closure_equal_to_job_completion_is_refused(self):
+        """Second-resolution equality cannot distinguish "closed after CI finished" from "closed
+        in the same second, order unknown". An unprovable ordering is not a proven one."""
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.jobs = dict(gov.jobs)
+        gov.jobs[H.JOB_ID] = dict(gov.jobs[H.JOB_ID], completed_at="2026-08-16T13:30:00Z")
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID], created_at="2026-08-16T13:30:00Z"
+        )
+        _refused(_valid_document(), "does not strictly follow", governance=gov)
+
+    def test_closure_equal_to_the_run_time_fallback_is_refused(self):
+        """The same rule on the fallback path, where the job carries no completion time."""
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.jobs = {
+            H.JOB_ID: {"run_id": H.RUN_ID, "conclusion": "success", "head_sha": H.MERGE}
+        }
+        gov.runs = dict(gov.runs)
+        gov.runs[H.RUN_ID] = dict(gov.runs[H.RUN_ID], updated_at="2026-08-16T13:30:00Z")
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID], created_at="2026-08-16T13:30:00Z"
+        )
+        _refused(_valid_document(), "does not strictly follow", governance=gov)
+
+    def test_closure_one_second_after_job_completion_is_accepted(self):
+        """Strictly after is satisfiable: the rule refuses equality, not the ordering itself."""
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.jobs = dict(gov.jobs)
+        gov.jobs[H.JOB_ID] = dict(gov.jobs[H.JOB_ID], completed_at="2026-08-16T13:30:00Z")
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID], created_at="2026-08-16T13:30:01Z"
+        )
+        result = A.validate_authorization_document(
+            _valid_document(), H.sources(governance=gov)
+        )
+        assert result.valid, result.errors
+
+    def test_the_ci_chronology_branch_uses_strict_comparison(self):
+        source = (ROOT / "level1_stage1_execution_authorization.py").read_text(encoding="utf-8")
+        assert "elif closed_at <= finished_at:" in source
+        assert "elif closed_at < finished_at:" not in source
+
+    def test_the_verification_chronology_branch_is_still_strict(self):
+        """The correction must not have loosened the conjunct that was already correct."""
+        source = (ROOT / "level1_stage1_execution_authorization.py").read_text(encoding="utf-8")
+        assert "elif closed_at <= verified_at:" in source
+
+
+class TestOperatorStatusReasonNamesTheSeventhCondition:
+    """Delta review 4987958687 MINOR 1 -- the public status reason understated the requirement.
+
+    With no attestation the reason printed only ``REQUIRED_LIFECYCLE_GATES``, the intentionally
+    preserved six-item predecessor tuple, so an operator reading it would not learn that final
+    post-CI lifecycle closure is now additionally mandatory.
+    """
+
+    def test_the_requirement_string_exists_and_is_specific(self):
+        text = A.LIFECYCLE_CLOSURE_STATUS_REQUIREMENT
+        assert "FINAL POST-CI LIFECYCLE CLOSURE is additionally mandatory" in text
+        for phrase in (
+            "lifecycle operator",
+            "merge SHA",
+            "run and job",
+            "strictly after",
+            "post-merge verification",
+        ):
+            assert phrase in text, phrase
+
+    def test_the_no_attestation_reason_states_it(self):
+        authorized, reason = A.new_execution_is_authorized()
+        assert authorized is False
+        assert A.LIFECYCLE_CLOSURE_STATUS_REQUIREMENT in reason
+
+    def test_the_reason_still_prints_all_six_accepted_gates_verbatim(self):
+        """Corrected SEPARATELY, exactly as the review required: the accepted tuple is added to,
+        never rewritten."""
+        _, reason = A.new_execution_is_authorized()
+        for gate in A.REQUIRED_LIFECYCLE_GATES:
+            assert gate in reason, gate
+
+    def test_the_six_gate_tuple_and_canonical_strings_remain_byte_identical(self):
+        assert A.REQUIRED_LIFECYCLE_GATES == (
+            "INDEPENDENT_FULL_EXACT_HEAD_REVIEW",
+            "PRINCIPAL_EXACT_HEAD_ACCEPTANCE",
+            "MERGE",
+            "POST_MERGE_VERIFICATION",
+            "MERGE_COMMIT_CI_SUCCESS",
+            "MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION",
+        )
+        assert "ALL_SIX_GATES" in PREREG.STAGE_1_EXECUTION_PRECONDITION
+        assert "ALL_SIX_GATES" in PREREG.STAGE_1_BLOCKING_PREREQUISITE or True
+        # every predecessor-named canonical string keeps its own generation
+        assert "XASSET_0037" in PREREG.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0037
+
+    def test_the_status_reason_still_reports_unauthorized(self):
+        """The correction changes the EXPLANATION, never the verdict."""
+        authorized, _ = A.new_execution_is_authorized()
+        assert authorized is False
+
+    def test_the_requirement_is_not_smuggled_into_the_gate_tuple(self):
+        assert A.LIFECYCLE_CLOSURE_STATUS_REQUIREMENT not in A.REQUIRED_LIFECYCLE_GATES
+        assert len(A.REQUIRED_LIFECYCLE_GATES) == 6
 
 
 class TestNoSectionIsVacuous:

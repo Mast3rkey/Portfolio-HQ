@@ -816,6 +816,18 @@ REQUIRED_LIFECYCLE_EVIDENCE_KEYS = (
     "lifecycle_closure",
 )
 
+#: MINOR 1 (delta review 4987958687): the operator-facing statement of XASSET-0044 SS-L's SEVENTH
+#: condition. It lives beside the schema it describes, and is spliced into the CURRENT no-attestation
+#: status reason so that reason states what Gate 8 actually enforces. It is deliberately NOT added to
+#: ``REQUIRED_LIFECYCLE_GATES`` and does not alter any canonical ``..._ALL_SIX_GATES_...`` string:
+#: those name an accepted, differently-scoped, historically-referenced list and stay byte-identical.
+LIFECYCLE_CLOSURE_STATUS_REQUIREMENT = (
+    "FINAL POST-CI LIFECYCLE CLOSURE is additionally mandatory -- a durable closure record on the "
+    "authorizing pull request, authored by the lifecycle operator, naming the exact merge SHA and "
+    "the exact merge-commit CI run and job, recorded strictly after both the post-merge "
+    "verification and the completion of that CI job"
+)
+
 #: The keys a ``lifecycle_closure`` record may carry. Closed: an unknown key is refused rather
 #: than ignored, so a closure record cannot smuggle an unverified field past the gate.
 LIFECYCLE_CLOSURE_KEYS = (
@@ -2216,6 +2228,17 @@ def _verify_lifecycle_closure(
             f"governance truth: lifecycle-closure record {closure_id} does not name the "
             f"merge-commit CI run {run_id!r}"
         )
+    # MAJOR 1 part 1 (delta review 4987958687): the correction declared that the durable body
+    # records AND NAMES the exact merge and CI run/JOB identities, but only the run was required.
+    # Reproduced through verify_lifecycle_against_truth before correcting: a body naming the merge
+    # and run while omitting the job -- and a body carrying a SUBSTITUTED job -- both returned no
+    # errors. A run can carry more than one job, so naming the run alone does not identify the job
+    # whose completion the closure claims to follow.
+    if job_id and job_id not in body:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} does not name the "
+            f"merge-commit CI job {job_id!r}"
+        )
 
     # --- chronology: strictly after BOTH the post-merge verification and CI completion ----
     closed_at = _instant(closure.get("created_at"))
@@ -2244,10 +2267,18 @@ def _verify_lifecycle_closure(
                 "governance truth: the merge-commit CI completion time could not be resolved, so "
                 "lifecycle closure cannot be proven to follow it; this fails closed"
             )
-        elif closed_at < finished_at:
+        # MAJOR 1 part 2 (delta review 4987958687): STRICTLY after, on this conjunct too. The
+        # previous ``<`` implemented "not before", which is a weaker claim than the surrounding
+        # comment, than SS-L, and than the correction all state. GitHub timestamps are
+        # second-resolution, so an EQUAL instant is exactly the case that cannot distinguish
+        # "closed after CI finished" from "closed in the same second, order unknown" -- and an
+        # unprovable ordering is not a proven one. Reproduced through the public verifier before
+        # correcting, against both the job's own completed_at and the run-time fallback.
+        elif closed_at <= finished_at:
             errors.append(
-                f"governance truth: lifecycle closure {closed_at} precedes completion of the "
-                f"merge-commit CI job {finished_at}; SS-L condition 7 is FINAL post-CI closure"
+                f"governance truth: lifecycle closure {closed_at} does not strictly follow "
+                f"completion of the merge-commit CI job {finished_at}; SS-L condition 7 is FINAL "
+                "post-CI closure, and an equal instant cannot prove that ordering"
             )
     return errors
 
@@ -3172,11 +3203,18 @@ def lane_state_at(
 
     document, problem = _load_authorization(paths.authorization)
     if document is None:
+        # MINOR 1 (delta review 4987958687): this reason printed only REQUIRED_LIFECYCLE_GATES,
+        # so after Gate 8 it UNDERSTATED what the operator actually has to complete. The six-gate
+        # tuple and every canonical predecessor string are deliberately left byte-identical -- they
+        # are a differently-scoped, accepted, historically-named list -- so the additional
+        # requirement is stated here, in the CURRENT status explanation, rather than by rewriting
+        # them. See LIFECYCLE_CLOSURE_STATUS_REQUIREMENT.
         return LANE_ABSENT, (
             f"{problem}. Structural closure of the construction universe is not authorization: "
             f"the {AUTHORIZING_DECISION} lifecycle must close in full "
-            f"({', '.join(REQUIRED_LIFECYCLE_GATES)}) and an authenticated one-shot attestation "
-            "must then be generated. There is no merge-to-execution gap"
+            f"({', '.join(REQUIRED_LIFECYCLE_GATES)}), {LIFECYCLE_CLOSURE_STATUS_REQUIREMENT}, "
+            "and an authenticated one-shot attestation must then be generated. There is no "
+            "merge-to-execution gap"
         )
     result = validate_authorization_document(document, sources)
     if not result.valid:

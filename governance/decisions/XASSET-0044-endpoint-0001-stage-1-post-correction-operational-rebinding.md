@@ -232,7 +232,7 @@ Accordingly:
 bound (XASSET-0037 merged tree, historical)          sha256  8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8
 intermediate, superseded head 7573147e (historical)  sha256  03d842126913bf2d62aa5d7c070ecca236926ec847102da82414ee51e7422734
 XASSET-0042 final, closed at PR #342 (historical)    sha256  749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7
-CURRENT_MODULE_SHA256: 513bd0cb33e6a9b174cbcd462094fb93011a90cae0cd5bd60c6e852d37ac057b
+CURRENT_MODULE_SHA256: da6035d4ff7722b6cc5dfc054adefc9b83f486800cd9fc57c961488c8203778d
 ```
 
 ### M. Bounded correction after independent FULL review `4986931575`
@@ -300,6 +300,47 @@ exactly as before, a second modified file still fails, and a rename or copy is s
 identity, runner, result validator, protected path, or `ATTEMPT_1` state is touched by this
 correction, and no gate is evaluated for any construction. Stage 1 remains **UNARMED** and **NOT
 EXECUTABLE**.
+
+
+### N. Second bounded correction after independent DELTA review `4987958687`
+
+An independent exact-head DELTA review over `c07120d6…` → `a6b7d284…` confirmed all three original
+findings corrected, and returned **CHANGES REQUIRED — 0 BLOCKING / 1 MAJOR / 1 MINOR** on the
+correction itself. Both were **reproduced through the public mechanisms before anything was edited**.
+
+**MAJOR 1 — Gate 8 accepted evidence weaker than §M declares.** Two conjuncts §M states were not
+in fact enforced:
+
+*Part 1 — the durable body named the merge and the run, never the job.* Reproduced through
+`verify_lifecycle_against_truth`: a body naming merge and run while **omitting** the job returned
+no errors, and so did one carrying a **substituted** job. A CI run can carry more than one job, so
+naming the run does not identify the job whose completion the closure claims to follow. The body
+must now name the **exact job id** as well, and each of the three identities is independently
+required.
+
+*Part 2 — the CI conjunct implemented "not before", not "strictly after".* The branch rejected
+`closed_at < finished_at`, so a closure whose timestamp **equalled** the job's `completed_at` passed
+— against both the job's own time and the run-time fallback, reproduced on both. GitHub timestamps
+are second-resolution, so an equal instant is exactly the case that cannot distinguish *closed after
+CI finished* from *closed in the same second, order unknown*; an unprovable ordering is not a proven
+one. The comparison is now `closed_at <= finished_at`. The verification conjunct, already strict,
+is unchanged — and pinned so this correction cannot have loosened it.
+
+**MINOR 1 — the operator-facing status reason understated the requirement.** With no attestation,
+`lane_state_at` / `new_execution_is_authorized` printed only `REQUIRED_LIFECYCLE_GATES` — the
+intentionally preserved six-item predecessor tuple — so an operator reading it would not learn that
+final post-CI lifecycle closure is now additionally mandatory.
+
+Corrected **separately**, exactly as the review required. `REQUIRED_LIFECYCLE_GATES` and every
+canonical `…_ALL_SIX_GATES_…` and predecessor-named string stay **byte-identical**; a new
+`LIFECYCLE_CLOSURE_STATUS_REQUIREMENT` states the seventh condition in the **current status
+explanation** and is spliced into that reason beside — never instead of — the six accepted gates.
+The verdict is untouched: the reason changes, `new_execution_is_authorized()` still returns `False`.
+
+**Nothing else moved.** No outcome-producing behaviour, canonical construction input, universe
+membership, order or hash, runner, result validator, protected path, lane state, or `ATTEMPT_1` is
+touched, and no gate is evaluated for any construction. Both corrections make the mechanism
+**stricter**, never more permissive. Stage 1 remains **UNARMED** and **NOT EXECUTABLE**.
 
 
 ### I. Authority withheld — absolute
