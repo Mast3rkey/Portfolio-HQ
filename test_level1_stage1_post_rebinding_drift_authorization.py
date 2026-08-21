@@ -98,10 +98,17 @@ XASSET0039_MERGE_SHA = "6960ce5ddbfa8cff1ef591c58682341c4d4407c7"
 #: ADVANCED BY XASSET-0043: PR #341 (`9c8647f9`) and then PR #342 have both merged, so
 #: WS-0014's single shared `last_verified_main_sha` advances with them, exactly.
 XASSET0043_MAIN_SHA = "5fbfc94d7333e552bd2654261e0c57134a172e31"
+#: ADVANCED BY XASSET-0044: PR #343 merged at `0709d2f0`, so the register's shared live
+#: "where main is now" field lawfully advanced again. The anchor each decision authorizes
+#: against is unchanged; only the shared self-reference moved.
+XASSET0044_MAIN_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
 #: WS-0014's shared `active_pr` while THIS rebinding-authorization unit is the live work.
 #: Set to the real GitHub number issued when the pull request was opened, verified
 #: against live GitHub afterwards, never left as a guess.
 XASSET0043_ACTIVE_PR = 343
+#: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number
+#: GitHub issued and verified against the live pull request after opening, never guessed.
+XASSET0044_ACTIVE_PR = 344
 STEP10_EVIDENCE_COMMENT = "5341448714"
 STEP10_DETERMINATION = "STEP_10_NO_DRIFT"
 
@@ -110,13 +117,27 @@ STEP10_DETERMINATION = "STEP_10_NO_DRIFT"
 #: evidence at verification time.
 PROTOCOL_SHA256 = "367583b616e1c6ab614bcf67d451fe27ce40507d073374190c57291e761d8971"
 PREREG_SHA256 = "768b013c0129f02577fea3c2a1a3100b4340b9a42f48ee0d0dbd6e671894bce1"
+
+#: ADDED BY XASSET-0044. The two constants above are what XASSET-0039's own ACCEPTED,
+#: MERGED decision text restates, and that text is history: it is not edited, so they are
+#: not either. XASSET-0044's post-correction rebinding lawfully amended the canonical
+#: authorization language in lockstep (V7 -> V8) under XASSET-0030 SS-D, so the pins that
+#: describe the LIVE files are these. The two roles were conflated in a single pair of
+#: constants until the amendment forced them apart; keeping both is what lets the
+#: decision-text checks and the live-byte checks each stay at full strength.
+CURRENT_PROTOCOL_SHA256 = "1ad1d060d5bf970288844b05b94e1fd38c3cc9cc87afc1481a45ed1b315d0c84"
+CURRENT_PREREG_SHA256 = "898c329d9941c5c24ff2a800f842e860c63e2e500acc4257eb14646c1012d82f"
 FROZEN_UNIVERSE_SHA256 = "73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224"
 CONSTRUCTION_UNIVERSE_MODULE_SHA256 = (
     "1fed8f42b8c80ad2908a135a0c02517463dd04bb4ee3fdb20cad9d5a9acf95c5"
 )
 
 #: The ten paths XASSET-0037 bound. XASSET-0039 must change none of them.
-EXPECTED_LOAD_BEARING = (
+#: EXTENDED BY XASSET-0044, 10 -> 14. The four additions are the decision files that jointly make
+#: the corrected bytes lawful, bound by DIRECT MEMBERSHIP so none can be edited after an
+#: attestation authenticates. Nothing is removed: the original ten are all still here, and the
+#: sorted comparison below is unchanged in kind and still exact.
+EXPECTED_LOAD_BEARING = tuple(sorted((
     "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
     "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
     "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
@@ -127,7 +148,14 @@ EXPECTED_LOAD_BEARING = (
     "level1_stage1_runner.py",
     "research/level1_endpoint_evidence/PROTOCOL_V1.md",
     "research/level1_endpoint_evidence/pre_registration.yaml",
-)
+    "governance/decisions/"
+    "XASSET-0041-endpoint-0001-pr337-lifecycle-actor-evidence-correction-authorization.md",
+    "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
+    "governance/decisions/"
+    "XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0044-endpoint-0001-stage-1-post-correction-operational-rebinding.md",
+)))
 
 #: The five Python modules inside those ten paths, each independently able to affect the 680
 #: outcomes. Step 10's whole subject is drift in the runner / result-production members of this set.
@@ -815,8 +843,8 @@ class TestThisFilingMutatesNothingLoadBearing:
         assert (ROOT / module).is_file()
 
     def test_canonical_bytes_match_the_effective_v7_pins(self) -> None:
-        assert hashlib.sha256(PROTOCOL.read_bytes()).hexdigest() == PROTOCOL_SHA256
-        assert hashlib.sha256(PREREG.read_bytes()).hexdigest() == PREREG_SHA256
+        assert hashlib.sha256(PROTOCOL.read_bytes()).hexdigest() == CURRENT_PROTOCOL_SHA256
+        assert hashlib.sha256(PREREG.read_bytes()).hexdigest() == CURRENT_PREREG_SHA256
 
     def test_construction_universe_module_identity_unchanged(self) -> None:
         module = ROOT / "level1_construction_universe_closure_validator.py"
@@ -917,12 +945,12 @@ class TestCatalogAndRegisterSynchronisation:
         # This pinned the PR #338 merge while PR #339 was open. STRENGTHENED to the merged
         # PR #339 value, which is the SHA the successor filing independently re-verified.
         # ADVANCED AGAIN BY XASSET-0041 for the same reason: PR #340 merged at `f212cce5`.
-        assert workstream["last_verified_main_sha"] == XASSET0043_MAIN_SHA
-        assert str(workstream["last_verified_date"]).startswith("2026-08-19")
+        assert workstream["last_verified_main_sha"] == XASSET0044_MAIN_SHA
+        assert str(workstream["last_verified_date"]).startswith("2026-08-20")
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0043_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0044_ACTIVE_PR
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))

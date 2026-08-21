@@ -1,4 +1,4 @@
-"""ENDPOINT-0001 Stage-1 operational execution authorization — XASSET-0037 (successor).
+"""ENDPOINT-0001 Stage-1 operational execution authorization — XASSET-0044 (post-correction).
 
 WHAT THIS MODULE IS
 ===================
@@ -118,6 +118,41 @@ rule — whose stated terminating condition is a final step that *changes no rep
 untouched: this adds zero activation authorizations, and final activation remains the external
 one-shot runtime attestation and the operator's act.
 
+POST-CORRECTION OPERATIONAL REBINDING — XASSET-0044 (XASSET-0030 §D, authorized by XASSET-0043)
+================================================================================================
+
+XASSET-0041 authorized one bounded correction of the PR #337 lifecycle actor evidence, and
+XASSET-0042 (PR #342) performed it — lawfully changing this module. XASSET-0030 §D recorded in
+advance that any such lawful correction *deliberately creates enforcement drift*, and it did:
+against the bound XASSET-0037 merged tree, exactly one of the ten load-bearing paths drifted, and
+it is precisely the one XASSET-0042 was authorized to correct. An obsolete authorization that
+cannot authorize a corrected module is the mechanism working, not a defect.
+
+**§G.B step 8 is NOT consumed a second time.** Step 8 authorized ONE rebinding against the
+executable package's exact merged bytes, and XASSET-0037 performed it; that budget stays spent and
+the package it bound stays bound. This rebinding's authority is §D's "successor
+operational-authorization **or reconciliation lifecycle**" clause plus XASSET-0041 §I link 2's own
+word, *equivalent* — the same kind and rigour, separately authorized by XASSET-0043, not a second
+draw on step 8. XASSET-0037 is preserved exactly as it preserved XASSET-0029.
+
+This rebinding binds a **fifth** structurally distinct relationship — the corrected module and the
+merge that delivered it — in its own constants, for the same anti-overloading reason XASSET-0037 §C
+gave for its four: ``PRIOR_SUCCESSOR_REBINDING_*`` (XASSET-0037 / PR #337),
+``CORRECTION_AUTHORIZING_*`` (XASSET-0041 / PR #341), ``CORRECTED_MODULE_*`` (XASSET-0042 / PR #342,
+the completed correction being bound), and ``REBINDING_AUTHORIZING_*`` (XASSET-0043 / PR #343, whose
+closed lifecycle is also this rebinding's own reviewed base).
+
+``LOAD_BEARING_RELPATHS`` grows 10 → 14 by **direct membership**: after this rebinding, four
+decisions jointly make the corrected bytes lawful, and any left outside the boundary would stay
+editable after attestation. Nothing is removed, no identity is altered, and the pin-succession
+refusal is extended to XASSET-0037's own accepted pins rather than relaxed. The derivation surface
+gains a **second** exact closed transition, appended — ``package → successor → rebound`` — with the
+first link preserved verbatim as accepted history.
+
+Rebinding is **not** arming. XASSET-0029 §E's no-infinite-regress rule is untouched: this adds zero
+activation authorizations, ``stage_1_executability.executable`` stays ``false`` permanently, and
+final activation remains the external one-shot runtime attestation and the operator's act.
+
 NOT A RISK MODULE. No RISK-0001 scenario, threshold, magnitude, window, parameter, attempt
 identity, result value, or family conclusion is read, imported, or reused. Only neutral
 engineering patterns are shared: canonical JSON hashing, duplicate-key rejection, immutable
@@ -131,6 +166,7 @@ import builtins
 import hashlib
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -144,36 +180,48 @@ ROOT = Path(__file__).resolve().parent
 
 REPOSITORY_IDENTITY = "Mast3rkey/Portfolio-HQ"
 STUDY_ID = "ENDPOINT-0001"
-#: EFFECTIVE structural authorization source, rebound under XASSET-0030 SS-G.B step 8. XASSET-0029
-#: remains valid history and is preserved verbatim below under its own distinct constants; what
-#: changed is which merged tree the load-bearing identity is proven against.
-AUTHORIZING_DECISION = "XASSET-0037"
+#: EFFECTIVE structural authorization source, rebound AGAIN under XASSET-0030 SS-D's reconciliation
+#: clause, authorized by XASSET-0043. XASSET-0029 and XASSET-0037 both remain valid history and are
+#: preserved verbatim below under their own distinct constants; what changed is which merged tree
+#: the load-bearing identity is proven against, now that XASSET-0042 lawfully corrected one of the
+#: ten paths XASSET-0037 bound.
+#:
+#: SS-G.B STEP 8 IS NOT RE-CONSUMED. Step 8 authorized ONE rebinding against the executable
+#: package's exact merged bytes, and XASSET-0037 performed it; that budget stays spent and the
+#: package it bound stays bound. The authority for THIS rebinding is separate and predates the need
+#: for it: XASSET-0030 SS-D provides for "a successor operational-authorization OR RECONCILIATION
+#: LIFECYCLE" whenever a lawful correction of load-bearing code creates enforcement drift, and
+#: XASSET-0041 SS-I link 2 names the required next link as step-8 EQUIVALENT -- of the same kind and
+#: rigour, separately authorized, not a second draw on step 8's own budget.
+AUTHORIZING_DECISION = "XASSET-0044"
 
 #: XASSET-0028, the construction-universe STRUCTURAL CLOSURE predecessor. Deliberately UNCHANGED in
 #: name, meaning, and value: repointing it at XASSET-0029 would overload one field with two
 #: different relationships, which is exactly what this rebinding must not do.
 PREDECESSOR_DECISION = "XASSET-0028"
 
-#: The XASSET-0037 pull request. Bound so an attestation cannot silently reference another.
+#: The XASSET-0044 pull request. Bound so an attestation cannot silently reference another.
 #:
 #: PROVENANCE, stated exactly rather than flatteringly: this literal was FIRST WRITTEN before the
-#: draft pull request existed, as the next-sequential number, and was then VERIFIED against the
-#: real draft once it was opened -- it is #337, and the two agree. The load-bearing property is the
-#: verification, not the authoring order: a wrong number here fails closed at
-#: ``verify_lifecycle_against_truth``, which fetches this exact pull request from durable
-#: governance metadata and compares its head, merge, and merged state. Had the real number
-#: differed, this constant would have been corrected on the branch before review.
-AUTHORIZING_PULL_REQUEST = 337
+#: draft pull request existed, as the next-sequential number after #343, and was then VERIFIED
+#: against the real draft once it was opened. The load-bearing property is the verification, not
+#: the authoring order: a wrong number here fails closed at ``verify_lifecycle_against_truth``,
+#: which fetches this exact pull request from durable governance metadata and compares its head,
+#: merge, and merged state. Had the real number differed, this constant would have been corrected
+#: on the branch before review -- exactly as XASSET-0037's own note records for #337.
+AUTHORIZING_PULL_REQUEST = 344
 
 #: The single Stage-1 execution lane XASSET-0027 SS-P.1 permits. Derived from repository
 #: truth, not invented: no Stage-1 attempt has ever been executed or authorized. UNCHANGED by the
 #: rebinding -- a successor authorization does not mint a second attempt.
 EXECUTION_ATTEMPT_ID = "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 
-#: MAJOR 2 (review 4946397399), rebound by XASSET-0037: the exact base the SUCCESSOR lifecycle was
-#: reviewed against. The real merge's FIRST parent must equal this. If main advances before merge,
-#: the lifecycle cannot arm from the old review -- it requires a fresh exact-head/base review.
-REVIEWED_BASE_SHA = "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1"
+#: MAJOR 2 (review 4946397399), rebound by XASSET-0037 and rebound again by XASSET-0044: the exact
+#: base THIS rebinding lifecycle was reviewed against -- the XASSET-0043 merge, which is the event
+#: that made this unit authorized to begin at all. The real merge's FIRST parent must equal this. If
+#: main advances before merge, the lifecycle cannot arm from the old review -- it requires a fresh
+#: exact-head/base review.
+REVIEWED_BASE_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
 
 #: XASSET-0028's exact historical identity. MAJOR 1: the canonical contract promises this
 #: is bound, so it is now actually verified against the local git object store.
@@ -212,6 +260,59 @@ EXECUTABLE_PACKAGE_PULL_REQUEST = 336
 EXECUTABLE_PACKAGE_MERGE_SHA = "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1"
 EXECUTABLE_PACKAGE_ACCEPTED_HEAD = "07519f864c869d98aaf4a65cea53e85086a99fec"
 EXECUTABLE_PACKAGE_MERGE_BASE = "be90aeef5c48e84849a007b31abbb1166857785d"
+
+# --------------------------------------------------------------------------------------
+# XASSET-0044 / XASSET-0030 SS-D — the FIFTH relationship, and its three further identities
+# --------------------------------------------------------------------------------------
+#
+# XASSET-0037 SS-C identified the largest failure mode available to a rebinding: overloading one
+# identity across relationships that are not the same relationship. It answered that with four
+# separately named identity families. This rebinding adds a FIFTH -- the CORRECTED MODULE and the
+# merge that delivered it -- and the same anti-overloading rule is what keeps it from being smuggled
+# into ``EXECUTABLE_PACKAGE_*`` or ``HISTORICAL_OPERATIONAL_AUTHORIZATION_*``. None of the constants
+# below is interchangeable with any above, or with each other.
+
+#: XASSET-0037, the PRIOR successor operational rebinding (PR #337). Its own six-gate lifecycle
+#: really closed and is NOT invalidated; it simply stopped being the EFFECTIVE structural
+#: authorization source once XASSET-0042 lawfully corrected one of the ten paths it bound. Still
+#: verified against git, so this successor cannot quietly disown the predecessor it inherits from.
+PRIOR_SUCCESSOR_REBINDING_DECISION = "XASSET-0037"
+PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST = 337
+PRIOR_SUCCESSOR_REBINDING_MERGE_SHA = "637eaa30302f5a71f84ab1d215ecbd32c01399b5"
+PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD = "f40c816223c78f1d1e436b718455df5fb3d77fa7"
+PRIOR_SUCCESSOR_REBINDING_MERGE_BASE = "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1"
+
+#: XASSET-0041 (PR #341), which AUTHORIZED the actor-evidence correction. Authority over the
+#: correction's creation -- not the correction itself, and not this rebinding.
+CORRECTION_AUTHORIZING_DECISION = "XASSET-0041"
+CORRECTION_AUTHORIZING_PULL_REQUEST = 341
+CORRECTION_AUTHORIZING_MERGE_SHA = "9c8647f9dddacdf63825f569097214ba65299fe8"
+#: MAJOR 1 (review 4986931575). These two were absent, and their absence silently DISABLED the
+#: exact-parent and merge-tree checks for this one inherited merge: the verification loop skips
+#: both whenever a base or accepted head is ``None``. Reproduced through the public path before
+#: this correction -- a PR #341 merge rewritten to a single WRONG parent with a DRIFTED tree still
+#: validated. Re-derived independently from the local object store and cross-checked against
+#: GitHub's own record of PR #341, which agree exactly.
+CORRECTION_AUTHORIZING_ACCEPTED_HEAD = "0449d08217b5c0e422721ff3ef76b4241fb8a95a"
+CORRECTION_AUTHORIZING_MERGE_BASE = "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
+
+#: PR #342 itself -- the exact COMPLETED CORRECTION this rebinding binds, and the reason it exists.
+#: Distinct from the decision that authorized it: the authority is a governance record, this is a
+#: merged tree carrying the corrected module's actual bytes.
+CORRECTED_MODULE_DECISION = "XASSET-0042"
+CORRECTED_MODULE_PULL_REQUEST = 342
+CORRECTED_MODULE_MERGE_SHA = "5fbfc94d7333e552bd2654261e0c57134a172e31"
+CORRECTED_MODULE_ACCEPTED_HEAD = "4d5d99d67364d3c940aad74c3093bd2afbc3481d"
+CORRECTED_MODULE_MERGE_BASE = "9c8647f9dddacdf63825f569097214ba65299fe8"
+
+#: XASSET-0043 (PR #343), which AUTHORIZED this rebinding. Its complete seven-condition SS-N
+#: lifecycle closing is the single event that made this unit authorized to begin, which is why its
+#: merge is also this rebinding's own reviewed base.
+REBINDING_AUTHORIZING_DECISION = "XASSET-0043"
+REBINDING_AUTHORIZING_PULL_REQUEST = 343
+REBINDING_AUTHORIZING_MERGE_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
+REBINDING_AUTHORIZING_ACCEPTED_HEAD = "8e9d65ffa40991fade92b60f72f833501ce799d9"
+REBINDING_AUTHORIZING_MERGE_BASE = "5fbfc94d7333e552bd2654261e0c57134a172e31"
 
 #: The outcome-producing bytes PR #336 delivered. XASSET-0030 SS-G.B's invariant is that no
 #: outcome-producing executable code may be created, changed, or left outside the bound execution
@@ -351,6 +452,102 @@ OUTCOME_PRODUCING_TRANSITION: tuple[tuple[int, int, str, int, int, str], ...] = 
 )
 
 
+# --------------------------------------------------------------------------------------
+# XASSET-0044 / XASSET-0043 SS-G.4a — a SECOND exact closed transition, APPENDED
+# --------------------------------------------------------------------------------------
+#
+# XASSET-0043 SS-G.4a states why this is required rather than optional. Whole-file equality is the
+# wrong instrument for this ONE file, and XASSET-0037 SS-D.1 said so before XASSET-0043 existed: the
+# same module also carries the canonical lifecycle constants and the pin-succession and
+# rebinding-block validators -- authorization-only code a lawful rebinding MUST change. Freezing it
+# whole-file and permitting the SS-J canonical amendment are not jointly satisfiable, and that was
+# reproduced rather than argued: with the frozen module in place, advancing only
+# ``rebound_by``, ``effective_structural_authorization_source`` and
+# ``stage_1_executability.blocking_prerequisite`` produced exactly those three validation errors,
+# because the module hard-codes XASSET-0037 in precisely the fields the successor must advance.
+#
+# THE FIRST LINK IS PRESERVED, NOT REPLACED. ``OUTCOME_PRODUCING_PACKAGE_SHA256``,
+# ``OUTCOME_PRODUCING_SUCCESSOR_SHA256``, both lengths, and the seventeen-region
+# ``OUTCOME_PRODUCING_TRANSITION`` above are untouched and still verified at the XASSET-0036 package
+# anchors and at XASSET-0037's own anchors. The chain is now
+#
+#     package -> successor -> rebound
+#
+# with each link a separate frozen manifest. The new link never subsumes the first, and every
+# constraint that governs link 1 governs link 2 identically: exact source and target offsets, exact
+# lengths, the SHA-256 of the bytes replaced and the bytes installed, byte-identity everywhere
+# outside a declared region, complete consumption of both blobs, and no gap, overlap, duplicate,
+# reordering, resizing, addition, or removal.
+#
+# EVERY DECLARED REGION LIES INSIDE THE AUTHORIZATION-ONLY SURFACE: successor-lifecycle constants,
+# canonical validation of those constants, pin succession, and rebinding-block validation. The
+# consumer-reachable and outcome-producing definitions -- every symbol the runner and the result
+# validator import, and everything those symbols reach -- are re-proved unchanged semantically and
+# byte-identically in the supporting test module, derived from the consumers' own source rather
+# than asserted here, exactly as XASSET-0037 SS-D.1's evidence check already does.
+
+#: The COMPLETE accepted successor blob (the transition's starting bytes for link 2) and the
+#: COMPLETE rebound blob this rebinding reviews. Independently recomputed from the git objects at
+#: BOTH XASSET-0037 anchors, which were required to agree, and from the working tree.
+OUTCOME_PRODUCING_REBOUND_SHA256 = (
+    "b3a87e4f8b828d420795348642c977a9f0585eafa9262a4be48df406f770233d"
+)
+OUTCOME_PRODUCING_REBOUND_LENGTH = 169058
+
+#: The CLOSED, ORDERED transition for link 2. Twenty-three replacement regions, each
+#: ``(successor_offset, successor_length, successor_sha256, rebound_offset, rebound_length,
+#: rebound_sha256)``, ordered by successor offset. Everything not named here is byte-identical in
+#: both blobs.
+OUTCOME_PRODUCING_REBOUND_TRANSITION: tuple[tuple[int, int, str, int, int, str], ...] = (
+    (2811, 76, "d6f3da6fd8ff4d67e8769a9cad19874b27853a2f151fd629e2d5a76bde9289f1",
+     2811, 269, "8a460e6c432b04a0cb36aadd5194f96da6c54d3e5a513fd0d624e2ea75d6206d"),
+    (3032, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     3225, 439, "cba8198832f7d801d4e0a44afdcd6422ecf344e941fe09145fa2df43c68bf328"),
+    (11967, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     12599, 250, "33265ab88f716f50b2837ee17f7e811ec9b6f71c9987262fb126a6f4a52b3cb5"),
+    (12522, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     13404, 145, "08204ebe1ff2722e90a12465204b4b29ad39e4db77cce3e3c95c4b39a4efb6b9"),
+    (13324, 115, "ebadfa6f4b706ec1078d843a3192dcb4344c4af3fb8b47933128ecdf36c3fd17",
+     14351, 438, "3765a94aedcdaca872acf5c0845ca0aec917d4adad94a4b625f7f13ac5163f0c"),
+    (14019, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     15369, 494, "7a311577e33cb5cb0aaaebaca5ddedd2e96a15aef7a6108276a284e82963db41"),
+    (36755, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     38599, 702, "6e118e3cf051994f4d8291fa1e8c8687a9e32f6262058b16d226f9b47074c2f2"),
+    (42998, 102, "8e9ec242b4254d53a30eabfa5a4c75112c2e2d31a671ff99d4c3bf97b6137714",
+     45544, 299, "ecb4ca979c184c6ab4a2a9f0b7ca4714a5eb80338a940b20916b1391c00a41a6"),
+    (43158, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     45901, 412, "66b64ce0a98b16ae859731bff9b967bb9bf87b45e158f4478fd5050442c86f69"),
+    (43195, 40, "f9ad71ac448db8218e9f545dd6b4aadad7664d7c3599dfe29692deec6cbfdbb6",
+     46350, 547, "a702abbfd56552609acbff117f8e84c365547d80f10791821ca8f9d8f7cd4762"),
+    (145360, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     149022, 455, "b436d4c3369a9a57ce831dc69677098487f89bc387d655d035ea2da39ff81f4a"),
+    (147318, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     151435, 47, "78a06a4104a008e29fc36f40d42ceed49a1f2213a4f58ec1c75aa997547ca688"),
+    (155142, 95, "4373effa1f067adebca7ebe56f799d0922beda4d07e9812db71d326886490eae",
+     159306, 59, "c42f0efe96f6333042d682be654751ae4f0ba068f9214410e6cce1e022a19bb2"),
+    (155238, 271, "d5ea2aa04efc45f1077c0ce5e7bad603372e2515bcb40035d5c72d4eebeac75b",
+     159366, 652, "728141246a7de0ada8ebe44cb3631faa36dce78c2be61b53ed3f465efc536d99"),
+    (155677, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     160186, 177, "957c431159a44752a0415981ed06857ef910f42bf9552c5656837a23af6aff47"),
+    (155685, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     160371, 91, "98367e5568157baaf3450ee64ff03a3b9fcbc8c5ee9e261f3d51636ecf58074a"),
+    (156234, 123, "5c5f0167d99ef99f899fd46064e6d265ee9102e768fa94e5f18862d60df212b3",
+     161011, 62, "5fd358f2ac3ea4dd050c8ad4b5593d5e2ae160769d78b76e096471a9083a6c1f"),
+    (156388, 35, "2d807aa4c340379425c0b09a246f68a923621cb2a28ab8af19a83fd45bdd0ccc",
+     161104, 37, "fa81ae5b00c8e1c3db65ead89b37fa8e0bd85b1951bd1fe5b9292c0a81fd8cdd"),
+    (156515, 31, "5cc0bc72c5cbda1af1335ed3c347201f16293045c09151f943812c251e261050",
+     161233, 29, "a34a79fefeb4461716cbb9c7e2a655153980eff9a426b72d1f699cabb264149c"),
+    (156573, 91, "03482067141b9633c438a691f4bb4a14ab243ce126a46f704ef8d4f02eaea479",
+     161289, 172, "1d076b31df19b529a23135aa9869ecbea4ec0fe9dd0687f98725680e1526b6ce"),
+    (157371, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     162168, 2521, "0aea9d5ea95f0f1d5461a2cfbc12ce05928733387cd8b39ead737f752ae7aa7d"),
+    (159912, 223, "7801a40ff321326c9593b59cd7583b546068027ef8c0ab7b0917bcbc08620512",
+     167230, 185, "1a05cccd9b122ff6172b001544ae0c5bfacf3ad275803188df2b03ba5a8c4c1b"),
+    (160457, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     167737, 546, "d730d582616cba5be0845b102acca0b46c92f581c1dfaee7fcbcfa371ffec073"),
+)
+
+
 CONSTRUCTION_UNIVERSE_SHA256 = (
     "73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224"
 )
@@ -363,10 +560,26 @@ CANONICAL_PREREGISTRATION_RELPATH = "research/level1_endpoint_evidence/pre_regis
 PROTOCOL_PATH = ROOT / CANONICAL_PROTOCOL_RELPATH
 PREREGISTRATION_PATH = ROOT / CANONICAL_PREREGISTRATION_RELPATH
 
-#: EFFECTIVE pins for the canonical bytes, recomputed ONCE under XASSET-0037 after every permitted
-#: canonical and enforcement byte stabilized. Separate files from this module, so there is no
+#: EFFECTIVE pins for the canonical bytes, recomputed ONCE under XASSET-0044 after every permitted
+#: canonical and enforcement byte stabilized -- never mid-correction, and never carried forward from
+#: a superseded head. That ordering is XASSET-0043 SS-G.6, and it is the exact failure XASSET-0042's
+#: second bounded correction had to repair. Separate files from this module, so there is no
 #: self-hashing circularity.
 CANONICAL_PINS: dict[str, str] = {
+    CANONICAL_PROTOCOL_RELPATH: (
+        "1ad1d060d5bf970288844b05b94e1fd38c3cc9cc87afc1481a45ed1b315d0c84"
+    ),
+    CANONICAL_PREREGISTRATION_RELPATH: (
+        "898c329d9941c5c24ff2a800f842e860c63e2e500acc4257eb14646c1012d82f"
+    ),
+}
+
+#: XASSET-0037's pins, retained as predecessor identity now that XASSET-0044 amends the canonical
+#: authorization language under successor authority. They no longer describe the current files and
+#: must NOT be rewritten to pretend otherwise -- the same treatment XASSET-0037 gave XASSET-0036's,
+#: XASSET-0036 gave XASSET-0029's, XASSET-0029 gave XASSET-0028's, and XASSET-0028 gave
+#: XASSET-0027's.
+XASSET_0037_CANONICAL_PINS = {
     CANONICAL_PROTOCOL_RELPATH: (
         "367583b616e1c6ab614bcf67d451fe27ce40507d073374190c57291e761d8971"
     ),
@@ -438,9 +651,32 @@ PREDECESSOR_CANONICAL_PINS = {
 # supplies the effective structural authorization must be inside the identity it authorizes, or an
 # attestation could authenticate perfectly while its own governing text had been edited afterwards.
 #
-# What the rebinding changes is not this tuple's mechanism but the TREE it is proven against: these
-# ten paths are now verified in the XASSET-0037 merged tree and its independently reviewed head,
-# rather than the obsolete XASSET-0029 tree in which three of them do not exist at all.
+# What that rebinding changed was not this tuple's mechanism but the TREE it is proven against: the
+# ten paths were verified in the XASSET-0037 merged tree and its independently reviewed head,
+# rather than the obsolete XASSET-0029 tree in which three of them do not exist at all. XASSET-0044
+# has since moved that tree again -- see the next block -- without changing the mechanism either.
+#
+# EXTENDED AGAIN BY XASSET-0044 / XASSET-0030 SS-D, 10 -> 14. NOTHING IS REMOVED, no existing
+# identity is altered, and no exact-byte check is weakened -- the pin-succession refusal is
+# EXTENDED to XASSET-0037's own accepted pins rather than relaxed.
+#
+# XASSET-0037 SS-E's principle is that the decision supplying the effective structural authorization
+# must sit inside the identity it authorizes, or an attestation could authenticate perfectly while
+# its own governing text had been edited afterwards. Applied honestly, that principle reaches FOUR
+# files here rather than one, because after this rebinding four decisions JOINTLY make the corrected
+# bytes lawful, and any of them left outside the boundary stays editable after attestation:
+#
+#   * XASSET-0041 -- authorized the actor-evidence correction;
+#   * XASSET-0042 -- implemented it, and records the corrected module's identity being rebound;
+#   * XASSET-0043 -- the authority for this rebinding itself;
+#   * XASSET-0044 -- this decision, the effective structural authorization source after it.
+#
+# DIRECT MEMBERSHIP, NOT AN EQUIVALENT. Each of the four joins this tuple and is verified by the
+# existing exact-byte mechanism, whose expected identity is derived from the merged git tree at
+# validation time. A decision that merely DESCRIBES or CITES predecessor text does not byte-bind it,
+# and citing XASSET-0041 or XASSET-0042 inside this decision would NOT be a binding of those files.
+# XASSET-0036 SS-E.6's stated preference for the existing mechanism holds, and no concrete technical
+# reason to depart from it was found.
 LOAD_BEARING_RELPATHS = (
     "level1_stage1_execution_authorization.py",
     "level1_endpoint_evidence_preregistration_validator.py",
@@ -452,6 +688,13 @@ LOAD_BEARING_RELPATHS = (
     "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
     "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
     "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
+    "governance/decisions/"
+    "XASSET-0041-endpoint-0001-pr337-lifecycle-actor-evidence-correction-authorization.md",
+    "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
+    "governance/decisions/"
+    "XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0044-endpoint-0001-stage-1-post-correction-operational-rebinding.md",
 )
 
 # ======================================================================================
@@ -532,6 +775,15 @@ REQUIRED_TOP_KEYS = (
     "historical_operational_authorization",
     "package_authorization",
     "executable_package_identity",
+    # XASSET-0044. THREE further separate blocks, on exactly the same footing and for exactly the
+    # same reason: the prior rebinding, the authority that authorized the correction, the corrected
+    # module itself, and the authority that authorized THIS rebinding are four different
+    # relationships, and folding any of them together is how a rebinding starts binding the wrong
+    # tree. ``correction_identity`` carries both the correction's authority and its merged tree,
+    # which are distinguished by their own field names within the block.
+    "prior_successor_rebinding",
+    "correction_identity",
+    "rebinding_authorization_identity",
     "canonical_pins",
     "construction_universe",
     "lifecycle_evidence",
@@ -546,6 +798,44 @@ REQUIRED_LIFECYCLE_EVIDENCE_KEYS = (
     "merge",
     "post_merge_verification",
     "merge_commit_ci",
+    # BLOCKING 1 (review 4986931575). XASSET-0044 SS-L makes SEVEN conditions conjunctively
+    # necessary, and its seventh is "final post-CI verification and lifecycle closure". The five
+    # keys above carry conditions 1-6; the seventh had NO evidence key and NO gate, so a document
+    # naming no closure at all validated -- allowing an attestation to be written after CI but
+    # before the decision it cites is effective. Reproduced through the public path before this
+    # correction: build_authorization_payload + validate_authorization_document returned valid
+    # with zero closure evidence.
+    #
+    # Deliberately NOT added to REQUIRED_LIFECYCLE_GATES. That tuple is a differently-scoped list
+    # -- six gates that are not in 1:1 correspondence with SS-L's seven conditions (SS-L 1 and 2
+    # both close the single review gate, and MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+    # answers to no SS-L condition at all) -- and it is named verbatim by the canonical
+    # ``..._LIFECYCLE_CLOSURE_ALL_SIX_GATES_...`` strings and by every predecessor-named history
+    # field beside them. Renaming those to "SEVEN" would rewrite accepted predecessor semantics to
+    # fix a hole that is closed here exactly, so the six-gate list and the canonical strings are
+    # left byte-identical and the seventh condition is authenticated on its own footing.
+    "lifecycle_closure",
+)
+
+#: MINOR 1 (delta review 4987958687): the operator-facing statement of XASSET-0044 SS-L's SEVENTH
+#: condition. It lives beside the schema it describes, and is spliced into the CURRENT no-attestation
+#: status reason so that reason states what Gate 8 actually enforces. It is deliberately NOT added to
+#: ``REQUIRED_LIFECYCLE_GATES`` and does not alter any canonical ``..._ALL_SIX_GATES_...`` string:
+#: those name an accepted, differently-scoped, historically-referenced list and stay byte-identical.
+LIFECYCLE_CLOSURE_STATUS_REQUIREMENT = (
+    "FINAL POST-CI LIFECYCLE CLOSURE is additionally mandatory -- a durable closure record on the "
+    "authorizing pull request, authored by the lifecycle operator, naming the exact merge SHA and "
+    "the exact merge-commit CI run and job, recorded strictly after both the post-merge "
+    "verification and the completion of that CI job"
+)
+
+#: The keys a ``lifecycle_closure`` record may carry. Closed: an unknown key is refused rather
+#: than ignored, so a closure record cannot smuggle an unverified field past the gate.
+LIFECYCLE_CLOSURE_KEYS = (
+    "comment_id",
+    "closed_merge_sha",
+    "closed_run_id",
+    "closed_job_id",
 )
 
 
@@ -608,6 +898,11 @@ def verify_exact_transition(
     package: bytes,
     successor: bytes,
     transition: Sequence[tuple[int, int, str, int, int, str]] = OUTCOME_PRODUCING_TRANSITION,
+    *,
+    package_length: int = OUTCOME_PRODUCING_PACKAGE_LENGTH,
+    package_sha256: str = OUTCOME_PRODUCING_PACKAGE_SHA256,
+    successor_length: int = OUTCOME_PRODUCING_SUCCESSOR_LENGTH,
+    successor_sha256: str = OUTCOME_PRODUCING_SUCCESSOR_SHA256,
 ) -> None:
     """Prove ``package`` became ``successor`` through EXACTLY ``transition``, or raise.
 
@@ -630,26 +925,26 @@ def verify_exact_transition(
     (2) or (3). Editing bytes inside a region breaks (4). Editing bytes anywhere else breaks (1)
     and (3). Appending or truncating breaks (1) and (5).
     """
-    if len(package) != OUTCOME_PRODUCING_PACKAGE_LENGTH:
+    if len(package) != package_length:
         raise TransitionError(
-            f"package blob is {len(package)} bytes, expected {OUTCOME_PRODUCING_PACKAGE_LENGTH}"
+            f"package blob is {len(package)} bytes, expected {package_length}"
         )
-    if len(successor) != OUTCOME_PRODUCING_SUCCESSOR_LENGTH:
+    if len(successor) != successor_length:
         raise TransitionError(
             f"successor blob is {len(successor)} bytes, expected "
-            f"{OUTCOME_PRODUCING_SUCCESSOR_LENGTH}"
+            f"{successor_length}"
         )
     package_digest = sha256_bytes(package)
-    if package_digest != OUTCOME_PRODUCING_PACKAGE_SHA256:
+    if package_digest != package_sha256:
         raise TransitionError(
             f"package blob digest is {package_digest}, expected "
-            f"{OUTCOME_PRODUCING_PACKAGE_SHA256}"
+            f"{package_sha256}"
         )
     successor_digest = sha256_bytes(successor)
-    if successor_digest != OUTCOME_PRODUCING_SUCCESSOR_SHA256:
+    if successor_digest != successor_sha256:
         raise TransitionError(
             f"successor blob digest is {successor_digest}, expected "
-            f"{OUTCOME_PRODUCING_SUCCESSOR_SHA256}"
+            f"{successor_sha256}"
         )
     if not transition:
         raise TransitionError("the transition manifest is empty; a closed transition must be declared")
@@ -1816,7 +2111,215 @@ def verify_lifecycle_against_truth(
     errors.extend(_verify_git_anchored_identity(document, merge_sha, sources))
     # --- Gate 7 (XASSET-0037): the successor rebinding binds the EXACT merged package ---
     errors.extend(_verify_successor_rebinding_identity(document, merge_sha, sources))
+    # --- Gate 8 (XASSET-0044 SS-L condition 7): final post-CI verification and closure ---
+    errors.extend(
+        _verify_lifecycle_closure(
+            evidence,
+            number=number,
+            merge_sha=merge_sha,
+            run_id=run_id,
+            job_id=job_id,
+            run=run,
+            job=job,
+            verification=verification,
+            sources=sources,
+        )
+    )
     return tuple(errors)
+
+
+#: MAJOR 1 (delta review 4988858926): characters which, ADJACENT to an identity, mean the body
+#: carries a LARGER token that merely contains it rather than naming the identity itself. Written
+#: as an explicit ASCII class rather than ``\w`` so the boundary is deterministic and does not
+#: shift with the Unicode database. Merge SHAs are hex and CI run/job ids are decimal, so every
+#: superset substitution the review named -- a leading or trailing hex character or digit, and an
+#: identity embedded inside a larger alphanumeric token -- is adjacency by one of these.
+_IDENTITY_BOUNDARY_CLASS = "[0-9A-Za-z_]"
+
+
+def body_names_identity(body: Any, identity: Any) -> bool:
+    """Does ``body`` name ``identity`` as a COMPLETE, unambiguous token?
+
+    The ONE mechanism all three lifecycle-closure body identities share, so merge SHA, CI run id
+    and CI job id cannot drift apart into three separately-worded checks again.
+
+    This replaces raw substring containment, which proved only that a character sequence appears
+    SOMEWHERE. Reproduced through the public verifier before this correction: a closure body whose
+    only merge/run/job mentions were ``<merge>0``, ``<run>0`` and ``<job>0`` returned no errors,
+    because each real sequence sits inside a different, longer identifier. A job id that merely
+    contains the real job id is a DIFFERENT job, and a closure naming it does not identify the job
+    whose completion it claims to follow.
+
+    Boundary-aware, in both directions: an identity is named only where the characters immediately
+    before and after it are not identity characters. Ordinary punctuation and whitespace -- the
+    backticks, commas, spaces and full stops a genuine closure body uses -- are boundaries, so the
+    canonical body is still accepted.
+    """
+    if not isinstance(body, str) or not isinstance(identity, str) or not identity:
+        return False
+    pattern = (
+        f"(?<!{_IDENTITY_BOUNDARY_CLASS})"
+        + re.escape(identity)
+        + f"(?!{_IDENTITY_BOUNDARY_CLASS})"
+    )
+    return re.search(pattern, body) is not None
+
+
+def _verify_lifecycle_closure(
+    evidence: Mapping[str, Any],
+    *,
+    number: Any,
+    merge_sha: Any,
+    run_id: str,
+    job_id: str,
+    run: Mapping[str, Any] | None,
+    job: Mapping[str, Any] | None,
+    verification: Mapping[str, Any] | None,
+    sources: TruthSources,
+) -> list[str]:
+    """XASSET-0044 SS-L condition 7, authenticated from durable truth.
+
+    SS-L: "final post-CI verification and lifecycle closure". Before this gate the runtime
+    authenticated conditions 1-6 and stopped, so an attestation could be assembled the moment CI
+    went green -- strictly earlier than the decision's own stated effectivity.
+
+    Nothing here is accepted because it is well-formed. The closure record must be a real comment,
+    on the EXACT authorizing pull request, authored by the lifecycle operator, naming and recording
+    the EXACT merge and CI identities Gates 3 and 5 independently derived, and created strictly
+    AFTER both the post-merge verification and the completion of that CI job. Every unobtainable
+    fact is an error, never silent agreement.
+
+    The XASSET-0042 PR #337 actor ratification is deliberately NOT consulted. That exception is
+    pinned to two specific PR #337 comment ids on two specific pre-existing gates; extending it to
+    a gate that did not exist when it was granted would turn a closed, retrospective ratification
+    into forward permission for bot-authored closure.
+    """
+    errors: list[str] = []
+    recorded = evidence.get("lifecycle_closure")
+    if not isinstance(recorded, Mapping):
+        return [
+            "authorization.lifecycle_evidence.lifecycle_closure: expected a mapping; "
+            "XASSET-0044 SS-L condition 7 is not optional"
+        ]
+    for unknown in sorted(set(recorded) - set(LIFECYCLE_CLOSURE_KEYS)):
+        errors.append(
+            f"authorization.lifecycle_evidence.lifecycle_closure.{unknown}: unknown key; "
+            "the schema is closed"
+        )
+
+    closure_id = str(recorded.get("comment_id") or "")
+    closure = sources.governance.issue_comment(closure_id) if closure_id else None
+    if closure is None:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id!r} does not exist; "
+            "successful CI alone never makes this decision effective"
+        )
+        return errors
+
+    # --- the exact pull request ---------------------------------------------------------
+    if not _belongs_to_pull_request(closure, number):
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} does not belong to pull "
+            f"request #{number}; a closure recorded elsewhere closes nothing here"
+        )
+
+    # --- the exact actor, with no ratification relaxation --------------------------------
+    closure_actor = _actor_login(closure)
+    if closure_actor is None:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} carries no durable author "
+            "identity, so the closure gate cannot be authenticated"
+        )
+    elif closure_actor != LIFECYCLE_OPERATOR_LOGIN:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} was authored by "
+            f"{closure_actor!r}, not the lifecycle operator {LIFECYCLE_OPERATOR_LOGIN!r}"
+        )
+
+    # --- the exact merge and CI identities, recorded AND named ---------------------------
+    _exact(
+        recorded.get("closed_merge_sha"),
+        merge_sha,
+        "authorization.lifecycle_evidence.lifecycle_closure.closed_merge_sha",
+        errors,
+    )
+    _exact(
+        str(recorded.get("closed_run_id") or ""),
+        run_id,
+        "authorization.lifecycle_evidence.lifecycle_closure.closed_run_id",
+        errors,
+    )
+    _exact(
+        str(recorded.get("closed_job_id") or ""),
+        job_id,
+        "authorization.lifecycle_evidence.lifecycle_closure.closed_job_id",
+        errors,
+    )
+    # MAJOR 1 part 1 (delta review 4987958687): the correction declared that the durable body
+    # records AND NAMES the exact merge and CI run/JOB identities, but only the merge and run were
+    # required. Reproduced before correcting: a body naming the merge and run while OMITTING the
+    # job -- and one carrying a SUBSTITUTED job -- both returned no errors. A run can carry more
+    # than one job, so naming the run alone does not identify the job whose completion the closure
+    # claims to follow.
+    #
+    # MAJOR 1 (delta review 4988858926): all three are now authenticated as COMPLETE TOKENS through
+    # the single shared ``body_names_identity`` mechanism. Raw substring containment proved only
+    # that a sequence appears somewhere, so supersets such as ``<merge>0``, ``<run>0`` and
+    # ``<job>0`` -- reproduced through the public verifier -- satisfied every check at once while
+    # naming three identifiers that are none of them. Each identity is independently required.
+    body = closure.get("body") or ""
+    for identity, what in (
+        (merge_sha if isinstance(merge_sha, str) else "", "merge SHA"),
+        (run_id, "merge-commit CI run"),
+        (job_id, "merge-commit CI job"),
+    ):
+        if identity and not body_names_identity(body, identity):
+            errors.append(
+                f"governance truth: lifecycle-closure record {closure_id} does not name the "
+                f"{what} {identity!r} as a complete token"
+            )
+
+    # --- chronology: strictly after BOTH the post-merge verification and CI completion ----
+    closed_at = _instant(closure.get("created_at"))
+    if closed_at is None:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} carries no usable "
+            "timestamp, so it cannot be proven to follow post-merge verification and CI"
+        )
+    else:
+        verified_at = _instant((verification or {}).get("created_at"))
+        if verified_at is None:
+            errors.append(
+                "governance truth: the post-merge verification timestamp could not be resolved, "
+                "so lifecycle closure cannot be proven to follow it; this fails closed"
+            )
+        elif closed_at <= verified_at:
+            errors.append(
+                f"governance truth: lifecycle closure {closed_at} does not follow post-merge "
+                f"verification {verified_at}; a closure cannot precede what it closes"
+            )
+        finished_at = _instant((job or {}).get("completed_at")) or _instant(
+            (run or {}).get("updated_at")
+        )
+        if finished_at is None:
+            errors.append(
+                "governance truth: the merge-commit CI completion time could not be resolved, so "
+                "lifecycle closure cannot be proven to follow it; this fails closed"
+            )
+        # MAJOR 1 part 2 (delta review 4987958687): STRICTLY after, on this conjunct too. The
+        # previous ``<`` implemented "not before", which is a weaker claim than the surrounding
+        # comment, than SS-L, and than the correction all state. GitHub timestamps are
+        # second-resolution, so an EQUAL instant is exactly the case that cannot distinguish
+        # "closed after CI finished" from "closed in the same second, order unknown" -- and an
+        # unprovable ordering is not a proven one. Reproduced through the public verifier before
+        # correcting, against both the job's own completed_at and the run-time fallback.
+        elif closed_at <= finished_at:
+            errors.append(
+                f"governance truth: lifecycle closure {closed_at} does not strictly follow "
+                f"completion of the merge-commit CI job {finished_at}; SS-L condition 7 is FINAL "
+                "post-CI closure, and an equal instant cannot prove that ordering"
+            )
+    return errors
 
 
 def _verify_successor_rebinding_identity(
@@ -1876,6 +2379,42 @@ def _verify_successor_rebinding_identity(
             "merge_sha": EXECUTABLE_PACKAGE_MERGE_SHA,
             "accepted_head": EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
             "merge_base": EXECUTABLE_PACKAGE_MERGE_BASE,
+        },
+    )
+    # XASSET-0044's three further relationships, each closed and each re-verified from git below.
+    _block(
+        "prior_successor_rebinding",
+        {
+            "decision": PRIOR_SUCCESSOR_REBINDING_DECISION,
+            "pull_request": PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST,
+            "merge_sha": PRIOR_SUCCESSOR_REBINDING_MERGE_SHA,
+            "accepted_head": PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD,
+            "merge_base": PRIOR_SUCCESSOR_REBINDING_MERGE_BASE,
+        },
+    )
+    _block(
+        "correction_identity",
+        {
+            "authorizing_decision": CORRECTION_AUTHORIZING_DECISION,
+            "authorizing_pull_request": CORRECTION_AUTHORIZING_PULL_REQUEST,
+            "authorizing_merge_sha": CORRECTION_AUTHORIZING_MERGE_SHA,
+            "authorizing_accepted_head": CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+            "authorizing_merge_base": CORRECTION_AUTHORIZING_MERGE_BASE,
+            "decision": CORRECTED_MODULE_DECISION,
+            "pull_request": CORRECTED_MODULE_PULL_REQUEST,
+            "merge_sha": CORRECTED_MODULE_MERGE_SHA,
+            "accepted_head": CORRECTED_MODULE_ACCEPTED_HEAD,
+            "merge_base": CORRECTED_MODULE_MERGE_BASE,
+        },
+    )
+    _block(
+        "rebinding_authorization_identity",
+        {
+            "decision": REBINDING_AUTHORIZING_DECISION,
+            "pull_request": REBINDING_AUTHORIZING_PULL_REQUEST,
+            "merge_sha": REBINDING_AUTHORIZING_MERGE_SHA,
+            "accepted_head": REBINDING_AUTHORIZING_ACCEPTED_HEAD,
+            "merge_base": REBINDING_AUTHORIZING_MERGE_BASE,
         },
     )
 
@@ -1953,6 +2492,89 @@ def _verify_successor_rebinding_identity(
                 f"an ancestor of the successor merge {merge_sha}"
             )
 
+    # --- XASSET-0044: the four inherited merges are real, undrifted, and actually inherited -----
+    #
+    # Each is verified the same way the executable package already is: exact parents in order (base
+    # then accepted head), a merge tree byte-identical to the accepted head's tree so zero merge
+    # drift is PROVEN rather than asserted, and ancestry into this rebinding's own merge. An
+    # unobtainable anchor is never treated as agreement -- every branch below appends an error.
+    inherited = (
+        (
+            "prior successor rebinding (XASSET-0037 / PR #337)",
+            PRIOR_SUCCESSOR_REBINDING_MERGE_SHA,
+            PRIOR_SUCCESSOR_REBINDING_MERGE_BASE,
+            PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD,
+        ),
+        (
+            "correction authorization (XASSET-0041 / PR #341)",
+            CORRECTION_AUTHORIZING_MERGE_SHA,
+            CORRECTION_AUTHORIZING_MERGE_BASE,
+            CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+        ),
+        (
+            "corrected module (XASSET-0042 / PR #342)",
+            CORRECTED_MODULE_MERGE_SHA,
+            CORRECTED_MODULE_MERGE_BASE,
+            CORRECTED_MODULE_ACCEPTED_HEAD,
+        ),
+        (
+            "rebinding authorization (XASSET-0043 / PR #343)",
+            REBINDING_AUTHORIZING_MERGE_SHA,
+            REBINDING_AUTHORIZING_MERGE_BASE,
+            REBINDING_AUTHORIZING_ACCEPTED_HEAD,
+        ),
+    )
+    for label, inherited_merge, inherited_base, inherited_head in inherited:
+        # MAJOR 1 (review 4986931575): an absent anchor is a REFUSAL, never a skip. Previously a
+        # ``None`` base or head quietly disabled this entry's parent-order and merge-tree checks,
+        # so an unverifiable merge read as a verified one. Every entry above now carries real
+        # identities, and this branch exists so no future entry can re-open the hole by omission.
+        if inherited_base is None or inherited_head is None:
+            errors.append(
+                f"authority: the {label} merge {inherited_merge} is bound without a complete "
+                "base/accepted-head identity, so its exact parents and zero merge drift cannot be "
+                "proven; an unverifiable inherited merge never authorizes execution"
+            )
+            continue
+        parents = git.commit_parents(inherited_merge)
+        if parents is None:
+            errors.append(
+                f"git truth: the {label} merge {inherited_merge} is absent from the local object "
+                "store, so this rebinding cannot prove what it inherits from"
+            )
+        elif list(parents) != [inherited_base, inherited_head]:
+            errors.append(
+                f"git truth: {label} merge parents {list(parents)!r} are not exactly "
+                f"[{inherited_base!r}, {inherited_head!r}]"
+            )
+        merge_tree = git.commit_tree(inherited_merge)
+        head_tree = git.commit_tree(inherited_head)
+        if merge_tree is None or head_tree is None:
+            errors.append(
+                f"git truth: the {label} merge or accepted-head tree could not be resolved, so "
+                "zero merge drift cannot be proven; this fails closed"
+            )
+        elif merge_tree != head_tree:
+            errors.append(
+                f"git truth: the {label} merge tree {merge_tree} differs from its accepted-head "
+                f"tree {head_tree}; the merge carries drift the review never saw"
+            )
+        if _is_commit_sha(merge_sha) and not git.is_ancestor(inherited_merge, str(merge_sha)):
+            errors.append(
+                f"git truth: the {label} merge {inherited_merge} is not an ancestor of the "
+                f"rebinding merge {merge_sha}; this rebinding is not on the authorized history"
+            )
+
+    # The reviewed base of THIS rebinding is the authorization that made it lawful to begin. Stated
+    # as an equality rather than left to coincidence: a rebinding branched from anywhere else has
+    # not actually waited for XASSET-0043's lifecycle to close.
+    if REVIEWED_BASE_SHA != REBINDING_AUTHORIZING_MERGE_SHA:
+        errors.append(
+            f"authority: the reviewed base {REVIEWED_BASE_SHA} is not the rebinding-authorization "
+            f"merge {REBINDING_AUTHORIZING_MERGE_SHA}; this rebinding did not branch from the "
+            "decision that authorized it"
+        )
+
     # --- SS-G.B's invariant: outcome-producing bytes are the package's, unchanged --------------
     accepted_head = document.get("authorization_head")
     for relative in EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS:
@@ -1994,6 +2616,26 @@ def _verify_successor_rebinding_identity(
     # --- MAJOR 1: the TRANSITIVE surface, projected rather than byte-compared -----------------
     errors.extend(_verify_outcome_producing_transition(document, merge_sha, sources))
     return errors
+
+
+def verify_exact_rebound_transition(successor: bytes, rebound: bytes) -> None:
+    """Prove ``successor`` became ``rebound`` through EXACTLY the reviewed link-2 manifest, or raise.
+
+    Link 2 of ``package -> successor -> rebound``. It reuses :func:`verify_exact_transition`'s
+    mechanism unchanged -- the same five enforced properties, the same byte-only instrument, no
+    parsing, importing, executing, ``eval``, or version-dependent diff algorithm -- and supplies
+    only its own frozen expected identities. Link 1 is untouched by this and is still verified
+    separately.
+    """
+    verify_exact_transition(
+        successor,
+        rebound,
+        OUTCOME_PRODUCING_REBOUND_TRANSITION,
+        package_length=OUTCOME_PRODUCING_SUCCESSOR_LENGTH,
+        package_sha256=OUTCOME_PRODUCING_SUCCESSOR_SHA256,
+        successor_length=OUTCOME_PRODUCING_REBOUND_LENGTH,
+        successor_sha256=OUTCOME_PRODUCING_REBOUND_SHA256,
+    )
 
 
 def _verify_outcome_producing_transition(
@@ -2039,12 +2681,20 @@ def _verify_outcome_producing_transition(
         "executable-package accepted head": EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
         "executable-package merge": EXECUTABLE_PACKAGE_MERGE_SHA,
     }
-    successor_anchors: dict[str, str] = {}
+    # XASSET-0044: the accepted SUCCESSOR blob is now proven at XASSET-0037's OWN anchors, which are
+    # immutable history, rather than at this rebinding's anchors -- those now carry the REBOUND
+    # blob. Link 1 is therefore still verified end to end; it is not weakened, only re-anchored to
+    # the commits that actually carry its bytes.
+    successor_anchors: dict[str, str] = {
+        "prior-rebinding accepted head": PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD,
+        "prior-rebinding merge": PRIOR_SUCCESSOR_REBINDING_MERGE_SHA,
+    }
+    rebound_anchors: dict[str, str] = {}
     accepted_head = document.get("authorization_head")
     if _is_commit_sha(accepted_head):
-        successor_anchors["successor reviewed head"] = str(accepted_head)
+        rebound_anchors["rebinding reviewed head"] = str(accepted_head)
     if _is_commit_sha(merge_sha):
-        successor_anchors["successor merge"] = str(merge_sha)
+        rebound_anchors["rebinding merge"] = str(merge_sha)
 
     package_bytes: bytes | None = None
     for label, commit in package_anchors.items():
@@ -2075,6 +2725,20 @@ def _verify_outcome_producing_transition(
             continue
         successor_bytes = blob
 
+    rebound_bytes: bytes | None = None
+    for label, commit in rebound_anchors.items():
+        blob = blob_at(commit, label)
+        if blob is None:
+            continue
+        digest = sha256_bytes(blob)
+        if digest != OUTCOME_PRODUCING_REBOUND_SHA256:
+            errors.append(
+                f"{relative} at the {label} {commit} hashes {digest}, but the reviewed rebound "
+                f"bytes are {OUTCOME_PRODUCING_REBOUND_SHA256}"
+            )
+            continue
+        rebound_bytes = blob
+
     working_path = ROOT / relative
     if not working_path.exists():
         errors.append(f"{relative}: absent from the working tree")
@@ -2085,18 +2749,19 @@ def _verify_outcome_producing_transition(
             errors.append(f"{relative}: unreadable in the working tree: {exc}")
         else:
             digest = sha256_bytes(working)
-            if digest != OUTCOME_PRODUCING_SUCCESSOR_SHA256:
+            if digest != OUTCOME_PRODUCING_REBOUND_SHA256:
                 errors.append(
-                    f"{relative} in the working tree hashes {digest}, but the reviewed successor "
-                    f"bytes are {OUTCOME_PRODUCING_SUCCESSOR_SHA256}"
+                    f"{relative} in the working tree hashes {digest}, but the reviewed rebound "
+                    f"bytes are {OUTCOME_PRODUCING_REBOUND_SHA256}"
                 )
             else:
-                successor_bytes = working
+                rebound_bytes = working
 
-    if package_bytes is None or successor_bytes is None:
+    if package_bytes is None or successor_bytes is None or rebound_bytes is None:
         if not errors:  # pragma: no cover - defensive
             errors.append(
-                f"{relative}: the exact package-to-successor transition could not be established"
+                f"{relative}: the exact package-to-successor-to-rebound transition chain could "
+                "not be established"
             )
         return errors
 
@@ -2106,6 +2771,14 @@ def _verify_outcome_producing_transition(
         errors.append(
             f"{relative}: the accepted package bytes did not become the reviewed successor bytes "
             f"through the reviewed transition ({exc})"
+        )
+    # XASSET-0044 / XASSET-0043 SS-G.4a link 2. APPENDED, never replacing link 1: both must hold.
+    try:
+        verify_exact_rebound_transition(successor_bytes, rebound_bytes)
+    except TransitionError as exc:
+        errors.append(
+            f"{relative}: the accepted successor bytes did not become the reviewed rebound bytes "
+            f"through the reviewed rebound transition ({exc})"
         )
     return errors
 
@@ -2569,11 +3242,18 @@ def lane_state_at(
 
     document, problem = _load_authorization(paths.authorization)
     if document is None:
+        # MINOR 1 (delta review 4987958687): this reason printed only REQUIRED_LIFECYCLE_GATES,
+        # so after Gate 8 it UNDERSTATED what the operator actually has to complete. The six-gate
+        # tuple and every canonical predecessor string are deliberately left byte-identical -- they
+        # are a differently-scoped, accepted, historically-named list -- so the additional
+        # requirement is stated here, in the CURRENT status explanation, rather than by rewriting
+        # them. See LIFECYCLE_CLOSURE_STATUS_REQUIREMENT.
         return LANE_ABSENT, (
             f"{problem}. Structural closure of the construction universe is not authorization: "
             f"the {AUTHORIZING_DECISION} lifecycle must close in full "
-            f"({', '.join(REQUIRED_LIFECYCLE_GATES)}) and an authenticated one-shot attestation "
-            "must then be generated. There is no merge-to-execution gap"
+            f"({', '.join(REQUIRED_LIFECYCLE_GATES)}), {LIFECYCLE_CLOSURE_STATUS_REQUIREMENT}, "
+            "and an authenticated one-shot attestation must then be generated. There is no "
+            "merge-to-execution gap"
         )
     result = validate_authorization_document(document, sources)
     if not result.valid:
@@ -3031,6 +3711,34 @@ def build_authorization_payload(
             "merge_sha": EXECUTABLE_PACKAGE_MERGE_SHA,
             "accepted_head": EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
             "merge_base": EXECUTABLE_PACKAGE_MERGE_BASE,
+        },
+        # XASSET-0044. Assembled from bound constants and then RE-VERIFIED against git at
+        # validation time, so writing them here proves nothing on its own.
+        "prior_successor_rebinding": {
+            "decision": PRIOR_SUCCESSOR_REBINDING_DECISION,
+            "pull_request": PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST,
+            "merge_sha": PRIOR_SUCCESSOR_REBINDING_MERGE_SHA,
+            "accepted_head": PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD,
+            "merge_base": PRIOR_SUCCESSOR_REBINDING_MERGE_BASE,
+        },
+        "correction_identity": {
+            "authorizing_decision": CORRECTION_AUTHORIZING_DECISION,
+            "authorizing_pull_request": CORRECTION_AUTHORIZING_PULL_REQUEST,
+            "authorizing_merge_sha": CORRECTION_AUTHORIZING_MERGE_SHA,
+            "authorizing_accepted_head": CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+            "authorizing_merge_base": CORRECTION_AUTHORIZING_MERGE_BASE,
+            "decision": CORRECTED_MODULE_DECISION,
+            "pull_request": CORRECTED_MODULE_PULL_REQUEST,
+            "merge_sha": CORRECTED_MODULE_MERGE_SHA,
+            "accepted_head": CORRECTED_MODULE_ACCEPTED_HEAD,
+            "merge_base": CORRECTED_MODULE_MERGE_BASE,
+        },
+        "rebinding_authorization_identity": {
+            "decision": REBINDING_AUTHORIZING_DECISION,
+            "pull_request": REBINDING_AUTHORIZING_PULL_REQUEST,
+            "merge_sha": REBINDING_AUTHORIZING_MERGE_SHA,
+            "accepted_head": REBINDING_AUTHORIZING_ACCEPTED_HEAD,
+            "merge_base": REBINDING_AUTHORIZING_MERGE_BASE,
         },
         "canonical_pins": live_canonical_hashes(),
         "construction_universe": {

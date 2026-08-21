@@ -15407,6 +15407,223 @@ workstreams:
           of step 11, generates no attestation, creates no lane state, consumes nothing of ATTEMPT_1,
           and authorizes no successor beyond the one future rebinding unit SS-F defines. Stage 1
           remains UNARMED and NOT EXECUTABLE.
+      - gate: xasset0043-post-correction-rebinding-authorization-post-merge-verification
+        status: complete
+        pr: 343
+        description: >-
+          LANE M FACTUAL SYNCHRONIZATION, additive. PR #343 (XASSET-0043) is independently
+          re-confirmed MERGED AND CLOSED: base 5fbfc94d7333e552bd2654261e0c57134a172e31, accepted
+          head 8e9d65ffa40991fade92b60f72f833501ce799d9, merge commit
+          0709d2f05ab031ecb6f69c40465ed4a227983aed with exactly two parents in that order and a
+          merge tree b9b717d729748b1ad3ed30bac0442afd9605e43e byte-identical to the accepted head's
+          own tree, so ZERO DRIFT AT MERGE. Review chain: FULL exact-head 4976985695 at
+          b266f8c294c8c7f135b039eaf4d836818916b5f4 returned CHANGES REQUIRED (0 BLOCKING / 2 MAJOR /
+          1 MINOR / 0 NOTE); a bounded correction resolved all three; FULL exact-head 4979065535 at
+          the exact accepted head returned APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE with 0
+          BLOCKING / 0 MAJOR / 0 MINOR. Principal acceptance 5351676579, post-merge verification
+          5352255915, lifecycle closure 5352262629. Merge-commit CI run 32334941721 / job
+          96322563522 is completed/success with head_sha equal to the EXACT MERGE SHA, and querying
+          every run at that SHA returns exactly one, which succeeded. All seven XASSET-0043 SS-N
+          conditions are therefore closed and XASSET-0043 is EFFECTIVE. The prior gate's own text is
+          left byte-unedited; this gate records the confirmed state additively rather than rewriting
+          it. PR #343 was developed on branch claude/xasset-0043-rebinding-auth-1qrj1i, retained
+          here as closed provenance now that WS-0014's single shared active_branch has lawfully
+          advanced to the unit that is currently live.
+      - gate: xasset0044-post-correction-operational-rebinding
+        status: in_progress
+        pr: 344
+        description: >-
+          THE REBINDING ITSELF -- the exactly-one future unit XASSET-0043 SS-F authorized, filing its
+          own decision and performing the rebinding in one coherent pull request as SS-F requires.
+          The effective structural authorization source is rebound to XASSET-0044;
+          AUTHORIZING_PULL_REQUEST and REVIEWED_BASE_SHA are rebound to this unit's own verified
+          pull request and base, with REVIEWED_BASE_SHA equal to the XASSET-0043 merge
+          0709d2f05ab031ecb6f69c40465ed4a227983aed and the module asserting that equality rather
+          than leaving it to coincidence. A FIFTH structurally distinct identity family is added in
+          its own constants, never folded into EXECUTABLE_PACKAGE_* or
+          HISTORICAL_OPERATIONAL_AUTHORIZATION_*: PRIOR_SUCCESSOR_REBINDING_* (XASSET-0037 / PR
+          #337), CORRECTION_AUTHORIZING_* (XASSET-0041 / PR #341), CORRECTED_MODULE_* (XASSET-0042 /
+          PR #342, the completed correction being bound) and REBINDING_AUTHORIZING_* (XASSET-0043 /
+          PR #343). Every inherited merge is verified from the git object store for exact two-parent
+          ordering, a merge tree byte-identical to its accepted head's tree, and ancestry into this
+          rebinding's merge. LOAD_BEARING_RELPATHS goes 10 -> 14 by DIRECT MEMBERSHIP of the
+          XASSET-0041, XASSET-0042, XASSET-0043 and XASSET-0044 decision files; nothing is removed,
+          no identity is altered, and the pin-succession refusal is EXTENDED to XASSET-0037's own
+          accepted pins rather than relaxed. The transitive derivation surface gains a SECOND exact
+          closed transition, APPENDED per XASSET-0043 SS-G.4a: the accepted successor blob
+          2b8ead2b0d661ddd14fa6019ee1802fe49900a214ec443228636701edeb3d356 and its 17-region
+          package-to-successor manifest are preserved verbatim as historical anchors, and a
+          23-region successor-to-rebound manifest is added, so the chain is package -> successor ->
+          rebound with each link separately provable. Link 1 is re-anchored to XASSET-0037's own
+          accepted head and merge -- the commits that actually carry its bytes -- and is not
+          weakened; both links must hold. Every declared region lies inside the authorization-only
+          surface. level1_stage1_runner.py, level1_stage1_result_validator.py and
+          level1_construction_universe_closure_validator.py are BYTE-IDENTICAL to the accepted
+          executable package, with no transition and no exception, and the universe is independently
+          regenerated at 680 constructions over 48 cells with aggregate hash
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224 unchanged. The canonical
+          artifacts are amended in successor-authorization language only and in lockstep, with
+          established_by: XASSET-0029 NOT rewritten and every superseded value retained in an
+          explicitly predecessor-named field. XASSET-0030 SS-G.B step 8 is NOT consumed a second
+          time: it was spent by XASSET-0037, and this unit's authority is SS-D's reconciliation
+          clause plus XASSET-0041 SS-I link 2's own word, equivalent, granted by XASSET-0043 SS-F.
+          XASSET-0042's FINAL_CORRECTED_MODULE_SHA256 evidence is resolved by RETIREMENT
+          (XASSET-0043 SS-I.2 option b), argued not assumed: that line and its digest
+          749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7 are left byte-unchanged
+          and re-anchored additively to the closed XASSET-0042 range they truthfully describe, while
+          the current-identity role moves to XASSET-0044's own single machine-checked
+          CURRENT_MODULE_SHA256 declaration. All four module-digest-coupled guard assertions are
+          RE-ANCHORED to closed, immutable commit ranges and none is deleted, skipped, xfailed or
+          relaxed; two mutation pins are added so the re-anchoring cannot pass vacuously. Identities
+          recomputed ONCE after every authorized byte stabilized: module
+          f89c38d49d160795795a73627777c7174d84a61583fc9ed6b5aa921648ee8df1, derivation validator
+          b3a87e4f8b828d420795348642c977a9f0585eafa9262a4be48df406f770233d, PROTOCOL_V1.md
+          1ad1d060d5bf970288844b05b94e1fd38c3cc9cc87afc1481a45ed1b315d0c84, pre_registration.yaml
+          898c329d9941c5c24ff2a800f842e860c63e2e500acc4257eb14646c1012d82f. Rebinding is NOT arming: this adds ZERO
+          activation authorizations, stage_1_executability.executable stays permanently false, and
+          no committed value in this repository authorizes Stage-1 execution. Stage 1 remains
+          UNARMED and NOT EXECUTABLE, lane ABSENT, new_execution_is_authorized() False, ATTEMPT_1
+          intact, unclaimed and unconsumed, and no stage1_results.yaml exists. XASSET-0027 SS-P.1
+          remains one, unspent; XASSET-0040 stays spent as STOPPED_BEFORE_ATTESTATION and is NOT
+          revived. Links 3, 4 and 5 of XASSET-0041 SS-I -- renewed readiness verification, renewed
+          drift verification, and a new step-11 authorization -- are NOT authorized, NOT performed,
+          and NOT made reachable by this unit completing. This gate is deliberately in_progress with
+          pr: null while its own pull request is unmerged: a filing does not mark its own unmerged
+          work complete.
+      - gate: xasset0044-bounded-correction-after-full-review-4986931575
+        status: in_progress
+        pr: 344
+        description: >-
+          Bounded correction of PR #344 after an independent FULL exact-head review at
+          c07120d695b1750c85912c0d2851416db519353f returned CHANGES REQUIRED -- 1 BLOCKING /
+          2 MAJOR / 0 MINOR / 0 NOTE. Each finding was REPRODUCED THROUGH ITS OWN REAL PUBLIC
+          MECHANISM before anything was edited, and each correction is pinned by the negative cases
+          the review named. BLOCKING 1: XASSET-0044 SS-L makes seven conditions conjunctively
+          necessary and its seventh is final post-CI verification and lifecycle closure, but the
+          closed evidence schema and verify_lifecycle_against_truth authenticated only six --
+          reproduced via build_authorization_payload plus validate_authorization_document returning
+          VALID for a document carrying no closure evidence at all, which would let an attestation
+          be assembled the moment merge-commit CI went green. Corrected by adding lifecycle_closure
+          to REQUIRED_LIFECYCLE_EVIDENCE_KEYS and a Gate 8 that authenticates it from durable truth:
+          a real comment, on the exact authorizing pull request, authored by the lifecycle operator
+          Mast3rkey, recording AND naming the exact merge and CI run/job identities Gates 3 and 5
+          independently derived, and created strictly after the post-merge verification and after
+          that CI job completed. The closure block is closed -- an unknown key is refused -- and
+          every unobtainable fact is an error rather than silent agreement. XASSET-0042's PR #337
+          actor ratification is deliberately NOT consulted by this gate, so a closed retrospective
+          ratification cannot become forward permission for bot-authored closure.
+          REQUIRED_LIFECYCLE_GATES and the canonical ..._ALL_SIX_GATES_... strings are left
+          BYTE-IDENTICAL: that tuple is differently scoped, its six entries are not in 1:1
+          correspondence with SS-L's seven conditions, and renaming them would rewrite accepted
+          predecessor semantics to fix a hole this closes exactly. MAJOR 1: XASSET-0041 / PR #341's
+          inherited merge supplied None for base and accepted head, which silently disabled BOTH
+          its exact-parent and merge-tree checks -- reproduced via validate_authorization_document
+          returning VALID for a PR #341 merge rewritten to a single WRONG parent with a DRIFTED
+          tree. The identities were independently re-derived from the local object store AND
+          cross-checked against GitHub's own record of PR #341, which agree exactly: base
+          f212cce50e28ae887dc8c594bf8ae491a3ef85af, accepted head
+          0449d08217b5c0e422721ff3ef76b4241fb8a95a, merge
+          9c8647f9dddacdf63825f569097214ba65299fe8, accepted-head and merge trees both
+          4ebd65c58fc7486294947cdec80f0a8725c6e20e so zero merge drift is proven not assumed. They
+          are bound, carried in the closed payload and schema, and enforced on the same footing as
+          every other inherited merge; the OMISSION itself is also closed, since an incomplete
+          base/accepted-head identity is now an explicit refusal rather than a skip. MAJOR 2:
+          AUTHORIZED_DECISION_MODIFICATIONS was exact by path but bound to nothing else, so it
+          survived this pull request forever -- reproduced behaviourally against a synthetic later
+          PR whose base already contained this rebinding and which rewrote the same XASSET-0042
+          decision again, which PASSED. XASSET-0043 SS-I.2 authorizes ONE transition, so the
+          allowance now names that transition exactly: this pull request's own base
+          0709d2f05ab031ecb6f69c40465ed4a227983aed, the blob that file had at that base
+          e4cda7a5042da68f347598a62d9e6d5cfc40ae55, and the single blob it may become
+          b08a625a5adb840e9576e5cd9218be24e63bd57e. Each conjunct is independently required, and
+          the new side is read from the WORKING TREE rather than HEAD because the diff this guard
+          reads compares base against the working tree. Nothing is deleted, skipped, xfailed or
+          broadly relaxed; every other pre-existing decision stays protected, a second modified file
+          still fails, and a rename or copy is still never permitted. No outcome-producing
+          behaviour, canonical construction input, universe identity, runner, result validator,
+          protected path or ATTEMPT_1 state is touched, and no gate is evaluated for any
+          construction. Stage 1 remains UNARMED and NOT EXECUTABLE, lane ABSENT,
+          new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
+          stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
+      - gate: xasset0044-third-bounded-correction-after-delta-review-4988858926
+        status: in_progress
+        pr: 344
+        description: >-
+          Third bounded correction of PR #344 after an independent exact-head DELTA review over
+          a6b7d284fb19d1d1451d5b4879610f434e0d9d1c -> be4c2d33f2b431c6064fed182086f33dd374db04
+          confirmed the prior corrections hold and returned CHANGES REQUIRED -- 0 BLOCKING / 1
+          MAJOR / 1 MINOR / 0 NOTE. Both reproduced before editing. MAJOR 1: all three
+          lifecycle-closure body checks used raw substring containment, which proves only that a
+          character sequence appears somewhere -- reproduced through verify_lifecycle_against_truth,
+          a body whose only mentions were <merge>0, <run>0 and <job>0 returned no errors, because
+          each real sequence sits inside a different longer identifier, and a job id that merely
+          contains the real job id is a DIFFERENT job. Replaced with ONE shared boundary-aware
+          mechanism, body_names_identity, used by all three so merge SHA, run id and job id cannot
+          drift apart into three separately-worded checks again: an identity counts as named only
+          where the characters immediately before AND after are not identity characters, using an
+          explicit ASCII class rather than \w so the boundary is deterministic, with regex
+          metacharacters escaped so an identity is a literal token and never a pattern. Genuine
+          bodies still pass -- backticks, spaces, commas, full stops, parentheses, brackets, braces,
+          newlines and =/; separators are all boundaries, and the canonical body plus four other
+          ordinary phrasings are pinned as accepted, so strictness was not bought by rejecting real
+          evidence. MINOR 1: this unit's own second correction had added an assertion reading
+          'ALL_SIX_GATES in STAGE_1_BLOCKING_PREREQUISITE or True', which can never fail -- the
+          blocking prerequisite does NOT contain ALL_SIX_GATES, so the fallback masked a false
+          premise while the test's own name claimed byte identity. Replaced with the exact value it
+          meant to preserve,
+          XASSET_0044_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION, rather than
+          deleting the clause and losing the coverage it claimed, and a hygiene guard was added so
+          the shape cannot recur silently -- implemented over the parsed AST rather than a substring
+          scan, since a text search would flag the very comments explaining the defect, and itself
+          proven falsifiable against synthetic source. The recorded-field exact checks, actor and
+          pull-request authentication, strict chronology on both conjuncts, the closed schema and
+          every existing refusal case are preserved. No outcome-producing behaviour, canonical
+          construction input, universe membership, order or hash, runner, result validator,
+          protected path, lane state or ATTEMPT_1 is touched, and no gate is evaluated for any
+          construction. Universe remains 680 constructions over 48 cells with aggregate hash
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane ABSENT,
+          new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
+          stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
+      - gate: xasset0044-second-bounded-correction-after-delta-review-4987958687
+        status: in_progress
+        pr: 344
+        description: >-
+          Second bounded correction of PR #344 after an independent exact-head DELTA review over
+          c07120d695b1750c85912c0d2851416db519353f -> a6b7d284fb19d1d1451d5b4879610f434e0d9d1c
+          confirmed all three original findings corrected and returned CHANGES REQUIRED -- 0
+          BLOCKING / 1 MAJOR / 1 MINOR / 0 NOTE against the correction itself. Both were reproduced
+          through the public mechanisms before anything was edited. MAJOR 1 part 1: Gate 8 required
+          the durable closure body to name the merge SHA and CI run but never the JOB, so a body
+          omitting the job -- and one carrying a SUBSTITUTED job -- both returned no errors through
+          verify_lifecycle_against_truth. A CI run can carry more than one job, so naming the run
+          does not identify the job whose completion the closure claims to follow; the body must now
+          name the exact job id, and merge, run and job are each independently required. MAJOR 1
+          part 2: the CI chronology branch rejected closed_at < finished_at, which is "not before"
+          rather than the "strictly after" the code comment, XASSET-0044 SS-L and SS-M all state, so
+          a closure timestamp EQUAL to the job's completed_at passed -- reproduced against both the
+          job's own time and the run.updated_at fallback. GitHub timestamps are second-resolution,
+          so an equal instant cannot distinguish closed-after-CI from closed-in-the-same-second, and
+          an unprovable ordering is not a proven one; the comparison is now closed_at <=
+          finished_at. The post-merge-verification conjunct was already strict and is unchanged, and
+          is pinned so this correction cannot have loosened it. MINOR 1: with no attestation,
+          lane_state_at / new_execution_is_authorized printed only REQUIRED_LIFECYCLE_GATES -- the
+          intentionally preserved six-item predecessor tuple -- so the operator-facing explanation
+          understated what Gate 8 now enforces. Corrected SEPARATELY, exactly as the review
+          required: REQUIRED_LIFECYCLE_GATES and every canonical ..._ALL_SIX_GATES_... and
+          predecessor-named string stay BYTE-IDENTICAL, and a new
+          LIFECYCLE_CLOSURE_STATUS_REQUIREMENT states the seventh condition in the CURRENT status
+          reason, spliced in beside -- never instead of -- the six accepted gates. The verdict is
+          untouched: the explanation changes, new_execution_is_authorized() still returns False. No
+          outcome-producing behaviour, canonical construction input, universe membership, order or
+          hash, runner, result validator, protected path, lane state or ATTEMPT_1 is touched, and no
+          gate is evaluated for any construction. Both corrections make the mechanism STRICTER,
+          never more permissive. Universe remains 680 constructions over 48 cells with aggregate
+          hash 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane ABSENT,
+          new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
+          stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -16514,10 +16731,10 @@ workstreams:
       remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
-    active_branch: claude/xasset-0043-rebinding-auth-1qrj1i
-    active_pr: 343
-    last_verified_main_sha: 5fbfc94d7333e552bd2654261e0c57134a172e31
-    last_verified_date: "2026-08-19"
+    active_branch: claude/xasset-0043-rebinding-7ywmdx
+    active_pr: 344
+    last_verified_main_sha: 0709d2f05ab031ecb6f69c40465ed4a227983aed
+    last_verified_date: "2026-08-20"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively

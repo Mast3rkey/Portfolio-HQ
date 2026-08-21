@@ -729,8 +729,22 @@ class TestUnifiedStage1Lifecycle:
         )
         expected = PREREG.STAGE_1_EXECUTION_PRECONDITION
         # FURTHER AMENDED BY XASSET-0029: the XASSET-0028 lifecycle is itself spent.
-        assert "XASSET_0037" in expected  # rebound by XASSET-0030 SS-G.B step 8
+        # FURTHER AMENDED BY XASSET-0044's post-correction operational rebinding, which advanced
+        # the operative generation from XASSET-0037 under XASSET-0030 SS-D's reconciliation clause
+        # (SS-G.B step 8's single rebinding was already spent by XASSET-0037 and is NOT re-consumed).
+        # The guard is not weakened. It still pins one exact operative generation, and it now
+        # additionally requires (a) that the spent generation is absent from the operative string
+        # and (b) that the spent string survives verbatim in its own predecessor-named field --
+        # so a silent regression to, or erasure of, a spent generation fails here.
+        assert "XASSET_0044" in expected
+        assert "XASSET_0037" not in expected
         assert "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION" in expected
+        assert (
+            data["lifecycle_effectivity"][
+                "predecessor_stage_1_execution_may_begin_only_after_xasset_0037"
+            ]
+            == PREREG.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0037
+        )
         assert (
             data["lifecycle_effectivity"][
                 "predecessor_stage_1_execution_may_begin_only_after_xasset_0028"

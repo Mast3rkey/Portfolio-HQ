@@ -60,6 +60,18 @@ map, deferrals, provenance requirements, and firewall — is what `XASSET-0027` 
 > `XASSET-0037` amendment section at the end of this document is operative where earlier text
 > differs.
 
+> **FURTHER AMENDED BY `XASSET-0044`.** `XASSET-0037`'s own six-gate lifecycle closed in full and
+> remains valid history, but `XASSET-0042` (PR #342) lawfully corrected one of the load-bearing
+> paths `XASSET-0037` bound — the PR #337 lifecycle actor-evidence correction — which created
+> exactly the enforcement drift `XASSET-0030` §D recorded in advance for any lawful correction of
+> load-bearing code. `XASSET-0030` §G.B step 8's single rebinding was **spent** by `XASSET-0037`
+> and is not drawn on twice; `XASSET-0044` is the **reconciliation lifecycle** §D provides for,
+> authorized by `XASSET-0043` and named by `XASSET-0041` §I link 2. **The mechanism is unchanged**;
+> what changed is which merged tree it proves load-bearing identity against. Stage 1 is still
+> **not executable**: rebinding is not arming, it adds **zero** activation authorizations, and
+> `stage_1_executability.executable` stays `false` permanently. The `XASSET-0044` amendment section
+> at the end of this document is operative where earlier text differs.
+
 ## 2. The governing question
 
 Reproduced from `XASSET-0025` §K, unmodified, and instantiated identically for every candidate:
@@ -596,9 +608,9 @@ stage_1_structurally_closed: true
 stage_1_operationally_authorized: false
 stage_1_authorization_mechanism: EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
 stage_1_execution_attempt_id: ENDPOINT-0001::STAGE_1::ATTEMPT_1
-stage_1_effective_structural_authorization_source: XASSET-0037
+stage_1_effective_structural_authorization_source: XASSET-0044
 stage_1_authorization_mechanism_established_by: XASSET-0029
-stage_1_authorization_rebound_by: XASSET-0037
+stage_1_authorization_rebound_by: XASSET-0044
 stage_1_executable_package_bound: PULL_REQUEST_336
 stage_2_authorized: false
 j12_deferred: true
@@ -871,4 +883,42 @@ authorizes nothing, exactly as merging `XASSET-0029` authorized nothing.
 `stage1_results.yaml`, generates no attestation, creates no `READY`/`CLAIMED`/`COMPLETED` lane state
 or authorization root, consumes nothing of `ATTEMPT_1`, and performs none of §G.B steps 9–11.
 `XASSET-0024` §K.1 remains **unresolved**, §J.12 remains **deferred**, Stage 2 remains
+**unauthorized**, and application authority remains **WITHHELD**.
+
+## Amendment — `XASSET-0044` Stage-1 post-correction operational rebinding
+
+**Amended by `XASSET-0044`, under `XASSET-0030` §D's reconciliation clause, authorized by
+`XASSET-0043`.** This section is operative where earlier text differs. It supersedes the
+`XASSET-0037` section above **only** as to which decision is the currently effective structural
+authorization source; everything else in that section stands as accepted history.
+
+`XASSET-0042` lawfully corrected `level1_stage1_execution_authorization.py` — the PR #337 lifecycle
+actor-evidence correction `XASSET-0041` authorized. One of the ten paths `XASSET-0037` bound
+therefore no longer matches the merged tree it was proven against, and the mechanism failed closed,
+which is the mechanism working rather than a defect. `XASSET-0044` binds the corrected
+implementation against the exact merged bytes that delivered it.
+
+**`XASSET-0030` §G.B step 8 is not consumed a second time.** Step 8 authorized *one* rebinding
+against the executable package's exact merged bytes and `XASSET-0037` performed it. The authority
+here is §D's "successor operational-authorization **or reconciliation lifecycle**" clause together
+with `XASSET-0041` §I link 2's own word, ***equivalent***, and `XASSET-0043` is the separate
+governance decision that grants it.
+
+**The trust boundary grows and nothing is removed.** `LOAD_BEARING_RELPATHS` goes from ten paths to
+fourteen. The four additions are the `XASSET-0041`, `XASSET-0042`, `XASSET-0043`, and `XASSET-0044`
+decision files, by **direct membership** rather than by any asserted equivalence: after this
+rebinding those four decisions jointly make the corrected bytes lawful, and any of them left outside
+the boundary would stay editable after an attestation had authenticated. Every existing path keeps
+its existing identity and its existing exact-byte comparison, and the pin-succession refusal is
+extended to `XASSET-0037`'s own accepted pins rather than relaxed.
+
+**Rebinding is not arming.** `XASSET-0044` adds **zero** activation authorizations,
+`stage_1_executability.executable` stays `false` permanently, and no committed value in this
+repository authorizes Stage-1 execution — merging `XASSET-0044` authorizes nothing, exactly as
+merging `XASSET-0037` and `XASSET-0029` authorized nothing.
+
+**`XASSET-0044` executes no Stage 1**, evaluates no gate for any construction, produces no
+`stage1_results.yaml`, generates no attestation, creates no `READY`/`CLAIMED`/`COMPLETED` lane state
+or authorization root, consumes nothing of `ATTEMPT_1`, and performs none of `XASSET-0030` §G.B
+steps 9–11. `XASSET-0024` §K.1 remains **unresolved**, §J.12 remains **deferred**, Stage 2 remains
 **unauthorized**, and application authority remains **WITHHELD**.

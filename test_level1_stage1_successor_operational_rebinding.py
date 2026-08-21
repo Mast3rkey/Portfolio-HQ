@@ -122,6 +122,7 @@ BASE = A.REVIEWED_BASE_SHA
 REVIEW_ID = "4970000001"
 ACCEPT_ID = "5970000001"
 VERIFY_ID = "5970000002"
+CLOSURE_ID = "5970000003"
 RUN_ID = "3200000001"
 JOB_ID = "9600000001"
 REVIEWER_LOGIN = "independent-reviewer"
@@ -150,6 +151,26 @@ class FakeGit:
                 A.EXECUTABLE_PACKAGE_MERGE_BASE,
                 A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
             ),
+            # EXTENDED BY XASSET-0044: the post-correction rebinding verifies four further merges
+            # from git, so the stand-in vouches for each rather than letting an unknown anchor pass.
+            A.PRIOR_SUCCESSOR_REBINDING_MERGE_SHA: (
+                A.PRIOR_SUCCESSOR_REBINDING_MERGE_BASE,
+                A.PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD,
+            ),
+            # AMENDED BY review 4986931575 MAJOR 1: PR #341's base and accepted head are now
+            # BOUND, so its exact parent order and merge-tree identity are actually verified.
+            A.CORRECTION_AUTHORIZING_MERGE_SHA: (
+                A.CORRECTION_AUTHORIZING_MERGE_BASE,
+                A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+            ),
+            A.CORRECTED_MODULE_MERGE_SHA: (
+                A.CORRECTED_MODULE_MERGE_BASE,
+                A.CORRECTED_MODULE_ACCEPTED_HEAD,
+            ),
+            A.REBINDING_AUTHORIZING_MERGE_SHA: (
+                A.REBINDING_AUTHORIZING_MERGE_BASE,
+                A.REBINDING_AUTHORIZING_ACCEPTED_HEAD,
+            ),
         }
         self.blobs = {}
         for rel in A.LOAD_BEARING_RELPATHS:
@@ -167,14 +188,30 @@ class FakeGit:
             HEAD: "t" * 40,
             A.EXECUTABLE_PACKAGE_MERGE_SHA: "p" * 40,
             A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD: "p" * 40,
+            # XASSET-0044: each inherited merge's tree equals its accepted head's tree.
+            A.PRIOR_SUCCESSOR_REBINDING_MERGE_SHA: "r" * 40,
+            A.PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD: "r" * 40,
+            A.CORRECTED_MODULE_MERGE_SHA: "c" * 40,
+            A.CORRECTED_MODULE_ACCEPTED_HEAD: "c" * 40,
+            A.REBINDING_AUTHORIZING_MERGE_SHA: "a" * 39 + "z",
+            A.REBINDING_AUTHORIZING_ACCEPTED_HEAD: "a" * 39 + "z",
+            A.CORRECTION_AUTHORIZING_MERGE_SHA: "4" * 40,
+            A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD: "4" * 40,
         }
         # The exact transition needs blob TEXT, not a digest, and distinguishes the anchors: the
         # two PACKAGE anchors carry the accepted package bytes and the successor anchors carry
         # the reviewed successor bytes. The default posture is therefore the TRUE one, and each
         # negative test perturbs exactly one anchor.
+        # EXTENDED BY XASSET-0044: the chain is package -> successor -> rebound, so the accepted
+        # SUCCESSOR bytes now live at XASSET-0037's own anchors and the working tree carries the
+        # REBOUND bytes. ``DERIVATION_SOURCE`` is the live file, which is the rebound blob.
         self.texts = {
             (MERGE, DERIVATION_RELPATH): DERIVATION_SOURCE,
             (HEAD, DERIVATION_RELPATH): DERIVATION_SOURCE,
+            (A.PRIOR_SUCCESSOR_REBINDING_MERGE_SHA,
+             DERIVATION_RELPATH): _successor_blob().decode("utf-8"),
+            (A.PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD,
+             DERIVATION_RELPATH): _successor_blob().decode("utf-8"),
             (A.EXECUTABLE_PACKAGE_MERGE_SHA, DERIVATION_RELPATH): PACKAGE_SOURCE,
             (A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, DERIVATION_RELPATH): PACKAGE_SOURCE,
         }
@@ -241,9 +278,28 @@ class FakeGovernance:
                 "created_at": "2026-08-17T13:00:00Z",
                 "user": {"login": PRINCIPAL_LOGIN},
             },
+            # ADDED BY review 4986931575 BLOCKING 1: SS-L condition 7's own record -- lifecycle
+            # operator, exact merge and CI identities, strictly after verification AND after the
+            # CI job completed.
+            CLOSURE_ID: {
+                "body": f"Lifecycle closure for merge `{MERGE}`, run {RUN_ID}, job {JOB_ID}.",
+                "issue_url": PR_URL,
+                "created_at": "2026-08-17T14:00:00Z",
+                "user": {"login": PRINCIPAL_LOGIN},
+            },
         }
-        self.runs = {RUN_ID: {"status": "completed", "conclusion": "success", "head_sha": MERGE}}
-        self.jobs = {JOB_ID: {"run_id": RUN_ID, "conclusion": "success", "head_sha": MERGE}}
+        self.runs = {
+            RUN_ID: {
+                "status": "completed", "conclusion": "success", "head_sha": MERGE,
+                "updated_at": "2026-08-17T13:30:00Z",
+            }
+        }
+        self.jobs = {
+            JOB_ID: {
+                "run_id": RUN_ID, "conclusion": "success", "head_sha": MERGE,
+                "completed_at": "2026-08-17T13:30:00Z",
+            }
+        }
         self.__dict__.update(overrides)
 
     def pull_request(self, number):
@@ -289,6 +345,14 @@ def lifecycle() -> dict:
             "status": "completed",
             "conclusion": "success",
             "head_sha": MERGE,
+        },
+        # ADDED BY review 4986931575 BLOCKING 1: XASSET-0044 SS-L condition 7, now a required,
+        # closed, actor-bound, identity-bound and chronology-bound gate.
+        "lifecycle_closure": {
+            "comment_id": CLOSURE_ID,
+            "closed_merge_sha": MERGE,
+            "closed_run_id": RUN_ID,
+            "closed_job_id": JOB_ID,
         },
     }
 
@@ -347,11 +411,23 @@ class TestObsoleteLifecycleCannotAuthorize:
 
     def test_three_current_load_bearing_paths_are_absent_from_the_xasset_0029_merged_tree(self):
         git = A.LiveGitTruthSource()
+        # RE-ANCHORED BY XASSET-0044: evaluated over XASSET-0037's OWN accepted boundary, which is
+        # the set this assertion was written about. The live set is checked immediately below.
         absent = [
+            rel
+            for rel in _xasset_0037_load_bearing()
+            if git.blob_sha256_at(A.HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA, rel) is None
+        ]
+        live_absent = {
             rel
             for rel in A.LOAD_BEARING_RELPATHS
             if git.blob_sha256_at(A.HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA, rel) is None
-        ]
+        }
+        # Every path absent from XASSET-0037's set is still absent from the live one, and every
+        # additional live absentee is a later decision file that could not have existed either.
+        assert set(absent) <= live_absent
+        for rel in live_absent - set(absent):
+            assert rel.startswith("governance/decisions/XASSET-"), rel
         assert set(absent) == {
             "level1_stage1_runner.py",
             "level1_stage1_result_validator.py",
@@ -409,16 +485,31 @@ class TestObsoleteLifecycleCannotAuthorize:
         _rejected(payload, "is not the exact reviewed base", sources(git=git))
 
     def test_the_effective_source_is_the_successor_not_the_historical_authorization(self):
-        assert A.AUTHORIZING_DECISION == "XASSET-0037"
+        # RE-ANCHORED BY XASSET-0044: XASSET-0037's identity now lives in
+        # PRIOR_SUCCESSOR_REBINDING_*, and the property asserted is unchanged.
+        assert A.PRIOR_SUCCESSOR_REBINDING_DECISION == "XASSET-0037"
         assert A.HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION == "XASSET-0029"
-        assert A.AUTHORIZING_DECISION != A.HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION
+        assert (
+            A.PRIOR_SUCCESSOR_REBINDING_DECISION
+            != A.HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION
+        )
+        # ... and the effective source has itself moved on, to a decision distinct from both.
+        assert A.AUTHORIZING_DECISION not in {
+            A.PRIOR_SUCCESSOR_REBINDING_DECISION,
+            A.HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION,
+        }
 
     def test_the_bound_pull_request_is_the_successors_own(self):
         """Verified against the real draft after it was opened; see the constant's provenance note."""
-        assert A.AUTHORIZING_PULL_REQUEST == 337
-        assert A.AUTHORIZING_PULL_REQUEST != A.HISTORICAL_OPERATIONAL_AUTHORIZATION_PULL_REQUEST
-        assert A.AUTHORIZING_PULL_REQUEST != A.PACKAGE_AUTHORIZING_PULL_REQUEST
-        assert A.AUTHORIZING_PULL_REQUEST != A.EXECUTABLE_PACKAGE_PULL_REQUEST
+        # RE-ANCHORED BY XASSET-0044, same property, on the constant that now carries #337.
+        assert A.PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST == 337
+        assert (
+            A.PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST
+            != A.HISTORICAL_OPERATIONAL_AUTHORIZATION_PULL_REQUEST
+        )
+        assert A.PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST != A.PACKAGE_AUTHORIZING_PULL_REQUEST
+        assert A.PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST != A.EXECUTABLE_PACKAGE_PULL_REQUEST
+        assert A.AUTHORIZING_PULL_REQUEST != A.PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST
 
     def test_the_bound_pull_request_provenance_is_disclosed_not_flattered(self):
         """The constant must not claim an authoring order it did not have."""
@@ -459,8 +550,12 @@ class TestFourDistinctIdentities:
         assert A.PACKAGE_AUTHORIZING_MERGE_SHA != A.EXECUTABLE_PACKAGE_MERGE_SHA
 
     def test_the_package_merge_is_the_successors_reviewed_base(self):
-        """Not assumed: the successor branches from exactly the package it binds."""
-        assert A.REVIEWED_BASE_SHA == A.EXECUTABLE_PACKAGE_MERGE_SHA
+        """Not assumed: the successor branches from exactly the package it binds.
+
+        RE-ANCHORED BY XASSET-0044: XASSET-0037's own reviewed base is now
+        PRIOR_SUCCESSOR_REBINDING_MERGE_BASE, and it still equals the package merge exactly.
+        """
+        assert A.PRIOR_SUCCESSOR_REBINDING_MERGE_BASE == A.EXECUTABLE_PACKAGE_MERGE_SHA
 
     def test_the_package_base_is_the_package_authoritys_merge(self):
         assert A.EXECUTABLE_PACKAGE_MERGE_BASE == A.PACKAGE_AUTHORIZING_MERGE_SHA
@@ -661,16 +756,30 @@ class TestTrustBoundary:
             assert relative in A.LOAD_BEARING_RELPATHS, f"{relative} was removed"
 
     def test_the_only_addition_is_the_successor_decision(self):
-        additions = set(A.LOAD_BEARING_RELPATHS) - set(PACKAGE_LOAD_BEARING)
+        """RE-ANCHORED BY XASSET-0044. What XASSET-0037 added is unchanged and still asserted
+        exactly: its ONE addition over the package's nine. The live set has since grown again
+        under XASSET-0030 SS-D, so the property is proven against XASSET-0037's own accepted
+        boundary -- read from the module AS IT STOOD AT ITS OWN MERGE -- rather than against a live
+        tuple a later generation owns. Every package path surviving into the live set is asserted
+        separately below, so nothing about preservation is lost.
+        """
+        additions = set(_xasset_0037_load_bearing()) - set(PACKAGE_LOAD_BEARING)
         assert additions == {
             "governance/decisions/"
             "XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md"
         }
+        # PRESERVATION, asserted against the LIVE set: no later generation may drop a path.
+        assert set(PACKAGE_LOAD_BEARING) <= set(A.LOAD_BEARING_RELPATHS)
+        assert set(_xasset_0037_load_bearing()) <= set(A.LOAD_BEARING_RELPATHS)
 
     def test_the_set_grew_from_nine_to_ten(self):
+        """RE-ANCHORED BY XASSET-0044, same property against XASSET-0037's own accepted set."""
         assert len(PACKAGE_LOAD_BEARING) == 9
-        assert len(A.LOAD_BEARING_RELPATHS) == 10
-        assert len(set(A.LOAD_BEARING_RELPATHS)) == 10
+        assert len(_xasset_0037_load_bearing()) == 10
+        assert len(set(_xasset_0037_load_bearing())) == 10
+        # The live boundary only ever grows, and never contains a duplicate.
+        assert len(A.LOAD_BEARING_RELPATHS) >= 10
+        assert len(set(A.LOAD_BEARING_RELPATHS)) == len(A.LOAD_BEARING_RELPATHS)
 
     def test_the_successor_decision_is_load_bearing(self):
         assert any("XASSET-0037" in relative for relative in A.LOAD_BEARING_RELPATHS)
@@ -1064,11 +1173,33 @@ class TestCanonicalAmendment:
         assert prereg["predecessor_hash_version"] == "ENDPOINT-0001-PREREG-V6"
 
     def test_the_operative_lifecycle_names_the_successor(self, prereg):
+        """RE-ANCHORED BY XASSET-0044. XASSET-0037's four values are unchanged and still asserted
+        in full -- they now sit in the explicitly predecessor-named fields SS-J requires, which is
+        exactly the retention this test exists to protect. That every operative field names ONE
+        current source, and that it is no longer XASSET-0037, is asserted alongside.
+        """
         effectivity = prereg["lifecycle_effectivity"]
-        assert effectivity["stage_1_execution_may_begin_only_after"].startswith("XASSET_0037_")
-        assert effectivity["stage_1_execution_precondition_amended_by"] == "XASSET-0037"
-        assert prereg["stages"]["stage_1"]["executable_only_after"].startswith("XASSET_0037_")
-        assert prereg["stage_1_executability"]["blocking_prerequisite"].startswith("XASSET_0037_")
+        assert effectivity[
+            "predecessor_stage_1_execution_may_begin_only_after_xasset_0037"
+        ].startswith("XASSET_0037_")
+        assert (
+            effectivity["predecessor_stage_1_execution_precondition_amended_by_xasset_0037"]
+            == "XASSET-0037"
+        )
+        assert prereg["stages"]["stage_1"][
+            "predecessor_executable_only_after_xasset_0037"
+        ].startswith("XASSET_0037_")
+        assert prereg["stage_1_executability"][
+            "predecessor_blocking_prerequisite_xasset_0037"
+        ].startswith("XASSET_0037_")
+        # Exactly one operative source, and it has moved past XASSET-0037.
+        for operative in (
+            effectivity["stage_1_execution_may_begin_only_after"],
+            prereg["stages"]["stage_1"]["executable_only_after"],
+            prereg["stage_1_executability"]["blocking_prerequisite"],
+        ):
+            assert not operative.startswith("XASSET_0037_")
+        assert effectivity["stage_1_execution_precondition_amended_by"] != "XASSET-0037"
 
     def test_the_predecessor_lifecycle_is_retained_as_history(self, prereg):
         effectivity = prereg["lifecycle_effectivity"]
@@ -1085,9 +1216,19 @@ class TestCanonicalAmendment:
 
     def test_the_mechanisms_establisher_is_not_rewritten(self, prereg):
         block = prereg["stage_1_operational_authorization"]
+        # THE POINT OF THIS TEST IS UNCHANGED and is the assertion that matters: the MECHANISM's
+        # establisher is historical truth and is never rewritten by any successor.
         assert block["established_by"] == "XASSET-0029"
-        assert block["rebound_by"] == "XASSET-0037"
-        assert block["effective_structural_authorization_source"] == "XASSET-0037"
+        # RE-ANCHORED BY XASSET-0044: XASSET-0037's own values are retained in predecessor-named
+        # fields, and the effective source has advanced past them.
+        assert block["predecessor_rebound_by_xasset_0037"] == "XASSET-0037"
+        assert (
+            block["predecessor_effective_structural_authorization_source_xasset_0037"]
+            == "XASSET-0037"
+        )
+        assert block["rebound_by"] != "XASSET-0037"
+        assert block["effective_structural_authorization_source"] != "XASSET-0037"
+        assert block["rebound_by"] == block["effective_structural_authorization_source"]
 
     def test_the_rebinding_block_records_four_distinct_identities(self, prereg):
         identities = prereg["stage_1_operational_authorization"][
@@ -1181,9 +1322,16 @@ class TestCanonicalAmendment:
         assert result.ok, result.errors
 
     def test_a_forged_decision_pin_block_fails_closed(self, decision_text):
+        """RE-ANCHORED BY XASSET-0044: same property, against the pins this validator now asserts.
+
+        XASSET-0037's pin validator was demoted from a live-byte check to a verbatim-history check
+        when XASSET-0044 amended the canonical bytes -- exactly the treatment XASSET-0037 itself
+        gave XASSET-0029's. Forging its accepted protocol pin must still fail closed, and it does.
+        """
         forged = decision_text.replace(
-            A.CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH], "0" * 64
+            A.XASSET_0037_CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH], "0" * 64
         )
+        assert forged != decision_text, "the forgery must actually change the text"
         assert not PREREG.validate_xasset_0037_successor_hash_pins(forged).ok
 
     def test_gate_identity_is_unchanged(self, prereg):
@@ -1429,13 +1577,68 @@ def _execute_derivation_in_subprocess(source: str) -> str:
 # ======================================================================================
 
 
+def _xasset_0037_load_bearing() -> tuple[str, ...]:
+    """``LOAD_BEARING_RELPATHS`` AS XASSET-0037 ACCEPTED IT, read from the git object store.
+
+    Added by XASSET-0044's re-anchoring. Two of the ten entries are ``Name`` references to the
+    canonical relpath constants rather than string literals, so the tuple is resolved element by
+    element from the module's own AST at that commit rather than ``literal_eval``'d whole.
+    """
+    import ast as _ast
+
+    out = subprocess.run(
+        ["git", "show",
+         f"{A.PRIOR_SUCCESSOR_REBINDING_MERGE_SHA}:level1_stage1_execution_authorization.py"],
+        cwd=ROOT, capture_output=True, check=False,
+    )
+    if out.returncode != 0:
+        pytest.skip("the XASSET-0037 merge is unavailable in this checkout")
+    tree = _ast.parse(out.stdout.decode("utf-8"))
+    literals: dict[str, str] = {}
+    paths: tuple[str, ...] | None = None
+    for node in tree.body:
+        if not isinstance(node, _ast.Assign) or len(node.targets) != 1:
+            continue
+        target = node.targets[0]
+        if not isinstance(target, _ast.Name):
+            continue
+        if isinstance(node.value, _ast.Constant) and isinstance(node.value.value, str):
+            literals[target.id] = node.value.value
+        elif target.id == "LOAD_BEARING_RELPATHS" and isinstance(node.value, _ast.Tuple):
+            resolved = []
+            for element in node.value.elts:
+                if isinstance(element, _ast.Constant):
+                    resolved.append(element.value)
+                elif isinstance(element, _ast.Name):
+                    resolved.append(literals[element.id])
+                else:  # pragma: no cover - defensive
+                    raise AssertionError(f"unresolvable entry {_ast.dump(element)}")
+            paths = tuple(resolved)
+    assert paths is not None, "LOAD_BEARING_RELPATHS not found at the XASSET-0037 merge"
+    return paths
+
+
 def _package_blob() -> bytes:
     """The accepted executable-package blob, from the git object store."""
     return PACKAGE_SOURCE.encode("utf-8")
 
 
 def _successor_blob() -> bytes:
-    return (ROOT / DERIVATION_RELPATH).read_bytes()
+    """The accepted SUCCESSOR blob, from the git object store at XASSET-0037's own merge.
+
+    RE-ANCHORED BY XASSET-0044. This read the working tree, which was the accepted successor blob
+    while XASSET-0037 was the current generation. XASSET-0044 lawfully rebound that file under
+    XASSET-0030 SS-D, appending a second closed transition, so the working tree now carries the
+    REBOUND bytes. XASSET-0037's accepted transition is unchanged and still fully proven here --
+    against the immutable commit that actually carries its bytes.
+    """
+    out = subprocess.run(
+        ["git", "show", f"{A.PRIOR_SUCCESSOR_REBINDING_MERGE_SHA}:{DERIVATION_RELPATH}"],
+        cwd=ROOT, capture_output=True, check=False,
+    )
+    if out.returncode != 0:
+        pytest.skip("the XASSET-0037 merge is unavailable in this checkout")
+    return out.stdout
 
 
 def _flip(data: bytes, at: int) -> bytes:
@@ -1986,10 +2189,16 @@ class TestConstructionUniverseIsPackageBound:
         ), "the construction-universe module must be package-bound, not merely load-bearing"
 
     def test_the_load_bearing_boundary_is_unchanged_at_ten_paths(self):
-        """The correction ADDS a package binding; it removes nothing."""
+        """The correction ADDS a package binding; it removes nothing.
+
+        RE-ANCHORED BY XASSET-0044: proven against XASSET-0037's own accepted boundary, with the
+        removes-nothing property additionally asserted against the live set.
+        """
+        assert CONSTRUCTION_UNIVERSE_RELPATH in _xasset_0037_load_bearing()
+        assert len(_xasset_0037_load_bearing()) == 10
+        assert len(set(_xasset_0037_load_bearing())) == 10
         assert CONSTRUCTION_UNIVERSE_RELPATH in A.LOAD_BEARING_RELPATHS
-        assert len(A.LOAD_BEARING_RELPATHS) == 10
-        assert len(set(A.LOAD_BEARING_RELPATHS)) == 10
+        assert set(_xasset_0037_load_bearing()) <= set(A.LOAD_BEARING_RELPATHS)
 
     def test_the_consumers_really_do_import_it(self):
         """The premise, re-derived from the consumers rather than asserted."""
