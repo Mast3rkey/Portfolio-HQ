@@ -708,13 +708,31 @@ CANONICAL_PINS: dict[str, str] = {
     ),
 }
 
-#: XASSET-0044's pins, retained as historical identity by XASSET-0047. They are IDENTICAL to
-#: :data:`CANONICAL_PINS` above, and that is a FACT rather than an oversight: XASSET-0046 SS-G.9
-#: freezes the canonical inputs, so this recovery amends none of them and XASSET-0044 remains the
-#: last decision that changed those bytes. They are named separately anyway so the succession
-#: refusal below can be EXTENDED to cover them the moment a future decision does amend them --
-#: adding the entry now is what stops that future decision from copying a pin forward silently.
-XASSET_0044_CANONICAL_PINS = dict(CANONICAL_PINS)
+#: XASSET-0044's pins, retained as historical identity by XASSET-0047, written as INDEPENDENT
+#: LITERALS -- exactly like every predecessor mapping below, and deliberately NOT derived from
+#: :data:`CANONICAL_PINS`.
+#:
+#: MAJOR 1 (review 4997532748): this was ``dict(CANONICAL_PINS)``, which made the succession
+#: refusal source-vacuous. Reproduced before correcting: a SOURCE-LEVEL edit to one current pin
+#: literal was rebuilt into this mapping during import, the two stayed equal, and the refusal
+#: returned clean -- so the check detected only a post-import monkeypatch of one name, never the
+#: edit it claims to prevent. A historical identity copied from the thing it is supposed to
+#: outlive cannot prove succession, because it has no independent existence to compare against.
+#:
+#: The VALUES are currently identical to :data:`CANONICAL_PINS`, and that remains a FACT rather
+#: than an oversight: XASSET-0046 SS-G.9 freezes the canonical inputs, this recovery amends none
+#: of them, and XASSET-0044 is still the last decision that changed those bytes. Being equal in
+#: value is not the defect; being equal BY CONSTRUCTION was. Written out here, the equality is a
+#: verifiable claim that a future canonical amendment must break loudly -- which is precisely what
+#: forces that amendment to extend the succession machinery instead of copying a pin forward.
+XASSET_0044_CANONICAL_PINS = {
+    CANONICAL_PROTOCOL_RELPATH: (
+        "1ad1d060d5bf970288844b05b94e1fd38c3cc9cc87afc1481a45ed1b315d0c84"
+    ),
+    CANONICAL_PREREGISTRATION_RELPATH: (
+        "898c329d9941c5c24ff2a800f842e860c63e2e500acc4257eb14646c1012d82f"
+    ),
+}
 
 #: XASSET-0037's pins, retained as predecessor identity now that XASSET-0044 amends the canonical
 #: authorization language under successor authority. They no longer describe the current files and
@@ -2508,6 +2526,12 @@ def _verify_recovery_lifecycle_anchor(merge_sha: Any) -> list[str]:
     4. the canonical inputs must be UNCHANGED from the pins XASSET-0044 left, because SS-G.9
        freezes them and this unit amends none of them. If a future edit moves a canonical byte
        without extending the succession machinery, this fires.
+
+       That refusal is only as real as the independence of the identity it compares against.
+       :data:`XASSET_0044_CANONICAL_PINS` is therefore bound to XASSET-0044's exact historical
+       literals and never derived from :data:`CANONICAL_PINS` -- see MAJOR 1 of review
+       4997532748, where the previous ``dict(CANONICAL_PINS)`` form followed a source-level pin
+       edit during import and reported clean.
 
     Pure and offline: it reads constants only, never git, GitHub, the network, or the clock, so it
     cannot be silenced by an unavailable source.

@@ -15869,7 +15869,25 @@ workstreams:
           request may not be the authorizing pull request; a merge already recorded as having
           FAILED its own merge-commit CI may not be the authorized merge; and the canonical pins
           must still equal the pins XASSET-0044 left, which is how SS-G.9's canonical freeze stops
-          being a promise and becomes a check. STRICT NECESSITY, per SS-G.7 and SS-G.9: only the
+          being a promise and becomes a check. BOUNDED CORRECTION, MAJOR 1 of independent full
+          review 4997532748: that fourth refusal was first filed SOURCE-VACUOUS -- the historical
+          identity was bound as dict(CANONICAL_PINS), so a source-level edit to a current pin
+          literal was rebuilt into it during import, the two stayed equal, and the refusal returned
+          clean; only a post-import monkeypatch of one name was ever detected. Reproduced through
+          the real mechanism before correcting, in an isolated copy, with the real canonical files
+          never touched. XASSET_0044_CANONICAL_PINS is now bound to XASSET-0044's exact historical
+          literals, written out independently exactly as every predecessor pin mapping already was
+          and never derived, copied, aliased, unpacked or comprehended from CANONICAL_PINS. The two
+          mappings remain EQUAL IN VALUE, which SS-G.9 requires: being equal was never the defect,
+          being equal BY CONSTRUCTION was. The correction is proved structurally from the module's
+          own AST against six known-bad derived forms and a known-good independent form,
+          behaviourally by editing one pin literal in source and re-importing in a fresh
+          interpreter in BOTH directions with an unedited control run, and by pinning both
+          historical literal values in a third external copy so a lockstep edit is still caught;
+          the pre-existing runtime monkeypatch test is KEPT, since the review called it
+          insufficient rather than wrong. No canonical byte, current pin value, universe value,
+          outcome-producing byte, anchor constant or boundary path changed in the correction.
+          STRICT NECESSITY, per SS-G.7 and SS-G.9: only the
           lifecycle anchor moved. PROTOCOL_V1.md, pre_registration.yaml, the derivation module, the
           runner, the result validator and the universe are UNCHANGED, so no third link was added to
           the exact closed package -> successor -> rebound transition; the canonical charter's
@@ -15891,7 +15909,7 @@ workstreams:
           the overlap-model repair to 0709d2f05ab031ecb6f69c40465ed4a227983aed ->
           9c2821ab9e0e0dff09f5a03da5a6034775b00750, all re-proved independently from the object
           store and re-run under five simulated ref states in ISOLATED CLONES, never a git worktree.
-          CURRENT_MODULE_SHA256: e6927b3693b5b870ae278ef113771604fc2c1af59445b070d47969b2778f784a -- recomputed ONCE after every permitted byte
+          CURRENT_MODULE_SHA256: e5b509ca74734bffea788d4e7499699356395216285e941164ccf21b6159c924 -- recomputed ONCE after every permitted byte
           stabilised, never mid-correction and never carried forward. ZERO ACTIVATION AUTHORITY: no
           readiness verification, drift verification, Step 11, attestation, lane creation, arming,
           claim, gate evaluation, execution, recovery execution or results work is performed or

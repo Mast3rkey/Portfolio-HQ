@@ -127,6 +127,18 @@ plus three additions that carry no prior value and therefore have no transition:
 `STOPPED_RECOVERY_AUTHORIZATION_*` families, and the four refusals in
 `_verify_recovery_lifecycle_anchor`.
 
+One further constant moved in this unit's bounded correction, and it is listed here rather than
+folded into the additions above because it *did* carry a prior value:
+
+| Constant | Closed transition |
+|---|---|
+| `XASSET_0044_CANONICAL_PINS` | `dict(CANONICAL_PINS)` → the two exact historical **literals** |
+
+Its **values** are unchanged in both entries — `1ad1d060…5d0c84` and `898c329d…12d82f`, identical to
+`CANONICAL_PINS` and to the live canonical files, exactly as §G.9 requires. What changed is that they
+are now fixed independently instead of copied at import from the mapping refusal 4 exists to police.
+See §E's bounded correction.
+
 **`REVIEWED_BASE_SHA`'s new value is not a coincidence and is stated as an equality.** It is
 `XASSET-0046`'s own merge — the single event that made this unit authorized to begin — exactly as its
 old value was `XASSET-0043`'s merge for the unit `XASSET-0043` authorized. The mechanism enforces
@@ -164,7 +176,7 @@ would mean this unit had not actually rebound anything.
 
 ```
 XASSET-0044 declaration, closed at PR #344 (historical)  sha256  f89c38d49d160795795a73627777c7174d84a61583fc9ed6b5aa921648ee8df1
-CURRENT_MODULE_SHA256: e6927b3693b5b870ae278ef113771604fc2c1af59445b070d47969b2778f784a
+CURRENT_MODULE_SHA256: e5b509ca74734bffea788d4e7499699356395216285e941164ccf21b6159c924
 ```
 
 ### E. The mechanism became stricter, never more permissive
@@ -183,6 +195,38 @@ added to the attestation; and **four** new refusals are added in `_verify_recove
 
 Refusal 4 is how §G.9 stops being a promise and starts being a check: if any future edit moves a
 canonical byte without moving the succession machinery with it, the attestation is refused.
+
+**Bounded correction — MAJOR 1 of independent full review `4997532748`.** As first filed, refusal 4
+was source-vacuous. `XASSET_0044_CANONICAL_PINS` was bound as `dict(CANONICAL_PINS)`, so a
+*source-level* edit to a current pin literal was rebuilt into the historical mapping during import,
+the two stayed equal, and the refusal returned clean; only a post-import monkeypatch of one name was
+ever detected. The claim above was therefore false of the implementation, and the review was right
+that a historical identity copied from the thing it is meant to outlive cannot prove succession.
+
+Reproduced through the real mechanism before correcting — an isolated copy of the module, one
+current pin literal changed in source, a fresh import, the historical mapping observed following the
+edit, and `_verify_recovery_lifecycle_anchor` observed returning `[]`. The real canonical files were
+never touched.
+
+`XASSET_0044_CANONICAL_PINS` is now bound to `XASSET-0044`'s **exact historical literals**, written
+out independently exactly as every predecessor pin mapping already was, and never derived, copied,
+aliased, unpacked, or comprehended from `CANONICAL_PINS`. The two mappings remain **equal in value**,
+which is a fact §G.9 requires and not a defect: being equal is fine, being equal *by construction*
+was not. The invariant refusal 4 now actually enforces is:
+
+> the effective canonical pins must equal an identity that is fixed **independently** of them, so a
+> future canonical amendment breaks the equality loudly instead of silently carrying it forward.
+
+The supporting artifact proves that three separate ways — structurally from the module's own AST
+(the defining expression may not name `CANONICAL_PINS`, with the guard driven against six known-bad
+derived forms **and** a known-good independent form so it cannot pass by always refusing);
+behaviourally, by editing one pin literal in source, re-importing in a fresh interpreter, and
+driving the real refusal in **both** directions (current moved while history frozen, and history
+moved while current correct), with an unedited control run proving the harness itself can return
+clean; and by pinning both historical literal values in a third, external copy, so moving the
+current and historical identities in lockstep is still caught. The pre-existing runtime monkeypatch
+test is **kept**, not replaced: the review called it insufficient, not wrong, and it remains the only
+case covering a runtime substitution.
 
 **Verifying a stopped lifecycle is not treating it as effective.** The two stopped merges are proven
 from git as *history* — real, ordered, undrifted, genuinely inherited — and nowhere as authority.
@@ -424,6 +468,17 @@ preserved unchanged; before this unit, nothing in the mechanism *checked* that. 
 is exactly what failed to prevent the moving-anchor defect three filings running, so the freeze is
 now mechanical: the effective canonical pins must equal the pins the last canonical amender left, and
 an attestation is refused if they ever silently diverge.
+
+Independent full review `4997532748` then found the first attempt at exactly that check to be
+source-vacuous, and the lesson generalises past this one line. A check is only as real as the
+independence of what it compares against: `dict(CANONICAL_PINS)` produced a historical identity with
+no existence of its own, so the equality it asserted could never fail for the edit it was written to
+catch. This is the same defect class the rest of this filing exists to repair — a claim measured
+against a subject that moves with it — arriving one level down, in a *value* rather than a git
+reference. It survived a full self-audit precisely because the mapping's **values** were correct;
+only its **construction** was not, and values are what a reader checks. §E now states the invariant
+that is actually implemented, and the artifact proves it structurally, behaviourally in both
+directions, and by an external third copy of the literals.
 
 ## Alternatives Considered
 

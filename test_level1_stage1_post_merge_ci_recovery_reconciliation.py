@@ -1939,3 +1939,387 @@ class TestTheBoundPullRequestNumber:
             source = (ROOT / relative).read_text(encoding="utf-8")
             assert f"XASSET0047_ACTIVE_PR = {THIS_PULL_REQUEST}" in source, relative
             assert "XASSET0047_ACTIVE_PR = 0" not in source, relative
+
+
+# ======================================================================================
+# 18 -- MAJOR 1 (review 4997532748): the canonical-freeze refusal is genuinely INDEPENDENT
+#
+# The independent full review found the fourth refusal SOURCE-VACUOUS. The historical
+# identity was ``dict(CANONICAL_PINS)``, so a SOURCE-LEVEL edit to a current pin literal was
+# rebuilt into the historical mapping during import, the two stayed equal, and the refusal
+# returned clean. It detected only a post-import monkeypatch of one name -- which is exactly
+# and only what the runtime negative test above exercises.
+#
+# Reproduced through the real mechanism BEFORE correcting: an isolated copy, one current pin
+# literal changed in SOURCE, a fresh import, the historical mapping observed following the
+# edit, and ``_verify_recovery_lifecycle_anchor`` observed returning ``[]``.
+#
+# The correction binds the historical mapping to XASSET-0044's exact literals. This section
+# proves that independently three ways -- structurally from the AST, behaviourally through a
+# real source edit and re-import, and by pinning the literal values themselves -- because a
+# guard that can only be checked one way is a guard whose one check can be removed.
+# ======================================================================================
+
+
+#: XASSET-0044's exact historical canonical pins, written here INDEPENDENTLY of the module.
+#: These are the mutation pins for adversarial case 6: changing either literal in the module
+#: without changing it here is caught, and changing BOTH current and historical in lockstep is
+#: caught too, because this suite holds the third, external copy.
+XASSET0044_HISTORICAL_PROTOCOL_SHA256 = (
+    "1ad1d060d5bf970288844b05b94e1fd38c3cc9cc87afc1481a45ed1b315d0c84"
+)
+XASSET0044_HISTORICAL_PREREGISTRATION_SHA256 = (
+    "898c329d9941c5c24ff2a800f842e860c63e2e500acc4257eb14646c1012d82f"
+)
+
+#: The name whose independence is the whole point, and the name it may never be derived from.
+HISTORICAL_PINS_NAME = "XASSET_0044_CANONICAL_PINS"
+CURRENT_PINS_NAME = "CANONICAL_PINS"
+
+
+def historical_pins_is_independent(source: str) -> bool:
+    """True iff ``XASSET_0044_CANONICAL_PINS`` is a literal mapping of constant strings that
+    does not mention ``CANONICAL_PINS`` anywhere in its own defining expression.
+
+    Takes SOURCE rather than the imported object on purpose. Two mappings that are equal at
+    runtime are indistinguishable by value; the defect this refuses is visible only in how the
+    second one is CONSTRUCTED. Written to accept a source string so it can be driven against
+    synthetic known-bad and known-good inputs, not only against the real module.
+    """
+    tree = ast.parse(source)
+    values = [
+        node.value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Assign)
+        and any(
+            isinstance(target, ast.Name) and target.id == HISTORICAL_PINS_NAME
+            for target in node.targets
+        )
+    ]
+    if len(values) != 1:
+        return False
+    value = values[0]
+    if not isinstance(value, ast.Dict):
+        return False
+    if any(key is None for key in value.keys):
+        return False
+    if not all(isinstance(item, ast.Constant) and isinstance(item.value, str)
+               for item in value.values):
+        return False
+    return not any(
+        isinstance(node, ast.Name) and node.id == CURRENT_PINS_NAME
+        for node in ast.walk(value)
+    )
+
+
+def _run_isolated_pin_probe(tmp_path: Path, replacements: tuple[tuple[str, str], ...]) -> dict:
+    """Copy the module ALONE into ``tmp_path``, apply exact source replacements, import it in a
+    FRESH interpreter, and report what the real refusal says.
+
+    A fresh interpreter, not ``importlib.reload``: a reload can leave the old module object
+    reachable and is exactly the kind of half-measure that produced the finding. The module's
+    imports are stdlib-only and ``_verify_recovery_lifecycle_anchor`` is pure and offline
+    (proved separately from its own AST above), so it runs standalone.
+
+    The REAL repository is never touched: only ``tmp_path`` is written.
+    """
+    source = (ROOT / AUTH_MODULE_RELPATH).read_text(encoding="utf-8")
+    for old, new in replacements:
+        assert source.count(old) == 1, (old, source.count(old))
+        source = source.replace(old, new)
+    module_copy = tmp_path / AUTH_MODULE_RELPATH
+    module_copy.write_text(source, encoding="utf-8")
+    driver = tmp_path / "_probe_driver.py"
+    driver.write_text(
+        "import json, sys, pathlib\n"
+        "sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))\n"
+        "import level1_stage1_execution_authorization as M\n"
+        "print(json.dumps({\n"
+        "    'current': M.CANONICAL_PINS,\n"
+        "    'historical': M.XASSET_0044_CANONICAL_PINS,\n"
+        "    'errors': M._verify_recovery_lifecycle_anchor(M.RECOVERY_AUTHORIZING_MERGE_SHA),\n"
+        "}))\n",
+        encoding="utf-8",
+    )
+    completed = subprocess.run(
+        [sys.executable, str(driver)], capture_output=True, text=True, check=True, cwd=tmp_path
+    )
+    import json as _json
+
+    return _json.loads(completed.stdout)
+
+
+#: The exact current-pin literal, and a value that is a well-formed sha256 but not that one.
+_CURRENT_PROTOCOL_LITERAL_BLOCK = (
+    "CANONICAL_PINS: dict[str, str] = {\n"
+    "    CANONICAL_PROTOCOL_RELPATH: (\n"
+    f'        "{XASSET0044_HISTORICAL_PROTOCOL_SHA256}"\n'
+    "    ),"
+)
+_MUTANT_SHA256 = "0" * 63 + "1"
+
+
+#: Known-bad ways a later edit could re-derive the historical mapping. Declared at module level
+#: and PINNED by its own coverage test below: mutation probe C25 showed that a vocabulary only
+#: consumed by a parametrize decorator can be gutted while every consumer still reports clean.
+#:
+#: The list is deliberately split. The first group is refused by an earlier SHAPE check (not a
+#: literal dict of constant strings). The second group PASSES every shape check and is refused
+#: only by the final scan for a ``CANONICAL_PINS`` reference -- without at least one of those,
+#: that scan has no coverage at all, which is exactly how probe C9 first survived.
+DERIVED_FORMS_REJECTED_BY_SHAPE = (
+    "XASSET_0044_CANONICAL_PINS = dict(CANONICAL_PINS)",
+    "XASSET_0044_CANONICAL_PINS = CANONICAL_PINS",
+    "XASSET_0044_CANONICAL_PINS = {**CANONICAL_PINS}",
+    "XASSET_0044_CANONICAL_PINS = CANONICAL_PINS.copy()",
+    "XASSET_0044_CANONICAL_PINS = dict(CANONICAL_PINS.items())",
+    "XASSET_0044_CANONICAL_PINS = {k: v for k, v in CANONICAL_PINS.items()}",
+)
+
+#: Literal dicts of constant strings whose KEYS are derived from the current mapping -- the
+#: shape a plausible half-independent rewrite actually takes, and the only shape that exercises
+#: the reference scan.
+DERIVED_FORMS_REJECTED_ONLY_BY_THE_REFERENCE_SCAN = (
+    'XASSET_0044_CANONICAL_PINS = {\n'
+    '    list(CANONICAL_PINS)[0]: "aa",\n'
+    '    list(CANONICAL_PINS)[1]: "bb",\n'
+    "}",
+    'XASSET_0044_CANONICAL_PINS = {\n'
+    '    next(iter(CANONICAL_PINS)): "aa",\n'
+    "}",
+)
+
+ALL_DERIVED_FORMS = (
+    DERIVED_FORMS_REJECTED_BY_SHAPE + DERIVED_FORMS_REJECTED_ONLY_BY_THE_REFERENCE_SCAN
+)
+
+
+class TestTheCanonicalFreezeRefusalIsIndependent:
+    def test_the_historical_mapping_is_not_derived_from_the_current_one(self):
+        """Adversarial cases 4 and 5, structurally: the definition may not name CANONICAL_PINS."""
+        source = (ROOT / AUTH_MODULE_RELPATH).read_text(encoding="utf-8")
+        assert historical_pins_is_independent(source)
+        assert f"{HISTORICAL_PINS_NAME} = dict({CURRENT_PINS_NAME})" not in source
+        assert f"{HISTORICAL_PINS_NAME} = {CURRENT_PINS_NAME}\n" not in source
+
+    @pytest.mark.parametrize("bad_form", ALL_DERIVED_FORMS)
+    def test_the_structural_guard_rejects_every_derived_form(self, bad_form):
+        """Falsifiability, known-bad half. Adversarial cases 4 and 5 are the first two of these;
+        the rest are the near-misses a later edit would more plausibly reach for."""
+        assert not historical_pins_is_independent(
+            'CANONICAL_PINS = {"a": "b"}\n' + bad_form + "\n"
+        )
+
+    def test_the_structural_guard_accepts_a_genuinely_independent_form(self):
+        """Falsifiability, known-good half. Without this, deleting the guard's body and
+        returning False would 'pass' every case above while proving nothing."""
+        assert historical_pins_is_independent(
+            'CANONICAL_PINS = {"a": "b"}\n'
+            'XASSET_0044_CANONICAL_PINS = {\n'
+            '    "a": "b",\n'
+            '}\n'
+        )
+
+    def test_the_known_bad_vocabulary_actually_covers_the_reference_scan(self):
+        """MUTATION-FOUND (probe C25). A parametrize list is a DECLARED VOCABULARY, and a
+        vocabulary nothing pins can be gutted while every consumer still reports clean.
+
+        Pin the PROPERTY rather than the count: at least one known-bad form must survive every
+        earlier shape check, so that the final ``CANONICAL_PINS``-reference scan is the thing
+        actually refusing it. Without this, the list could shrink to shape-rejected forms only
+        and ``return True`` in place of that scan would pass again, exactly as it first did.
+        """
+        assert DERIVED_FORMS_REJECTED_ONLY_BY_THE_REFERENCE_SCAN
+        # MUTATION-FOUND (probe C28). Pinning a vocabulary's CONTENTS proves nothing if the
+        # vocabulary is not the one actually driven. Both groups must reach the parametrize.
+        for form in DERIVED_FORMS_REJECTED_BY_SHAPE:
+            assert form in ALL_DERIVED_FORMS, form
+        for form in DERIVED_FORMS_REJECTED_ONLY_BY_THE_REFERENCE_SCAN:
+            assert form in ALL_DERIVED_FORMS, form
+        # MUTATION-FOUND (probe C27). The vocabulary must still contain the EXACT form the
+        # review found in production. A generic "some derived form" list can drift until the
+        # one real historical defect is no longer among the things it refuses.
+        assert (
+            "XASSET_0044_CANONICAL_PINS = dict(CANONICAL_PINS)"
+            in DERIVED_FORMS_REJECTED_BY_SHAPE
+        )
+        assert "XASSET_0044_CANONICAL_PINS = CANONICAL_PINS" in DERIVED_FORMS_REJECTED_BY_SHAPE
+        for form in DERIVED_FORMS_REJECTED_ONLY_BY_THE_REFERENCE_SCAN:
+            value = ast.parse('CANONICAL_PINS = {"a": "b"}\n' + form + "\n").body[1].value
+            assert isinstance(value, ast.Dict), form
+            assert all(key is not None for key in value.keys), form
+            assert all(
+                isinstance(item, ast.Constant) and isinstance(item.value, str)
+                for item in value.values
+            ), form
+            assert any(
+                isinstance(node, ast.Name) and node.id == CURRENT_PINS_NAME
+                for node in ast.walk(value)
+            ), form
+        for form in DERIVED_FORMS_REJECTED_BY_SHAPE:
+            assert not historical_pins_is_independent(
+                'CANONICAL_PINS = {"a": "b"}\n' + form + "\n"
+            ), form
+
+    def test_the_historical_literals_are_exactly_xasset_0044s(self):
+        """Adversarial case 6, and the lockstep case: this suite holds an INDEPENDENT third
+        copy, so moving current and historical together is still caught here."""
+        assert A.XASSET_0044_CANONICAL_PINS == {
+            A.CANONICAL_PROTOCOL_RELPATH: XASSET0044_HISTORICAL_PROTOCOL_SHA256,
+            A.CANONICAL_PREREGISTRATION_RELPATH: XASSET0044_HISTORICAL_PREREGISTRATION_SHA256,
+        }
+
+    def test_case_1_equal_at_the_start_is_accepted(self):
+        """Adversarial case 1: XASSET-0046 SS-G.9 froze the canonical inputs, so the two
+        mappings are EQUAL IN VALUE right now -- and that must not be an error."""
+        assert A.CANONICAL_PINS == A.XASSET_0044_CANONICAL_PINS
+        assert A._verify_recovery_lifecycle_anchor(A.RECOVERY_AUTHORIZING_MERGE_SHA) == []
+
+    def test_case_2_a_source_level_current_pin_edit_drives_the_real_refusal(self, tmp_path):
+        """Adversarial case 2, and the correction's whole point.
+
+        This is the case the previous implementation could not see. It is driven through a real
+        source edit and a real re-import, NOT a monkeypatch, because a monkeypatch of one name
+        is satisfied by a mapping that was copied from that same name.
+        """
+        result = _run_isolated_pin_probe(
+            tmp_path,
+            ((_CURRENT_PROTOCOL_LITERAL_BLOCK,
+              _CURRENT_PROTOCOL_LITERAL_BLOCK.replace(
+                  XASSET0044_HISTORICAL_PROTOCOL_SHA256, _MUTANT_SHA256)),),
+        )
+        assert result["current"][A.CANONICAL_PROTOCOL_RELPATH] == _MUTANT_SHA256
+        assert (
+            result["historical"][A.CANONICAL_PROTOCOL_RELPATH]
+            == XASSET0044_HISTORICAL_PROTOCOL_SHA256
+        ), "the historical identity FOLLOWED the current edit -- it is not independent"
+        assert any("canonical drift" in e for e in result["errors"]), result["errors"]
+
+    def test_case_3_a_source_level_historical_pin_edit_is_also_refused(self, tmp_path):
+        """Adversarial case 3, the other direction: rewriting HISTORY while the current pins
+        stay correct is equally a succession failure, and must not pass either."""
+        historical_block = (
+            "XASSET_0044_CANONICAL_PINS = {\n"
+            "    CANONICAL_PROTOCOL_RELPATH: (\n"
+            f'        "{XASSET0044_HISTORICAL_PROTOCOL_SHA256}"\n'
+            "    ),"
+        )
+        result = _run_isolated_pin_probe(
+            tmp_path,
+            ((historical_block,
+              historical_block.replace(
+                  XASSET0044_HISTORICAL_PROTOCOL_SHA256, _MUTANT_SHA256)),),
+        )
+        assert result["current"][A.CANONICAL_PROTOCOL_RELPATH] == (
+            XASSET0044_HISTORICAL_PROTOCOL_SHA256
+        )
+        assert result["historical"][A.CANONICAL_PROTOCOL_RELPATH] == _MUTANT_SHA256
+        assert any("canonical drift" in e for e in result["errors"]), result["errors"]
+
+    def test_the_probe_harness_is_itself_falsifiable(self, tmp_path):
+        """An unedited copy must come back CLEAN. Without this, a harness that silently failed
+        to apply its replacement -- or a refusal that fired unconditionally -- would make both
+        cases above pass while proving nothing."""
+        result = _run_isolated_pin_probe(tmp_path, ())
+        assert result["current"] == result["historical"]
+        assert result["errors"] == []
+
+    def test_case_7_the_canonical_files_are_untouched_and_still_match_the_current_pins(self):
+        """Adversarial case 7: the finding was about the PROTECTION, never about the bytes.
+        Live hashes still equal the current pins, and both files are byte-identical to this
+        pull request's own immutable base."""
+        live = A.live_canonical_hashes()
+        assert live == dict(A.CANONICAL_PINS)
+        for relative in (A.CANONICAL_PROTOCOL_RELPATH, A.CANONICAL_PREREGISTRATION_RELPATH):
+            at_base = hashlib.sha256(
+                subprocess.run(
+                    ["git", "cat-file", "blob", f"{PR346_MERGE_SHA}:{relative}"],
+                    cwd=ROOT, capture_output=True, check=True,
+                ).stdout
+            ).hexdigest()
+            assert at_base == A.CANONICAL_PINS[relative], relative
+
+    def test_the_runtime_monkeypatch_test_was_kept_not_replaced(self):
+        """Review 4997532748 called the one-sided monkeypatch INSUFFICIENT, not wrong. It stays
+        -- it is the only case that covers a runtime substitution -- and the source-level cases
+        above are ADDED alongside it. Deleting it would trade one blind spot for another."""
+        # MUTATION-FOUND (probe C16). This was a substring search for the test's own
+        # signature -- and the search string is ITSELF a literal in this file, so the file
+        # always contained it and renaming the real test away survived. Read the AST
+        # instead: a name that is only mentioned cannot satisfy a check for a name that is
+        # DEFINED, in the class that is supposed to define it.
+        tree = ast.parse(SUITE_PATH.read_text(encoding="utf-8"))
+        owner = next(
+            node for node in tree.body
+            if isinstance(node, ast.ClassDef)
+            and node.name == "TestTheNewRefusalsAreIndependentlyRequired"
+        )
+        kept = [
+            node for node in owner.body
+            if isinstance(node, ast.FunctionDef) and node.name == "test_canonical_drift_is_refused"
+        ]
+        assert len(kept) == 1, [n.name for n in owner.body if isinstance(n, ast.FunctionDef)]
+        assert any(arg.arg == "monkeypatch" for arg in kept[0].args.args)
+        patched = {
+            node.args[1].value
+            for node in ast.walk(kept[0])
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "setattr"
+            and len(node.args) >= 2
+            and isinstance(node.args[1], ast.Constant)
+        }
+        assert CURRENT_PINS_NAME in patched, patched
+
+    def test_the_refusal_itself_still_compares_the_two_mappings(self):
+        """The comparison is the load-bearing line. Independence of the operands is worthless
+        if the ``!=`` is deleted, so pin the refusal's own shape too."""
+        source = (ROOT / AUTH_MODULE_RELPATH).read_text(encoding="utf-8")
+        assert "if CANONICAL_PINS != XASSET_0044_CANONICAL_PINS:" in source
+
+    def test_the_decision_records_the_correction_truthfully(self, decision_text):
+        """The decision may not keep claiming an invariant the implementation never had.
+        Pinned at the sentences that CARRY the corrected claim, not at a heading."""
+        e = _section(decision_text, "E")
+        assert "Bounded correction — MAJOR 1 of independent full review `4997532748`" in e
+        assert "was source-vacuous" in e
+        assert "`dict(CANONICAL_PINS)`" in e
+        assert "never derived, copied, aliased, unpacked, or comprehended from `CANONICAL_PINS`" in e
+        assert "being equal is fine, being equal *by construction*" in e
+        assert "fixed **independently** of them" in e
+
+    def test_the_correction_is_in_the_exhaustive_moved_list(self, decision_text):
+        """SS-D claims to be exhaustive. A constant that moved and is not listed there would
+        make that claim false, which is the same failure mode as an unstated rebinding."""
+        d = _section(decision_text, "D")
+        assert "`XASSET_0044_CANONICAL_PINS`" in d
+        assert "`dict(CANONICAL_PINS)` → the two exact historical **literals**" in d
+        assert XASSET0044_HISTORICAL_PROTOCOL_SHA256[:8] in d
+        assert XASSET0044_HISTORICAL_PREREGISTRATION_SHA256[:8] in d
+
+    def test_the_decision_does_not_still_assert_the_uncorrected_claim(self, decision_text):
+        """The review's finding was that SS-E/Rationale asserted a protection the code did not
+        implement. Assert the repaired text is present AND that it is qualified, so a future
+        edit cannot quietly restore the unqualified version."""
+        assert "the freeze is\nnow mechanical" in decision_text
+        assert "A check is only as real as the\nindependence of what it compares against" in (
+            decision_text
+        )
+
+    def test_the_register_records_the_correction(self, register_text):
+        """The register is the operational surface a later session reads first. A correction
+        that changed a load-bearing guard and is invisible there is a correction that a
+        successor will not know happened."""
+        data = yaml.safe_load(register_text)
+        ws = next(w for w in data["workstreams"] if w["id"] == "WS-0014")
+        gate = next(
+            g for g in ws["milestones"]
+            if g["gate"] == "xasset0047-post-merge-ci-recovery-reconciliation"
+        )
+        text = " ".join(gate["description"].split())
+        assert "BOUNDED CORRECTION, MAJOR 1 of independent full review 4997532748" in text
+        assert "SOURCE-VACUOUS" in text
+        assert "dict(CANONICAL_PINS)" in text
+        assert "EQUAL IN VALUE" in text
+        assert "being equal BY CONSTRUCTION was" in text
+        assert "No canonical byte, current pin value, universe value," in text
