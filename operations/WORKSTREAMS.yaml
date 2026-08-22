@@ -16210,6 +16210,15 @@ workstreams:
           THAT VERIFICATION -- it runs no readiness checklist, issues no PASS or FAIL, and
           CONSUMES NONE OF THE AUTHORITY IT CREATES.
 
+          THE DISTINCTION ANY SUMMARY MUST PRESERVE (XASSET-0050 SS-A.1, quoted verbatim):
+          XASSET-0050 AUTHORIZES exactly one future, separate LINK-3 readiness verification, but
+          PERFORMS NO PART OF IT. LINKS 4 AND 5 -- and attestation, lane creation, arming, claim,
+          gate evaluation, execution, results, allocation work, and protected RISK access --
+          remain NEITHER PERFORMED NOR AUTHORIZED. Link 3 never belongs inside a "not authorized"
+          list: it is the one thing this decision grants. A record that both grants and denies
+          link 3 is not a wording defect, it is unsafe acceptance evidence, because a reader
+          cannot tell which half governs.
+
           WHY A NEW AUTHORITY WAS NEEDED. XASSET-0038 does not supply it, for two independent
           reasons either sufficient alone. (1) ITS GRANT IS SPENT: XASSET-0038 SS-A authorized
           "exactly one" step-9 unit; that unit ran and returned
@@ -16219,9 +16228,9 @@ workstreams:
           accepted head f40c816223c78f1d1e436b718455df5fb3d77fa7, TEN LOAD_BEARING_RELPATHS, and
           canonical pins 367583b6.../768b013c... . XASSET-0042 then corrected load-bearing path
           #1, XASSET-0044 amended both canonical artifacts, and the boundary has since grown to
-          EIGHTEEN paths -- not one of those four anchors still describes this system. Four
-          filings after XASSET-0038 named the renewed verification and four declined to grant it:
-          XASSET-0041 SS-I (names it link 3, withholds links 2-5), XASSET-0043 SS-G.9,
+          EIGHTEEN paths -- not one of those four anchors still describes this system. FIVE
+          filings after XASSET-0038 named the renewed verification and ALL FIVE declined to grant
+          it: XASSET-0041 SS-I (names it link 3, withholds links 2-5), XASSET-0043 SS-G.9,
           XASSET-0046, XASSET-0048 SS-G, and XASSET-0049. The gap is established by accepted
           repository text, not inferred.
 

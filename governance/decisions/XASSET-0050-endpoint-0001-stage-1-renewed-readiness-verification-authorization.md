@@ -83,7 +83,8 @@ on its own.**
    system.** A `PASS` about bytes that no longer exist is evidence about a moment that has passed, not
    a readiness finding about the bytes an attestation would authenticate.
 
-Four filings after `XASSET-0038` named the renewed verification and four declined to grant it:
+**Five** filings after `XASSET-0038` named the renewed verification and **all five** declined to
+grant it:
 
 | Accepted text | What it says about the renewed readiness verification |
 |---|---|
@@ -111,6 +112,22 @@ later, separately reviewed unit verifies.
 
 **Links 4 and 5 — `XASSET-0030` §G.B steps 10 and 11 — are not authorized, here or by implication
 (§K).**
+
+#### A.1 — The distinction any summary of this filing must preserve
+
+Stated once, in a form meant to be quoted verbatim, because the failure mode is a summary that
+collapses "performs none of it" into "authorizes none of it":
+
+> `XASSET-0050` **authorizes** exactly one future, separate **link-3** readiness verification, but
+> **performs no part of it**. **Links 4 and 5** — and attestation, lane creation, arming, claim, gate
+> evaluation, execution, results, allocation work, and protected `RISK` access — remain **neither
+> performed nor authorized**.
+
+**Link 3 never belongs inside a "not authorized" list.** It is the one thing this decision grants.
+Every enumeration of what is withheld — §F, §K, §L, the `WS-0014` gate, and any pull-request summary
+or report describing this filing — must place link 3 on the **authorized-but-unperformed** side of
+that line and links 4 and 5 on the withheld side. A record that both grants and denies link 3 is not
+a wording defect; it is unsafe acceptance evidence, because a reader cannot tell which half governs.
 
 ### B. This is a narrow successor to `XASSET-0038`, not a revival of it
 
@@ -339,9 +356,14 @@ more out of it than it contains:
 
 ### L. Absolute non-authorization
 
+**Read this section against §A.1.** Everything below is a statement about what this decision
+**performs**, plus what it withholds from links 4 and 5. It is **not** a denial of the link-3
+authority §A grants: link 3 is authorized and unperformed; links 4 and 5 are neither.
+
 This decision generates no attestation; creates no `AUTHORIZATION_ROOT` and no `READY`, `CLAIMED`, or
 `COMPLETED` lane state or ledger entry; arms, claims, completes, executes, or recovers no Stage-1
-execution; performs no part of `XASSET-0041` §I link 3 and no part of links 4 or 5; evaluates no gate
+execution; performs no part of `XASSET-0041` §I link 3, and neither performs nor authorizes links 4
+or 5; evaluates no gate
 for any registered construction and asserts no per-construction outcome; performs no portfolio
 construction and no target-allocation calculation; creates no `stage1_results.yaml` and no runner,
 result validator, or other outcome-producing code; changes no `LOAD_BEARING_RELPATHS`, no canonical
@@ -364,9 +386,10 @@ mutates nothing — or, failing that, whether `XASSET-0038` already covers it.
 
 **Neither holds, and both failures are textual rather than theoretical.**
 
-Performing it without a grant would read four express withholdings as silence. `XASSET-0041` §I names
+Performing it without a grant would read **five** express withholdings as silence. `XASSET-0041` §I names
 link 3 and withholds it; `XASSET-0043`, `XASSET-0046`, `XASSET-0048` §G and `XASSET-0049` each name the
-renewed readiness verification and each decline to grant it. `XASSET-0036` §B established the identical
+renewed readiness verification and each decline to grant it — **five in total**, and the exact set is
+`XASSET-0041`, `XASSET-0043`, `XASSET-0046`, `XASSET-0048`, `XASSET-0049`. `XASSET-0036` §B established the identical
 point for §G.B as a whole and chose the same remedy: **file the narrow authority rather than infer it.**
 
 Relying on `XASSET-0038` would fail twice over. Its grant was "exactly one" and that one ran to a
@@ -408,7 +431,7 @@ is not arming, and authorizing that verification is not an activation authorizat
 
 | Alternative | Why not |
 |---|---|
-| Perform the renewed verification now as ordinary read-only work | Four accepted filings withhold it by name; performing it would read express withholdings as silence |
+| Perform the renewed verification now as ordinary read-only work | **Five** accepted filings withhold it by name — `XASSET-0041`, `XASSET-0043`, `XASSET-0046`, `XASSET-0048`, `XASSET-0049`; performing it would read express withholdings as silence |
 | Treat `XASSET-0038` as still authorizing it | Its "exactly one" grant is spent, and its anchor — merge, head, ten paths, two pins — is superseded on every axis |
 | Amend or extend `XASSET-0038` | Would rewrite a closed, accepted filing whose own unit already ran; the repository's convention is a narrow successor, not retroactive edits |
 | Authorize and perform the verification in this same filing | §J requires the authority to close its own lifecycle first; and a unit that authorized itself could not be independently reviewed *as* an authorization before being relied upon |

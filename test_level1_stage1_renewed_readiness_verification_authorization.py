@@ -13,7 +13,8 @@ discharged. **Link 3** is next, and it had **no authority**.
    load-bearing path #1, ``XASSET-0044`` amended both canonical artifacts, and the boundary has grown
    to **eighteen**.
 
-Four filings after ``XASSET-0038`` named the renewed verification and four declined to grant it.
+**Five** filings after ``XASSET-0038`` named the renewed verification and all five declined to
+grant it -- ``XASSET-0041``, ``XASSET-0043``, ``XASSET-0046``, ``XASSET-0048``, ``XASSET-0049``.
 ``XASSET-0050`` closes that gap for the renewed readiness verification and nothing else.
 
 The whole risk of an authorization filing is that it grants more than it says, or that a future
@@ -236,6 +237,18 @@ def _flat(text: str) -> str:
     wrapper happened to break it; `|` and other structural characters survive intact.
     """
     return " ".join(text.split())
+
+
+def _flat_prose(text: str) -> str:
+    """``_flat`` with markdown blockquote markers removed first.
+
+    §A.1 states the canonical distinction as a blockquote so it can be lifted verbatim into a
+    summary. Collapsing whitespace alone leaves the ``>`` markers embedded mid-sentence, which
+    would make a prose assertion fail for a purely typographic reason. Stripping the marker
+    removes markdown structure, never content.
+    """
+    stripped = "\n".join(re.sub(r"^\s*>\s?", "", line) for line in text.split("\n"))
+    return _flat(stripped)
 
 
 def _section(text: str, heading: str) -> str:
@@ -873,6 +886,263 @@ class TestNoCorruptedIdentityCanHideInTheDecision:
             for rel in list(C3_MODULE_WITNESS) + list(C4_CANONICAL_PINS)
         }
         assert derivable == self.ALLOWED_DIGESTS - {C5_UNIVERSE_SHA}
+
+
+class TestTheAuthorityInventoryIsInternallyConsistent:
+    """MINOR 1 of independent FULL review 5000866476, encoded so it cannot recur.
+
+    The filing said "four filings" / "four express withholdings" while enumerating **five**:
+    ``XASSET-0041``, ``XASSET-0043``, ``XASSET-0046``, ``XASSET-0048``, ``XASSET-0049``. The
+    authority gap was real and the evidence was in fact *stronger* than claimed, but a governance
+    filing must not carry inconsistent cardinality about the accepted authorities it relies on.
+
+    A test that only checked for the word "five" would be satisfied by a filing that said five and
+    listed four. These tests therefore bind the **prose cardinality and the exact enumerated set
+    together**: the stated number, the count of identifiers actually named, and the identity of
+    those identifiers must all agree.
+    """
+
+    #: The exact five accepted authorities that withhold the renewed readiness verification.
+    WITHHOLDING_AUTHORITIES = (
+        "XASSET-0041", "XASSET-0043", "XASSET-0046", "XASSET-0048", "XASSET-0049",
+    )
+
+    #: Cardinality words this filing could plausibly use, mapped to the number they assert. Bare
+    #: digits are deliberately excluded -- the document is full of them (18 paths, 680, 48, C1-C11)
+    #: and matching them would produce noise rather than a guard.
+    WORD_TO_NUMBER = {
+        "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7,
+    }
+
+    def _withholding_claims(self, text: str) -> list:
+        """Every sentence that states how many filings withhold the verification.
+
+        Returns ``(asserted_number, sentence)`` pairs. Scoping to the *withholding* claim is what
+        keeps this from firing on the unrelated and correct "four anchors" statement.
+        """
+        flat = _flat(text)
+        number = r"\b(one|two|three|four|five|six|seven)\b"
+        # Two shapes, because a mutation probe showed a single pattern missed a real claim:
+        #   (a) the noun ALREADY denotes withholding -- "N express withholdings" -- so requiring a
+        #       second verb marker made the guard skip "read **four** express withholdings as
+        #       silence" entirely;
+        #   (b) the noun is neutral -- "N filings" -- and the withholding verb is what makes the
+        #       sentence a cardinality claim rather than an unrelated count.
+        # Neither shape matches the filing's correct and unrelated "four anchors" statement, since
+        # "anchors" is neither noun.
+        # The claim ends at the first sentence terminator: a period, a colon (the Context claim
+        # introduces a table), or a table-cell pipe. Using only "." let the match run past the
+        # claim into surrounding rows and pick up unrelated numerals ("links 2-5", "exactly one"),
+        # which would have made the guard fire on correct text.
+        tail = r"[^.:|]*[.:|]"
+        patterns = (
+            re.compile(number + r"[^.:|]{0,120}?express withholdings?" + tail, re.I),
+            re.compile(
+                number + r"[^.:|]{0,120}?(?:accepted )?filings?"
+                r"[^.:|]{0,200}?(?:withh|declin|named the renewed)" + tail,
+                re.I,
+            ),
+        )
+        # EVERY cardinality word in a matched sentence is returned, not just the leading one. A
+        # mutation probe showed a sentence can carry two ("Five filings ... and all five declined"),
+        # and reading only the first let "five ... and four declined" pass while self-contradicting.
+        out, seen = [], set()
+        for pattern in patterns:
+            for m in pattern.finditer(flat):
+                sentence = m.group(0)
+                if sentence in seen:
+                    continue
+                seen.add(sentence)
+                for word in re.findall(number, sentence, re.I):
+                    out.append((self.WORD_TO_NUMBER[word.lower()], sentence))
+        return out
+
+    def test_the_decision_states_a_cardinality_at_all(self, decision_text):
+        """Non-vacuity guard: if the prose stopped stating a number, every test below would pass
+        by finding nothing, and the defect could return in a reworded form unnoticed."""
+        assert self._withholding_claims(decision_text), (
+            "the decision no longer states how many filings withhold the verification"
+        )
+
+    def test_every_stated_cardinality_is_five(self, decision_text):
+        for number, sentence in self._withholding_claims(decision_text):
+            assert number == len(self.WITHHOLDING_AUTHORITIES), sentence[:220]
+
+    def test_the_enumeration_names_exactly_those_five(self, decision_text):
+        """The other half of the binding: the number must match the SET, not just be the digit 5."""
+        section = _section(decision_text, "The question this unit answers") \
+            if "### The question this unit answers" in decision_text else _flat(decision_text)
+        for authority in self.WITHHOLDING_AUTHORITIES:
+            assert authority in section, authority
+
+    def test_the_context_table_lists_exactly_five_withholding_rows(self, decision_text):
+        """The table the cardinality claim introduces must have exactly five data rows, each
+        naming one of the five -- so "five" cannot be satisfied by a four-row table plus a stray
+        mention of the fifth elsewhere."""
+        flat = decision_text
+        start = flat.index("| Accepted text | What it says about the renewed readiness verification |")
+        block = flat[start:].split("\n\n", 1)[0]
+        rows = [r for r in block.split("\n") if r.startswith("| `XASSET-")]
+        assert len(rows) == len(self.WITHHOLDING_AUTHORITIES), rows
+        named = [a for a in self.WITHHOLDING_AUTHORITIES
+                 if any(a in r for r in rows)]
+        assert named == list(self.WITHHOLDING_AUTHORITIES), named
+
+    def test_the_alternatives_row_names_exactly_those_five(self, decision_text):
+        """The Alternatives table repeats the enumeration, and a mutation probe showed dropping an
+        identifier there went unnoticed: every one of the five appears elsewhere in the document,
+        so a document-wide presence check cannot see a local deletion. Each place that enumerates
+        the set is therefore bound to the set independently."""
+        row = next(
+            line for line in decision_text.split("\n")
+            if "accepted filings withhold it by name" in line
+        )
+        named = [a for a in self.WITHHOLDING_AUTHORITIES if a in row]
+        assert named == list(self.WITHHOLDING_AUTHORITIES), named
+        # And nothing else may be smuggled into the same list.
+        found = set(re.findall(r"XASSET-\d{4}", row))
+        assert found == set(self.WITHHOLDING_AUTHORITIES), found
+
+    def test_no_withholding_authority_is_silently_dropped_or_swapped(self, decision_text):
+        """Substituting one identifier for another would keep the count at five and still be
+        wrong, so identity is asserted independently of cardinality."""
+        flat = _flat(decision_text)
+        for authority in self.WITHHOLDING_AUTHORITIES:
+            assert authority in flat, authority
+        # A near-neighbour that is NOT one of the five must not have been substituted in.
+        for imposter in ("XASSET-0044", "XASSET-0045", "XASSET-0047"):
+            block = flat[flat.index("filings after"):][:400] if "filings after" in flat else ""
+            assert imposter not in block, (imposter, block[:200])
+
+    @pytest.mark.parametrize("path_key", ["register"])
+    def test_the_register_gate_states_the_same_cardinality_and_set(self, ws0014, path_key):
+        """The gate is a second durable summary of the same fact; the review found the defect in
+        it too, so it is bound here rather than left to drift independently."""
+        gate = next(
+            g for g in ws0014["milestones"]
+            if g["gate"] == "xasset0050-renewed-readiness-verification-authorization"
+        )
+        for number, sentence in self._withholding_claims(gate["description"]):
+            assert number == len(self.WITHHOLDING_AUTHORITIES), sentence[:220]
+        for authority in self.WITHHOLDING_AUTHORITIES:
+            assert authority in gate["description"], authority
+
+    def test_the_supporting_artifact_states_the_same_cardinality_and_set(self):
+        """This module's own docstring makes the same claim and must not drift from the decision."""
+        doc = __doc__ or ""
+        for number, sentence in self._withholding_claims(doc):
+            assert number == len(self.WITHHOLDING_AUTHORITIES), sentence[:220]
+        for authority in self.WITHHOLDING_AUTHORITIES:
+            assert authority in doc, authority
+
+    def test_the_unrelated_four_anchors_statement_is_untouched(self, decision_text):
+        """The filing legitimately says FOUR of something else -- the four superseded anchors
+        (merge, accepted head, ten paths, canonical pins). Correcting the cardinality must not
+        have swept that up, and this test fails if it did."""
+        flat = _flat(decision_text)
+        assert "Not one of those four anchors still describes this system" in flat
+
+
+class TestLink3IsNeverPlacedInsideANotAuthorizedList:
+    """MAJOR 1 of independent FULL review 5000866476, encoded so it cannot recur.
+
+    The durable pull-request summary and author report both ended with "No readiness verification,
+    ... is performed **or authorized**" -- which denies the one thing ``XASSET-0050`` §A grants. The
+    repository decision was correctly drawn, so this class guards the governed prose against ever
+    acquiring the same defect, and pins the canonical distinction §A.1 now states verbatim for any
+    summary to copy.
+
+    A live guard over the pull-request body itself was considered and rejected: this repository has
+    no precedent for a network-dependent test, and adding one would make CI non-deterministic and
+    expand this correction's scope. The pull-request body is corrected directly, and a durable
+    correction report supersedes the contradictory sentence.
+    """
+
+    #: Phrases that would place link 3 on the withheld side of the line.
+    FORBIDDEN_DENIALS = (
+        "readiness verification, drift verification, step 11, attestation",
+        "no readiness verification, drift verification",
+        "link 3, link 4, or link 5 is authorized",
+        "links 3, 4 and 5 remain separately unauthorized",
+        "links 3, 4, and 5 remain separately unauthorized",
+    )
+
+    def test_the_decision_states_the_canonical_distinction(self, decision_text):
+        assert "#### A.1" in decision_text
+        flat = _flat_prose(decision_text)
+        assert "authorizes** exactly one future, separate **link-3** readiness verification" in flat
+        assert "performs no part of it" in flat
+        assert "neither performed nor authorized" in flat
+
+    def test_the_decision_says_link_3_never_belongs_in_a_withheld_list(self, decision_text):
+        flat = _flat(decision_text)
+        assert 'Link 3 never belongs inside a "not authorized" list' in flat
+        assert "It is the one thing this decision grants" in flat
+
+    def test_the_decision_never_denies_the_link_3_authority(self, decision_text):
+        """The operative check: no governed sentence may lump link 3 with what is withheld."""
+        flat = _flat(decision_text).lower()
+        for phrase in self.FORBIDDEN_DENIALS:
+            assert phrase not in flat, phrase
+
+    def test_section_l_distinguishes_performing_from_authorizing(self, decision_text):
+        """§L is the section a summariser is most likely to compress, and the one that produced
+        the defect. It must say link 3 is unPERFORMED, and reserve 'nor authorized' for 4 and 5."""
+        section = _section(decision_text, "L.")
+        assert "performs no part of `XASSET-0041` §I link 3" in section
+        assert "neither performs nor authorizes links 4 or 5" in section
+        assert "link 3 is authorized and unperformed" in section
+
+    def test_the_register_gate_carries_the_same_distinction(self, ws0014):
+        gate = next(
+            g for g in ws0014["milestones"]
+            if g["gate"] == "xasset0050-renewed-readiness-verification-authorization"
+        )
+        flat = " ".join(gate["description"].split())
+        assert "THE DISTINCTION ANY SUMMARY MUST PRESERVE" in flat
+        assert "AUTHORIZES exactly one future, separate LINK-3 readiness verification" in flat
+        assert "PERFORMS NO PART OF IT" in flat
+        assert "NEITHER PERFORMED NOR AUTHORIZED" in flat
+        assert 'Link 3 never belongs inside a "not authorized" list' in flat
+        # A mutation probe showed presence alone was not enough: inserting "LINKS 4 AND 5 ARE ALSO
+        # AUTHORIZED" left the withheld phrase intact further down the sentence and passed. The
+        # clause that NAMES links 4 and 5 must itself be the one that withholds them.
+        start = flat.index("LINKS 4 AND 5")
+        clause = flat[start:].split(". ", 1)[0]
+        assert "NEITHER PERFORMED NOR AUTHORIZED" in clause, clause[:240]
+        for released in ("ARE ALSO AUTHORIZED", "ARE AUTHORIZED", "BECOME AUTHORIZED",
+                         "ARE REACHABLE", "ARE COVERED BY THIS"):
+            assert released not in clause, (released, clause[:240])
+
+    def test_the_register_gate_never_denies_the_link_3_authority(self, ws0014):
+        gate = next(
+            g for g in ws0014["milestones"]
+            if g["gate"] == "xasset0050-renewed-readiness-verification-authorization"
+        )
+        flat = " ".join(gate["description"].split()).lower()
+        for phrase in self.FORBIDDEN_DENIALS:
+            assert phrase not in flat, phrase
+
+    def test_links_4_and_5_stay_on_the_withheld_side(self, decision_text):
+        """The distinction must not be fixed by moving links 4 and 5 to the authorized side."""
+        flat = _flat_prose(decision_text)
+        assert "Links 4 and 5" in flat
+        assert "neither performed nor authorized" in flat
+        section = _section(decision_text, "K.")
+        assert "retains its own separate-authority requirement" in section
+
+    def test_the_guard_phrases_are_not_vacuous(self):
+        """A forbidden-phrase list that could never match anything real would pass silently. Each
+        entry is checked against a synthetic sentence that genuinely contains the defect."""
+        defective = (
+            "Zero activation authorizations are added. No readiness verification, drift "
+            "verification, Step 11, attestation, lane creation, arming, claim, gate evaluation, "
+            "execution, results work, or protected RISK access is performed or authorized."
+        )
+        flat = _flat(defective).lower()
+        assert any(p in flat for p in self.FORBIDDEN_DENIALS), (
+            "the guard would not have caught the exact sentence review 5000866476 flagged"
+        )
 
 
 class TestSuiteHygiene:
