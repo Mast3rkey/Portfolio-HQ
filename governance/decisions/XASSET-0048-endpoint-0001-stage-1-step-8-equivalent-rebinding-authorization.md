@@ -62,8 +62,9 @@ This decision authorizes exactly one future unit to perform it, and performs no 
 
 **Exactly one future, separate, bounded pull request is authorized** to perform the
 `XASSET-0030` §G.B **step-8-equivalent** successor operational-authorization / load-bearing
-rebinding against the exact merged bytes of the corrected executable package as they stand at that
-unit's own verified base, effective only on this decision's own complete lifecycle closure (§J).
+rebinding against the exact merged bytes of the corrected executable package as they stand at **this
+decision's own lifecycle-closing merge** — the base §F.2 closes by equality, never a later descendant of
+it — effective only on this decision's own complete lifecycle closure (§J).
 
 **Design only.** This filing writes no rebinding, edits
 `level1_stage1_execution_authorization.py` not at all, and adds **zero activation authority**.
@@ -184,12 +185,34 @@ git-object identities at its own accepted head and its own merge, never a value 
 never a value computed before the bytes stabilized, and never a working-tree value no independent
 review saw.
 
-**F.2 — Bind against the exact merged package, re-derived live.** The bytes bound are the exact merged
-state of the corrected `XASSET-0030` §G.B executable package as it stands at the authorized unit's own
-verified base. That base must be re-derived from the git object store — parents in order, merge tree
-byte-identical to the accepted-head tree, ancestry proved — and must be shown to descend from
-`bb95ed26964b1bc7a2e230c76060fec82752efa1`, this filing's own verified `main`. A base asserted from a
-task brief, a summary, or a moving reference is not a verified base.
+**F.2 — Bind against the exact merged package, at *this* authorization's own merge.** The bytes bound
+are the exact merged state of the corrected `XASSET-0030` §G.B executable package **as it stands at the
+commit that made this authorization effective, and at no other commit.**
+
+**The operative rule is equality, not descent.** The authorized unit's base must **equal** the exact
+normal-merge commit that closes this decision's own §J lifecycle — the merge whose first parent is
+`bb95ed26964b1bc7a2e230c76060fec82752efa1`, whose second parent is this decision's independently
+reviewed and principal-accepted head, whose merge tree is byte-identical to that accepted head's own
+tree, whose merge-commit CI succeeded at that exact merge SHA, and whose final post-CI closure was
+recorded. That identity is **not stated here as a literal SHA and must never be predicted**: this
+decision has not merged, so the authorized unit must **derive it from this decision's completed
+lifecycle and prove the equality from the git object store**, exactly as every other identity in §F.1
+is derived rather than asserted.
+
+**Ancestry is necessary history and explicitly insufficient authority.** The base must still descend
+from `bb95ed26964b1bc7a2e230c76060fec82752efa1`, this filing's own verified `main` — but descent alone
+never qualifies a base. *Descends from* proves ancestry; it does not prove scope identity, and under a
+descent-only rule any later commit on `main` would satisfy the requirement while carrying bytes no
+review of this grant ever saw.
+
+**Any intervening `main` commit is drift, and drift is a stop.** If `main` has advanced past this
+decision's own merge when the authorized unit begins, that unit **may not proceed on the strength of
+this authorization**. It must stop and obtain new authority, unless **every** intervening change is
+itself separately authorized **and** admitted into the rebinding through an **explicit closed identity
+transition** under §F.3 — named, bound at both ends, and reviewed. **Intervening bytes are never
+absorbed merely because the base descends from `bb95ed26…`.**
+
+A base asserted from a task brief, a summary, or a moving reference is not a verified base.
 
 **F.3 — Exact closed transitions, bound at both ends.** Every value the rebinding moves — each rebound
 constant, each hash pin, each identity family member, each `LOAD_BEARING_RELPATHS` membership change,
@@ -321,9 +344,10 @@ run does not; principal acceptance does not; merge does not; and post-merge veri
 successful exact merge-commit CI run does not. **Only complete closure of all seven does.**
 
 These seven mirror the repository's own committed definition —
-`level1_stage1_execution_authorization.REQUIRED_LIFECYCLE_GATES`, a six-element tuple that is itself
-one of the sixteen load-bearing paths. **That module is cited only and is byte-unchanged by this
-filing.** Conditions 5–7 are that tuple's last three members; condition 2 is the exact-head discipline
+`level1_stage1_execution_authorization.REQUIRED_LIFECYCLE_GATES`, a **six-element tuple**. The tuple is
+not itself a repository path; the **module that contains it**,
+`level1_stage1_execution_authorization.py`, is one of the sixteen load-bearing paths. **That module is
+cited only and is byte-unchanged by this filing.** Conditions 5–7 are that tuple's last three members; condition 2 is the exact-head discipline
 `OPS-0009` §6 applies to condition 1. `XASSET-0035`'s own lifecycle omission — an enumeration naming
 four of six gates — is not repeated, and neither is the omission that let two predecessors merge with
 their sixth condition outstanding.

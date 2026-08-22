@@ -15987,8 +15987,15 @@ workstreams:
           recompute stale identities and pins ONCE and LAST; and synchronize the catalog, the
           register and the coupled suites without weakening any of them. REQUIRED PROPERTIES (SS-F):
           bind only stabilized, independently reviewed exact bytes; bind against a base RE-DERIVED
-          FROM THE OBJECT STORE and shown to descend from bb95ed26964b1bc7a2e230c76060fec82752efa1;
-          record EXACT CLOSED TRANSITIONS bound at BOTH ends for every rebound constant, pin,
+          FROM THE OBJECT STORE that EQUALS the exact normal-merge commit closing XASSET-0048's own
+          SS-J lifecycle -- derived from that completed lifecycle (accepted head, ordered parents,
+          byte-identical merge tree, successful merge-commit CI at the exact merge SHA, final
+          closure) and never predicted, since XASSET-0048 has not merged. Descent from
+          bb95ed26964b1bc7a2e230c76060fec82752efa1 remains NECESSARY HISTORY but is EXPLICITLY
+          INSUFFICIENT AUTHORITY: any intervening main commit is DRIFT requiring a stop and new
+          authority unless every intervening change is separately authorized AND admitted through an
+          explicit closed identity transition, and intervening bytes are NEVER absorbed merely
+          because the base descends from bb95ed26...; record EXACT CLOSED TRANSITIONS bound at BOTH ends for every rebound constant, pin,
           identity, boundary membership and the lifecycle anchor itself; bind canonical AND
           enforcement AND ALL OUTCOME-PRODUCING EXECUTABLE bytes by exact identity, per SS-G.B's
           unchanged governing invariant that no outcome-producing executable code may be created,

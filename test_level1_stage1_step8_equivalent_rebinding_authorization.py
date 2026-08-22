@@ -619,13 +619,59 @@ class TestTheRequiredPropertiesAreConditions:
             assert component in f, component
         assert "proved by exact byte identity, never asserted by naming" in f
 
-    def test_the_base_must_be_re_derived_and_shown_to_descend_from_this_units_main(
-        self, decision_text
-    ):
+    def test_the_base_must_be_derived_and_proved_rather_than_asserted(self, decision_text):
+        """Renamed and re-pointed by the MAJOR 1 correction. The prior name described the
+        superseded ancestry-only rule; the requirement is now derivation plus PROOF of the
+        equality §F.2 makes operative."""
         f = _section(decision_text, "F")
-        assert "re-derived from the git object store" in f
-        assert f"must be shown to descend from `{THIS_UNIT_BASE_SHA}`" in f
+        assert "prove the equality from the git object store" in f
+        assert "**The operative rule is equality, not descent.**" in f
         assert "is not a verified base" in f
+
+    def test_the_base_rule_is_equality_to_this_decisions_own_merge(self, decision_text):
+        """MAJOR 1 (review 4998661361). The prior §F.2 required only that the future base
+        DESCEND from this filing's own pre-authoring `main`, so any later commit qualified and
+        the future unit could absorb bytes no review of this grant ever saw. The operative rule
+        is now EQUALITY to this decision's own lifecycle-closing merge."""
+        f = _section(decision_text, "F")
+        assert "**The operative rule is equality, not descent.**" in f
+        assert (
+            "must **equal** the exact normal-merge commit that closes this decision's own §J "
+            "lifecycle"
+        ) in f
+        # The identity must be DERIVED from the closed lifecycle, never predicted.
+        for element in (
+            "whose first parent is", "whose second parent is this decision's independently",
+            "byte-identical to that accepted head's own", "merge-commit CI succeeded at that exact merge SHA",
+            "final post-CI closure was\nrecorded",
+        ):
+            assert _flat(element) in f, element
+        assert "**not stated here as a literal SHA and must never be predicted**" in f
+        assert "derive it from this decision's completed" in f
+
+    def test_ancestry_is_stated_necessary_but_explicitly_insufficient(self, decision_text):
+        f = _section(decision_text, "F")
+        assert "**Ancestry is necessary history and explicitly insufficient authority.**" in f
+        assert f"must still descend from `{THIS_UNIT_BASE_SHA}`" in f
+        assert "descent alone never qualifies a base" in f
+        assert "it does not prove scope identity" in f
+
+    def test_any_intervening_main_commit_is_drift_and_a_stop(self, decision_text):
+        f = _section(decision_text, "F")
+        assert "**Any intervening `main` commit is drift, and drift is a stop.**" in f
+        assert "**may not proceed on the strength of this authorization**" in f
+        assert "It must stop and obtain new authority" in f
+        assert "**explicit closed identity transition** under §F.3" in f
+        assert (
+            "**Intervening bytes are never absorbed merely because the base descends from "
+            "`bb95ed26…`.**"
+        ) in f
+
+    def test_the_determination_does_not_diverge_from_the_base_rule(self, decision_text):
+        """§A and §F.2 must not drift apart: §A is where a future author reads the grant first."""
+        a = _section(decision_text, "A")
+        assert "**this decision's own lifecycle-closing merge**" in a
+        assert "the base §F.2 closes by equality, never a later descendant of it" in a
 
     def test_the_boundary_may_only_grow(self, decision_text):
         f = _section(decision_text, "F")
@@ -888,6 +934,255 @@ class TestThisFilingPerformsNoRebinding:
     def test_the_decision_says_it_edits_the_module_not_at_all(self, decision_flat):
         assert "edits `level1_stage1_execution_authorization.py` not at all" in decision_flat
         assert "**performs no rebinding**" in decision_flat
+
+
+# ======================================================================================
+# 6b -- MAJOR 1 (review 4998661361): the future base is closed to THIS decision's own merge
+#
+# The reviewed head's §F.2 required only that the future rebinding base **descend from**
+# `bb95ed26…` -- this filing's own PRE-AUTHORING `main`. Reproduced before correcting: under
+# that rule a synthetic LATER descendant of this decision's own merge still qualified, so the
+# future unit could have absorbed and rebound intervening bytes that were never present in the
+# head independently reviewed and principal-accepted for this grant. Ancestry proves history,
+# not scope identity.
+#
+# The rule is extracted here as a PURE function so it can be driven against known-good and
+# known-bad inputs rather than only asserted in prose, and so the pre-correction rule can be
+# run side by side and shown to accept what the corrected rule refuses. That side-by-side is
+# the point: a guard that is never shown accepting something is a guard whose discrimination
+# has not been demonstrated.
+#
+# THIS DECISION HAS NOT MERGED, so its own merge SHA is neither stated nor predicted anywhere.
+# Every test below supplies the authorizing-merge identity as an explicit argument, over
+# synthetic git objects built in an isolated clone.
+# ======================================================================================
+
+
+#: A 40-character lowercase hex commit name. Anything else is malformed, and malformed is a
+#: REFUSAL rather than a best-effort match -- an identity that cannot be resolved cannot be
+#: proved equal to anything.
+def _is_commit_name(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 40
+        and all(c in "0123456789abcdef" for c in value)
+    )
+
+
+def ancestry_only_base_is_acceptable(candidate_base, historical_base, *, is_ancestor):
+    """The PRE-CORRECTION rule, kept so the correction is demonstrable rather than asserted.
+
+    This is exactly what the reviewed head's §F.2 required: descent from the filing's own
+    pre-authoring ``main``. It is retained ONLY to be driven alongside the corrected rule and
+    shown accepting a later descendant. It is never the operative rule.
+    """
+    if not (_is_commit_name(candidate_base) and _is_commit_name(historical_base)):
+        return False
+    return is_ancestor(historical_base, candidate_base)
+
+
+def authorizing_merge_base_is_acceptable(
+    candidate_base, authorizing_merge, historical_base, *, is_ancestor
+):
+    """The CORRECTED §F.2 rule. Returns ``(accepted, reason)``.
+
+    ``authorizing_merge`` is the exact normal-merge commit that closes this decision's own §J
+    lifecycle. It is a REQUIRED ARGUMENT and is never defaulted, derived from a ref, or guessed
+    -- this decision has not merged, and a rule that could invent that identity would be the
+    same defect it exists to refuse.
+
+    Equality is the operative test. Ancestry from ``historical_base`` is additionally required
+    as necessary history, but is never sufficient on its own.
+    """
+    if not _is_commit_name(authorizing_merge):
+        return False, "authorizing merge identity missing or malformed"
+    if not _is_commit_name(candidate_base):
+        return False, "candidate base missing or malformed"
+    if not _is_commit_name(historical_base):
+        return False, "historical base missing or malformed"
+    if candidate_base != authorizing_merge:
+        return False, (
+            "candidate base does not EQUAL this authorization's own lifecycle-closing merge; "
+            "descent is not sufficient authority"
+        )
+    if not is_ancestor(historical_base, candidate_base):
+        return False, "candidate base does not descend from the historical base"
+    return True, "candidate base equals the authorizing merge and descends from history"
+
+
+class TestTheFutureBaseIsClosedByEquality:
+    """Pure-function coverage. No git required, so the rule itself is under test."""
+
+    #: An ``is_ancestor`` that says yes to everything. Any acceptance below is therefore due to
+    #: the EQUALITY test and never to ancestry -- which is the property in dispute.
+    ALWAYS_ANCESTOR = staticmethod(lambda a, d: True)
+
+    MERGE = "a" * 40
+    LATER = "b" * 40
+    UNRELATED = "c" * 40
+    HISTORICAL = "d" * 40
+
+    def test_it_accepts_the_exact_authorizing_merge(self):
+        ok, reason = authorizing_merge_base_is_acceptable(
+            self.MERGE, self.MERGE, self.HISTORICAL, is_ancestor=self.ALWAYS_ANCESTOR
+        )
+        assert ok is True, reason
+        # The acceptance must state BOTH conditions it actually checked. A bare "ok" would let
+        # a future reader believe descent alone had been established.
+        assert "equals the authorizing merge" in reason
+        assert "descends from history" in reason
+
+    def test_it_refuses_a_later_descendant_even_with_valid_ancestry(self):
+        """The MAJOR 1 defect, stated as a test. Ancestry is granted unconditionally here, so
+        only equality can be doing the refusing."""
+        ok, reason = authorizing_merge_base_is_acceptable(
+            self.LATER, self.MERGE, self.HISTORICAL, is_ancestor=self.ALWAYS_ANCESTOR
+        )
+        assert ok is False
+        assert "does not EQUAL" in reason
+
+    def test_it_refuses_an_unrelated_commit(self):
+        ok, _ = authorizing_merge_base_is_acceptable(
+            self.UNRELATED, self.MERGE, self.HISTORICAL, is_ancestor=self.ALWAYS_ANCESTOR
+        )
+        assert ok is False
+
+    def test_it_refuses_a_base_that_equals_the_merge_but_lacks_ancestry(self):
+        """Ancestry stays NECESSARY. Dropping it would trade one half-rule for another."""
+        ok, reason = authorizing_merge_base_is_acceptable(
+            self.MERGE, self.MERGE, self.HISTORICAL, is_ancestor=lambda a, d: False
+        )
+        assert ok is False
+        assert "does not descend" in reason
+
+    @pytest.mark.parametrize(
+        "candidate, merge",
+        (
+            (None, "a" * 40),
+            ("a" * 40, None),
+            ("", "a" * 40),
+            ("a" * 39, "a" * 40),
+            ("A" * 40, "A" * 40),
+            ("z" * 40, "z" * 40),
+            (123456, "a" * 40),
+            ("a" * 41, "a" * 40),
+        ),
+    )
+    def test_it_refuses_missing_or_malformed_identities(self, candidate, merge):
+        ok, _ = authorizing_merge_base_is_acceptable(
+            candidate, merge, self.HISTORICAL, is_ancestor=self.ALWAYS_ANCESTOR
+        )
+        assert ok is False
+
+    @pytest.mark.parametrize("merge", (None, "", "a" * 39, "A" * 40, 123456))
+    def test_a_malformed_authorizing_identity_is_reported_as_such(self, merge):
+        """MUTATION PIN. Dropping the authorizing-identity check leaves the refusal intact --
+        an unresolvable identity can never equal a valid candidate -- but degrades the REASON
+        from "identity missing or malformed" to "does not EQUAL". Those are different failures:
+        the first is a stop because the authorization's own merge cannot be resolved, the second
+        is a scope violation by a resolvable base. Reproduced before this pin existed."""
+        ok, reason = authorizing_merge_base_is_acceptable(
+            "a" * 40, merge, self.HISTORICAL, is_ancestor=self.ALWAYS_ANCESTOR
+        )
+        assert ok is False
+        assert reason == "authorizing merge identity missing or malformed", reason
+
+    def test_the_authorizing_merge_identity_has_no_default(self):
+        """A rule that could supply this argument itself could invent the very identity §F.2
+        forbids predicting. It is positional and required, and this pins that."""
+        import inspect
+
+        sig = inspect.signature(authorizing_merge_base_is_acceptable)
+        merge = sig.parameters["authorizing_merge"]
+        assert merge.default is inspect.Parameter.empty
+        assert merge.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+        with pytest.raises(TypeError):
+            authorizing_merge_base_is_acceptable("a" * 40, is_ancestor=self.ALWAYS_ANCESTOR)
+
+    def test_equality_not_ancestry_is_the_operative_rule(self):
+        """The two rules driven side by side on the SAME later descendant. The pre-correction
+        rule accepts it; the corrected rule refuses it. If both agreed, the correction would be
+        cosmetic."""
+        assert ancestry_only_base_is_acceptable(
+            self.LATER, self.HISTORICAL, is_ancestor=self.ALWAYS_ANCESTOR
+        ) is True
+        ok, _ = authorizing_merge_base_is_acceptable(
+            self.LATER, self.MERGE, self.HISTORICAL, is_ancestor=self.ALWAYS_ANCESTOR
+        )
+        assert ok is False
+
+
+def test_the_corrected_base_rule_refuses_a_real_later_descendant(tmp_path):
+    """The same discrimination, over REAL git objects rather than synthetic strings.
+
+    Builds, in an isolated clone: a stand-in for this decision's own merge (a genuine
+    ``--no-ff`` merge of this branch's head into its base), and a real later commit on top of
+    it. Then runs both rules against both candidates using real ``git merge-base --is-ancestor``.
+
+    The stand-in is built here and used only as an argument -- nothing is written to the real
+    repository and no merge SHA is recorded anywhere in this filing.
+    """
+    if not _range_is_present(THIS_UNIT_BASE_SHA):
+        pytest.skip("this unit's base is not present in this checkout")
+    clone = _working_clone(tmp_path)
+    branch_head = _git_in(clone, "rev-parse", "HEAD")
+    if branch_head == THIS_UNIT_BASE_SHA:
+        branch_head = _commit_on_top(clone, THIS_UNIT_BASE_SHA, "feature branch commit")
+    _git_in(clone, "checkout", "--quiet", "-B", "sim-main", THIS_UNIT_BASE_SHA)
+    subprocess.run(
+        ["git", "merge", "--no-ff", "--quiet", "-m", "simulated authorization merge", branch_head],
+        cwd=clone, capture_output=True, text=True, check=True,
+        env={**os.environ, **_SIM_ENV},
+    )
+    authorizing_merge = _git_in(clone, "rev-parse", "HEAD")
+    later = _commit_on_top(clone, authorizing_merge, "unrelated later main commit")
+    assert later != authorizing_merge
+
+    def real_is_ancestor(a, d):
+        return subprocess.run(
+            ["git", "merge-base", "--is-ancestor", a, d], cwd=clone, capture_output=True
+        ).returncode == 0
+
+    # The later commit genuinely IS a descendant -- so the refusal below is about identity.
+    assert real_is_ancestor(THIS_UNIT_BASE_SHA, later)
+    assert real_is_ancestor(authorizing_merge, later)
+
+    # Pre-correction rule: the later descendant qualifies. This is the reproduced defect.
+    assert ancestry_only_base_is_acceptable(
+        later, THIS_UNIT_BASE_SHA, is_ancestor=real_is_ancestor
+    ) is True
+
+    # Corrected rule: only the authorizing merge itself qualifies.
+    ok, _ = authorizing_merge_base_is_acceptable(
+        authorizing_merge, authorizing_merge, THIS_UNIT_BASE_SHA, is_ancestor=real_is_ancestor
+    )
+    assert ok is True
+    ok, reason = authorizing_merge_base_is_acceptable(
+        later, authorizing_merge, THIS_UNIT_BASE_SHA, is_ancestor=real_is_ancestor
+    )
+    assert ok is False
+    assert "does not EQUAL" in reason
+
+
+def test_this_filing_records_no_predicted_merge_identity(self=None):
+    """§F.2 forbids predicting this decision's own merge SHA, so neither the decision nor this
+    suite may contain a bound one. Checked structurally: the only 40-hex commit names present
+    must be ones this filing legitimately cites from CLOSED history."""
+    known = {
+        PR347_BASE_SHA, PR347_FIRST_REVIEWED_HEAD, PR347_ACCEPTED_HEAD, PR347_MERGE_SHA,
+        THIS_UNIT_BASE_SHA, PR347_MERGE_TREE,
+    }
+    import re
+
+    for relative in (DECISION_RELPATH, SUITE_PATH.name):
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        found = set(re.findall(r"\b[0-9a-f]{40}\b", text))
+        unexpected = found - known
+        assert unexpected == set(), (relative, unexpected)
+    # Non-vacuity: the scan really found the identities this filing does cite.
+    assert PR347_MERGE_SHA in set(
+        re.findall(r"\b[0-9a-f]{40}\b", DECISION_PATH.read_text(encoding="utf-8"))
+    )
 
 
 # ======================================================================================
@@ -1271,6 +1566,15 @@ class TestNonDeadlock:
         j = _section(decision_text, "J")
         assert "`level1_stage1_execution_authorization.REQUIRED_LIFECYCLE_GATES`" in j
         assert "**That module is cited only and is byte-unchanged by this filing.**" in j
+        # MINOR 1 (review 4998661361): a tuple is not a repository path. §J previously said the
+        # tuple "is itself one of the sixteen load-bearing paths"; the load-bearing path is the
+        # MODULE that contains it. Both halves are pinned in text and proved against the module.
+        assert "a **six-element tuple**" in j
+        assert "The tuple is not itself a repository path" in j
+        assert (
+            "the **module that contains it**, `level1_stage1_execution_authorization.py`, is one "
+            "of the sixteen load-bearing paths"
+        ) in j
         assert len(A.REQUIRED_LIFECYCLE_GATES) == 6
         assert AUTH_MODULE_RELPATH in A.LOAD_BEARING_RELPATHS
 
@@ -1382,6 +1686,27 @@ class TestCatalogAndRegisterSynchronisation:
             "ONE AND UNSPENT",
         ):
             assert phrase in gate["description"], phrase
+
+    def test_the_register_carries_the_corrected_base_rule_in_lockstep(self, register_text):
+        """MAJOR 1 (review 4998661361). The register described the same ancestry-only rule the
+        decision did. A register that still says "descend from" while the decision says "equals"
+        is exactly the inconsistent-specification shape this programme has been bitten by, so
+        both are pinned and both must move together."""
+        data = yaml.safe_load(register_text)
+        ws = next(w for w in data["workstreams"] if w["id"] == "WS-0014")
+        gate = next(g for g in ws["milestones"] if g["gate"] == REGISTER_GATE)
+        described = " ".join(gate["description"].split())
+        for phrase in (
+            "EQUALS the exact normal-merge commit closing XASSET-0048's own SS-J lifecycle",
+            "never predicted, since XASSET-0048 has not merged",
+            "remains NECESSARY HISTORY but is EXPLICITLY INSUFFICIENT AUTHORITY",
+            "any intervening main commit is DRIFT requiring a stop and new authority",
+            "explicit closed identity transition",
+            "NEVER absorbed merely because the base descends from",
+        ):
+            assert phrase in described, phrase
+        # The superseded ancestry-only formulation must be gone, not merely supplemented.
+        assert "shown to descend from bb95ed26" not in described
 
     def test_the_workstream_posture_is_unchanged(self, register_text):
         data = yaml.safe_load(register_text)
