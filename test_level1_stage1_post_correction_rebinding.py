@@ -98,6 +98,24 @@ XASSET_0047_BOUNDARY_ADDITIONS = (
     XASSET_0047_DECISION_RELPATH,
 )
 
+#: ADDED BY XASSET-0049, for exactly the reason XASSET-0047's own block gives: its two additions
+#: are named explicitly so THIS decision's four can still be asserted EXACTLY as a set difference,
+#: rather than relaxed into a subset test that any future growth would satisfy.
+XASSET_0049_DECISION_RELPATH = (
+    "governance/decisions/"
+    "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md"
+)
+XASSET_0049_BOUNDARY_ADDITIONS = (
+    "governance/decisions/"
+    "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
+    XASSET_0049_DECISION_RELPATH,
+)
+#: The authorization module's exact bytes at XASSET-0047's own merge -- the identity THAT unit
+#: recorded, immutable, and therefore still true after a lawful successor rebinding.
+XASSET_0047_FINAL_MODULE_SHA256 = (
+    "e5b509ca74734bffea788d4e7499699356395216285e941164ccf21b6159c924"
+)
+
 #: The bytes this rebinding is measured against. Its own base is the XASSET-0043 merge.
 PR_BASE_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
 #: ADDED BY XASSET-0045: the register's shared live "where main is now" field after
@@ -120,6 +138,10 @@ XASSET0047_MAIN_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 #: rule. The anchor each decision authorizes against is unchanged; only the shared
 #: self-reference moved. The assertion stays EXACT and is bound at BOTH ends.
 XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+#: ADVANCED BY XASSET-0049: PR #348 merged at `f052efad`, so the register's shared "where main is
+#: now" field lawfully advanced again under OPS-0001's Active-GitHub-fields rule. Each prior value
+#: is retained beside it as a negative pin rather than deleted.
+XASSET0049_MAIN_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 
 #: A real, immutable historical commit pair across which a protected path GENUINELY changed --
 #: PR #342's base and merge -- so the base->head comparison can never pass vacuously.
@@ -342,8 +364,13 @@ class TestFiveDistinctIdentities:
         """
         assert A.REBINDING_AUTHORIZING_DECISION == "XASSET-0043"
         assert A.REBINDING_AUTHORIZING_PULL_REQUEST == 343
-        assert A.REVIEWED_BASE_SHA == A.RECOVERY_AUTHORIZING_MERGE_SHA
+        # ADVANCED AGAIN BY XASSET-0049, unchanged in KIND for the third time. The live unit is
+        # the XASSET-0048-authorized step-8-EQUIVALENT rebinding, so the equality names
+        # XASSET-0048's merge. XASSET-0047's own accepted equality is retained immediately below
+        # on the constants that now carry it, so nothing is dropped.
+        assert A.REVIEWED_BASE_SHA == A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
         assert A.REVIEWED_BASE_SHA != PR_BASE_SHA
+        assert A.PRIOR_RECONCILIATION_MERGE_BASE == A.RECOVERY_AUTHORIZING_MERGE_SHA
         # THIS decision's own closed anchor, retained: PR #344 really did branch from PR #343's
         # merge, and that fact is immutable and still asserted exactly.
         assert A.STOPPED_REBINDING_MERGE_BASE == A.REBINDING_AUTHORIZING_MERGE_SHA
@@ -411,9 +438,11 @@ class TestTrustBoundaryGrowsByDirectMembership:
         its current value and bound at both ends, so neither a silent shrink back nor an
         unexplained further growth passes.
         """
+        # ADVANCED AGAIN BY XASSET-0049: 16 -> 18, additively and by direct membership.
         assert len(XASSET_0037_LOAD_BEARING) == 10
-        assert len(A.LOAD_BEARING_RELPATHS) == 16
-        assert len(set(A.LOAD_BEARING_RELPATHS)) == 16
+        assert len(A.LOAD_BEARING_RELPATHS) == 18
+        assert len(set(A.LOAD_BEARING_RELPATHS)) == 18
+        assert len(A.LOAD_BEARING_RELPATHS) != 16
         assert len(A.LOAD_BEARING_RELPATHS) != 14
         # THIS decision's own four additions are still present, all four, individually.
         assert set(BOUNDARY_ADDITIONS) <= set(A.LOAD_BEARING_RELPATHS)
@@ -430,10 +459,24 @@ class TestTrustBoundaryGrowsByDirectMembership:
         own two by name. Nothing is relaxed into a subset test that any future growth would
         satisfy: a THIRD unexplained addition still fails here.
         """
+        # ADVANCED AGAIN BY XASSET-0049, which added two more under its own separate authority.
+        # THIS decision's four additions are still asserted EXACTLY, by subtracting each later
+        # unit's own additions BY NAME. Nothing is relaxed into a subset test any future growth
+        # would satisfy: a further unexplained addition still fails here.
         additions = set(A.LOAD_BEARING_RELPATHS) - set(XASSET_0037_LOAD_BEARING)
-        assert additions == set(BOUNDARY_ADDITIONS) | set(XASSET_0047_BOUNDARY_ADDITIONS)
-        assert additions - set(XASSET_0047_BOUNDARY_ADDITIONS) == set(BOUNDARY_ADDITIONS)
+        assert additions == (
+            set(BOUNDARY_ADDITIONS)
+            | set(XASSET_0047_BOUNDARY_ADDITIONS)
+            | set(XASSET_0049_BOUNDARY_ADDITIONS)
+        )
+        assert (
+            additions
+            - set(XASSET_0047_BOUNDARY_ADDITIONS)
+            - set(XASSET_0049_BOUNDARY_ADDITIONS)
+        ) == set(BOUNDARY_ADDITIONS)
         assert set(BOUNDARY_ADDITIONS).isdisjoint(XASSET_0047_BOUNDARY_ADDITIONS)
+        assert set(BOUNDARY_ADDITIONS).isdisjoint(XASSET_0049_BOUNDARY_ADDITIONS)
+        assert set(XASSET_0047_BOUNDARY_ADDITIONS).isdisjoint(XASSET_0049_BOUNDARY_ADDITIONS)
 
     @pytest.mark.parametrize("relpath", BOUNDARY_ADDITIONS)
     def test_each_addition_is_a_real_file_bound_by_membership_not_citation(self, relpath):
@@ -812,11 +855,24 @@ class TestPinsAreCurrentAndSuccessionIsRefused:
             assert len(tokens) == 1, tokens
             return tokens[0]
 
+        # ADVANCED AGAIN BY XASSET-0049, unchanged in KIND. Every generation's declaration is
+        # accepted merged history describing the module AS THAT UNIT LEFT IT, and each remains
+        # exactly one line with exactly one token. Which declaration matches the LIVE module is a
+        # live fact belonging to the CURRENT unit; XASSET-0047's now describes its own merge, and
+        # asserting that it no longer matches the live module is precisely what proves the newest
+        # successor really rebound rather than leaving a stale pin agreeing by accident.
         live = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
         successor = (ROOT / XASSET_0047_DECISION_RELPATH).read_text(encoding="utf-8")
-        assert _sole_token(successor) == live
+        assert _sole_token(successor) == XASSET_0047_FINAL_MODULE_SHA256
+        assert _sole_token(successor) != live
+        latest = (ROOT / XASSET_0049_DECISION_RELPATH).read_text(encoding="utf-8")
+        assert _sole_token(latest) == live
         # THIS decision's own declaration is unchanged history and no longer describes the module.
         assert _sole_token(decision_text) != live
+        # Every generation's declaration is distinct: none was copied forward.
+        assert len({
+            _sole_token(decision_text), _sole_token(successor), _sole_token(latest)
+        }) == 3
 
     def test_all_four_module_identities_are_retained_and_mutually_distinct(self, decision_text):
         current = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
@@ -986,7 +1042,15 @@ class TestNotAnActivation:
         authorized, reason = A.new_execution_is_authorized()
         assert authorized is False
         assert A.AUTHORIZING_DECISION in reason
-        assert A.AUTHORIZING_DECISION == "XASSET-0047"
+        # RE-ANCHORED BY XASSET-0049, unchanged in KIND. The property this protects is that the
+        # anchor names a lifecycle that CAN close and never this stopped one -- not that it names
+        # any one particular successor forever. Both ends stay bound: the anchor is a real
+        # successor, and it is not this decision nor any permanently ineffective one.
+        assert A.AUTHORIZING_DECISION == "XASSET-0049"
+        assert A.AUTHORIZING_DECISION not in A.PERMANENTLY_INEFFECTIVE_DECISIONS
+        assert A.AUTHORIZING_DECISION != DECISION_ID
+        # The superseded anchor is PRESERVED as history rather than erased.
+        assert A.PRIOR_RECONCILIATION_DECISION == "XASSET-0047"
         assert DECISION_ID not in reason
         assert DECISION_ID in A.PERMANENTLY_INEFFECTIVE_DECISIONS
 
@@ -1180,11 +1244,15 @@ class TestCatalogAndRegisterSynchronisation:
         its own gate. This decision's own recorded identity is retained beside it as history
         rather than overwritten, and that retention is asserted here too.
         """
+        # RE-ANCHORED BY XASSET-0049. Each unit's gate records the module identity THAT unit
+        # produced, and every one of them is retained rather than overwritten. The live identity
+        # is recorded by the LIVE unit's own gate, which is that unit's own suite's subject.
         register = REGISTER_PATH.read_text(encoding="utf-8")
         flat = register.replace("\n", "").replace(" ", "")
         current = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
         assert current in flat
         assert XASSET_0042_FINAL_MODULE_SHA256 in flat
+        assert XASSET_0047_FINAL_MODULE_SHA256 in flat
 
     def test_the_workstream_posture_is_unchanged(self, ws0014):
         # ADVANCED BY XASSET-0045: `last_verified_main_sha` is WS-0014's SINGLE SHARED live
@@ -1196,7 +1264,11 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["status"] == "proposed"
         assert ws0014["priority"] == "secondary"
         assert ws0014["last_verified_main_sha"] != PR_BASE_SHA
-        assert ws0014["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        # ADVANCED BY XASSET-0049. This is WS-0014's SINGLE SHARED live self-reference and moves
+        # with every unit; each generation's own value is retained as a NEGATIVE pin so a silent
+        # revert to any finished unit's state still fails here.
+        assert ws0014["last_verified_main_sha"] == XASSET0049_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0048_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0047_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0046_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0045_MAIN_SHA

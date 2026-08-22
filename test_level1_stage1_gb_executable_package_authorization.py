@@ -780,6 +780,16 @@ class TestThisFilingMutatesNothingLoadBearing:
             "XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md",
             "governance/decisions/"
             "XASSET-0047-endpoint-0001-stage-1-post-merge-ci-recovery-reconciliation.md",
+            # EXTENDED AGAIN BY XASSET-0049 / XASSET-0048 SS-E. The step-8-EQUIVALENT successor
+            # rebinding moves the lifecycle anchor onto its own decision and pull request. The
+            # two additions are the authority for that rebinding and the rebinding's own
+            # decision, on precisely the footing XASSET-0043/XASSET-0044 and
+            # XASSET-0046/XASSET-0047 already occupy. NOTHING was removed: every path above,
+            # including XASSET-0044's and XASSET-0047's own decisions, is still retained.
+            "governance/decisions/"
+            "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
+            "governance/decisions/"
+            "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
         }
 
     def test_frozen_universe_is_unchanged(self) -> None:

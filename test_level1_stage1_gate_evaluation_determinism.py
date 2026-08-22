@@ -766,6 +766,15 @@ class TestLoadBearingReauthorizationDependency:
             # own authorization and the recovery itself. Each is bound by DIRECT MEMBERSHIP.
             "governance/decisions/XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md",
             "governance/decisions/XASSET-0047-endpoint-0001-stage-1-post-merge-ci-recovery-reconciliation.md",
+            # FURTHER AMENDED BY XASSET-0049's step-8-EQUIVALENT successor operational rebinding,
+            # authorized by XASSET-0048 SS-E (SS-G.B step 8's OWN budget stays spent on
+            # XASSET-0037 and is not re-consumed). The invariant is unchanged and still EXACT:
+            # SS-D's six enumerated paths are all retained above, and every addition remains
+            # EXACTLY outcome-producing code plus each authorizing decision -- here, this
+            # rebinding's own authorization and the rebinding itself. Each is bound by DIRECT
+            # MEMBERSHIP; a citation or prose restatement is not a byte binding.
+            "governance/decisions/XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
+            "governance/decisions/XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
         }
         # Every addition beyond SS-D's six is either outcome-producing code or a governance
         # decision file. Nothing else may enter the trust boundary by this route.

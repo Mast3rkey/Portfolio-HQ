@@ -114,6 +114,12 @@ THIS_PR_MERGE_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 #: shared-field assertion stays EXACT at both ends rather than being relaxed to an inequality
 #: when the field lawfully advanced past this unit.
 XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+#: ADVANCED BY XASSET-0049. WS-0014's shared live "where main is now" / "which pull request is
+#: live" fields move with EVERY unit under OPS-0001's Active-GitHub-fields rule. Each prior
+#: generation's value is retained beside the current one as a NEGATIVE pin rather than deleted, so
+#: a silent revert to any finished unit's state still fails.
+XASSET0049_MAIN_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+XASSET0049_ACTIVE_PR = 349
 
 #: PR #345's lifecycle evidence that DID complete, preserved as authenticated predecessor
 #: evidence.
@@ -1053,7 +1059,11 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0048: PR #347 has since merged at `bb95ed26`, so the register's
         # shared "where main is now" field lawfully advanced past THIS unit's own merge. Bound
         # at BOTH ends: equal to the successor value, unequal to this unit's own.
-        assert ws0014["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
+        # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
+        # pin, so a silent revert to finished work still fails here.
+        assert ws0014["last_verified_main_sha"] == XASSET0049_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0048_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != THIS_PR_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR345_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR345_BASE_SHA

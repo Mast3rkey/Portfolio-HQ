@@ -243,37 +243,84 @@ STUDY_ID = "ENDPOINT-0001"
 #: decision last rebound the canonical bytes, and which decision's lifecycle the mechanism
 #: authenticates against. Overloading them is the failure mode XASSET-0037 SS-C named, so they are
 #: deliberately left distinct.
-AUTHORIZING_DECISION = "XASSET-0047"
+#: EFFECTIVE structural authorization source, REBOUND AGAIN by XASSET-0049 under XASSET-0048 SS-E,
+#: which authorizes exactly one XASSET-0030 SS-G.B STEP-8-EQUIVALENT successor
+#: operational-authorization / load-bearing rebinding against the exact merged bytes as they stand
+#: at XASSET-0048's own lifecycle-closing merge.
+#:
+#: EXACT CLOSED TRANSITION, per XASSET-0048 SS-F.3. Old value ``"XASSET-0047"``; new value
+#: ``"XASSET-0049"``. The old value is PRESERVED rather than overwritten -- see
+#: :data:`PRIOR_RECONCILIATION_DECISION` and the whole ``PRIOR_RECONCILIATION_*`` family below,
+#: which keeps XASSET-0047's own merge, accepted head, and base verifiable from git after the
+#: anchor moves off it. A value that moves without both ends bound is drift wearing a rebinding's
+#: label, and before this rebinding XASSET-0047's identity was reachable ONLY through the moving
+#: anchor: reproduced against the live module, neither ``bb95ed26...`` nor ``8ae0988d...`` appeared
+#: under any constant, so overwriting the anchor alone would have destroyed that identity outright.
+#:
+#: SS-G.B STEP 8 IS NOT RE-CONSUMED, and this rebinding does not draw on it. Step 8 authorized ONE
+#: rebinding against the executable package's exact merged bytes and XASSET-0037 performed it;
+#: that budget stays spent and the package it bound stays bound. XASSET-0043 SS-C and XASSET-0044
+#: SS-C both record it. The authority for THIS rebinding is XASSET-0048 SS-E, which is
+#: XASSET-0041 SS-I link 2 -- the step-8 EQUIVALENT: a lifecycle of the same kind and rigour,
+#: separately authorized, and never a second draw on step 8's own spent budget.
+#:
+#: SCOPE, per XASSET-0048 SS-F.7's "only to the extent the rebinding requires". The canonical
+#: artifacts are NOT amended by this unit, so ``rebound_by`` and
+#: ``effective_structural_authorization_source`` in the canonical charter still name XASSET-0044 --
+#: which remains literally true, because XASSET-0044 is still the last decision that amended those
+#: canonical BYTES and this unit amends none of them. XASSET-0047 drew that distinction and it is
+#: preserved unchanged here: which decision last rebound the canonical bytes, and which decision's
+#: lifecycle the mechanism authenticates against, are DIFFERENT relationships. Overloading them is
+#: the failure mode XASSET-0037 SS-C named.
+AUTHORIZING_DECISION = "XASSET-0049"
 
 #: XASSET-0028, the construction-universe STRUCTURAL CLOSURE predecessor. Deliberately UNCHANGED in
 #: name, meaning, and value: repointing it at XASSET-0029 would overload one field with two
 #: different relationships, which is exactly what this rebinding must not do.
 PREDECESSOR_DECISION = "XASSET-0028"
 
-#: The XASSET-0047 pull request. Bound so an attestation cannot silently reference another.
+#: The XASSET-0049 pull request. Bound so an attestation cannot silently reference another.
 #:
-#: PROVENANCE, stated exactly rather than flatteringly, and DIFFERENTLY from every predecessor
-#: constant of this kind: this number was NOT written in advance as the next sequential guess. The
-#: first commit on this branch carried the sentinel ``0`` -- an impossible pull-request number that
-#: can never validate -- precisely so that no guessed value could ever be reviewed, merged, or
-#: relied upon. The draft pull request was then opened, GitHub issued its own number, that number
-#: was read back from live GitHub, and only then was it bound here and re-verified against the live
-#: pull request's own head, base, and state. A wrong number still fails closed at
-#: ``verify_lifecycle_against_truth``, which fetches this exact pull request from durable governance
-#: metadata; the point of the sentinel is that the failure can never be a SILENT one.
-AUTHORIZING_PULL_REQUEST = 347
+#: EXACT CLOSED TRANSITION, per XASSET-0048 SS-F.3. Old value ``347`` (XASSET-0047's own pull
+#: request); new value this unit's own GitHub-issued number. The old value is PRESERVED rather
+#: than overwritten -- see :data:`PRIOR_RECONCILIATION_PULL_REQUEST`.
+#:
+#: PROVENANCE, stated exactly rather than flatteringly: this number was NOT written in advance as
+#: the next sequential guess. The first commit on this branch carried the sentinel ``-2`` -- a
+#: NEGATIVE, structurally impossible pull-request number that can never validate by accident, and
+#: deliberately distinct from XASSET-0047's own ``0`` and XASSET-0048's own ``-1`` so this unit's
+#: sentinel can never be mistaken for a predecessor's. The draft pull request was then opened,
+#: GitHub issued its own number, that number was read back from live GitHub, and only then was it
+#: bound here and re-verified against the live pull request's own head, base, and state. A wrong
+#: number still fails closed at ``verify_lifecycle_against_truth``, which fetches this exact pull
+#: request from durable governance metadata; the point of the sentinel is that the failure can
+#: never be a SILENT one.
+AUTHORIZING_PULL_REQUEST = 349
 
 #: The single Stage-1 execution lane XASSET-0027 SS-P.1 permits. Derived from repository
 #: truth, not invented: no Stage-1 attempt has ever been executed or authorized. UNCHANGED by the
 #: rebinding -- a successor authorization does not mint a second attempt.
 EXECUTION_ATTEMPT_ID = "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 
-#: MAJOR 2 (review 4946397399), rebound by XASSET-0037, again by XASSET-0044, and again here: the
-#: exact base THIS recovery lifecycle was reviewed against -- the XASSET-0046 merge, which is the
-#: single event that made this unit authorized to begin at all. The real merge's FIRST parent must
-#: equal this. If main advances before merge, the lifecycle cannot arm from the old review -- it
-#: requires a fresh exact-head/base review.
-REVIEWED_BASE_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+#: MAJOR 2 (review 4946397399), rebound by XASSET-0037, again by XASSET-0044, again by
+#: XASSET-0047, and again here: the exact base THIS rebinding lifecycle was reviewed against --
+#: the XASSET-0048 merge, which is the single event that made this unit authorized to begin at
+#: all. The real merge's FIRST parent must equal this. If main advances before merge, the
+#: lifecycle cannot arm from the old review -- it requires a fresh exact-head/base review.
+#:
+#: EXACT CLOSED TRANSITION, per XASSET-0048 SS-F.3. Old value
+#: ``"0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"`` (the XASSET-0046 merge, XASSET-0047's own
+#: authority); new value ``"f052efad38e3d57e3e5615799ac3bcbebe83ff5f"`` (the XASSET-0048 merge).
+#: The old value is PRESERVED rather than overwritten -- it remains bound, unchanged, as
+#: :data:`RECOVERY_AUTHORIZING_MERGE_SHA` and as :data:`PRIOR_RECONCILIATION_MERGE_BASE`.
+#:
+#: EQUALITY, NOT DESCENT -- XASSET-0048 SS-F.2, made operative rather than described. The base is
+#: required to EQUAL the exact normal-merge commit closing XASSET-0048's own SS-J lifecycle, and
+#: :func:`_verify_step8_equivalent_base_equality` decides that as a pure proposition rather than
+#: leaving it to prose. Descent stays NECESSARY HISTORY and is explicitly INSUFFICIENT AUTHORITY:
+#: under a descent-only rule any later commit on main would qualify while carrying bytes no review
+#: of the grant ever saw. Reproduced through the real mechanism before this rebinding was written.
+REVIEWED_BASE_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 
 #: XASSET-0028's exact historical identity. MAJOR 1: the canonical contract promises this
 #: is bound, so it is now actually verified against the local git object store.
@@ -416,6 +463,54 @@ STOPPED_RECOVERY_AUTHORIZATION_MERGE_BASE = "f5dedce1d1d3116ed8a6845c4447388c85a
 #: history, on precisely the footing PR #344's own failed run occupies.
 STOPPED_RECOVERY_AUTHORIZATION_FAILED_CI_RUN = "32490789238"
 STOPPED_RECOVERY_AUTHORIZATION_FAILED_CI_JOB = "96797667282"
+
+# --------------------------------------------------------------------------------------
+# XASSET-0049 / XASSET-0048 SS-E — the SEVENTH relationship, and the PRIOR ANCHOR it supersedes
+# --------------------------------------------------------------------------------------
+#
+# XASSET-0037 SS-C identified the largest failure mode available to a rebinding: overloading one
+# identity across relationships that are not the same relationship. XASSET-0044 added a fifth
+# family for exactly that reason and XASSET-0047 a sixth. This rebinding adds a SEVENTH -- the
+# STEP-8-EQUIVALENT AUTHORIZATION -- together with the PRIOR ANCHOR whose place it takes.
+#
+# WHY THE PRIOR-ANCHOR FAMILY IS MANDATORY RATHER THAN DECORATIVE. Reproduced against the live
+# module BEFORE this rebinding was written: XASSET-0047's own merge ``bb95ed26...`` and accepted
+# head ``8ae0988d...`` appeared under NO constant anywhere. They were reachable only through
+# AUTHORIZING_DECISION / AUTHORIZING_PULL_REQUEST / REVIEWED_BASE_SHA -- the three values this
+# rebinding moves. Moving them without this family would therefore not have weakened XASSET-0047's
+# identity; it would have DESTROYED it, and XASSET-0048 SS-F.9 requires every preserved
+# predecessor identity family to be carried forward intact.
+
+#: XASSET-0048 (PR #348), which AUTHORIZED this step-8-equivalent rebinding. Its complete
+#: seven-condition SS-J lifecycle closing is the single event that made this unit authorized to
+#: begin, which is why its merge is also this rebinding's own reviewed base. Distinct from every
+#: constant above: this is the authority for THIS unit -- not a package, not a correction, not a
+#: prior rebinding, and not a recovery.
+#:
+#: XASSET-0048 SS-F.2 makes the relationship between this merge and :data:`REVIEWED_BASE_SHA` an
+#: EQUALITY rather than a descent, and :func:`_verify_step8_equivalent_base_equality` decides it.
+STEP8_EQUIVALENT_AUTHORIZING_DECISION = "XASSET-0048"
+STEP8_EQUIVALENT_AUTHORIZING_PULL_REQUEST = 348
+STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+STEP8_EQUIVALENT_AUTHORIZING_ACCEPTED_HEAD = "42e3a8aec1b36c4e5f22e4cdf4210a61ed781156"
+STEP8_EQUIVALENT_AUTHORIZING_MERGE_BASE = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+
+#: XASSET-0047 (PR #347) -- the PRIOR lifecycle anchor this rebinding supersedes. Its own complete
+#: seven-condition lifecycle really closed and is NOT invalidated: it is a CLOSED PREDECESSOR, on
+#: exactly the footing XASSET-0029 and XASSET-0037 occupy, and emphatically NOT on the footing of
+#: the two STOPPED lifecycles below. It stopped being the EFFECTIVE structural authorization
+#: source only because XASSET-0048 authorized a successor and this unit is that successor.
+#:
+#: DELIBERATELY ITS OWN FAMILY, not folded into ``RECOVERY_AUTHORIZING_*``. Those constants name
+#: XASSET-0046, the decision that AUTHORIZED the reconciliation; these name XASSET-0047, the
+#: reconciliation ITSELF. Authority over a unit and the unit's own merged tree are different
+#: relationships, and the module already keeps that distinction for XASSET-0036/PR #336 and for
+#: XASSET-0041/XASSET-0042.
+PRIOR_RECONCILIATION_DECISION = "XASSET-0047"
+PRIOR_RECONCILIATION_PULL_REQUEST = 347
+PRIOR_RECONCILIATION_MERGE_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+PRIOR_RECONCILIATION_ACCEPTED_HEAD = "8ae0988d4c1ffc551e7fa0a1d1ee1edfa7a49a9e"
+PRIOR_RECONCILIATION_MERGE_BASE = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 
 #: Decisions whose own effectivity condition named an exact merge SHA whose merge-commit CI failed.
 #: For each, that condition is PERMANENTLY unsatisfiable -- a green run at any other commit is
@@ -873,6 +968,30 @@ LOAD_BEARING_RELPATHS = (
     "XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md",
     "governance/decisions/"
     "XASSET-0047-endpoint-0001-stage-1-post-merge-ci-recovery-reconciliation.md",
+    # EXTENDED AGAIN BY XASSET-0049 / XASSET-0048 SS-E.4 and SS-F.6, 16 -> 18. ADDITIVE ONLY:
+    # NOTHING IS REMOVED, no existing member is altered or reordered, no path is swapped or traded
+    # away, and no exact-byte check is weakened. XASSET-0037 SS-E's principle -- the decision
+    # supplying the effective structural authorization must sit INSIDE the identity it authorizes,
+    # or an attestation could authenticate perfectly while its own governing text had been edited
+    # afterwards -- reaches exactly two further files once the anchor moves:
+    #
+    #   * XASSET-0048 -- the authority for this step-8-equivalent rebinding, on precisely the
+    #     footing XASSET-0043 occupies for the rebinding it authorized and XASSET-0046 for the
+    #     recovery it authorized;
+    #   * XASSET-0049 -- this decision, the effective structural authorization source after it.
+    #
+    # Reproduced before extending: neither file appeared anywhere in this tuple, so both sat
+    # OUTSIDE the identity they make lawful and were editable after attestation.
+    #
+    # XASSET-0044's own decision file STAYS, exactly where XASSET-0044 put it, and so does
+    # XASSET-0047's. A stopped lifecycle is not an invalidated one, and a superseded anchor is not
+    # a retired one; a path traded away is the defect this boundary exists to catch. XASSET-0045's
+    # decision file remains deliberately ABSENT for the reason XASSET-0047 gave: it authorizes
+    # nothing, so binding it would assert an authority relationship that does not exist.
+    "governance/decisions/"
+    "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
 )
 
 # ======================================================================================
@@ -970,6 +1089,14 @@ REQUIRED_TOP_KEYS = (
     # renames them, or describes either failed run as anything other than failed.
     "recovery_authorization_identity",
     "stopped_lifecycle_identity",
+    # XASSET-0049. TWO further separate blocks, for the same anti-overloading reason.
+    # ``step8_equivalent_authorization_identity`` is the authority for THIS unit and is a different
+    # relationship from every authority above it. ``prior_reconciliation_identity`` is the CLOSED
+    # predecessor anchor this unit supersedes -- a real, completed lifecycle, and emphatically NOT
+    # one of the stopped ones -- carried so an attestation cannot be assembled that quietly omits
+    # the anchor it replaced.
+    "step8_equivalent_authorization_identity",
+    "prior_reconciliation_identity",
     "canonical_pins",
     "construction_universe",
     "lifecycle_evidence",
@@ -2508,6 +2635,67 @@ def _verify_lifecycle_closure(
     return errors
 
 
+def _verify_step8_equivalent_base_equality(
+    reviewed_base: Any,
+    authorizing_merge: Any,
+    descends_from_authorizing_merge: bool | None,
+) -> list[str]:
+    """XASSET-0048 SS-F.2: the base must EQUAL the authorizing merge, not merely descend from it.
+
+    XASSET-0048's own independent review found the ancestry-only formulation defective and
+    corrected it before that decision was accepted: reproduced in an isolated clone, a synthetic
+    LATER DESCENDANT of a stand-in for the authorizing merge SATISFIED a descent-only rule, so a
+    successor unit could have absorbed and rebound intervening bytes no review of the grant ever
+    saw. Ancestry proves history; it does not prove SCOPE IDENTITY.
+
+    That correction landed in XASSET-0048 as prose. Here it is made OPERATIVE, as a pure decidable
+    proposition over three inputs and nothing else:
+
+      1. both identities are well-formed 40-hex commit names -- an unobtainable or malformed
+         identity is an ERROR, never silent agreement (XASSET-0048 SS-I);
+      2. the reviewed base EQUALS the authorizing merge exactly;
+      3. ancestry into this rebinding's own merge is RETAINED as necessary history -- a
+         ``False`` here is still a failure, so equality never becomes a licence to drop the
+         ancestry requirement the predecessor rule carried.
+
+    ``descends_from_authorizing_merge`` is ``None`` when the rebinding merge is not yet a
+    resolvable commit (the pre-merge case), which is not itself a failure of THIS proposition; the
+    surrounding verifier checks ancestry independently once a real merge exists.
+
+    Pure and offline by construction: it reads no git, no GitHub, no network, and no clock, so it
+    cannot be silenced by an unavailable source, and it takes its inputs as PARAMETERS rather than
+    reading module globals -- which is what lets the test module drive it against known-good and
+    known-bad values, including a real synthetic later descendant, without monkeypatching anything.
+    """
+    errors: list[str] = []
+    if not _is_commit_sha(reviewed_base):
+        errors.append(
+            f"authority: the reviewed base {reviewed_base!r} is not a well-formed commit name, so "
+            "its equality with the authorizing merge cannot be decided; this fails closed"
+        )
+    if not _is_commit_sha(authorizing_merge):
+        errors.append(
+            f"authority: the authorizing merge {authorizing_merge!r} is not a well-formed commit "
+            "name, so the base-equality rule cannot be decided; this fails closed"
+        )
+    if errors:
+        return errors
+    if str(reviewed_base) != str(authorizing_merge):
+        errors.append(
+            f"authority: the reviewed base {reviewed_base} is not the step-8-equivalent "
+            f"authorization merge {authorizing_merge}; XASSET-0048 SS-F.2 makes EQUALITY "
+            "operative, and descent alone never qualifies a base -- a later descendant would "
+            "carry bytes no review of that grant ever saw"
+        )
+    if descends_from_authorizing_merge is False:
+        errors.append(
+            f"git truth: the rebinding merge does not descend from the authorizing merge "
+            f"{authorizing_merge}; ancestry remains NECESSARY history even though it is "
+            "insufficient authority"
+        )
+    return errors
+
+
 def _verify_recovery_lifecycle_anchor(merge_sha: Any) -> list[str]:
     """XASSET-0046 SS-G.6/SS-G.7/SS-G.9: refuse an anchor that cannot lawfully authorize.
 
@@ -2523,9 +2711,17 @@ def _verify_recovery_lifecycle_anchor(merge_sha: Any) -> list[str]:
     3. the authorized MERGE may not be a commit already recorded as having FAILED its own
        merge-commit CI -- a green run at some other commit is excluded by the condition's own
        words, so no later success can convert one of these into the success required;
-    4. the canonical inputs must be UNCHANGED from the pins XASSET-0044 left, because SS-G.9
-       freezes them and this unit amends none of them. If a future edit moves a canonical byte
-       without extending the succession machinery, this fires.
+    4. the canonical inputs must be UNCHANGED from the pins XASSET-0044 left. Originally that
+       held because XASSET-0046 SS-G.9 FROZE them. It holds here for a different and independently
+       sufficient reason, stated rather than inherited: XASSET-0048 SS-F.7 permits canonical
+       amendment "only to the extent the rebinding requires", and THIS rebinding requires none --
+       its whole authorization identity is carried by this module's own constants, and no
+       canonical byte must move for it to be lawful, coherent, or provable. The alternative was
+       weighed and declined; see the XASSET-0049 decision record, which states the determination
+       expressly so a reviewer can check it rather than infer it. Consequently the canonical
+       ``rebound_by`` / ``effective_structural_authorization_source`` still name XASSET-0044 --
+       the last decision that amended those BYTES -- and this refusal stays live, unweakened. If a
+       future edit moves a canonical byte without extending the succession machinery, this fires.
 
        That refusal is only as real as the independence of the identity it compares against.
        :data:`XASSET_0044_CANONICAL_PINS` is therefore bound to XASSET-0044's exact historical
@@ -2558,9 +2754,42 @@ def _verify_recovery_lifecycle_anchor(merge_sha: Any) -> list[str]:
             )
     if CANONICAL_PINS != XASSET_0044_CANONICAL_PINS:
         errors.append(
-            "canonical drift: XASSET-0046 SS-G.9 freezes the canonical inputs for this recovery, "
+            "canonical drift: this rebinding amends no canonical byte -- XASSET-0048 SS-F.7 "
+            "permits amendment only to the extent the rebinding requires, and it requires none -- "
             "but the effective canonical pins differ from the XASSET-0044 pins they must still "
-            "equal; a lifecycle-anchor repair may not move a canonical byte"
+            "equal; a rebinding that claims no canonical amendment may not move a canonical byte"
+        )
+    # XASSET-0049. Two further refusals, each stated as a REFUSAL rather than as a comment, and
+    # each closing a class the anchor move newly opens.
+    #
+    # 5. the superseded anchor may not silently REMAIN the anchor. XASSET-0048 SS-F.3 requires
+    #    every moved value to be an exact closed transition bound at BOTH ends; an anchor still
+    #    naming its own predecessor is a transition with one end missing, which is drift wearing a
+    #    rebinding's label.
+    if AUTHORIZING_DECISION == PRIOR_RECONCILIATION_DECISION:
+        errors.append(
+            f"authority: {AUTHORIZING_DECISION} is the PRIOR anchor this rebinding supersedes; a "
+            "rebinding whose anchor still names its own predecessor has not rebound anything"
+        )
+    if AUTHORIZING_PULL_REQUEST == PRIOR_RECONCILIATION_PULL_REQUEST:
+        errors.append(
+            f"authority: pull request #{AUTHORIZING_PULL_REQUEST} is the PRIOR anchor's own pull "
+            "request; the successor must name its own"
+        )
+    # 6. the AUTHORITY may not be mistaken for the UNIT. XASSET-0048 authorized this rebinding; it
+    #    did not perform it, and SS-A says so in terms. An anchor naming the authorizing decision
+    #    would collapse authority into the thing authorized -- precisely the overloading
+    #    XASSET-0037 SS-C named as the largest failure mode available to a rebinding.
+    if AUTHORIZING_DECISION == STEP8_EQUIVALENT_AUTHORIZING_DECISION:
+        errors.append(
+            f"authority: {AUTHORIZING_DECISION} is the decision that AUTHORIZED this rebinding, "
+            "not the rebinding itself; XASSET-0048 SS-A performs no rebinding and cannot be the "
+            "effective structural authorization source its own grant produces"
+        )
+    if AUTHORIZING_PULL_REQUEST == STEP8_EQUIVALENT_AUTHORIZING_PULL_REQUEST:
+        errors.append(
+            f"authority: pull request #{AUTHORIZING_PULL_REQUEST} is the AUTHORIZING pull request, "
+            "not this rebinding's own"
         )
     return errors
 
@@ -2668,6 +2897,27 @@ def _verify_successor_rebinding_identity(
             "merge_sha": RECOVERY_AUTHORIZING_MERGE_SHA,
             "accepted_head": RECOVERY_AUTHORIZING_ACCEPTED_HEAD,
             "merge_base": RECOVERY_AUTHORIZING_MERGE_BASE,
+        },
+    )
+    # XASSET-0049's two further relationships, each closed and each re-verified from git below.
+    _block(
+        "step8_equivalent_authorization_identity",
+        {
+            "decision": STEP8_EQUIVALENT_AUTHORIZING_DECISION,
+            "pull_request": STEP8_EQUIVALENT_AUTHORIZING_PULL_REQUEST,
+            "merge_sha": STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA,
+            "accepted_head": STEP8_EQUIVALENT_AUTHORIZING_ACCEPTED_HEAD,
+            "merge_base": STEP8_EQUIVALENT_AUTHORIZING_MERGE_BASE,
+        },
+    )
+    _block(
+        "prior_reconciliation_identity",
+        {
+            "decision": PRIOR_RECONCILIATION_DECISION,
+            "pull_request": PRIOR_RECONCILIATION_PULL_REQUEST,
+            "merge_sha": PRIOR_RECONCILIATION_MERGE_SHA,
+            "accepted_head": PRIOR_RECONCILIATION_ACCEPTED_HEAD,
+            "merge_base": PRIOR_RECONCILIATION_MERGE_BASE,
         },
     )
     # Adverse history, carried in the closed payload so it cannot be lost by omission. Every value
@@ -2840,6 +3090,23 @@ def _verify_successor_rebinding_identity(
             STOPPED_RECOVERY_AUTHORIZATION_MERGE_BASE,
             STOPPED_RECOVERY_AUTHORIZATION_ACCEPTED_HEAD,
         ),
+        # XASSET-0049 appends two more, on exactly the same terms and with exactly the same
+        # rigour. The first is the PRIOR ANCHOR this rebinding supersedes -- a CLOSED predecessor
+        # whose own lifecycle really completed, verified here as inherited history exactly as
+        # XASSET-0037's is, and NOT on the footing of the two stopped lifecycles above it. The
+        # second is this rebinding's own AUTHORITY.
+        (
+            "prior reconciliation anchor (XASSET-0047 / PR #347)",
+            PRIOR_RECONCILIATION_MERGE_SHA,
+            PRIOR_RECONCILIATION_MERGE_BASE,
+            PRIOR_RECONCILIATION_ACCEPTED_HEAD,
+        ),
+        (
+            "step-8-equivalent authorization (XASSET-0048 / PR #348)",
+            STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA,
+            STEP8_EQUIVALENT_AUTHORIZING_MERGE_BASE,
+            STEP8_EQUIVALENT_AUTHORIZING_ACCEPTED_HEAD,
+        ),
     )
     for label, inherited_merge, inherited_base, inherited_head in inherited:
         # MAJOR 1 (review 4986931575): an absent anchor is a REFUSAL, never a skip. Previously a
@@ -2886,18 +3153,27 @@ def _verify_successor_rebinding_identity(
     # an equality rather than left to coincidence: a unit branched from anywhere else has not
     # actually waited for its authorizing decision's lifecycle to close.
     #
-    # RE-ANCHORED BY XASSET-0047, not relaxed. XASSET-0044 compared against XASSET-0043's merge
-    # because XASSET-0043 was the decision that authorized it. This unit's authorizing decision is
-    # XASSET-0046, so the equality now names XASSET-0046's merge. XASSET-0043's own merge stays
-    # fully verified in the inherited-merge table above -- exact parents, zero drift, ancestry --
-    # so nothing about it stopped being checked; only the question "which merge is THIS unit's
-    # authority" got its correct current answer.
-    if REVIEWED_BASE_SHA != RECOVERY_AUTHORIZING_MERGE_SHA:
-        errors.append(
-            f"authority: the reviewed base {REVIEWED_BASE_SHA} is not the recovery-authorization "
-            f"merge {RECOVERY_AUTHORIZING_MERGE_SHA}; this unit did not branch from the decision "
-            "that authorized it"
+    # RE-ANCHORED BY XASSET-0049, not relaxed. XASSET-0044 compared against XASSET-0043's merge,
+    # XASSET-0047 against XASSET-0046's, because each named the decision that authorized it. This
+    # unit's authorizing decision is XASSET-0048, so the equality now names XASSET-0048's merge.
+    # XASSET-0043's and XASSET-0046's own merges stay fully verified in the inherited-merge table
+    # above -- exact parents, zero drift, ancestry -- so nothing about either stopped being
+    # checked; only the question "which merge is THIS unit's authority" got its correct current
+    # answer.
+    #
+    # STRENGTHENED, NOT MERELY MOVED. XASSET-0048 SS-F.2 makes EQUALITY the operative rule and
+    # descent explicitly insufficient, so the check below delegates to a PURE function that
+    # decides the whole proposition -- equality AND retained ancestry AND well-formedness -- and
+    # refuses a later descendant even when ancestry is granted unconditionally.
+    errors.extend(
+        _verify_step8_equivalent_base_equality(
+            REVIEWED_BASE_SHA,
+            STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA,
+            git.is_ancestor(STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA, str(merge_sha))
+            if _is_commit_sha(merge_sha)
+            else None,
         )
+    )
     errors.extend(_verify_recovery_lifecycle_anchor(merge_sha))
 
     # --- SS-G.B's invariant: outcome-producing bytes are the package's, unchanged --------------
@@ -4104,6 +4380,22 @@ def build_authorization_payload(
             "neither_is_effective": True,
             "neither_may_be_cited_as_authority": True,
             "neither_failed_run_may_be_represented_as_successful": True,
+        },
+        # XASSET-0049. Assembled from bound constants and then RE-VERIFIED against git at
+        # validation time, so writing them here proves nothing on its own.
+        "step8_equivalent_authorization_identity": {
+            "decision": STEP8_EQUIVALENT_AUTHORIZING_DECISION,
+            "pull_request": STEP8_EQUIVALENT_AUTHORIZING_PULL_REQUEST,
+            "merge_sha": STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA,
+            "accepted_head": STEP8_EQUIVALENT_AUTHORIZING_ACCEPTED_HEAD,
+            "merge_base": STEP8_EQUIVALENT_AUTHORIZING_MERGE_BASE,
+        },
+        "prior_reconciliation_identity": {
+            "decision": PRIOR_RECONCILIATION_DECISION,
+            "pull_request": PRIOR_RECONCILIATION_PULL_REQUEST,
+            "merge_sha": PRIOR_RECONCILIATION_MERGE_SHA,
+            "accepted_head": PRIOR_RECONCILIATION_ACCEPTED_HEAD,
+            "merge_base": PRIOR_RECONCILIATION_MERGE_BASE,
         },
         "canonical_pins": live_canonical_hashes(),
         "construction_universe": {

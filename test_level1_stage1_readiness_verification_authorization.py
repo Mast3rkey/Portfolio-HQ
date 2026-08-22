@@ -111,6 +111,12 @@ XASSET0047_MAIN_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 #: rule. The anchor each decision authorizes against is unchanged; only the shared
 #: self-reference moved. The assertion stays EXACT and is bound at BOTH ends.
 XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+#: ADVANCED BY XASSET-0049. WS-0014's shared live "where main is now" / "which pull request is
+#: live" fields move with EVERY unit under OPS-0001's Active-GitHub-fields rule. Each prior
+#: generation's value is retained beside the current one as a NEGATIVE pin rather than deleted, so
+#: a silent revert to any finished unit's state still fails.
+XASSET0049_MAIN_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+XASSET0049_ACTIVE_PR = 349
 #: WS-0014's shared `active_pr` while THIS rebinding-authorization unit is the live work.
 #: Set to the real GitHub number issued when the pull request was opened, verified
 #: against live GitHub afterwards, never left as a guess.
@@ -186,6 +192,14 @@ EXPECTED_LOAD_BEARING = tuple(sorted((
     "XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md",
     "governance/decisions/"
     "XASSET-0047-endpoint-0001-stage-1-post-merge-ci-recovery-reconciliation.md",
+    # EXTENDED AGAIN BY XASSET-0049 / XASSET-0048 SS-E, 16 -> 18: the step-8-EQUIVALENT successor
+    # rebinding's own authority and the rebinding itself, both by DIRECT MEMBERSHIP. Nothing was
+    # removed and no existing member changed, so the sorted EXACT comparison still catches a
+    # removal, a swap, or a trade.
+    "governance/decisions/"
+    "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
 )))
 
 #: The five Python modules inside those ten paths, each independently able to affect the 680
@@ -741,7 +755,10 @@ class TestThisFilingMutatesNothingLoadBearing:
         # removing nothing. The exact set equality above is the load-bearing check and is
         # unchanged in kind; this count is bound at BOTH ends so neither a silent shrink back to
         # the previous size nor an unexplained further growth passes.
-        assert len(A.LOAD_BEARING_RELPATHS) == 16
+        # EXTENDED AGAIN BY XASSET-0049, 16 -> 18, additively and by direct membership. Bound
+        # at BOTH ends so neither a silent shrink back nor an unexplained further growth passes.
+        assert len(A.LOAD_BEARING_RELPATHS) == 18
+        assert len(A.LOAD_BEARING_RELPATHS) != 16
         assert len(A.LOAD_BEARING_RELPATHS) != 14
 
     @pytest.mark.parametrize("relative", EXPECTED_LOAD_BEARING)
@@ -860,7 +877,11 @@ class TestCatalogAndRegisterSynchronisation:
         # since merged, so the register's live self-reference lawfully advanced again. The anchor
         # this decision authorizes against is unchanged and is still `MERGE_SHA`, and its own merge
         # is still `SUCCESSOR_MERGE_SHA`; only the register's "where main is now" field moved.
-        assert workstream["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
+        # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
+        # pin, so a silent revert to finished work still fails here.
+        assert workstream["last_verified_main_sha"] == XASSET0049_MAIN_SHA
+        assert workstream["last_verified_main_sha"] != XASSET0048_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0047_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0046_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0045_MAIN_SHA
@@ -870,7 +891,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0048_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0049_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0048_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0047_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0046_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0045_ACTIVE_PR
