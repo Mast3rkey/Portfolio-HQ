@@ -15955,7 +15955,7 @@ workstreams:
           grant is spent by XASSET-0047 and authorizes no further unit.
       - gate: xasset0048-step8-equivalent-rebinding-authorization
         status: in_progress
-        pr: null
+        pr: 348
         description: >-
           DESIGN-ONLY LANE G GOVERNANCE AUTHORIZATION, filed as XASSET-0048. It authorizes EXACTLY
           ONE future, separate, bounded pull request to perform the XASSET-0030 SS-G.B
@@ -16015,8 +16015,9 @@ workstreams:
           REBINDING AND ARMS NOTHING; its SS-J effectivity is conjunctive across all seven conditions
           including successful merge-commit CI whose head_sha is the exact merge SHA. This gate is
           deliberately in_progress while its own pull request is unmerged: a filing does not mark its
-          own unmerged work complete. Its pr field carries null until GitHub issues the number, which
-          is then read back from live GitHub and bound -- never predicted.
+          own unmerged work complete. Its pr field carried the impossible sentinel until GitHub
+          issued number 348, which was then read back from live GitHub and only then
+          bound here -- never predicted.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -17164,7 +17165,7 @@ workstreams:
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
     active_branch: claude/xasset-0030-step8-successor-95p6d1
-    active_pr: null
+    active_pr: 348
     last_verified_main_sha: bb95ed26964b1bc7a2e230c76060fec82752efa1
     last_verified_date: "2026-08-22"
     authorized_by: >

@@ -145,7 +145,7 @@ XASSET0047_ACTIVE_PR = 347
 #: ADVANCED BY XASSET-0048. WS-0014's single shared `active_pr`, carrying the impossible
 #: sentinel ``None`` until GitHub issues this unit's number, which is then read back from
 #: live GitHub and bound -- never guessed.
-XASSET0048_ACTIVE_PR = None
+XASSET0048_ACTIVE_PR = 348
 STEP10_EVIDENCE_COMMENT = "5341448714"
 STEP10_DETERMINATION = "STEP_10_NO_DRIFT"
 

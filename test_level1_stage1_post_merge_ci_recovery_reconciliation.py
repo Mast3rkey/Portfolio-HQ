@@ -85,7 +85,7 @@ PR346_MERGE_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
 #: ADDED BY XASSET-0048. WS-0014's single shared `active_pr` now points at the successor unit,
 #: which carries the impossible sentinel ``None`` until GitHub issues its number.
-XASSET0048_ACTIVE_PR = None
+XASSET0048_ACTIVE_PR = 348
 #: The tree carried by BOTH the accepted head and the merge -- zero merge drift.
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 

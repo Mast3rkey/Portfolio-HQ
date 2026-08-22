@@ -85,7 +85,7 @@ PRIOR_UNIT_GATE = "xasset0047-post-merge-verification"
 # Guessing "the next one" is exactly how a filing ends up authenticating against a pull request
 # that belongs to someone else.
 PULL_REQUEST_SENTINEL = -1
-THIS_PULL_REQUEST = PULL_REQUEST_SENTINEL
+THIS_PULL_REQUEST = 348
 
 # ── PR #347's own closed range -- every anchor an immutable git object ───────────────────────
 #
