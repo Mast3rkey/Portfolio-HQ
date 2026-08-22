@@ -97,6 +97,13 @@ PR348_MERGE_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 #: The tree carried by BOTH the accepted head and the merge -- zero merge drift.
 PR348_MERGE_TREE = "514d34c7ba7df5daa9b38b0ae820dba832401429"
 
+#: The exact feature head independent FULL review 5000502119 examined, before the bounded
+#: correction that review required. Bound so the register's own base-versus-head distinction can be
+#: checked against a real commit rather than against prose.
+REVIEWED_HEAD_SHA = "8ab773866c5959cd61a73dd48af197339c48754a"
+#: This unit's branch, as the register's shared ``active_branch`` field records it.
+BRANCH_NAME = "claude/xasset-0049-rebinding-ll6hzf"
+
 #: THIS unit's own base. Bound separately from ``PR348_MERGE_SHA`` BY NAME so that a later unit
 #: advancing one without the other is visible rather than silently absorbed. XASSET-0048 §F.2
 #: makes the relationship an EQUALITY, which is asserted rather than assumed.
@@ -998,6 +1005,162 @@ class TestCatalogAndRegisterSynchronisation:
         flat = register_text.replace("\n", "").replace(" ", "")
         current = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
         assert current in flat
+
+
+class TestTheRegistersOperativeProseAgreesWithItsStructuredFields:
+    """MAJOR 1 of independent FULL review 5000502119, encoded so it cannot recur silently.
+
+    ``XASSET-0048`` §E.7 requires synchronizing the ``WS-0014`` register. The structured fields
+    (``active_branch``, ``active_pr``, the gate) were advanced, but the register's *operative*
+    narrative fields -- ``next_action`` and ``blocker`` -- were not: their newest updates still
+    named ``XASSET-0048`` as "the sole active mutation lane" and said the rebinding "remains
+    unperformed and unauthorized". A future operator reading them would have concluded the exact
+    opposite of what the same record's structured fields say.
+
+    These fields are APPEND-ONLY dated logs, so the check has to be about the LATEST update rather
+    than about the field as a whole -- an assertion over the whole string would be satisfied by the
+    stale text and would therefore be vacuous. Each test below isolates the final dated update and
+    asserts against that, and a companion test proves the older prose is still present.
+    """
+
+    #: The marker every dated update in these fields begins with.
+    UPDATE_MARKER = "UPDATE, 2026-08-22"
+
+    @staticmethod
+    def _latest_update(field_text: str) -> str:
+        """The final dated update block, which is the operative one.
+
+        Splitting on the marker rather than reading the whole field is what makes these
+        assertions non-vacuous: the stale text sits in an EARLIER block and cannot satisfy them.
+        """
+        marker = TestTheRegistersOperativeProseAgreesWithItsStructuredFields.UPDATE_MARKER
+        assert marker in field_text, "the field carries no dated update at all"
+        return marker + field_text.rsplit(marker, 1)[1]
+
+    def test_the_fields_really_are_append_only_dated_logs(self, ws0014):
+        """Non-vacuity guard for the splitting helper: if there were only one update block, the
+        'latest' block would be the whole field and every assertion below would degrade into a
+        whole-field test without anyone noticing."""
+        for field in ("next_action", "blocker"):
+            text = ws0014[field]
+            assert text.count(self.UPDATE_MARKER) >= 2, field
+            assert len(self._latest_update(text)) < len(text), field
+
+    @pytest.mark.parametrize("field", ["next_action", "blocker"])
+    def test_the_latest_update_identifies_this_unit_as_the_active_lane(self, ws0014, field):
+        latest = self._latest_update(ws0014[field])
+        assert DECISION_ID in latest, field
+        assert f"PR #{THIS_PULL_REQUEST}" in latest, field
+        assert "SOLE ACTIVE" in latest, field
+
+    @pytest.mark.parametrize("field", ["next_action", "blocker"])
+    def test_the_latest_update_records_the_authority_as_closed_and_effective(self, ws0014, field):
+        latest = self._latest_update(ws0014[field])
+        assert "XASSET-0048" in latest, field
+        assert "CLOSED" in latest, field
+        assert "EFFECTIVE" in latest, field
+        # Bound to the authority's own real identity, not merely to the words.
+        assert PR348_MERGE_SHA in latest, field
+        assert PR348_MERGE_CI_RUN in latest, field
+
+    @pytest.mark.parametrize("field", ["next_action", "blocker"])
+    def test_the_latest_update_does_not_present_the_authority_as_the_active_lane(
+        self, ws0014, field
+    ):
+        """The exact contradiction MAJOR 1 found: the stale text said XASSET-0048 was the sole
+        active lane. The operative block must not say that of any decision but this one."""
+        latest = self._latest_update(ws0014[field])
+        # A superseded claim may legitimately be QUOTED in order to retire it -- that is the
+        # honest way to supersede prose without deleting it. What must never happen is the
+        # operative block ASSERTING it. So each stale phrase is required to be accompanied by
+        # explicit supersession language, and the block's own active-lane claim must name THIS
+        # unit. A blunt "phrase absent" test would have forbidden the honest form outright.
+        supersession = (
+            "SATISFIED AND SPENT",
+            "SUPERSEDED BY EVENT",
+            "no longer an active lane",
+            "was true when written",
+        )
+        for stale in (
+            "XASSET-0048, the sole active mutation lane",
+            "XASSET-0048 is the sole active lane",
+            "rebinding remains unperformed and unauthorized",
+        ):
+            if stale in latest:
+                assert any(marker in latest for marker in supersession), (field, stale)
+        # Whichever decision the operative block calls the sole active lane, it is THIS one.
+        claims = ("SOLE ACTIVE LANE", "SOLE ACTIVE STEP-8-EQUIVALENT REBINDING LIFECYCLE")
+        assert any(c in latest for c in claims), field
+        for phrase in claims:
+            if phrase in latest:
+                head = latest[: latest.index(phrase)]
+                assert head.rstrip().endswith(f"PR #{THIS_PULL_REQUEST} IS NOW THE") or (
+                    head.rstrip().endswith(f"PR #{THIS_PULL_REQUEST} IS THE")
+                ), (field, phrase, head[-60:])
+
+    @pytest.mark.parametrize("field", ["next_action", "blocker"])
+    def test_the_latest_update_keeps_links_three_four_and_five_unauthorized(self, ws0014, field):
+        latest = self._latest_update(ws0014[field])
+        assert "REMAIN SEPARATELY UNAUTHORIZED" in latest, field
+        for link in ("readiness verification", "drift verification", "Step-11 authorization"):
+            assert link in latest, (field, link)
+
+    @pytest.mark.parametrize("field", ["next_action", "blocker"])
+    def test_the_older_dated_prose_is_preserved_not_rewritten(self, ws0014, field):
+        """The correction APPENDS. Deleting or rewriting the superseded text would destroy an
+        accurate dated record, which is exactly what the append-only convention exists to stop."""
+        text = ws0014[field]
+        # Each field carries its OWN earlier history, so the tokens differ per field. Asserting a
+        # single shared list would have been satisfiable by whichever field happened to carry it.
+        preserved_by_field = {
+            "next_action": (
+                "post-XASSET-0047 merge",
+                "8ae0988d4c1ffc551e7fa0a1d1ee1edfa7a49a9e",
+                "issuecomment-5376069596",
+            ),
+            "blocker": (
+                "post-XASSET-0026 merge",
+                "XASSET-0038",
+                "XASSET-0044 and XASSET-0045 each permanently stopped",
+            ),
+        }
+        for preserved in preserved_by_field[field]:
+            assert preserved in text, (field, preserved)
+        # ... and the superseded claims survive in the EARLIER block, just not the operative one.
+        earlier = text[: text.rindex(self.UPDATE_MARKER)]
+        assert "XASSET-0048" in earlier, field
+
+    def test_the_gate_distinguishes_the_immutable_base_from_the_moving_head(self, ws0014):
+        """The second half of MAJOR 1: the gate said main, origin/main, the base and ``HEAD``
+        'are all' the base commit. That held only at the pre-authoring preflight; the offered head
+        is a later commit by construction, because this unit's own commits advance it."""
+        gate = next(g for g in ws0014["milestones"] if g["gate"] == REGISTER_GATE)
+        description = gate["description"]
+        # Targeted at the exact conflated CLAIM. "are all" appears legitimately elsewhere in this
+        # gate -- the frozen outcome-producing paths "are all byte-identical to this pull request's
+        # base" -- so a bare phrase ban would have failed on correct, unrelated text.
+        assert "this branch's base and its HEAD are all" not in description
+        assert "PRE-AUTHORING PREFLIGHT" in description
+        assert "BASE REMAINS" in description
+        assert THIS_UNIT_BASE_SHA in description
+        # The offered feature head is named, and named as distinct from the base.
+        assert REVIEWED_HEAD_SHA in description
+        assert REVIEWED_HEAD_SHA != THIS_UNIT_BASE_SHA
+
+    def test_the_gate_still_records_the_equality_rule_it_was_correcting(self, ws0014):
+        """The correction narrows a temporal claim; it must not weaken §F.2 itself."""
+        gate = next(g for g in ws0014["milestones"] if g["gate"] == REGISTER_GATE)
+        description = gate["description"]
+        assert "BASE BY EQUALITY, NOT DESCENT" in description
+        assert "_verify_step8_equivalent_base_equality" in description
+
+    def test_the_structured_fields_and_the_operative_prose_cannot_disagree(self, ws0014):
+        """The single invariant MAJOR 1 reduces to, asserted directly."""
+        assert ws0014["active_pr"] == THIS_PULL_REQUEST
+        assert ws0014["active_branch"] == BRANCH_NAME
+        for field in ("next_action", "blocker"):
+            latest = self._latest_update(ws0014[field])
+            assert f"PR #{ws0014['active_pr']}" in latest, field
 
 
 class TestTheBoundPullRequestNumber:
