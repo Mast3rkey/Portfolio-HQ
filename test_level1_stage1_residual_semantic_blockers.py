@@ -317,6 +317,13 @@ class TestFrozenInputsUnchanged:
             "XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md",
             "governance/decisions/"
             "XASSET-0047-endpoint-0001-stage-1-post-merge-ci-recovery-reconciliation.md",
+            # EXTENDED AGAIN BY XASSET-0049 / XASSET-0048 SS-E, 16 -> 18: the step-8-EQUIVALENT
+            # successor rebinding's own authority and the rebinding itself, both by DIRECT
+            # MEMBERSHIP. Nothing was removed and no existing member changed.
+            "governance/decisions/"
+            "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
+            "governance/decisions/"
+            "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
         }
         # No REAL results artifact is load-bearing, because none exists.
         assert "stage1_results" not in " ".join(A.LOAD_BEARING_RELPATHS).lower()

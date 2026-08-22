@@ -83,6 +83,19 @@ PR346_MERGE_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 #: -field assertions below stay EXACT at both ends once the register's live self-reference
 #: lawfully advanced past this unit onto its successor.
 XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+#: RE-ANCHORED BY XASSET-0049. This unit's own merge -- XASSET-0047's merge -- is now an
+#: IMMUTABLE historical anchor rather than "where main is". Every claim below whose SUBJECT is
+#: this unit's own delta is re-anchored onto it, which is exactly the classification
+#: XASSET-0046 SS-G.11 requires and the discipline that stopped PRs #344 and #345 being provable.
+PR347_MERGE_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+#: The authorization module's exact bytes AT that merge. Immutable, and therefore a claim that
+#: stays true after a lawful successor rebinding moves the live module.
+PR347_MODULE_SHA256 = (
+    "e5b509ca74734bffea788d4e7499699356395216285e941164ccf21b6159c924"
+)
+#: The successor that lawfully moved the live anchor off this unit. Bound so the transition is
+#: visible at BOTH ends rather than inferred from an inequality.
+XASSET0049_DECISION_ID = "XASSET-0049"
 #: ADDED BY XASSET-0048. WS-0014's single shared `active_pr` now points at the successor unit,
 #: which carries the impossible sentinel ``None`` until GitHub issues its number.
 XASSET0048_ACTIVE_PR = 348
@@ -188,6 +201,20 @@ def _git(*args: str) -> str:
     return subprocess.run(
         ["git", *args], cwd=ROOT, capture_output=True, text=True, check=True,
     ).stdout.strip()
+
+
+def _blob_sha256_at(commit: str, relpath: str) -> str:
+    """SHA-256 of a tracked path's EXACT bytes at an immutable commit.
+
+    ADDED BY XASSET-0049. Historical module-identity claims are re-anchored onto closed commits
+    rather than onto the working tree, so a lawful successor rebinding cannot falsify a
+    predecessor's own accurate record of what it produced.
+    """
+    blob = subprocess.run(
+        ["git", "show", f"{commit}:{relpath}"],
+        cwd=ROOT, capture_output=True, check=True,
+    ).stdout
+    return hashlib.sha256(blob).hexdigest()
 
 
 def _commit_exists(sha: str, repo_root: Path = ROOT) -> bool:
@@ -319,7 +346,10 @@ class TestTheAuthorityIsRealAndClosed:
         if not _range_is_present(PR346_BASE_SHA, PR346_ACCEPTED_HEAD, PR346_MERGE_SHA):
             pytest.skip("PR #346's closed range is not present in this checkout")
         _assert_pr346_closed_range_facts()
-        assert A.REVIEWED_BASE_SHA == PR346_MERGE_SHA
+        # RE-ANCHORED BY XASSET-0049, unchanged in KIND. ``A.REVIEWED_BASE_SHA`` is a LIVE value
+        # naming whichever unit currently holds the anchor; this unit's own base is IMMUTABLE
+        # history and is now carried by the constant that records it. Both equalities are kept.
+        assert A.PRIOR_RECONCILIATION_MERGE_BASE == PR346_MERGE_SHA
         assert A.RECOVERY_AUTHORIZING_MERGE_SHA == PR346_MERGE_SHA
 
     def test_the_authority_merged_with_zero_drift(self):
@@ -374,15 +404,39 @@ class TestTheAuthorityIsRealAndClosed:
 
 class TestTheAnchorMovedExactly:
     def test_the_authorizing_decision_is_this_unit(self):
-        assert A.AUTHORIZING_DECISION == DECISION_ID
-        assert A.AUTHORIZING_DECISION != "XASSET-0044"
+        """RE-ANCHORED BY XASSET-0049, unchanged in KIND.
+
+        This unit really WAS the anchor, and its identity is preserved rather than erased: the
+        successor bound it into its own ``PRIOR_RECONCILIATION_*`` family precisely so this claim
+        stays provable. Asserting the LIVE anchor still equals this unit would assert that no
+        lawful successor may ever exist, which is not what this test was written to protect.
+        """
+        assert A.PRIOR_RECONCILIATION_DECISION == DECISION_ID
+        assert A.PRIOR_RECONCILIATION_PULL_REQUEST == THIS_PULL_REQUEST
+        assert A.PRIOR_RECONCILIATION_MERGE_SHA == PR347_MERGE_SHA
+        assert A.PRIOR_RECONCILIATION_DECISION != "XASSET-0044"
+        # The live anchor moved to the successor, and to nothing else.
+        assert A.AUTHORIZING_DECISION == XASSET0049_DECISION_ID
+        assert A.AUTHORIZING_DECISION not in A.PERMANENTLY_INEFFECTIVE_DECISIONS
 
     def test_the_reviewed_base_is_the_authoritys_merge_and_not_the_stopped_ones(self):
-        assert A.REVIEWED_BASE_SHA == A.RECOVERY_AUTHORIZING_MERGE_SHA
-        assert A.REVIEWED_BASE_SHA == PR346_MERGE_SHA
+        """RE-ANCHORED BY XASSET-0049 onto the constants that now carry this unit's own base.
+
+        The KIND of claim is unchanged: this unit branched from its own authority's merge and
+        from neither stopped lifecycle's base. That is immutable history and stays asserted. The
+        LIVE ``REVIEWED_BASE_SHA`` now belongs to the successor, and is checked separately below
+        against its own authority -- so neither claim is dropped.
+        """
+        assert A.PRIOR_RECONCILIATION_MERGE_BASE == A.RECOVERY_AUTHORIZING_MERGE_SHA
+        assert A.PRIOR_RECONCILIATION_MERGE_BASE == PR346_MERGE_SHA
+        assert A.PRIOR_RECONCILIATION_MERGE_BASE != PR344_BASE_SHA
+        assert A.PRIOR_RECONCILIATION_MERGE_BASE != PR345_BASE_SHA
+        assert A.PRIOR_RECONCILIATION_MERGE_BASE != PR346_BASE_SHA
+        # The successor's own base is likewise neither stopped lifecycle's, and is bound to its
+        # own authority by EQUALITY (XASSET-0048 SS-F.2), not by descent.
+        assert A.REVIEWED_BASE_SHA == A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
         assert A.REVIEWED_BASE_SHA != PR344_BASE_SHA
         assert A.REVIEWED_BASE_SHA != PR345_BASE_SHA
-        assert A.REVIEWED_BASE_SHA != PR346_BASE_SHA
 
     def test_the_authorizing_pull_request_is_neither_stopped_pull_request(self):
         assert A.AUTHORIZING_PULL_REQUEST != 344
@@ -544,7 +598,16 @@ class TestTheNewRefusalsAreIndependentlyRequired:
         drifted[A.CANONICAL_PROTOCOL_RELPATH] = "0" * 64
         monkeypatch.setattr(A, "CANONICAL_PINS", drifted)
         errors = A._verify_recovery_lifecycle_anchor("0" * 40)
-        assert any("SS-G.9 freezes the canonical inputs" in e for e in errors), errors
+        # RE-GROUNDED BY XASSET-0049, NOT WEAKENED. The comparison is byte-for-byte the same one
+        # -- effective pins against XASSET-0044's own historical literals -- and it still fires on
+        # exactly the same input. Only its stated GROUND changed: it rested on XASSET-0046 SS-G.9's
+        # freeze, which no longer governs, and now rests on XASSET-0048 SS-F.7's "only to the
+        # extent the rebinding requires", under which XASSET-0049 amends no canonical byte. The
+        # assertion is pinned on the refusal's substance rather than on either citation, and the
+        # substance is asserted explicitly so a future edit cannot quietly drop the refusal while
+        # keeping a plausible sentence.
+        assert any("canonical drift" in e for e in errors), errors
+        assert any("may not move a canonical byte" in e for e in errors), errors
 
     def test_the_anchor_check_reads_no_external_source(self):
         """Pure and offline: it must not be silenceable by an unavailable git, GitHub, or clock.
@@ -590,17 +653,38 @@ class TestTheNewRefusalsAreIndependentlyRequired:
 
 class TestTrustBoundaryGrewAdditively:
     def test_the_set_grew_from_fourteen_to_sixteen(self):
-        assert len(A.LOAD_BEARING_RELPATHS) == LOAD_BEARING_SIZE_AFTER
-        assert len(set(A.LOAD_BEARING_RELPATHS)) == LOAD_BEARING_SIZE_AFTER
-        assert len(A.LOAD_BEARING_RELPATHS) != LOAD_BEARING_SIZE_BEFORE
+        """RE-ANCHORED BY XASSET-0049 onto this unit's OWN immutable merge.
+
+        The claim is about what THIS unit did -- fourteen paths in, sixteen out -- which is a fact
+        about a closed commit range and is true forever. Reading it off the LIVE tuple made it a
+        claim that no lawful successor may ever extend the boundary, which is not what it was
+        written to protect and is exactly the moving-reference defect that stopped PRs #344/#345.
+        """
+        if not _commit_exists(PR347_MERGE_SHA):
+            pytest.skip("this unit's own merge is not present in this checkout")
+        at_this_merge = _load_bearing_at(PR347_MERGE_SHA)
+        assert len(at_this_merge) == LOAD_BEARING_SIZE_AFTER
+        assert len(set(at_this_merge)) == LOAD_BEARING_SIZE_AFTER
+        assert len(at_this_merge) != LOAD_BEARING_SIZE_BEFORE
+        # Additive forever: whatever the live boundary is now, it still CONTAINS all sixteen.
+        assert set(at_this_merge) <= set(A.LOAD_BEARING_RELPATHS)
 
     def test_the_additions_are_exactly_the_two_authority_chain_files(self):
-        if not _commit_exists(PR346_MERGE_SHA):
-            pytest.skip("this unit's base is not present in this checkout")
+        """RE-ANCHORED BY XASSET-0049 onto this unit's own base->merge range, which is closed.
+
+        THIS unit added exactly two paths. Diffing the live tuple against the base measured a
+        different quantity -- every addition by every later unit as well -- so the claim is now
+        taken over the immutable range it was always about.
+        """
+        if not _range_is_present(PR346_MERGE_SHA, PR347_MERGE_SHA):
+            pytest.skip("this unit's closed range is not present in this checkout")
         at_base = _load_bearing_at(PR346_MERGE_SHA)
+        at_merge = _load_bearing_at(PR347_MERGE_SHA)
         assert len(at_base) == LOAD_BEARING_SIZE_BEFORE
-        additions = set(A.LOAD_BEARING_RELPATHS) - set(at_base)
+        additions = set(at_merge) - set(at_base)
         assert additions == set(XASSET_0047_BOUNDARY_ADDITIONS)
+        # Nothing this unit added has since been removed.
+        assert additions <= set(A.LOAD_BEARING_RELPATHS)
 
     def test_nothing_was_removed(self):
         """Growth is additive. A path traded away is the defect this catches."""
@@ -1392,9 +1476,14 @@ class TestTheDecisionsOperativeClaims:
             if len(token) == 64 and all(c in "0123456789abcdef" for c in token)
         ]
         assert len(tokens) == 1, tokens
-        assert tokens[0] == hashlib.sha256(
-            (ROOT / AUTH_MODULE_RELPATH).read_bytes()
-        ).hexdigest()
+        # RE-ANCHORED BY XASSET-0049. The SUBJECT of this decision's declaration is the module
+        # as THIS unit left it -- an immutable fact about a closed merge -- not "whatever the
+        # module is now". Comparing against the working tree made the claim false the moment a
+        # lawful successor rebinding touched the module, which is precisely the live-vs-historical
+        # confusion XASSET-0046 SS-G.11 requires to be classified and re-anchored.
+        assert tokens[0] == PR347_MODULE_SHA256
+        if _commit_exists(PR347_MERGE_SHA):
+            assert tokens[0] == _blob_sha256_at(PR347_MERGE_SHA, AUTH_MODULE_RELPATH)
 
 
 # ======================================================================================
@@ -1616,9 +1705,15 @@ class TestCatalogAndRegisterSynchronisation:
         assert [w["id"] for w in data["workstreams"] if w.get("priority") == "primary"] == []
 
     def test_the_register_records_the_current_module_identity(self, register_text):
+        """RE-ANCHORED BY XASSET-0049, for the same reason as the decision's own declaration.
+
+        This unit's gate records the module identity THIS unit produced. That is immutable, and
+        it must still be present; a successor's own gate records the successor's, separately.
+        """
         flat = register_text.replace("\n", "").replace(" ", "")
-        current = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
-        assert current in flat
+        assert PR347_MODULE_SHA256 in flat
+        if _commit_exists(PR347_MERGE_SHA):
+            assert _blob_sha256_at(PR347_MERGE_SHA, AUTH_MODULE_RELPATH) in flat
 
 
 # ======================================================================================
@@ -1905,7 +2000,15 @@ THIS_PULL_REQUEST = 347
 
 class TestTheBoundPullRequestNumber:
     def test_the_module_binds_the_number_github_actually_issued(self):
-        assert A.AUTHORIZING_PULL_REQUEST == THIS_PULL_REQUEST
+        """RE-ANCHORED BY XASSET-0049 onto the constant that now carries this unit's number.
+
+        The point of the assertion is that the number was READ BACK rather than guessed, and that
+        it is bound somewhere the mechanism actually authenticates against. Both survive the
+        anchor move; only which constant holds it changed.
+        """
+        assert A.PRIOR_RECONCILIATION_PULL_REQUEST == THIS_PULL_REQUEST
+        # The live anchor moved to a strictly later, real pull request.
+        assert A.AUTHORIZING_PULL_REQUEST > THIS_PULL_REQUEST
 
     def test_the_sentinel_is_gone(self):
         """``0`` can never validate, which is exactly why it was safe to commit first."""
@@ -1928,7 +2031,13 @@ class TestTheBoundPullRequestNumber:
             A.STOPPED_RECOVERY_AUTHORIZATION_PULL_REQUEST,
             A.RECOVERY_AUTHORIZING_PULL_REQUEST,
         ):
+            # RE-ANCHORED BY XASSET-0049: this unit's own number is the subject, and it is now
+            # carried by PRIOR_RECONCILIATION_PULL_REQUEST. The live anchor is checked too, so
+            # monotonicity is asserted for BOTH rather than traded from one to the other.
+            assert A.PRIOR_RECONCILIATION_PULL_REQUEST > predecessor, predecessor
             assert A.AUTHORIZING_PULL_REQUEST > predecessor, predecessor
+        assert A.AUTHORIZING_PULL_REQUEST > A.PRIOR_RECONCILIATION_PULL_REQUEST
+        assert A.AUTHORIZING_PULL_REQUEST > A.STEP8_EQUIVALENT_AUTHORIZING_PULL_REQUEST
 
     def test_the_register_and_the_module_agree(self, register_text):
         data = yaml.safe_load(register_text)

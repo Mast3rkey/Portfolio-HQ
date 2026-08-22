@@ -201,6 +201,14 @@ EXPECTED_LOAD_BEARING = tuple(sorted((
     "XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md",
     "governance/decisions/"
     "XASSET-0047-endpoint-0001-stage-1-post-merge-ci-recovery-reconciliation.md",
+    # EXTENDED AGAIN BY XASSET-0049 / XASSET-0048 SS-E, 16 -> 18: the step-8-EQUIVALENT successor
+    # rebinding's own authority and the rebinding itself, both by DIRECT MEMBERSHIP. Nothing was
+    # removed and no existing member changed, so the sorted EXACT comparison still catches a
+    # removal, a swap, or a trade.
+    "governance/decisions/"
+    "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
 )))
 
 #: The five Python modules inside those ten paths, each independently able to affect the 680

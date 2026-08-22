@@ -16025,6 +16025,130 @@ workstreams:
           own unmerged work complete. Its pr field carried the impossible sentinel until GitHub
           issued number 348, which was then read back from live GitHub and only then
           bound here -- never predicted.
+      - gate: xasset0048-post-merge-verification
+        status: complete
+        pr: 348
+        description: >-
+          ADDITIVE POST-MERGE FACTUAL SYNCHRONISATION for PR #348, recorded by the next
+          substantive WS-0014 unit rather than by editing the prior gate's own accepted text.
+          Independently re-derived this session from live git and live GitHub, not inherited from
+          any summary. XASSET-0048's complete seven-condition SS-J lifecycle is CLOSED and the
+          decision is EFFECTIVE. Accepted head 42e3a8aec1b36c4e5f22e4cdf4210a61ed781156; base
+          bb95ed26964b1bc7a2e230c76060fec82752efa1; independent FULL exact-head review 4998661361
+          at 1c103a4949b9db3944aa22110c5f97eafaeee1c2 returning 1 MAJOR (a base rule that required
+          only DESCENT from this filing's own pre-authoring main, which a synthetic later
+          descendant satisfied) and 2 MINOR, all closed by one bounded correction; clean exact-head
+          DELTA review 4999458224 at the accepted head, 0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE;
+          principal exact-head acceptance issuecomment-5380255052; normal merge
+          f052efad38e3d57e3e5615799ac3bcbebe83ff5f with exactly two parents in order and merge tree
+          514d34c7ba7df5daa9b38b0ae820dba832401429 byte-identical to the accepted head's own tree,
+          so ZERO merge drift; immediate post-merge verification issuecomment-5380287468;
+          merge-commit CI run 32571799154 / job 97028166971 whose run head_sha equals the exact
+          merge SHA, completed / SUCCESS, 10,813 passed; and final post-CI lifecycle closure
+          issuecomment-5380368431 recorded strictly after that job completed. This is the condition
+          at which XASSET-0044 / PR #344 and XASSET-0045 / PR #345 each permanently stopped.
+          WHAT BECAME EFFECTIVE IS THE AUTHORIZATION AND NOTHING ELSE: verified live on the merged
+          tree, AUTHORIZING_DECISION XASSET-0047, AUTHORIZING_PULL_REQUEST 347, REVIEWED_BASE_SHA
+          0b76c09f8d1aba01780b4f06fdd692f7393fbfd3, LOAD_BEARING_RELPATHS 16, canonical pins
+          1ad1d060...5d0c84 / 898c329d...12d82f matching the live files, universe 680 / 48 /
+          73c0965e...5224, new_execution_is_authorized() False, lane ABSENT, ATTEMPT_1 intact,
+          unclaimed and unconsumed, and no stage1_results.yaml anywhere -- every one of them
+          UNCHANGED from that PR's own base, because XASSET-0048 performed no rebinding. Its SS-F.2
+          base rule is EQUALITY, not descent: the authorized successor's base must EQUAL this merge
+          and no later descendant of it.
+      - gate: xasset0049-step8-equivalent-successor-operational-rebinding
+        status: in_progress
+        pr: -2
+        description: >-
+          THE STEP-8-EQUIVALENT SUCCESSOR OPERATIONAL / LOAD-BEARING REBINDING, filed as
+          XASSET-0049 and performed in the same coherent pull request, exactly as XASSET-0048
+          SS-F.10 requires. XASSET-0048 SS-E granted EXACTLY ONE such unit and this is it; its
+          grant is spent by this unit and authorizes no further one. SS-G.B STEP 8 IS NOT
+          RE-CONSUMED: step 8's own single budget was spent by XASSET-0037 (XASSET-0043 SS-C,
+          XASSET-0044 SS-C, XASSET-0048 SS-B.1) and the authority here is XASSET-0041 SS-I link 2,
+          the step-8 EQUIVALENT. BASE BY EQUALITY, NOT DESCENT, per SS-F.2 -- GitHub main,
+          origin/main, this branch's base and its HEAD are all
+          f052efad38e3d57e3e5615799ac3bcbebe83ff5f, the exact normal-merge commit closing
+          XASSET-0048's own SS-J lifecycle, DERIVED from that completed lifecycle (first parent
+          bb95ed26..., second parent 42e3a8ae..., merge tree 514d34c7... byte-identical to the
+          accepted head's own tree, merge-commit CI run 32571799154 at the exact merge SHA
+          completed / SUCCESS, final closure issuecomment-5380368431) and PROVED from the object
+          store, never asserted from a task brief. Main has NOT advanced past it, so SS-F.2's
+          drift-stop was checked and did not fire and no intervening byte is absorbed by descent.
+          The rule is made OPERATIVE in code as the pure function
+          _verify_step8_equivalent_base_equality, driven against known-good and known-bad inputs
+          and a REAL SYNTHETIC LATER DESCENDANT which it refuses even when ancestry is granted
+          unconditionally; the superseded descent-only rule is retained beside it and shown
+          ACCEPTING what the corrected rule refuses. EXACT CLOSED TRANSITIONS, bound at BOTH ends
+          per SS-F.3, old value PRESERVED rather than overwritten: AUTHORIZING_DECISION
+          XASSET-0047 -> XASSET-0049; AUTHORIZING_PULL_REQUEST 347 -> this unit's own
+          GitHub-issued number; REVIEWED_BASE_SHA 0b76c09f... -> f052efad...;
+          LOAD_BEARING_RELPATHS 16 -> 18; the reviewed-base equality target from XASSET-0046's
+          merge to XASSET-0048's; the inherited-merge verification table from 7 entries to 9; and
+          REQUIRED_TOP_KEYS from 24 to 26. XASSET-0047's own identity is preserved in a family of
+          its own (PRIOR_RECONCILIATION_DECISION XASSET-0047, PULL_REQUEST 347, MERGE_SHA
+          bb95ed26..., ACCEPTED_HEAD 8ae0988d..., MERGE_BASE 0b76c09f...), which is MANDATORY
+          rather than decorative: reproduced against the live module BEFORE editing, neither
+          bb95ed26... nor 8ae0988d... appeared under ANY constant, so overwriting the anchor alone
+          would have DESTROYED a completed lifecycle's identity, which SS-F.9 forbids.
+          XASSET-0048's own identity is bound as the SEVENTH relationship
+          (STEP8_EQUIVALENT_AUTHORIZING_*), deliberately its own family rather than folded into
+          RECOVERY_AUTHORIZING_*, which names XASSET-0046 and is a different relationship. BOTH
+          new merges join the inherited-merge verification table on the same terms every
+          predecessor occupies: exact parents in order, merge tree byte-identical to the accepted
+          head's tree so ZERO drift is proven, and ancestry into this rebinding's own merge; an
+          absent or incomplete anchor is a REFUSAL, never a skip. THE TRUST BOUNDARY GROWS 16 ->
+          18, ADDITIVELY, by DIRECT MEMBERSHIP: XASSET-0048's decision file (the authority) and
+          XASSET-0049's own (the effective structural authorization source after it), on precisely
+          the footing XASSET-0043/XASSET-0044 and XASSET-0046/XASSET-0047 already occupy.
+          Reproduced before extending: neither appeared anywhere in the tuple, so both sat OUTSIDE
+          the identity they make lawful. NOTHING IS REMOVED, altered, reordered, swapped or traded
+          away -- XASSET-0044's and XASSET-0047's decision files both stay exactly where their own
+          units put them, and XASSET-0045's remains deliberately ABSENT because it authorizes
+          nothing. TWO NEW REFUSALS, each stated in code rather than prose: an anchor still naming
+          the superseded XASSET-0047 / #347 is a transition with one end missing and is refused;
+          and an anchor naming the AUTHORIZING XASSET-0048 / #348 would collapse authority into
+          the thing authorized and is refused. CANONICAL ARTIFACTS ARE NOT AMENDED -- an EXPRESS
+          DETERMINATION under SS-F.7's "only to the extent the rebinding requires", recorded in
+          SS-G of the decision with its reasoning and its consequence rather than left as a silent
+          omission: this rebinding's authorization identity is carried entirely by the module's own
+          constants, no canonical byte must move for it to be lawful, and amending would recompute
+          two pins and oblige this unit to extend the pin-succession machinery for no gain. The
+          canonical rebound_by and effective_structural_authorization_source therefore still name
+          XASSET-0044, which remains literally true because XASSET-0044 is still the last decision
+          that amended those BYTES -- the distinction XASSET-0047 drew and this unit preserves
+          unchanged. The canonical-pin refusal STAYS LIVE and UNWEAKENED, byte-for-byte the same
+          comparison, only RE-GROUNDED from XASSET-0046 SS-G.9's freeze onto this unit's own SS-F.7
+          determination. NOT ONE OUTCOME-PRODUCING BYTE CHANGES: level1_stage1_runner.py,
+          level1_stage1_result_validator.py, level1_construction_universe_closure_validator.py,
+          level1_endpoint_evidence_preregistration_validator.py, PROTOCOL_V1.md and
+          pre_registration.yaml are all byte-identical to this pull request's base, proved by blob
+          comparison, so SS-F.5's preserved surface -- runner and result-validator and
+          universe-closure semantics, deterministic derivation, result ordering and serialization,
+          the frozen construction identities, 680 / 48, aggregate hash 73c0965e...5224,
+          comparison_subject_kind, unordered_pair_id, every gate, every disposition rule, and the
+          accepted B1 / B2 / B3 and XASSET-0031 G3 semantics -- holds trivially and verifiably.
+          ADVERSE HISTORY PRESERVED per SS-F.9: XASSET-0044 and XASSET-0045 remain NOT EFFECTIVE
+          and still refused as anchors, XASSET-0043 remains SPENT, XASSET-0040 remains spent as
+          STOPPED_BEFORE_ATTESTATION, and both failed merge-commit CI runs (32439614683 /
+          96647501864 at f5dedce1..., and 32490789238 / 96797667282 at 2f8cdebe...) remain
+          immutable, never re-run in place, relabelled, waived, deleted or represented as passing.
+          CURRENT_MODULE_SHA256: PENDING_RECOMPUTE_ONCE_AFTER_THE_PULL_REQUEST_NUMBER_IS_BOUND -- recomputed ONCE after every
+          authorized byte stabilised, per SS-F.8, never mid-correction and never carried forward
+          from a superseded head. THE PULL-REQUEST NUMBER WAS NEVER GUESSED: the branch's first
+          commit carried the sentinel -2, negative and therefore structurally impossible, and
+          deliberately distinct from XASSET-0047's own 0 and XASSET-0048's own -1; the draft was
+          then opened, GitHub issued the number, and it was bound in a SUBSEQUENT fast-forward
+          commit, never a force-push. ZERO ACTIVATION AUTHORITY: no renewed readiness verification,
+          no renewed drift verification, no Step 11 in any part, no attestation generated
+          pre-staged or validated, no AUTHORIZATION_ROOT or lane state created, no arming, no
+          ATTEMPT_1 claim or consumption, no gate evaluated for any construction, no Stage-1
+          execution, no results work, and no stage1_results.yaml. stage_1_executability.executable
+          stays permanently false, lane ABSENT, new_execution_is_authorized() False, ATTEMPT_1
+          intact unclaimed and unconsumed. XASSET-0027 SS-P.1 remains ONE and UNSPENT.
+          XASSET-0041 SS-I links 3, 4 and 5 each still require their own separate authority and
+          their own complete lifecycle. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -17171,9 +17295,9 @@ workstreams:
       Stage 1 remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
-    active_branch: claude/xasset-0030-step8-successor-95p6d1
-    active_pr: 348
-    last_verified_main_sha: bb95ed26964b1bc7a2e230c76060fec82752efa1
+    active_branch: claude/xasset-0049-rebinding-ll6hzf
+    active_pr: -2
+    last_verified_main_sha: f052efad38e3d57e3e5615799ac3bcbebe83ff5f
     last_verified_date: "2026-08-22"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

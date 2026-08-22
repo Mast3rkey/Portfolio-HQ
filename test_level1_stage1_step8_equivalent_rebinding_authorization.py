@@ -107,6 +107,14 @@ PR347_MERGE_TREE = "c8b677f8697660bef1122a83615845961457be89"
 #: advancing one without the other is visible rather than silently absorbed.
 THIS_UNIT_BASE_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
 
+#: RE-ANCHORED BY XASSET-0049. This unit's OWN merge -- the commit that closed its SS-J lifecycle
+#: and made its grant effective. Every claim below whose subject is "what THIS filing did or did
+#: not change" is now taken over the immutable range ``THIS_UNIT_BASE_SHA .. THIS_UNIT_MERGE_SHA``
+#: rather than against the live working tree. Read against the live tree, "this filing performed
+#: no rebinding" silently became "no successor may ever perform one", which is the exact opposite
+#: of what this decision grants -- and is the moving-reference defect that stopped PRs #344/#345.
+THIS_UNIT_MERGE_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+
 #: PR #347's lifecycle evidence, all seven conditions.
 PR347_FULL_REVIEW = "4997532748"
 PR347_CLEAN_DELTA_REVIEW = "4997822429"
@@ -236,6 +244,54 @@ def _blob_at(commit: str, relpath: str, repo_root: Path = ROOT) -> str | None:
         cwd=repo_root, capture_output=True, text=True,
     )
     return result.stdout.strip() if result.returncode == 0 else None
+
+
+def _load_bearing_declared_at(commit: str) -> tuple[str, ...]:
+    """The exact ``LOAD_BEARING_RELPATHS`` the production module DECLARED at a given commit.
+
+    ADDED BY XASSET-0049. This filing's claims about its own trust boundary are claims about a
+    closed commit range, so they are evaluated against the module's own bytes at that range's
+    endpoints rather than against whatever the live tuple holds now.
+
+    The module is parsed with ``ast`` and the assignment evaluated with ``ast.literal_eval`` --
+    the historical source is never imported or executed, so this cannot run a predecessor's code.
+    Implicit string concatenation inside the tuple is handled by the AST, not by a regex.
+    """
+    source = subprocess.run(
+        ["git", "show", f"{commit}:{AUTH_MODULE_RELPATH}"],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout
+    tree = ast.parse(source)
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(t, ast.Name) and t.id == "LOAD_BEARING_RELPATHS" for t in node.targets
+        ):
+            values: list[str] = []
+            assert isinstance(node.value, ast.Tuple), "LOAD_BEARING_RELPATHS is not a tuple"
+            for element in node.value.elts:
+                if isinstance(element, ast.Constant) and isinstance(element.value, str):
+                    values.append(element.value)
+                elif isinstance(element, ast.Name):
+                    # A module-level alias such as CANONICAL_PROTOCOL_RELPATH. Resolved from the
+                    # SAME historical source, never from the live module.
+                    values.append(_module_level_string_at(tree, element.id))
+                elif isinstance(element, ast.JoinedStr):  # pragma: no cover - not used here
+                    raise AssertionError("f-string in LOAD_BEARING_RELPATHS")
+                else:  # pragma: no cover - defensive
+                    raise AssertionError(f"unhandled element: {ast.dump(element)}")
+            return tuple(values)
+    raise AssertionError(f"LOAD_BEARING_RELPATHS not found at {commit}")
+
+
+def _module_level_string_at(tree: ast.Module, name: str) -> str:
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(t, ast.Name) and t.id == name for t in node.targets
+        ):
+            value = ast.literal_eval(node.value)
+            assert isinstance(value, str), name
+            return value
+    raise AssertionError(f"{name} is not a module-level string assignment")
 
 
 def _flat(text: str) -> str:
@@ -845,19 +901,60 @@ class TestThisFilingPerformsNoRebinding:
     """
 
     def test_the_lifecycle_anchor_is_untouched(self):
-        assert A.AUTHORIZING_DECISION == ANCHOR_DECISION_AT_BASE
-        assert A.AUTHORIZING_PULL_REQUEST == ANCHOR_PULL_REQUEST_AT_BASE
-        assert A.REVIEWED_BASE_SHA == ANCHOR_REVIEWED_BASE_AT_BASE
+        """RE-ANCHORED BY XASSET-0049 onto this unit's OWN closed range.
+
+        The claim is that THIS filing moved no anchor -- a fact about the range
+        ``base .. merge``, true forever. Reading it off the live module turned it into a claim
+        that no later authorized rebinding may ever move the anchor, which this very decision
+        exists to permit.
+        """
+        if not (_commit_exists(THIS_UNIT_BASE_SHA) and _commit_exists(THIS_UNIT_MERGE_SHA)):
+            pytest.skip("this unit's closed range is not present in this checkout")
+        at_base = _blob_at(THIS_UNIT_BASE_SHA, AUTH_MODULE_RELPATH)
+        at_merge = _blob_at(THIS_UNIT_MERGE_SHA, AUTH_MODULE_RELPATH)
+        assert at_base is not None and at_merge is not None
+        # The production module is byte-identical across this filing's own range: no constant of
+        # any kind moved, which is strictly stronger than checking three of them.
+        assert at_merge == at_base
+        # And what it named at the base is exactly what this filing left in place.
+        source = _git("show", f"{THIS_UNIT_MERGE_SHA}:{AUTH_MODULE_RELPATH}")
+        assert f'AUTHORIZING_DECISION = "{ANCHOR_DECISION_AT_BASE}"' in source
+        assert f"AUTHORIZING_PULL_REQUEST = {ANCHOR_PULL_REQUEST_AT_BASE}" in source
+        assert f'REVIEWED_BASE_SHA = "{ANCHOR_REVIEWED_BASE_AT_BASE}"' in source
 
     def test_the_anchor_is_not_this_decision(self):
         """The inverse of the test above, and not redundant with it: this one fails for ANY
         value that names this unit, including one a future edit invents."""
+        # RE-ANCHORED BY XASSET-0049 onto this unit's own merge, unchanged in KIND: an
+        # authorization may never name itself as the effective structural authorization source.
+        # The LIVE module is additionally checked, because that prohibition is permanent -- no
+        # successor may ever bind this authorization as its own anchor either, and the production
+        # module now refuses exactly that in ``_verify_recovery_lifecycle_anchor``.
         assert A.AUTHORIZING_DECISION != DECISION_ID
         assert A.AUTHORIZING_PULL_REQUEST != THIS_PULL_REQUEST
+        if _commit_exists(THIS_UNIT_MERGE_SHA):
+            source = _git("show", f"{THIS_UNIT_MERGE_SHA}:{AUTH_MODULE_RELPATH}")
+            assert f'AUTHORIZING_DECISION = "{DECISION_ID}"' not in source
+            assert f"AUTHORIZING_PULL_REQUEST = {THIS_PULL_REQUEST}" not in source
 
     def test_the_trust_boundary_is_unchanged(self):
-        assert len(A.LOAD_BEARING_RELPATHS) == LOAD_BEARING_COUNT_AT_BASE
-        assert DECISION_RELPATH not in A.LOAD_BEARING_RELPATHS
+        """RE-ANCHORED BY XASSET-0049 onto this unit's OWN closed range.
+
+        THIS filing extended nothing -- provable forever from its own base->merge delta. A
+        successor extending it additively later is a different fact and is not this test's
+        subject. This suite's own module stays out of the boundary permanently, and that IS still
+        asserted against the live tuple, because it is a claim about this artifact rather than
+        about what any later unit may bind.
+        """
+        if not (_commit_exists(THIS_UNIT_BASE_SHA) and _commit_exists(THIS_UNIT_MERGE_SHA)):
+            pytest.skip("this unit's closed range is not present in this checkout")
+        at_base = _load_bearing_declared_at(THIS_UNIT_BASE_SHA)
+        at_merge = _load_bearing_declared_at(THIS_UNIT_MERGE_SHA)
+        assert len(at_base) == LOAD_BEARING_COUNT_AT_BASE
+        assert at_merge == at_base
+        assert DECISION_RELPATH not in at_merge
+        # This suite is a test module and may never become load-bearing, then or now.
+        assert SUITE_PATH.name not in at_merge
         assert SUITE_PATH.name not in A.LOAD_BEARING_RELPATHS
 
     def test_the_universe_is_unchanged(self):
@@ -873,15 +970,17 @@ class TestThisFilingPerformsNoRebinding:
     def test_every_frozen_path_is_byte_identical_to_this_units_base(self):
         """Compared against an IMMUTABLE commit -- this unit's own base -- so the comparison
         neither depends on where ``HEAD`` points nor collapses to empty once this branch merges."""
-        if not _range_is_present(THIS_UNIT_BASE_SHA):
-            pytest.skip("this unit's base is not present in this checkout")
-        assert _commit_exists(THIS_UNIT_BASE_SHA)
+        # RE-ANCHORED BY XASSET-0049: base -> THIS UNIT'S OWN MERGE, both immutable. The
+        # predecessor form compared the base against the LIVE working tree, which measured every
+        # later authorized change as though this filing had made it.
+        if not (_commit_exists(THIS_UNIT_BASE_SHA) and _commit_exists(THIS_UNIT_MERGE_SHA)):
+            pytest.skip("this unit's closed range is not present in this checkout")
         drifted = []
         for relative in FROZEN_AGAINST_BASE_RELPATHS:
             at_base = _blob_at(THIS_UNIT_BASE_SHA, relative)
             assert at_base is not None, f"{relative} does not exist at the base"
-            live = _git("hash-object", relative)
-            if live != at_base:
+            at_merge = _blob_at(THIS_UNIT_MERGE_SHA, relative)
+            if at_merge != at_base:
                 drifted.append(relative)
         assert drifted == [], drifted
         # Non-vacuity: the list really was walked and really resolved blobs.
@@ -904,19 +1003,27 @@ class TestThisFilingPerformsNoRebinding:
             "gates.yaml",
         ):
             assert required in FROZEN_AGAINST_BASE_RELPATHS, required
-        # Every path the production module itself declares load-bearing must be frozen here.
-        missing = [r for r in A.LOAD_BEARING_RELPATHS if r not in FROZEN_AGAINST_BASE_RELPATHS]
-        assert missing == [], missing
-        # Non-vacuity: the module really declared a boundary to check against.
-        assert len(A.LOAD_BEARING_RELPATHS) == LOAD_BEARING_COUNT_AT_BASE
+        # Every path the production module declared load-bearing AT THIS UNIT'S OWN MERGE must
+        # be frozen here. RE-ANCHORED BY XASSET-0049: the subject is this filing's own boundary,
+        # not a later unit's, and a later unit's additions are its own suite's responsibility.
+        if _commit_exists(THIS_UNIT_MERGE_SHA):
+            declared = _load_bearing_declared_at(THIS_UNIT_MERGE_SHA)
+            missing = [r for r in declared if r not in FROZEN_AGAINST_BASE_RELPATHS]
+            assert missing == [], missing
+            # Non-vacuity: the module really declared a boundary to check against.
+            assert len(declared) == LOAD_BEARING_COUNT_AT_BASE
 
     def test_the_load_bearing_cross_check_is_falsifiable(self):
         """MUTATION PIN. The cross-check above can be hollowed out to a truthy expression and
         still pass, so the RULE it applies is extracted and driven against a known-bad list as
         well as the real one. Reproduced against this suite before this test existed."""
 
+        if not _commit_exists(THIS_UNIT_MERGE_SHA):
+            pytest.skip("this unit's own merge is not present in this checkout")
+        declared = _load_bearing_declared_at(THIS_UNIT_MERGE_SHA)
+
         def missing_from(frozen):
-            return [r for r in A.LOAD_BEARING_RELPATHS if r not in frozen]
+            return [r for r in declared if r not in frozen]
 
         assert missing_from(FROZEN_AGAINST_BASE_RELPATHS) == []
         gutted = tuple(r for r in FROZEN_AGAINST_BASE_RELPATHS if r != AUTH_MODULE_RELPATH)
@@ -1174,15 +1281,31 @@ def test_this_filing_records_no_predicted_merge_identity(self=None):
     }
     import re
 
+    # RE-ANCHORED BY XASSET-0049. The subject is what THIS filing shipped -- it could not have
+    # predicted its own merge, and its accepted bytes prove that forever. Scanning the LIVE files
+    # instead measured whatever a lawful successor has since ADDED to them: this suite now cites
+    # this filing's own merge (`f052efad...`) precisely because that merge is CLOSED history for
+    # the successor, and citing closed history is not prediction. Read live, the test would have
+    # forbidden any successor from ever recording the very identity SS-F.2 requires it to derive.
+    if not _commit_exists(THIS_UNIT_MERGE_SHA):
+        pytest.skip("this unit's own merge is not present in this checkout")
     for relative in (DECISION_RELPATH, SUITE_PATH.name):
-        text = (ROOT / relative).read_text(encoding="utf-8")
-        found = set(re.findall(r"\b[0-9a-f]{40}\b", text))
+        blob = subprocess.run(
+            ["git", "show", f"{THIS_UNIT_MERGE_SHA}:{relative}"],
+            cwd=ROOT, capture_output=True, text=True, check=True,
+        ).stdout
+        found = set(re.findall(r"\b[0-9a-f]{40}\b", blob))
         unexpected = found - known
         assert unexpected == set(), (relative, unexpected)
+        # The decisive property, stated directly rather than by exclusion: this filing's own
+        # merge identity is ABSENT from its own accepted bytes.
+        assert THIS_UNIT_MERGE_SHA not in blob, relative
     # Non-vacuity: the scan really found the identities this filing does cite.
-    assert PR347_MERGE_SHA in set(
-        re.findall(r"\b[0-9a-f]{40}\b", DECISION_PATH.read_text(encoding="utf-8"))
-    )
+    shipped_decision = subprocess.run(
+        ["git", "show", f"{THIS_UNIT_MERGE_SHA}:{DECISION_RELPATH}"],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout
+    assert PR347_MERGE_SHA in set(re.findall(r"\b[0-9a-f]{40}\b", shipped_decision))
 
 
 # ======================================================================================
@@ -1774,6 +1897,33 @@ class TestTheBoundPullRequestNumber:
     def test_binding_the_number_does_not_bind_it_into_the_production_module(self):
         """This is a DESIGN-ONLY filing, so its own pull-request number must appear nowhere in
         the operational-authorization module. A rebinding puts it there; an authorization does not."""
-        source = (ROOT / AUTH_MODULE_RELPATH).read_text(encoding="utf-8")
-        assert f"AUTHORIZING_PULL_REQUEST = {THIS_PULL_REQUEST}" not in source
-        assert A.AUTHORIZING_PULL_REQUEST == ANCHOR_PULL_REQUEST_AT_BASE
+        # RE-ANCHORED BY XASSET-0049 onto this filing's OWN accepted bytes, and STRENGTHENED.
+        #
+        # Two defects in the predecessor form, both exposed by a lawful successor rather than
+        # invented here. First, its SUBJECT was the live module, so it asserted that no later
+        # unit may ever record this filing's pull request AT ALL -- but a successor rebinding is
+        # obliged to bind its own authorizing pull request, which is exactly #348. Second, the
+        # substring test was too loose to say what it meant: it matched inside
+        # ``STEP8_EQUIVALENT_AUTHORIZING_PULL_REQUEST = 348``, which is a DIFFERENT constant
+        # naming a DIFFERENT relationship. Anchoring the match to the start of a line makes the
+        # check say precisely what the docstring claims -- that this number is not the ANCHOR.
+        if not _commit_exists(THIS_UNIT_MERGE_SHA):
+            pytest.skip("this unit's own merge is not present in this checkout")
+        shipped = subprocess.run(
+            ["git", "show", f"{THIS_UNIT_MERGE_SHA}:{AUTH_MODULE_RELPATH}"],
+            cwd=ROOT, capture_output=True, text=True, check=True,
+        ).stdout
+        anchor_binding = f"AUTHORIZING_PULL_REQUEST = {THIS_PULL_REQUEST}"
+        assert not any(
+            line.startswith(anchor_binding) for line in shipped.splitlines()
+        ), "this design-only filing bound its own number as the anchor"
+        # PERMANENT, and checked against the LIVE module: this authorization may never be the
+        # effective structural authorization source, in this unit or any successor. The
+        # production module refuses exactly that in ``_verify_recovery_lifecycle_anchor``.
+        live = (ROOT / AUTH_MODULE_RELPATH).read_text(encoding="utf-8")
+        assert not any(
+            line.startswith(anchor_binding) for line in live.splitlines()
+        ), "a successor bound the AUTHORIZING pull request as its own anchor"
+        assert A.AUTHORIZING_PULL_REQUEST != THIS_PULL_REQUEST
+        # And this filing itself left the anchor exactly where it found it.
+        assert f'AUTHORIZING_PULL_REQUEST = {ANCHOR_PULL_REQUEST_AT_BASE}' in shipped

@@ -712,10 +712,19 @@ class TestSuccessorLifecycleAnchorRequired:
         # ... and the live module binds the successor anchor instead.
         import level1_stage1_execution_authorization as auth
 
-        assert auth.AUTHORIZING_DECISION == "XASSET-0047"
+        # RE-ANCHORED BY XASSET-0049, unchanged in KIND and still bound at BOTH ends. The
+        # property protected here is that the live anchor is NOT the permanently unusable one and
+        # IS a lifecycle that can close -- not that one particular successor holds it forever.
+        # XASSET-0047 was that successor; XASSET-0049 lawfully succeeded it under XASSET-0048
+        # SS-E, and XASSET-0047's own identity is preserved rather than erased.
+        assert auth.AUTHORIZING_DECISION == "XASSET-0049"
+        assert auth.PRIOR_RECONCILIATION_DECISION == "XASSET-0047"
         assert auth.AUTHORIZING_DECISION not in auth.PERMANENTLY_INEFFECTIVE_DECISIONS
         assert auth.AUTHORIZING_PULL_REQUEST not in auth.PERMANENTLY_INEFFECTIVE_PULL_REQUESTS
-        assert auth.REVIEWED_BASE_SHA == auth.RECOVERY_AUTHORIZING_MERGE_SHA
+        # The reviewed base equals its own authority's merge -- the same equality, re-anchored
+        # onto the decision that authorizes the CURRENT unit.
+        assert auth.REVIEWED_BASE_SHA == auth.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
+        assert auth.PRIOR_RECONCILIATION_MERGE_BASE == auth.RECOVERY_AUTHORIZING_MERGE_SHA
         # The stopped lifecycle is PRESERVED as history, by exact identity, not erased.
         assert auth.STOPPED_REBINDING_DECISION == "XASSET-0044"
         assert auth.STOPPED_REBINDING_PULL_REQUEST == 344

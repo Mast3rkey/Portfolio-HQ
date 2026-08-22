@@ -989,7 +989,11 @@ class TestNothingHereAuthorizesOrExecutes:
         # unchanged in kind -- it still covers EVERY path in the live tuple, so it grows with it.
         # This count is bound at BOTH ends so neither a silent shrink back nor an unexplained
         # further growth passes.
-        assert len(A.LOAD_BEARING_RELPATHS) == 16
+        # EXTENDED AGAIN BY XASSET-0049, 16 -> 18, likewise by direct membership and likewise
+        # removing nothing. Bound at BOTH ends for the third time, so neither a silent shrink
+        # back to any earlier size nor an unexplained further growth passes.
+        assert len(A.LOAD_BEARING_RELPATHS) == 18
+        assert len(A.LOAD_BEARING_RELPATHS) != 16
         assert len(A.LOAD_BEARING_RELPATHS) != 14
         out = subprocess.run(
             ["git", "diff", "--name-only", "HEAD", "--", *A.LOAD_BEARING_RELPATHS],
