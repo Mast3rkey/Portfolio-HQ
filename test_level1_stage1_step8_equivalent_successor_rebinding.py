@@ -954,10 +954,15 @@ class TestCatalogAndRegisterSynchronisation:
         assert "XASSET-0048" in row["related_decisions"]
 
     def test_the_catalog_is_the_only_place_the_id_is_minted(self):
+        """RE-ANCHORED BY XASSET-0050: the catalog is append-only, so "last row" names whichever
+        decision was filed most recently, not this one forever. The invariant this test protects
+        is that the id is minted EXACTLY ONCE and that this unit's row is present -- both of which
+        survive a successor being appended after it."""
         catalog = yaml.safe_load((ROOT / CATALOG_RELPATH).read_text(encoding="utf-8"))
         ids = [d["decision_id"] for d in catalog["decisions"]]
         assert len(ids) == len(set(ids))
-        assert ids[-1] == DECISION_ID
+        assert DECISION_ID in ids
+        assert ids.index(DECISION_ID) == len(ids) - 1 or ids[-1] > DECISION_ID
 
     def test_the_register_gate_exists_and_is_in_progress(self, ws0014):
         gate = next(g for g in ws0014["milestones"] if g["gate"] == REGISTER_GATE)
@@ -988,10 +993,34 @@ class TestCatalogAndRegisterSynchronisation:
             assert token in gate["description"], token
 
     def test_the_shared_live_fields_advanced(self, ws0014):
-        assert ws0014["last_verified_main_sha"] == THIS_UNIT_BASE_SHA
+        """RE-ANCHORED BY XASSET-0050.
+
+        These are WS-0014's SINGLE SHARED live self-reference fields. They advanced ONTO this
+        unit while it was live, which is what the original assertion captured; they advance OFF
+        it when a successor becomes live, which pinning them to this unit's own values forbade.
+        This file already corrected exactly that error for the predecessor's suite -- "requiring
+        them equal asserted that this unit is live forever" -- so the same correction is applied
+        here rather than a new rule being invented.
+
+        Both ends stay bound: while this unit is live the fields must be exactly its own, and once
+        it is not, they must have moved strictly forward and never back onto any predecessor.
+        """
         assert ws0014["last_verified_main_sha"] != PR347_MERGE_SHA
-        assert ws0014["active_pr"] == THIS_PULL_REQUEST
-        assert ws0014["active_pr"] == A.AUTHORIZING_PULL_REQUEST
+        if ws0014["active_pr"] == THIS_PULL_REQUEST:
+            assert ws0014["last_verified_main_sha"] == THIS_UNIT_BASE_SHA
+            assert ws0014["active_pr"] == A.AUTHORIZING_PULL_REQUEST
+        else:
+            # A successor is live. This unit's own merge is now what `main` points at, so the
+            # shared field must have moved off this unit's BASE and onto something later.
+            assert ws0014["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
+            active = ws0014["active_pr"]
+            assert isinstance(active, int)
+            if active < 0:
+                live = [g for g in ws0014["milestones"] if g.get("pr") == active]
+                assert live, "the register carries a sentinel active_pr that no gate claims"
+                assert all(g["status"] == "in_progress" for g in live), live
+            else:
+                assert active > THIS_PULL_REQUEST
 
     def test_the_workstream_posture_is_unchanged(self, ws0014):
         assert ws0014["status"] == "proposed"
@@ -1026,6 +1055,11 @@ class TestTheRegistersOperativeProseAgreesWithItsStructuredFields:
     #: The marker every dated update in these fields begins with.
     UPDATE_MARKER = "UPDATE, 2026-08-22"
 
+    #: The dated block THIS unit appended. Once a successor appends its own, this unit's block is
+    #: no longer the last one, so the tests below isolate it by its own opening phrase rather than
+    #: by position. RE-ANCHORED BY XASSET-0050.
+    OWN_BLOCK_OPENING = "UPDATE, 2026-08-22 (post-XASSET-0048 merge"
+
     @staticmethod
     def _latest_update(field_text: str) -> str:
         """The final dated update block, which is the operative one.
@@ -1036,6 +1070,22 @@ class TestTheRegistersOperativeProseAgreesWithItsStructuredFields:
         marker = TestTheRegistersOperativeProseAgreesWithItsStructuredFields.UPDATE_MARKER
         assert marker in field_text, "the field carries no dated update at all"
         return marker + field_text.rsplit(marker, 1)[1]
+
+    @classmethod
+    def _own_update(cls, field_text: str) -> str:
+        """THIS unit's own dated block, isolated by its opening phrase.
+
+        RE-ANCHORED BY XASSET-0050. These fields are append-only, so "the latest block" names
+        whichever unit is currently live -- which was this one when the class was written and is
+        a successor now. Re-pointing the checks at this unit's OWN block preserves each assertion
+        in kind: it still verifies that what THIS unit wrote is present, correct and unrewritten.
+        Whether the *newest* block correctly supersedes it is checked separately below, so the
+        field ends up bound at BOTH ends rather than at neither.
+        """
+        assert cls.OWN_BLOCK_OPENING in field_text, "this unit's own dated block is missing"
+        tail = cls.OWN_BLOCK_OPENING + field_text.split(cls.OWN_BLOCK_OPENING, 1)[1]
+        nxt = tail.find(cls.UPDATE_MARKER, len(cls.OWN_BLOCK_OPENING))
+        return tail if nxt == -1 else tail[:nxt]
 
     def test_the_fields_really_are_append_only_dated_logs(self, ws0014):
         """Non-vacuity guard for the splitting helper: if there were only one update block, the
@@ -1055,7 +1105,8 @@ class TestTheRegistersOperativeProseAgreesWithItsStructuredFields:
 
     @pytest.mark.parametrize("field", ["next_action", "blocker"])
     def test_the_latest_update_records_the_authority_as_closed_and_effective(self, ws0014, field):
-        latest = self._latest_update(ws0014[field])
+        # RE-ANCHORED BY XASSET-0050 onto THIS unit's own block; see ``_own_update``.
+        latest = self._own_update(ws0014[field])
         assert "XASSET-0048" in latest, field
         assert "CLOSED" in latest, field
         assert "EFFECTIVE" in latest, field
@@ -1068,8 +1119,11 @@ class TestTheRegistersOperativeProseAgreesWithItsStructuredFields:
         self, ws0014, field
     ):
         """The exact contradiction MAJOR 1 found: the stale text said XASSET-0048 was the sole
-        active lane. The operative block must not say that of any decision but this one."""
-        latest = self._latest_update(ws0014[field])
+        active lane. The block must not say that of any decision but this one.
+
+        RE-ANCHORED BY XASSET-0050 onto THIS unit's own block; see ``_own_update``.
+        """
+        latest = self._own_update(ws0014[field])
         # A superseded claim may legitimately be QUOTED in order to retire it -- that is the
         # honest way to supersede prose without deleting it. What must never happen is the
         # operative block ASSERTING it. So each stale phrase is required to be accompanied by
@@ -1100,7 +1154,8 @@ class TestTheRegistersOperativeProseAgreesWithItsStructuredFields:
 
     @pytest.mark.parametrize("field", ["next_action", "blocker"])
     def test_the_latest_update_keeps_links_three_four_and_five_unauthorized(self, ws0014, field):
-        latest = self._latest_update(ws0014[field])
+        # RE-ANCHORED BY XASSET-0050 onto THIS unit's own block; see ``_own_update``.
+        latest = self._own_update(ws0014[field])
         assert "REMAIN SEPARATELY UNAUTHORIZED" in latest, field
         for link in ("readiness verification", "drift verification", "Step-11 authorization"):
             assert link in latest, (field, link)
@@ -1155,12 +1210,68 @@ class TestTheRegistersOperativeProseAgreesWithItsStructuredFields:
         assert "_verify_step8_equivalent_base_equality" in description
 
     def test_the_structured_fields_and_the_operative_prose_cannot_disagree(self, ws0014):
-        """The single invariant MAJOR 1 reduces to, asserted directly."""
-        assert ws0014["active_pr"] == THIS_PULL_REQUEST
-        assert ws0014["active_branch"] == BRANCH_NAME
+        """The single invariant MAJOR 1 reduces to, asserted directly.
+
+        RE-ANCHORED BY XASSET-0050. ``active_pr`` and ``active_branch`` are WS-0014's SHARED live
+        self-reference and move onto whichever unit is live, so pinning them to THIS unit's values
+        asserted "this unit is live forever" -- the very error XASSET-0049 corrected elsewhere in
+        this same file. What MAJOR 1 actually reduces to is that the structured fields and the
+        OPERATIVE prose describe the same unit, whichever that is. That is asserted directly here,
+        and this unit's own block is separately proved intact by ``_own_update``.
+        """
         for field in ("next_action", "blocker"):
+            own = self._own_update(ws0014[field])
+            assert f"PR #{THIS_PULL_REQUEST}" in own, field
             latest = self._latest_update(ws0014[field])
-            assert f"PR #{ws0014['active_pr']}" in latest, field
+            active = ws0014["active_pr"]
+            if active == THIS_PULL_REQUEST:
+                assert ws0014["active_branch"] == BRANCH_NAME
+                assert f"PR #{active}" in latest, field
+            else:
+                # A successor is live. The operative block must name IT, and must record this
+                # unit as finished rather than still active.
+                assert ws0014["active_branch"] != BRANCH_NAME
+                assert DECISION_ID in latest, field
+                assert any(
+                    m in latest for m in ("CLOSED", "SATISFIED AND SPENT", "SUPERSEDED BY EVENT")
+                ), field
+
+
+class TestTheNewestBlockSupersedesThisUnitRatherThanReviveIt:
+    """ADDED BY XASSET-0050 -- the other end of the append-only invariant.
+
+    ``_own_update`` proves this unit's block survives unrewritten. This class proves the NEWEST
+    block, whichever successor wrote it, does not still present this finished unit as live work.
+    Without it, re-anchoring the class above onto the own-block would have left the newest block
+    unchecked entirely.
+    """
+
+    MARKER = TestTheRegistersOperativeProseAgreesWithItsStructuredFields.UPDATE_MARKER
+
+    def _latest(self, text: str) -> str:
+        assert self.MARKER in text
+        return self.MARKER + text.rsplit(self.MARKER, 1)[1]
+
+    @pytest.mark.parametrize("field", ["next_action", "blocker"])
+    def test_the_newest_block_does_not_call_this_finished_unit_the_active_lane(
+        self, ws0014, field
+    ):
+        latest = self._latest(ws0014[field])
+        if ws0014["active_pr"] == THIS_PULL_REQUEST:
+            pytest.skip("this unit is still the live one")
+        stale = f"{DECISION_ID} / PR #{THIS_PULL_REQUEST} IS THE SOLE ACTIVE"
+        if stale in latest:
+            assert any(
+                m in latest for m in ("SUPERSEDED BY EVENT", "SATISFIED AND SPENT")
+            ), field
+
+    @pytest.mark.parametrize("field", ["next_action", "blocker"])
+    def test_the_newest_block_records_this_units_lifecycle_as_closed(self, ws0014, field):
+        latest = self._latest(ws0014[field])
+        if ws0014["active_pr"] == THIS_PULL_REQUEST:
+            pytest.skip("this unit is still the live one")
+        assert DECISION_ID in latest, field
+        assert "CLOSED" in latest and "EFFECTIVE" in latest, field
 
 
 class TestTheBoundPullRequestNumber:
@@ -1193,7 +1304,25 @@ class TestTheBoundPullRequestNumber:
             assert A.AUTHORIZING_PULL_REQUEST > predecessor, predecessor
 
     def test_the_register_and_the_module_agree(self, ws0014):
-        assert ws0014["active_pr"] == A.AUTHORIZING_PULL_REQUEST
+        """RE-ANCHORED BY XASSET-0050.
+
+        Equality held only while a REBINDING unit was live -- a rebinding binds its own number
+        into the module, so the two coincided. ``XASSET-0050`` is a DESIGN-ONLY authorization: it
+        changes no module constant, so the shared ``active_pr`` moves onto it while
+        ``AUTHORIZING_PULL_REQUEST`` correctly stays on the last unit that actually rebound.
+        Equality would assert "a rebinding is always live", which is false. The invariant
+        underneath -- the shared field is never BEHIND the module's bound number, which is what a
+        revert to finished work would look like -- is what is asserted, with the successor's
+        sentinel window checked for consistency instead of skipped.
+        """
+        active = ws0014["active_pr"]
+        assert isinstance(active, int)
+        if active < 0:
+            live = [g for g in ws0014["milestones"] if g.get("pr") == active]
+            assert live, "the register carries a sentinel active_pr that no gate claims"
+            assert all(g["status"] == "in_progress" for g in live), live
+        else:
+            assert active >= A.AUTHORIZING_PULL_REQUEST
 
 
 # ======================================================================================

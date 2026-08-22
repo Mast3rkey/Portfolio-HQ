@@ -1732,6 +1732,31 @@ def test_the_decision_has_the_house_closing_sections(decision_text):
 # ======================================================================================
 
 
+
+def _assert_shared_active_pr_is_ahead_of(ws, finished_pr):
+    """RE-ANCHORED BY XASSET-0050 to survive the successor's SENTINEL window.
+
+    The invariant is that WS-0014's single shared ``active_pr`` never points at FINISHED work.
+    Asserting ``> finished_pr`` expressed that correctly for a register whose live unit had
+    already been issued a number -- but a successor commits an impossible negative sentinel FIRST
+    and binds the real number only after GitHub issues it, so for exactly one commit the ordering
+    cannot be evaluated at all.
+
+    Skipping there would make the guard vacuous precisely when the register is half-written, which
+    is the state it exists to catch. So the sentinel window is checked for CONSISTENCY instead: the
+    value must be a real sentinel (negative, therefore never a pull request), and some gate must
+    claim it as in-progress live work. A register reverted to a merged unit still fails, in both
+    states.
+    """
+    active = ws["active_pr"]
+    assert isinstance(active, int)
+    if active < 0:
+        live = [g for g in ws["milestones"] if g.get("pr") == active]
+        assert live, "the register carries a sentinel active_pr that no gate claims"
+        assert all(g["status"] == "in_progress" for g in live), live
+    else:
+        assert active > finished_pr
+
 class TestCatalogAndRegisterSynchronisation:
     def test_the_decision_is_indexed_exactly_once(self):
         catalog = yaml.safe_load((ROOT / CATALOG_RELPATH).read_text(encoding="utf-8"))
@@ -1806,7 +1831,7 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws["active_pr"] != THIS_PULL_REQUEST
         assert ws["active_pr"] != 347
         assert ws["active_branch"] != "claude/xasset-0046-recovery-b31nba"
-        assert isinstance(ws["active_pr"], int) and ws["active_pr"] > THIS_PULL_REQUEST
+        _assert_shared_active_pr_is_ahead_of(ws, THIS_PULL_REQUEST)
         # THIS unit's own gate still records its own pull request, unchanged.
         gate = next(g for g in ws["milestones"] if g["gate"] == REGISTER_GATE)
         assert gate["pr"] == THIS_PULL_REQUEST
@@ -1895,7 +1920,9 @@ class TestTheBoundPullRequestNumber:
         ws = next(w for w in register["workstreams"] if w["id"] == "WS-0014")
         if THIS_PULL_REQUEST == PULL_REQUEST_SENTINEL:
             pytest.skip("the number has not been issued yet")
-        assert ws["active_pr"] >= THIS_PULL_REQUEST
+        # RE-ANCHORED BY XASSET-0050: the SUCCESSOR's sentinel window makes the shared field
+        # temporarily negative, so the same consistency check applies rather than a bare ordering.
+        _assert_shared_active_pr_is_ahead_of(ws, THIS_PULL_REQUEST - 1)
 
     def test_once_bound_it_is_later_than_every_predecessor_in_the_chain(self):
         """Monotonic by construction: GitHub issues numbers in order, so a number at or below any

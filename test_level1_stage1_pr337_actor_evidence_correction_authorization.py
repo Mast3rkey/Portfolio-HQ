@@ -711,8 +711,18 @@ class TestCatalogAndRegisterSynchronisation:
         # fields advance once more, to the step-8-equivalent REBINDING unit that is now live.
         # Each stays an exact value, and every superseded value is retained below as a negative
         # pin, so the field is bound at BOTH ends.
-        assert ws0014["active_branch"] == "claude/xasset-0049-rebinding-ll6hzf"
+        # ADVANCED AGAIN BY XASSET-0050: PR #349 has since merged at `a9414554`, so these shared
+        # fields advance once more, to the renewed readiness-verification AUTHORIZATION unit that
+        # is now live. Each stays an exact value, and XASSET-0049's own superseded values join the
+        # negative pins below rather than being deleted, so the field stays bound at BOTH ends.
+        assert ws0014["active_branch"] == (
+            "claude/xasset-0050-renewed-readiness-authorization"
+        )
         assert ws0014["last_verified_main_sha"] == (
+            "a941455491cc5e4d3d868775fb6b4b88f0fe2ce3"
+        )
+        assert ws0014["active_branch"] != "claude/xasset-0049-rebinding-ll6hzf"
+        assert ws0014["last_verified_main_sha"] != (
             "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
         )
         assert ws0014["active_branch"] != "claude/xasset-0030-step8-successor-95p6d1"

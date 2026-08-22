@@ -104,6 +104,17 @@ XASSET0048_ACTIVE_PR = 348
 XASSET0049_MAIN_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 XASSET0049_ACTIVE_PR = 349
 #: The tree carried by BOTH the accepted head and the merge -- zero merge drift.
+#: ADVANCED BY XASSET-0050. PR #349 merged at `a9414554`, so WS-0014's shared live
+#: "where main is now" / "which pull request is live" fields lawfully advanced again under
+#: OPS-0001's Active-GitHub-fields rule. XASSET-0050 is a DESIGN-ONLY authorization: it changes
+#: no module constant, so `REVIEWED_BASE_SHA` stays XASSET-0049's lawful rebinding base and only
+#: the register's shared self-reference moved. Each prior generation's value is retained beside
+#: the current one as a NEGATIVE pin rather than deleted, so a silent revert to any finished
+#: unit's state still fails. The assertion stays EXACT and is bound at BOTH ends.
+XASSET0050_MAIN_SHA = "a941455491cc5e4d3d868775fb6b4b88f0fe2ce3"
+#: Committed as an impossible sentinel first, then replaced by the number GitHub actually issued
+#: in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
+XASSET0050_ACTIVE_PR = 350
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 
 #: XASSET-0046's own completed lifecycle evidence, preserved by exact identity.
@@ -1634,6 +1645,35 @@ class TestNothingIsArmed:
 # ======================================================================================
 
 
+
+def _assert_shared_active_pr_is_not_behind_the_bound_rebinding(ws):
+    """RE-ANCHORED BY XASSET-0050.
+
+    ``XASSET-0049`` asserted ``ws["active_pr"] == A.AUTHORIZING_PULL_REQUEST`` and said why in
+    its own comment: "*because the live unit is a REBINDING and therefore does bind its own
+    number*." That premise is conditional, and ``XASSET-0050`` is the case it excludes -- a
+    DESIGN-ONLY authorization that changes no module constant. The register's shared ``active_pr``
+    moves onto it; ``A.AUTHORIZING_PULL_REQUEST`` correctly stays on the last unit that actually
+    rebound. Equality would therefore assert "a rebinding is always live", which is false.
+
+    The invariant underneath it survives intact and is what is asserted here: the shared field is
+    never BEHIND the module's bound number. A value below it would mean the register was reverted
+    to finished work -- the failure the equality was really guarding against. This is the same
+    form ``XASSET-0048``'s own suite already uses for the same reason, so nothing is invented.
+
+    During the sentinel window the field is negative and the ordering cannot be evaluated. Rather
+    than skip -- which would make the guard vacuous exactly when the register is half-written --
+    the sentinel state is checked for CONSISTENCY: the live gate must carry the same sentinel, so
+    a half-bound register still fails.
+    """
+    active = ws["active_pr"]
+    if active < 0:
+        live = [g for g in ws["milestones"] if g.get("pr") == active]
+        assert live, "the register carries a sentinel active_pr that no gate claims"
+        assert all(g["status"] == "in_progress" for g in live), live
+    else:
+        assert active >= A.AUTHORIZING_PULL_REQUEST
+
 class TestCatalogAndRegisterSynchronisation:
     def test_the_decision_is_indexed_exactly_once(self):
         catalog = yaml.safe_load((ROOT / CATALOG_RELPATH).read_text(encoding="utf-8"))
@@ -1695,14 +1735,16 @@ class TestCatalogAndRegisterSynchronisation:
         # onto its own base and its own number. Bound at BOTH ends, with every prior generation's
         # value retained as a negative pin -- and the module/register agreement is now an
         # EQUALITY, because the live unit is a REBINDING and therefore does bind its own number.
-        assert ws["last_verified_main_sha"] == XASSET0049_MAIN_SHA
+        assert ws["last_verified_main_sha"] == XASSET0050_MAIN_SHA
+        assert ws["last_verified_main_sha"] != XASSET0049_MAIN_SHA
         assert ws["last_verified_main_sha"] != XASSET0048_MAIN_SHA
         assert ws["last_verified_main_sha"] != PR346_MERGE_SHA
         assert ws["last_verified_main_sha"] != PR346_BASE_SHA
         assert ws["last_verified_main_sha"] != PR345_BASE_SHA
-        assert ws["active_pr"] == XASSET0049_ACTIVE_PR
+        assert ws["active_pr"] == XASSET0050_ACTIVE_PR
+        assert ws["active_pr"] != XASSET0049_ACTIVE_PR
         assert ws["active_pr"] != XASSET0048_ACTIVE_PR
-        assert ws["active_pr"] == A.AUTHORIZING_PULL_REQUEST
+        _assert_shared_active_pr_is_not_behind_the_bound_rebinding(ws)
 
     def test_the_workstream_posture_is_unchanged(self, register_text):
         data = yaml.safe_load(register_text)
@@ -2062,8 +2104,9 @@ class TestTheBoundPullRequestNumber:
         assert gate["pr"] == THIS_PULL_REQUEST
         # ADVANCED BY XASSET-0049: the register's shared active_pr now names the LIVE unit, and
         # the live unit is a rebinding, so it and the module agree exactly.
-        assert ws["active_pr"] == XASSET0049_ACTIVE_PR
-        assert ws["active_pr"] == A.AUTHORIZING_PULL_REQUEST
+        assert ws["active_pr"] == XASSET0050_ACTIVE_PR
+        assert ws["active_pr"] != XASSET0049_ACTIVE_PR
+        _assert_shared_active_pr_is_not_behind_the_bound_rebinding(ws)
         assert ws["active_pr"] != THIS_PULL_REQUEST
         assert ws["active_branch"] != "claude/xasset-0046-recovery-b31nba"
 
