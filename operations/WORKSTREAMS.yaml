@@ -15921,6 +15921,110 @@ workstreams:
           spent as STOPPED_BEFORE_ATTESTATION; XASSET-0046 SS-F's single grant is spent by this unit
           and authorizes no further one. This gate is deliberately in_progress while its own pull
           request is unmerged: a filing does not mark its own unmerged work complete.
+      - gate: xasset0047-post-merge-verification
+        status: complete
+        pr: 347
+        description: >-
+          ADDITIVE POST-MERGE FACTUAL SYNCHRONISATION for PR #347, recorded by the next
+          substantive WS-0014 unit rather than by editing the prior gate's own accepted text.
+          Independently re-derived this session from live git and live GitHub, not inherited from
+          any summary. XASSET-0047's complete seven-condition SS-M lifecycle is CLOSED and the
+          decision is EFFECTIVE. Accepted head 8ae0988d4c1ffc551e7fa0a1d1ee1edfa7a49a9e; base
+          0b76c09f8d1aba01780b4f06fdd692f7393fbfd3; independent FULL exact-head review 4997532748
+          at 1fb5941ce1f40ca24fa187289b318e4e266730cc returning 1 MAJOR (a source-vacuous
+          canonical-freeze refusal) and 1 MINOR, both closed by one bounded correction; clean
+          exact-head DELTA review 4997822429 at the accepted head, 0 BLOCKING / 0 MAJOR / 0 MINOR /
+          0 NOTE; principal exact-head acceptance issuecomment-5375989065; normal merge
+          bb95ed26964b1bc7a2e230c76060fec82752efa1 with exactly two parents in order and merge tree
+          c8b677f8697660bef1122a83615845961457be89 byte-identical to the accepted head's own tree,
+          so ZERO merge drift; immediate post-merge verification issuecomment-5376014867;
+          merge-commit CI run 32532487548 / job 96927108608 whose run head_sha AND job head_sha each
+          equal the exact merge SHA, completed / SUCCESS, 10,666 passed; and final post-CI lifecycle
+          closure issuecomment-5376069596 recorded strictly after that job completed. This is the
+          condition at which XASSET-0044 / PR #344 and XASSET-0045 / PR #345 each permanently
+          stopped. WHAT BECAME EFFECTIVE IS THE LIFECYCLE ANCHOR, NOT EXECUTION: verified live on
+          the merged tree, AUTHORIZING_DECISION XASSET-0047, AUTHORIZING_PULL_REQUEST 347,
+          REVIEWED_BASE_SHA 0b76c09f8d1aba01780b4f06fdd692f7393fbfd3, LOAD_BEARING_RELPATHS 16,
+          canonical pins 1ad1d060...5d0c84 / 898c329d...12d82f matching the live files, universe 680
+          / 48 / 73c0965e...5224, new_execution_is_authorized() False, lane ABSENT, ATTEMPT_1
+          intact, unclaimed and unconsumed, and no stage1_results.yaml anywhere. Both permanently
+          failed merge-commit CI runs (32439614683 / 96647501864 at f5dedce1..., and 32490789238 /
+          96797667282 at 2f8cdebe...) and both auditable stop records remain untouched, still
+          failure, never re-run, relabelled, waived, or represented as successful. XASSET-0043
+          remains spent; XASSET-0044 and XASSET-0045 remain not effective; XASSET-0046 SS-F's single
+          grant is spent by XASSET-0047 and authorizes no further unit.
+      - gate: xasset0048-step8-equivalent-rebinding-authorization
+        status: in_progress
+        pr: 348
+        description: >-
+          DESIGN-ONLY LANE G GOVERNANCE AUTHORIZATION, filed as XASSET-0048. It authorizes EXACTLY
+          ONE future, separate, bounded pull request to perform the XASSET-0030 SS-G.B
+          STEP-8-EQUIVALENT successor operational-authorization / load-bearing rebinding against the
+          exact merged bytes of the corrected executable package, and it PERFORMS NO PART OF THAT
+          REBINDING. THE AUTHORITY GAP, reproduced from accepted text before anything was
+          authorized: SS-G.B step 8's OWN single budget is SPENT by XASSET-0037, as XASSET-0043 SS-C
+          and XASSET-0044 SS-C each record verbatim, so the required link is XASSET-0041 SS-I LINK 2,
+          "rebinding (separately authorized; XASSET-0030 SS-G.B step-8 EQUIVALENT)" -- a citation
+          this filing corrects openly rather than repeating the looser "step 8 is unperformed"
+          reading, with the substance of the gap unchanged; XASSET-0036 SS-A authorized SS-G.B steps
+          2-7 and expressly withheld steps 8-11; XASSET-0043 SS-F's single link-2 grant was SPENT BY
+          USE on PR #344, whose merge-commit CI failed permanently, and XASSET-0045 SS-E records it
+          as expended and unreusable; XASSET-0045's own grant NEVER VESTED; XASSET-0046 SS-F's single
+          recovery grant was SPENT by XASSET-0047, which states in SS-I that completing it authorizes
+          no further unit; XASSET-0047 SS-A repaired the lifecycle anchor and "Nothing else moves",
+          with SS-I withholding readiness verification, drift verification, Step 11, attestation,
+          arming, claim, gate evaluation, execution and results work in terms; and XASSET-0030 SS-D
+          is a PROVISION, not a grant -- XASSET-0043 SS-C relied on SS-D and still required a
+          separate granting decision as a distinct ground. No live accepted authority therefore
+          permitted a future step-8-equivalent rebinding unit, and this filing closes that gap
+          narrowly and expressly. WHAT IS GRANTED (SS-E): one future unit may file its own rebinding
+          decision under the next LIVE-VERIFIED XASSET-#### identifier, never predicted or named
+          here; rebind AUTHORIZING_DECISION, AUTHORIZING_PULL_REQUEST and REVIEWED_BASE_SHA to its
+          own verified identities; edit level1_stage1_execution_authorization.py only as its own
+          configuration, identity constants, evidence, refusals and validation require; extend
+          LOAD_BEARING_RELPATHS ADDITIVELY with the decision files making the newly bound bytes
+          lawful; amend the canonical artifacts in AUTHORIZATION LANGUAGE ONLY, in lockstep;
+          recompute stale identities and pins ONCE and LAST; and synchronize the catalog, the
+          register and the coupled suites without weakening any of them. REQUIRED PROPERTIES (SS-F):
+          bind only stabilized, independently reviewed exact bytes; bind against a base RE-DERIVED
+          FROM THE OBJECT STORE that EQUALS the exact normal-merge commit closing XASSET-0048's own
+          SS-J lifecycle -- derived from that completed lifecycle (accepted head, ordered parents,
+          byte-identical merge tree, successful merge-commit CI at the exact merge SHA, final
+          closure) and never predicted, since XASSET-0048 has not merged. Descent from
+          bb95ed26964b1bc7a2e230c76060fec82752efa1 remains NECESSARY HISTORY but is EXPLICITLY
+          INSUFFICIENT AUTHORITY: any intervening main commit is DRIFT requiring a stop and new
+          authority unless every intervening change is separately authorized AND admitted through an
+          explicit closed identity transition, and intervening bytes are NEVER absorbed merely
+          because the base descends from bb95ed26...; record EXACT CLOSED TRANSITIONS bound at BOTH ends for every rebound constant, pin,
+          identity, boundary membership and the lifecycle anchor itself; bind canonical AND
+          enforcement AND ALL OUTCOME-PRODUCING EXECUTABLE bytes by exact identity, per SS-G.B's
+          unchanged governing invariant that no outcome-producing executable code may be created,
+          changed or left outside the bound execution identity after the final rebinding and before
+          ATTEMPT_1; PRESERVE the runner, result validator, universe closure validator, derivation
+          surface, frozen construction identities, 680 / 48 / 73c0965e...5224, comparison_subject_kind,
+          unordered_pair_id, every gate and disposition rule, and the accepted B1/B2/B3 semantics,
+          unchanged unless separately and expressly authorized; grow the trust boundary and remove
+          nothing; PRESERVE ALL ADVERSE HISTORY AND EVERY PREDECESSOR IDENTITY, including both failed
+          merge-commit CI runs, both auditable stops, XASSET-0043 spent, XASSET-0044 and XASSET-0045
+          not effective, and XASSET-0040 spent as a stop; and complete the full
+          review-correction-acceptance-merge-exact-merge-CI-closure lifecycle in one coherent pull
+          request. WHAT IS WITHHELD (SS-G): renewed readiness verification, renewed drift
+          verification, Step 11 in any part, any attestation, lane state or AUTHORIZATION_ROOT,
+          arming, any ATTEMPT_1 claim, any gate evaluation for any construction, execution, results
+          work, stage1_results.yaml, Stage 2, data acquisition, any endpoint / bound / point / range
+          / percentage / weight / rank / target / allocation, any targets/holdings/gates/lookthrough
+          /allocator/margin/chart/ladder/trade change, any protected RISK access, any reopening of
+          B1/B2/B3 or XASSET-0031's G3, and any consumption of XASSET-0027 SS-P.1, which remains ONE
+          AND UNSPENT. Links 3, 4 and 5 of XASSET-0041 SS-I each still require their own separate
+          authority and their own complete lifecycle. ZERO ACTIVATION AUTHORITY is added; XASSET-0029
+          SS-E's no-infinite-regress rule is untouched and final activation remains the external
+          one-shot runtime attestation and the operator's act. MERGING THIS DECISION PERFORMS NO
+          REBINDING AND ARMS NOTHING; its SS-J effectivity is conjunctive across all seven conditions
+          including successful merge-commit CI whose head_sha is the exact merge SHA. This gate is
+          deliberately in_progress while its own pull request is unmerged: a filing does not mark its
+          own unmerged work complete. Its pr field carried the impossible sentinel until GitHub
+          issued number 348, which was then read back from live GitHub and only then
+          bound here -- never predicted.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -16482,6 +16586,34 @@ workstreams:
       10 and 11 retains its own separate-authority requirement, and a step-9 PASS authorizes nothing
       further. XASSET-0027 SS-P.1's reserved evaluation/results PR remains ONE, UNSPENT. Stage 1
       remains UNARMED and NOT EXECUTABLE; ATTEMPT_1 is intact, unclaimed and unconsumed.
+      UPDATE, 2026-08-22 (post-XASSET-0047 merge; CURRENT STATE, appended without editing any
+      earlier wording above, which is preserved as accurate for its own date). XASSET-0047's
+      complete seven-condition lifecycle is CLOSED and the decision is EFFECTIVE: accepted head
+      8ae0988d4c1ffc551e7fa0a1d1ee1edfa7a49a9e, clean exact-head DELTA review 4997822429, principal
+      acceptance issuecomment-5375989065, merge bb95ed26964b1bc7a2e230c76060fec82752efa1 with zero
+      tree drift, post-merge verification issuecomment-5376014867, merge-commit CI run 32532487548
+      / job 96927108608 at the exact merge SHA completed / SUCCESS with 10,666 passed, and final
+      post-CI closure issuecomment-5376069596 -- every one independently re-derived this session.
+      What became effective is the LIFECYCLE ANCHOR, not execution. The REBINDING itself remains
+      unperformed: XASSET-0041 SS-I LINK 2, the XASSET-0030 SS-G.B STEP-8-EQUIVALENT successor
+      operational-authorization / load-bearing rebinding. SS-G.B step 8's own single budget was
+      spent by XASSET-0037 and is not reopened. Link 2's own grant, XASSET-0043 SS-F, was spent by
+      use on PR #344, whose merge-commit CI failed permanently; XASSET-0045's grant never vested;
+      XASSET-0046's single recovery grant was spent by XASSET-0047, which authorized no successor.
+      XASSET-0048, the sole active mutation lane, is the narrow DESIGN-ONLY Lane G filing that
+      closes that authority gap and nothing else: it authorizes exactly one future, separate,
+      bounded rebinding unit, under conditions requiring exact closed transitions bound at both
+      ends, binding of canonical AND enforcement AND all outcome-producing executable bytes,
+      preservation of the runner / result-validator / universe / derivation semantics, and
+      preservation of all adverse history and every predecessor identity. It performs no part of
+      that rebinding, edits level1_stage1_execution_authorization.py not at all, and adds ZERO
+      activation authority. Until XASSET-0048's own seven-condition lifecycle closes in full, the
+      rebinding remains unperformed and unauthorized. After it closes, the next units in order are:
+      the rebinding itself; then links 3, 4 and 5 of XASSET-0041 SS-I -- renewed readiness
+      verification, renewed drift verification, and a new Step-11 authorization -- each requiring
+      its own separate authority and its own complete lifecycle. XASSET-0027 SS-P.1's reserved
+      evaluation/results PR remains ONE, UNSPENT. Stage 1 remains UNARMED and NOT EXECUTABLE;
+      ATTEMPT_1 is intact, unclaimed and unconsumed.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -17028,10 +17160,21 @@ workstreams:
       remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
-    active_branch: claude/xasset-0046-recovery-b31nba
-    active_pr: 347
-    last_verified_main_sha: 0b76c09f8d1aba01780b4f06fdd692f7393fbfd3
-    last_verified_date: "2026-08-21"
+      UPDATE, 2026-08-22 (post-XASSET-0047 merge; CURRENT CRITICAL PATH, appended without editing
+      any earlier wording above). XASSET-0048 is the sole active lane and the sole mutation lane. It
+      is a DESIGN-ONLY Lane G governance filing: it authorizes exactly one future, separate, bounded
+      XASSET-0030 SS-G.B step-8-equivalent rebinding unit, and performs no rebinding itself. Merging
+      XASSET-0048 will authorize a future rebinding only; it will NOT perform one, will NOT bind any
+      byte, and will NOT make Stage 1 armed or executable. Its own SS-J effectivity is conjunctive
+      across all seven conditions, including successful merge-commit CI whose head_sha is the exact
+      merge SHA -- the condition at which XASSET-0044 and XASSET-0045 each permanently stopped.
+      Stage 1 remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
+      new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
+      unconsumed.
+    active_branch: claude/xasset-0030-step8-successor-95p6d1
+    active_pr: 348
+    last_verified_main_sha: bb95ed26964b1bc7a2e230c76060fec82752efa1
+    last_verified_date: "2026-08-22"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively

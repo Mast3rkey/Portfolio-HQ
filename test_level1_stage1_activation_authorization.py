@@ -114,6 +114,11 @@ XASSET0046_MAIN_SHA = "2f8cdebe14925021171b9779453946be1f69b506"
 #: rule. The anchor each decision authorizes against is unchanged; only the shared
 #: self-reference moved. The assertion stays EXACT and is bound at BOTH ends.
 XASSET0047_MAIN_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+#: ADVANCED BY XASSET-0048: PR #347 merged at `bb95ed26`, so the register's shared live
+#: "where main is now" field lawfully advanced again under OPS-0001's Active-GitHub-fields
+#: rule. The anchor each decision authorizes against is unchanged; only the shared
+#: self-reference moved. The assertion stays EXACT and is bound at BOTH ends.
+XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
 #: WS-0014's shared `active_pr` while THIS rebinding-authorization unit is the live work.
 #: Set to the real GitHub number issued when the pull request was opened, verified
 #: against live GitHub afterwards, never left as a guess.
@@ -133,6 +138,10 @@ XASSET0046_ACTIVE_PR = 346
 #: the impossible sentinel 0, the draft was opened, and the issued number was read back from
 #: live GitHub before being bound here.
 XASSET0047_ACTIVE_PR = 347
+#: ADVANCED BY XASSET-0048. WS-0014's single shared `active_pr`, carrying the impossible
+#: sentinel ``None`` until GitHub issues this unit's number, which is then read back from
+#: live GitHub and bound -- never guessed.
+XASSET0048_ACTIVE_PR = 348
 
 #: The completed step-10 evidence -- §H item 5 -- and its formal determination.
 STEP10_EVIDENCE_COMMENT = "5341448714"
@@ -1146,15 +1155,17 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0041. PR #340 merged at `f212cce5`, so the register's live
         # "where main is now" field lawfully advanced. The anchor this decision authorizes
         # against is unchanged; only the shared live self-reference moved.
-        assert workstream["last_verified_main_sha"] == XASSET0047_MAIN_SHA
+        assert workstream["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        assert workstream["last_verified_main_sha"] != XASSET0047_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0046_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0045_MAIN_SHA
         assert XASSET0039_MERGE_SHA != XASSET0043_MAIN_SHA
-        assert str(workstream["last_verified_date"]).startswith("2026-08-21")
+        assert str(workstream["last_verified_date"]).startswith("2026-08-22")
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0047_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0048_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0047_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0046_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0045_ACTIVE_PR
 

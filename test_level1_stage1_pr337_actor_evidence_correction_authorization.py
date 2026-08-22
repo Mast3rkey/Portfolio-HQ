@@ -703,15 +703,23 @@ class TestCatalogAndRegisterSynchronisation:
         # shared fields advance once more, to the post-merge-CI recovery unit that is now
         # live. Each stays an exact value, and every superseded value is retained below as a
         # negative pin, so the field is bound at BOTH ends rather than only at one.
-        assert ws0014["active_branch"] == "claude/xasset-0046-recovery-b31nba"
+        # ADVANCED AGAIN BY XASSET-0048: PR #347 has since merged at `bb95ed26`, so these
+        # shared fields advance once more, to the step-8-equivalent rebinding AUTHORIZATION
+        # unit that is now live. Each stays an exact value, and every superseded value is
+        # retained below as a negative pin, so the field is bound at BOTH ends.
+        assert ws0014["active_branch"] == "claude/xasset-0030-step8-successor-95p6d1"
         assert ws0014["last_verified_main_sha"] == (
-            "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+            "bb95ed26964b1bc7a2e230c76060fec82752efa1"
         )
-        assert str(ws0014["last_verified_date"]) == "2026-08-21"
+        assert str(ws0014["last_verified_date"]) == "2026-08-22"
         # PR #343's, #344's, #345's and #346's own closed records survive in the register as
         # history, not as live state.
         assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
         assert ws0014["active_branch"] != "claude/xasset-0045-test-governance-103t6t"
+        assert ws0014["active_branch"] != "claude/xasset-0046-recovery-b31nba"
+        assert ws0014["last_verified_main_sha"] != (
+            "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+        )
         assert ws0014["last_verified_main_sha"] != (
             "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
         )
@@ -722,6 +730,7 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["active_pr"] != 344
         assert ws0014["active_pr"] != 345
         assert ws0014["active_pr"] != 346
+        assert ws0014["active_pr"] != 347
 
     def test_register_still_parses_and_ws0014_is_unique(self, ws0014):
         assert ws0014["id"] == "WS-0014"

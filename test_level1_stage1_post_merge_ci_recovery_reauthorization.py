@@ -110,6 +110,11 @@ THIS_PR_ACCEPTED_HEAD = "0964dc2bd6ab3be8282193f76fa04c764198db0f"
 #: shared register field can be bound at both ends when it lawfully advances past this unit.
 THIS_PR_MERGE_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 
+#: ADDED BY XASSET-0048. PR #347's merge -- where `main` is now. Bound here so this suite's own
+#: shared-field assertion stays EXACT at both ends rather than being relaxed to an inequality
+#: when the field lawfully advanced past this unit.
+XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+
 #: PR #345's lifecycle evidence that DID complete, preserved as authenticated predecessor
 #: evidence.
 PR345_FINAL_CLEAN_REVIEW = "4993994386"
@@ -1045,7 +1050,11 @@ class TestCatalogAndRegisterSynchronisation:
         # PR #346 has since merged at `0b76c09f`, so the shared fields advance once more to the
         # recovery unit that is now live. THIS unit's own closed record survives below as a
         # negative pin rather than being deleted, so the field stays bound at both ends.
-        assert ws0014["last_verified_main_sha"] == THIS_PR_MERGE_SHA
+        # ADVANCED BY XASSET-0048: PR #347 has since merged at `bb95ed26`, so the register's
+        # shared "where main is now" field lawfully advanced past THIS unit's own merge. Bound
+        # at BOTH ends: equal to the successor value, unequal to this unit's own.
+        assert ws0014["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != THIS_PR_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR345_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR345_BASE_SHA
         assert ws0014["active_pr"] != THIS_PULL_REQUEST
