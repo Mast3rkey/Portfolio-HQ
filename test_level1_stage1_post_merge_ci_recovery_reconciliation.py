@@ -78,6 +78,14 @@ PR346_ACCEPTED_HEAD = "0964dc2bd6ab3be8282193f76fa04c764198db0f"
 #: PR #346's merge commit -- THIS pull request's own base, and the head_sha of the SUCCESSFUL
 #: merge-commit CI that made XASSET-0046 effective.
 PR346_MERGE_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+
+#: ADDED BY XASSET-0048. THIS unit's own merge -- and where `main` is now. Bound so the shared
+#: -field assertions below stay EXACT at both ends once the register's live self-reference
+#: lawfully advanced past this unit onto its successor.
+XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+#: ADDED BY XASSET-0048. WS-0014's single shared `active_pr` now points at the successor unit,
+#: which carries the impossible sentinel ``None`` until GitHub issues its number.
+XASSET0048_ACTIVE_PR = None
 #: The tree carried by BOTH the accepted head and the merge -- zero merge drift.
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 
@@ -1587,10 +1595,15 @@ class TestCatalogAndRegisterSynchronisation:
     def test_the_shared_live_fields_advanced(self, register_text):
         data = yaml.safe_load(register_text)
         ws = next(w for w in data["workstreams"] if w["id"] == "WS-0014")
-        assert ws["last_verified_main_sha"] == PR346_MERGE_SHA
+        # ADVANCED BY XASSET-0048: this unit merged at `bb95ed26`, so the register's shared
+        # "where main is now" field advanced onto THIS unit's own merge, and its `active_pr`
+        # onto the successor. Bound at BOTH ends rather than relaxed to an inequality.
+        assert ws["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        assert ws["last_verified_main_sha"] != PR346_MERGE_SHA
         assert ws["last_verified_main_sha"] != PR346_BASE_SHA
         assert ws["last_verified_main_sha"] != PR345_BASE_SHA
-        assert ws["active_pr"] == A.AUTHORIZING_PULL_REQUEST
+        assert ws["active_pr"] == XASSET0048_ACTIVE_PR
+        assert ws["active_pr"] != A.AUTHORIZING_PULL_REQUEST
 
     def test_the_workstream_posture_is_unchanged(self, register_text):
         data = yaml.safe_load(register_text)
@@ -1924,9 +1937,13 @@ class TestTheBoundPullRequestNumber:
             g for g in ws["milestones"]
             if g["gate"] == "xasset0047-post-merge-ci-recovery-reconciliation"
         )
+        # This unit's OWN gate still names this unit's own pull request -- that is history and
+        # does not move. The SHARED live fields lawfully advanced onto the successor unit under
+        # XASSET-0048, so they are asserted against the successor's values, not this unit's.
         assert gate["pr"] == THIS_PULL_REQUEST
-        assert ws["active_pr"] == THIS_PULL_REQUEST
-        assert ws["active_branch"] == "claude/xasset-0046-recovery-b31nba"
+        assert ws["active_pr"] == XASSET0048_ACTIVE_PR
+        assert ws["active_pr"] != THIS_PULL_REQUEST
+        assert ws["active_branch"] != "claude/xasset-0046-recovery-b31nba"
 
     def test_every_surface_that_names_the_number_names_the_same_one(self):
         """Three predecessor suites carry it too. Divergence between any of them and the

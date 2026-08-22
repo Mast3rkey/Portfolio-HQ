@@ -186,6 +186,11 @@ PR345_CHANGED_FILE_COUNT = 12
 #: OPS-0001's Active-GitHub-fields rule; every anchor THIS decision authorizes against is
 #: unchanged.
 XASSET0047_MAIN_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+#: ADVANCED BY XASSET-0048: PR #347 merged at `bb95ed26`, so the register's shared live
+#: "where main is now" field lawfully advanced again under OPS-0001's Active-GitHub-fields
+#: rule. The anchor each decision authorizes against is unchanged; only the shared
+#: self-reference moved. The assertion stays EXACT and is bound at BOTH ends.
+XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
 
 #: XASSET-0045's OWN failed merge-commit CI run and job, at PR345_MERGE_SHA. Immutable adverse
 #: history, on exactly the footing PR #344's own failed run occupies: never re-run, relabelled,
@@ -1184,10 +1189,11 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0047, identically: PR #346 has since merged at `0b76c09f`,
         # so the shared fields advance once more to the recovery unit that is now live. Every
         # superseded value is retained below as a negative pin, so nothing is relaxed.
-        assert ws0014["last_verified_main_sha"] == XASSET0047_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0047_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != PR345_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR344_MERGE_SHA
-        assert str(ws0014["last_verified_date"]) == "2026-08-21"
+        assert str(ws0014["last_verified_date"]) == "2026-08-22"
         assert ws0014["active_branch"] != "claude/xasset-0043-rebinding-7ywmdx"
         assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
         assert ws0014["active_branch"] != "claude/xasset-0045-test-governance-103t6t"
