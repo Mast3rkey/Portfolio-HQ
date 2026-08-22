@@ -207,7 +207,7 @@ XASSET0049_ACTIVE_PR = 349
 XASSET0050_MAIN_SHA = "a941455491cc5e4d3d868775fb6b4b88f0fe2ce3"
 #: Committed as an impossible sentinel first, then replaced by the number GitHub actually issued
 #: in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
-XASSET0050_ACTIVE_PR = -50
+XASSET0050_ACTIVE_PR = 350
 
 #: XASSET-0045's OWN failed merge-commit CI run and job, at PR345_MERGE_SHA. Immutable adverse
 #: history, on exactly the footing PR #344's own failed run occupies: never re-run, relabelled,

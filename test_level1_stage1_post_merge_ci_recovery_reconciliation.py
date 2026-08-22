@@ -114,7 +114,7 @@ XASSET0049_ACTIVE_PR = 349
 XASSET0050_MAIN_SHA = "a941455491cc5e4d3d868775fb6b4b88f0fe2ce3"
 #: Committed as an impossible sentinel first, then replaced by the number GitHub actually issued
 #: in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
-XASSET0050_ACTIVE_PR = -50
+XASSET0050_ACTIVE_PR = 350
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 
 #: XASSET-0046's own completed lifecycle evidence, preserved by exact identity.

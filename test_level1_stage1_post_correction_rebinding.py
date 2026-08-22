@@ -152,7 +152,7 @@ XASSET0049_MAIN_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 XASSET0050_MAIN_SHA = "a941455491cc5e4d3d868775fb6b4b88f0fe2ce3"
 #: Committed as an impossible sentinel first, then replaced by the number GitHub actually issued
 #: in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
-XASSET0050_ACTIVE_PR = -50
+XASSET0050_ACTIVE_PR = 350
 
 #: A real, immutable historical commit pair across which a protected path GENUINELY changed --
 #: PR #342's base and merge -- so the base->head comparison can never pass vacuously.

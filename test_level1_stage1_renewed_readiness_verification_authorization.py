@@ -121,9 +121,14 @@ FINAL_CLOSURE = "5381561978"
 MERGE_CI_RUN = "32585793843"
 MERGE_CI_JOB = "97061842978"
 
-#: An impossible sentinel, distinct from every sentinel used before (-1, -2). Replaced by the
-#: GitHub-issued number in a fast-forward follow-up commit; never predicted.
+#: An impossible sentinel, distinct from every sentinel used before (-1, -2). Committed first, then
+#: replaced by the number GitHub actually issued in a fast-forward follow-up commit. RETAINED as a
+#: negative pin so a revert to the unbound state still fails.
 PR_SENTINEL = -50
+
+#: The number GitHub ISSUED for this unit, read back from the live API after the draft was opened.
+#: Never predicted, never guessed.
+THIS_PULL_REQUEST = 350
 
 # ---------------------------------------------------------------------------------------------
 # NEGATIVE pins. XASSET-0038's anchor is dead on every axis; a silent reversion to it must FAIL.
@@ -753,7 +758,9 @@ class TestRegisterStructuredFieldsAdvanced:
     def test_the_active_pr_is_the_sentinel_or_the_issued_number(self, ws0014):
         """Never predicted: the sentinel is replaced only after GitHub issues the real number."""
         active = ws0014["active_pr"]
-        assert active == PR_SENTINEL or (isinstance(active, int) and active > 349)
+        assert active == THIS_PULL_REQUEST
+        assert active != PR_SENTINEL, "the sentinel was never replaced"
+        assert active > BOUND_AUTHORIZING_PULL_REQUEST
 
     def test_the_finished_units_gate_is_not_rewritten(self, ws0014):
         gate = next(
@@ -776,7 +783,8 @@ class TestRegisterStructuredFieldsAdvanced:
             if g["gate"] == "xasset0050-renewed-readiness-verification-authorization"
         )
         assert gate["status"] == "in_progress"
-        assert gate["pr"] == PR_SENTINEL or gate["pr"] > 349
+        assert gate["pr"] == THIS_PULL_REQUEST
+        assert gate["pr"] != PR_SENTINEL, "the sentinel was never replaced"
         assert "PERFORMS NO PART" in gate["description"]
 
     def test_this_units_gate_is_not_marked_complete_by_its_own_filing(self, ws0014):
@@ -895,3 +903,9 @@ class TestSuiteHygiene:
     def test_the_pr_sentinel_is_impossible_and_distinct_from_prior_sentinels(self):
         assert PR_SENTINEL < 0
         assert PR_SENTINEL not in (-1, -2)
+
+    def test_the_issued_number_is_later_than_every_predecessor(self):
+        """Monotonic by construction: GitHub issues numbers in order, so a number at or below a
+        predecessor's would mean the constant was copied rather than read back."""
+        assert THIS_PULL_REQUEST > BOUND_AUTHORIZING_PULL_REQUEST
+        assert THIS_PULL_REQUEST > 348
