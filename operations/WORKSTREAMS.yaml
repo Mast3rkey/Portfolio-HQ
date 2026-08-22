@@ -16058,7 +16058,7 @@ workstreams:
           and no later descendant of it.
       - gate: xasset0049-step8-equivalent-successor-operational-rebinding
         status: in_progress
-        pr: -2
+        pr: 349
         description: >-
           THE STEP-8-EQUIVALENT SUCCESSOR OPERATIONAL / LOAD-BEARING REBINDING, filed as
           XASSET-0049 and performed in the same coherent pull request, exactly as XASSET-0048
@@ -16133,7 +16133,7 @@ workstreams:
           STOPPED_BEFORE_ATTESTATION, and both failed merge-commit CI runs (32439614683 /
           96647501864 at f5dedce1..., and 32490789238 / 96797667282 at 2f8cdebe...) remain
           immutable, never re-run in place, relabelled, waived, deleted or represented as passing.
-          CURRENT_MODULE_SHA256: PENDING_RECOMPUTE_ONCE_AFTER_THE_PULL_REQUEST_NUMBER_IS_BOUND -- recomputed ONCE after every
+          CURRENT_MODULE_SHA256: 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541 -- recomputed ONCE after every
           authorized byte stabilised, per SS-F.8, never mid-correction and never carried forward
           from a superseded head. THE PULL-REQUEST NUMBER WAS NEVER GUESSED: the branch's first
           commit carried the sentinel -2, negative and therefore structurally impossible, and
@@ -17296,7 +17296,7 @@ workstreams:
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
     active_branch: claude/xasset-0049-rebinding-ll6hzf
-    active_pr: -2
+    active_pr: 349
     last_verified_main_sha: f052efad38e3d57e3e5615799ac3bcbebe83ff5f
     last_verified_date: "2026-08-22"
     authorized_by: >

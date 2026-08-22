@@ -295,7 +295,7 @@ PREDECESSOR_DECISION = "XASSET-0028"
 #: number still fails closed at ``verify_lifecycle_against_truth``, which fetches this exact pull
 #: request from durable governance metadata; the point of the sentinel is that the failure can
 #: never be a SILENT one.
-AUTHORIZING_PULL_REQUEST = -2
+AUTHORIZING_PULL_REQUEST = 349
 
 #: The single Stage-1 execution lane XASSET-0027 SS-P.1 permits. Derived from repository
 #: truth, not invented: no Stage-1 attempt has ever been executed or authorized. UNCHANGED by the

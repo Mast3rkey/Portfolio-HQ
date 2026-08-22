@@ -158,7 +158,7 @@ every authorized byte stabilized (`§F.8`) — never mid-correction, and never c
 superseded head:
 
 ```
-CURRENT_MODULE_SHA256: PENDING_RECOMPUTE_ONCE_AFTER_THE_PULL_REQUEST_NUMBER_IS_BOUND
+CURRENT_MODULE_SHA256: 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541
 ```
 
 Each predecessor's own declaration is retained, unedited, in its own decision record: it describes

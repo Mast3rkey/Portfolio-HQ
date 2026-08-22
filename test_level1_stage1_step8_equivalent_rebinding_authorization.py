@@ -1791,13 +1791,25 @@ class TestCatalogAndRegisterSynchronisation:
         """``active_branch``, ``active_pr`` and ``last_verified_main_sha`` are WS-0014's SINGLE
         SHARED live self-reference. Leaving them pointed at a merged pull request would assert
         finished work as active."""
+        # RE-ANCHORED BY XASSET-0049. These three are WS-0014's SINGLE SHARED live
+        # self-reference, so they advance with EVERY unit -- XASSET-0048 disclosed exactly that
+        # in its own §H ("Advancing the register's shared ... fields necessarily updates the
+        # coupled predecessor suites that pin them"). What this test protects is that they never
+        # point at FINISHED work; asserting one particular unit's value forever asserted the
+        # opposite. THIS unit's own value is retained below as an inequality, bound at both ends.
         data = yaml.safe_load(register_text)
         ws = next(w for w in data["workstreams"] if w["id"] == "WS-0014")
-        assert ws["last_verified_main_sha"] == THIS_UNIT_BASE_SHA
+        # They must name a real, current commit and pull request -- never this unit's, which is
+        # merged, and never any predecessor's.
+        assert ws["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
         assert ws["last_verified_main_sha"] != PR347_BASE_SHA
-        assert ws["last_verified_date"] == "2026-08-22"
-        assert ws["active_branch"] != "claude/xasset-0046-recovery-b31nba"
+        assert ws["active_pr"] != THIS_PULL_REQUEST
         assert ws["active_pr"] != 347
+        assert ws["active_branch"] != "claude/xasset-0046-recovery-b31nba"
+        assert isinstance(ws["active_pr"], int) and ws["active_pr"] > THIS_PULL_REQUEST
+        # THIS unit's own gate still records its own pull request, unchanged.
+        gate = next(g for g in ws["milestones"] if g["gate"] == REGISTER_GATE)
+        assert gate["pr"] == THIS_PULL_REQUEST
 
     def test_the_register_records_this_units_authority_gap_and_boundary(self, register_text):
         data = yaml.safe_load(register_text)
@@ -1867,12 +1879,23 @@ class TestTheBoundPullRequestNumber:
         data = yaml.safe_load(register_text)
         ws = next(w for w in data["workstreams"] if w["id"] == "WS-0014")
         gate = next(g for g in ws["milestones"] if g["gate"] == REGISTER_GATE)
+        # RE-ANCHORED BY XASSET-0049: ``active_pr`` is the register's SHARED field and belongs
+        # to whichever unit is currently live, while ``gate["pr"]`` is THIS unit's own permanent
+        # record. Requiring them equal asserted that this unit is live forever.
         if THIS_PULL_REQUEST == PULL_REQUEST_SENTINEL:
             assert gate["pr"] is None
-            assert ws["active_pr"] is None
         else:
             assert gate["pr"] == THIS_PULL_REQUEST
-            assert ws["active_pr"] == THIS_PULL_REQUEST
+
+    def test_the_shared_active_pr_is_never_behind_this_units_own(self):
+        """The half-bound state this class exists to catch, expressed on the field that can
+        actually move: a shared ``active_pr`` at or below this unit's would mean the register was
+        reverted to a merged unit rather than advanced to a live one."""
+        register = yaml.safe_load((ROOT / REGISTER_RELPATH).read_text(encoding="utf-8"))
+        ws = next(w for w in register["workstreams"] if w["id"] == "WS-0014")
+        if THIS_PULL_REQUEST == PULL_REQUEST_SENTINEL:
+            pytest.skip("the number has not been issued yet")
+        assert ws["active_pr"] >= THIS_PULL_REQUEST
 
     def test_once_bound_it_is_later_than_every_predecessor_in_the_chain(self):
         """Monotonic by construction: GitHub issues numbers in order, so a number at or below any
@@ -1890,9 +1913,17 @@ class TestTheBoundPullRequestNumber:
             A.STOPPED_REBINDING_PULL_REQUEST,
             A.STOPPED_RECOVERY_AUTHORIZATION_PULL_REQUEST,
             A.RECOVERY_AUTHORIZING_PULL_REQUEST,
-            A.AUTHORIZING_PULL_REQUEST,
+            # RE-ANCHORED BY XASSET-0049. ``AUTHORIZING_PULL_REQUEST`` was this unit's own
+            # PREDECESSOR only while this unit was the newest; it is a LIVE field naming whichever
+            # unit currently holds the anchor, so a lawful successor makes it a SUCCESSOR. The
+            # constant that permanently carries the anchor as it stood at this unit's own base is
+            # PRIOR_RECONCILIATION_PULL_REQUEST, and that is asserted instead -- the same claim,
+            # taken on a value that cannot move.
+            A.PRIOR_RECONCILIATION_PULL_REQUEST,
         ):
             assert THIS_PULL_REQUEST > predecessor, predecessor
+        # The live anchor is a strictly LATER pull request than this one, never an earlier one.
+        assert A.AUTHORIZING_PULL_REQUEST > THIS_PULL_REQUEST
 
     def test_binding_the_number_does_not_bind_it_into_the_production_module(self):
         """This is a DESIGN-ONLY filing, so its own pull-request number must appear nowhere in

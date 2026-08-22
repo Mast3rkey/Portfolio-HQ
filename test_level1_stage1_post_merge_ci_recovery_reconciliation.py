@@ -99,6 +99,10 @@ XASSET0049_DECISION_ID = "XASSET-0049"
 #: ADDED BY XASSET-0048. WS-0014's single shared `active_pr` now points at the successor unit,
 #: which carries the impossible sentinel ``None`` until GitHub issues its number.
 XASSET0048_ACTIVE_PR = 348
+#: ADVANCED BY XASSET-0049. The register's SHARED live fields move with every unit; each prior
+#: generation's value is retained beside the current one as a negative pin rather than deleted.
+XASSET0049_MAIN_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+XASSET0049_ACTIVE_PR = 349
 #: The tree carried by BOTH the accepted head and the merge -- zero merge drift.
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 
@@ -1687,12 +1691,18 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0048: this unit merged at `bb95ed26`, so the register's shared
         # "where main is now" field advanced onto THIS unit's own merge, and its `active_pr`
         # onto the successor. Bound at BOTH ends rather than relaxed to an inequality.
-        assert ws["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        # ADVANCED AGAIN BY XASSET-0049: PR #349 is the live unit, so the shared fields moved
+        # onto its own base and its own number. Bound at BOTH ends, with every prior generation's
+        # value retained as a negative pin -- and the module/register agreement is now an
+        # EQUALITY, because the live unit is a REBINDING and therefore does bind its own number.
+        assert ws["last_verified_main_sha"] == XASSET0049_MAIN_SHA
+        assert ws["last_verified_main_sha"] != XASSET0048_MAIN_SHA
         assert ws["last_verified_main_sha"] != PR346_MERGE_SHA
         assert ws["last_verified_main_sha"] != PR346_BASE_SHA
         assert ws["last_verified_main_sha"] != PR345_BASE_SHA
-        assert ws["active_pr"] == XASSET0048_ACTIVE_PR
-        assert ws["active_pr"] != A.AUTHORIZING_PULL_REQUEST
+        assert ws["active_pr"] == XASSET0049_ACTIVE_PR
+        assert ws["active_pr"] != XASSET0048_ACTIVE_PR
+        assert ws["active_pr"] == A.AUTHORIZING_PULL_REQUEST
 
     def test_the_workstream_posture_is_unchanged(self, register_text):
         data = yaml.safe_load(register_text)
@@ -2050,7 +2060,10 @@ class TestTheBoundPullRequestNumber:
         # does not move. The SHARED live fields lawfully advanced onto the successor unit under
         # XASSET-0048, so they are asserted against the successor's values, not this unit's.
         assert gate["pr"] == THIS_PULL_REQUEST
-        assert ws["active_pr"] == XASSET0048_ACTIVE_PR
+        # ADVANCED BY XASSET-0049: the register's shared active_pr now names the LIVE unit, and
+        # the live unit is a rebinding, so it and the module agree exactly.
+        assert ws["active_pr"] == XASSET0049_ACTIVE_PR
+        assert ws["active_pr"] == A.AUTHORIZING_PULL_REQUEST
         assert ws["active_pr"] != THIS_PULL_REQUEST
         assert ws["active_branch"] != "claude/xasset-0046-recovery-b31nba"
 

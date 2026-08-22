@@ -138,6 +138,10 @@ XASSET0047_MAIN_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 #: rule. The anchor each decision authorizes against is unchanged; only the shared
 #: self-reference moved. The assertion stays EXACT and is bound at BOTH ends.
 XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+#: ADVANCED BY XASSET-0049: PR #348 merged at `f052efad`, so the register's shared "where main is
+#: now" field lawfully advanced again under OPS-0001's Active-GitHub-fields rule. Each prior value
+#: is retained beside it as a negative pin rather than deleted.
+XASSET0049_MAIN_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 
 #: A real, immutable historical commit pair across which a protected path GENUINELY changed --
 #: PR #342's base and merge -- so the base->head comparison can never pass vacuously.
@@ -1260,7 +1264,11 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["status"] == "proposed"
         assert ws0014["priority"] == "secondary"
         assert ws0014["last_verified_main_sha"] != PR_BASE_SHA
-        assert ws0014["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        # ADVANCED BY XASSET-0049. This is WS-0014's SINGLE SHARED live self-reference and moves
+        # with every unit; each generation's own value is retained as a NEGATIVE pin so a silent
+        # revert to any finished unit's state still fails here.
+        assert ws0014["last_verified_main_sha"] == XASSET0049_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0048_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0047_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0046_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0045_MAIN_SHA

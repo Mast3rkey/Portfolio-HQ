@@ -119,6 +119,12 @@ XASSET0047_MAIN_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
 #: rule. The anchor each decision authorizes against is unchanged; only the shared
 #: self-reference moved. The assertion stays EXACT and is bound at BOTH ends.
 XASSET0048_MAIN_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
+#: ADVANCED BY XASSET-0049. WS-0014's shared live "where main is now" / "which pull request is
+#: live" fields move with EVERY unit under OPS-0001's Active-GitHub-fields rule. Each prior
+#: generation's value is retained beside the current one as a NEGATIVE pin rather than deleted, so
+#: a silent revert to any finished unit's state still fails.
+XASSET0049_MAIN_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+XASSET0049_ACTIVE_PR = 349
 #: WS-0014's shared `active_pr` while THIS rebinding-authorization unit is the live work.
 #: Set to the real GitHub number issued when the pull request was opened, verified
 #: against live GitHub afterwards, never left as a guess.
@@ -1165,7 +1171,11 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0041. PR #340 merged at `f212cce5`, so the register's live
         # "where main is now" field lawfully advanced. The anchor this decision authorizes
         # against is unchanged; only the shared live self-reference moved.
-        assert workstream["last_verified_main_sha"] == XASSET0048_MAIN_SHA
+        # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
+        # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
+        # pin, so a silent revert to finished work still fails here.
+        assert workstream["last_verified_main_sha"] == XASSET0049_MAIN_SHA
+        assert workstream["last_verified_main_sha"] != XASSET0048_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0047_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0046_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0045_MAIN_SHA
@@ -1174,7 +1184,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0048_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0049_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0048_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0047_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0046_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0045_ACTIVE_PR

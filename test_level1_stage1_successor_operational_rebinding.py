@@ -190,6 +190,18 @@ class FakeGit:
                 A.STOPPED_RECOVERY_AUTHORIZATION_MERGE_BASE,
                 A.STOPPED_RECOVERY_AUTHORIZATION_ACCEPTED_HEAD,
             ),
+            # EXTENDED BY XASSET-0049. The step-8-EQUIVALENT rebinding verifies TWO further
+            # merges from git -- the PRIOR ANCHOR it supersedes (XASSET-0047 / PR #347, a CLOSED
+            # predecessor) and its own AUTHORITY (XASSET-0048 / PR #348) -- so an honest stand-in
+            # vouches for each separately rather than letting an unknown anchor pass.
+            A.PRIOR_RECONCILIATION_MERGE_SHA: (
+                A.PRIOR_RECONCILIATION_MERGE_BASE,
+                A.PRIOR_RECONCILIATION_ACCEPTED_HEAD,
+            ),
+            A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA: (
+                A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_BASE,
+                A.STEP8_EQUIVALENT_AUTHORIZING_ACCEPTED_HEAD,
+            ),
         }
         self.blobs = {}
         for rel in A.LOAD_BEARING_RELPATHS:
@@ -225,6 +237,13 @@ class FakeGit:
             A.STOPPED_RECOVERY_AUTHORIZATION_ACCEPTED_HEAD: "8" * 40,
             A.CORRECTION_AUTHORIZING_MERGE_SHA: "4" * 40,
             A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD: "4" * 40,
+            # XASSET-0049: each added merge's tree equals its accepted head's tree, which is the
+            # zero-merge-drift property the module PROVES. TWO DISTINCT synthetic trees, so a
+            # swap between the two new entries is still caught.
+            A.PRIOR_RECONCILIATION_MERGE_SHA: "9" * 40,
+            A.PRIOR_RECONCILIATION_ACCEPTED_HEAD: "9" * 40,
+            A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA: "b" * 40,
+            A.STEP8_EQUIVALENT_AUTHORIZING_ACCEPTED_HEAD: "b" * 40,
         }
         # The exact transition needs blob TEXT, not a digest, and distinguishes the anchors: the
         # two PACKAGE anchors carry the accepted package bytes and the successor anchors carry
@@ -555,7 +574,15 @@ class TestObsoleteLifecycleCannotAuthorize:
         # The note is a wrapped comment block, so compare on content rather than line breaks.
         source = " ".join(raw.replace("#:", " ").split())
         assert "NOT written in advance as the next sequential guess" in source
-        assert "an impossible pull-request number that can never validate" in source
+        # RE-ANCHORED BY XASSET-0049. The property is that the sentinel's IMPOSSIBILITY is
+        # disclosed in the module's own comment rather than flattered over. XASSET-0049 states it
+        # more strongly -- the sentinel is NEGATIVE, so it "can never validate by accident" -- so
+        # the assertion is pinned on the substance rather than on one generation's exact phrasing,
+        # and both the impossibility and the read-back-not-guessed claim are asserted separately.
+        assert "structurally impossible pull-request number" in source
+        assert "can never validate by accident" in source
+        assert "read back from live GitHub" in source
+        assert "NOT written in advance as" in source
         assert "that number was read back from live GitHub" in source
         assert "only then was it bound here and re-verified against the live" in source
         # The superseded XASSET-0037 wording must NOT survive on a number it does not describe.

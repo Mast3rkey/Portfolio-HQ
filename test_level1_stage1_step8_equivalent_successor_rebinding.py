@@ -77,7 +77,8 @@ PRIOR_UNIT_GATE = "xasset0048-post-merge-verification"
 # and can never accidentally validate. ``-2`` is deliberately distinct from XASSET-0047's own ``0``
 # and XASSET-0048's own ``-1``, so this unit's sentinel can never be mistaken for a predecessor's.
 PULL_REQUEST_SENTINEL = -2
-THIS_PULL_REQUEST = -2  # REBOUND after the draft was opened and GitHub issued the number.
+#: Read back from live GitHub AFTER the draft was opened. Never predicted.
+THIS_PULL_REQUEST = 349
 
 # ── XASSET-0048's own closed range -- every anchor an immutable git object ───────────────────
 #
