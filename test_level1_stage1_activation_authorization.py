@@ -161,7 +161,7 @@ XASSET0051_ACTIVE_PR = 352
 XASSET0052_MAIN_SHA = "8def8bd096b4edecbf10fc20870a6d03b6cb56fe"
 #: Committed as an impossible sentinel first (-52), then replaced by the number GitHub actually
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
-XASSET0052_ACTIVE_PR = -52
+XASSET0052_ACTIVE_PR = 353
 XASSET0043_ACTIVE_PR = 343
 #: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number
 #: GitHub issued and verified against the live pull request after opening, never guessed.

@@ -16490,7 +16490,7 @@ workstreams:
           remains one, unspent.
       - gate: xasset0052-renewed-step11-activation-authorization
         status: in_progress
-        pr: -52
+        pr: 353
         description: >-
           RENEWED LINK-5 / STEP-11 ACTIVATION-AND-EXECUTION AUTHORIZATION, filed as XASSET-0052.
           DESIGN-ONLY LANE G GOVERNANCE AUTHORIZATION: it AUTHORIZES exactly one future, separate,
@@ -18087,7 +18087,7 @@ workstreams:
       UNARMED and NOT EXECUTABLE, lane state remains ABSENT, new_execution_is_authorized() returns
       False, and ATTEMPT_1 is intact, unclaimed and unconsumed.
     active_branch: claude/xasset-0052-step11-authority-6nxaha
-    active_pr: -52
+    active_pr: 353
     last_verified_main_sha: 8def8bd096b4edecbf10fc20870a6d03b6cb56fe
     last_verified_date: "2026-08-23"
     authorized_by: >

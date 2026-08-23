@@ -153,7 +153,7 @@ XASSET0051_ACTIVE_PR = 352
 XASSET0052_MAIN_SHA = "8def8bd096b4edecbf10fc20870a6d03b6cb56fe"
 #: Committed as an impossible sentinel first (-52), then replaced by the number GitHub actually
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
-XASSET0052_ACTIVE_PR = -52
+XASSET0052_ACTIVE_PR = 353
 
 #: PR #345's lifecycle evidence that DID complete, preserved as authenticated predecessor
 #: evidence.
