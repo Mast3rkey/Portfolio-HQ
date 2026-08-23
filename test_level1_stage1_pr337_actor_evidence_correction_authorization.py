@@ -715,11 +715,26 @@ class TestCatalogAndRegisterSynchronisation:
         # fields advance once more, to the renewed readiness-verification AUTHORIZATION unit that
         # is now live. Each stays an exact value, and XASSET-0049's own superseded values join the
         # negative pins below rather than being deleted, so the field stays bound at BOTH ends.
+        # ADVANCED AGAIN BY XASSET-0051: PR #350 has since merged at `6fd9a697`, and PR #351 (a
+        # test-only repair touching none of the eighteen bound paths) at `ea9e74a1`, so these
+        # shared fields advance once more, to the renewed link-4 drift-check AUTHORIZATION unit
+        # that is now live. Each stays an exact value, and XASSET-0050's own superseded values
+        # join the negative pins below rather than being deleted, so the field stays bound at
+        # BOTH ends.
         assert ws0014["active_branch"] == (
-            "claude/xasset-0050-renewed-readiness-authorization"
+            "claude/xasset-0051-link4-auth-bjlfya"
         )
         assert ws0014["last_verified_main_sha"] == (
+            "ea9e74a1f4224a78df2416db9c872b0c5812894b"
+        )
+        assert ws0014["active_branch"] != (
+            "claude/xasset-0050-renewed-readiness-authorization"
+        )
+        assert ws0014["last_verified_main_sha"] != (
             "a941455491cc5e4d3d868775fb6b4b88f0fe2ce3"
+        )
+        assert ws0014["last_verified_main_sha"] != (
+            "6fd9a6973a3ae2788d5823508dcb32d7f73d6c3d"
         )
         assert ws0014["active_branch"] != "claude/xasset-0049-rebinding-ll6hzf"
         assert ws0014["last_verified_main_sha"] != (
@@ -729,7 +744,7 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["last_verified_main_sha"] != (
             "bb95ed26964b1bc7a2e230c76060fec82752efa1"
         )
-        assert str(ws0014["last_verified_date"]) == "2026-08-22"
+        assert str(ws0014["last_verified_date"]) == "2026-08-23"
         # PR #343's, #344's, #345's and #346's own closed records survive in the register as
         # history, not as live state.
         assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
@@ -749,6 +764,8 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["active_pr"] != 345
         assert ws0014["active_pr"] != 346
         assert ws0014["active_pr"] != 347
+        assert ws0014["active_pr"] != 349
+        assert ws0014["active_pr"] != 350
 
     def test_register_still_parses_and_ws0014_is_unique(self, ws0014):
         assert ws0014["id"] == "WS-0014"

@@ -283,8 +283,24 @@ class TestTheFilingExistsAndIsWellFormed:
         ids = [r["decision_id"] for r in catalog]
         assert len(ids) == len(set(ids))
 
-    def test_this_decision_is_the_newest_row(self, catalog):
-        assert catalog[-1]["decision_id"] == DECISION_ID
+    def test_this_decision_is_indexed_after_every_predecessor_it_names(self, catalog):
+        """RE-ANCHORED BY XASSET-0051.
+
+        This was ``test_this_decision_is_the_newest_row``, asserting ``catalog[-1]``. That held
+        only while ``XASSET-0050`` was the live unit; the very next filing makes it false by
+        construction, so as written it was a claim about the calendar rather than about this
+        decision. What it was really guarding -- that this row was appended in order, after every
+        decision it depends on, rather than spliced in ahead of them -- is durable and is what is
+        asserted now. The row is still pinned to exist exactly once (above).
+        """
+        ids = [r["decision_id"] for r in catalog]
+        assert DECISION_ID in ids
+        here = ids.index(DECISION_ID)
+        for predecessor in (
+            "XASSET-0038", "XASSET-0039", "XASSET-0041",
+            "XASSET-0043", "XASSET-0046", "XASSET-0048", "XASSET-0049",
+        ):
+            assert ids.index(predecessor) < here, predecessor
 
 
 class TestAuthorityGapIsGroundedInAcceptedText:
@@ -765,15 +781,43 @@ class TestTheRegistersOperativeProseAgreesWithItsStructuredFields:
 
 class TestRegisterStructuredFieldsAdvanced:
     def test_the_live_self_reference_fields_moved(self, ws0014):
-        assert ws0014["active_branch"] == "claude/xasset-0050-renewed-readiness-authorization"
-        assert ws0014["last_verified_main_sha"] == BOUND_MERGE_SHA
+        """RE-ANCHORED BY XASSET-0051.
 
-    def test_the_active_pr_is_the_sentinel_or_the_issued_number(self, ws0014):
-        """Never predicted: the sentinel is replaced only after GitHub issues the real number."""
+        ``active_branch`` and ``last_verified_main_sha`` are WS-0014's SINGLE SHARED live
+        self-reference fields, not this filing's own. PR #350 merged at `6fd9a697` and PR #351 (a
+        test-only repair touching none of the eighteen bound paths) at `ea9e74a1`, so under
+        ``OPS-0001``'s Active-GitHub-fields rule they lawfully advanced onto the successor unit.
+        Asserting them at this unit's own values would assert "this finished unit is still live",
+        which is false. The invariant that survives -- and is asserted here -- is that they moved
+        OFF this unit and did not revert to any predecessor's state, so the fields stay bound at
+        BOTH ends. This unit's OWN gate still carries its own number, which is history and does
+        not move; that is pinned separately below.
+        """
+        assert ws0014["active_branch"] != "claude/xasset-0050-renewed-readiness-authorization"
+        assert ws0014["active_branch"] != "claude/xasset-0049-rebinding-ll6hzf"
+        assert ws0014["last_verified_main_sha"] != BOUND_MERGE_SHA
+        assert ws0014["last_verified_main_sha"] != BOUND_MERGE_BASE
+        assert ws0014["last_verified_main_sha"] != BOUND_ACCEPTED_HEAD
+
+    def test_the_shared_active_pr_moved_off_this_finished_unit(self, ws0014):
+        """RE-ANCHORED BY XASSET-0051, for the same reason as the fields above.
+
+        This was ``test_the_active_pr_is_the_sentinel_or_the_issued_number``, asserting the shared
+        field still equalled THIS unit's number. Never predicted then and not predicted now: what
+        remains asserted is that the shared field is no longer this finished unit's, that no
+        sentinel survived into the merged record, and that it never reverted to a predecessor.
+        During a successor's own sentinel window the field is negative, which is a real state and
+        is checked for consistency rather than skipped.
+        """
         active = ws0014["active_pr"]
-        assert active == THIS_PULL_REQUEST
-        assert active != PR_SENTINEL, "the sentinel was never replaced"
-        assert active > BOUND_AUTHORIZING_PULL_REQUEST
+        assert active != THIS_PULL_REQUEST
+        assert active != BOUND_AUTHORIZING_PULL_REQUEST
+        if active < 0:
+            live = [g for g in ws0014["milestones"] if g.get("pr") == active]
+            assert live, "the register carries a sentinel active_pr that no gate claims"
+            assert all(g["status"] == "in_progress" for g in live), live
+        else:
+            assert active > THIS_PULL_REQUEST
 
     def test_the_finished_units_gate_is_not_rewritten(self, ws0014):
         gate = next(
