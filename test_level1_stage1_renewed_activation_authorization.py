@@ -60,6 +60,8 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import inspect
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -278,6 +280,32 @@ WITHHOLDING_QUOTES = {
 def _git(*args: str) -> str:
     return subprocess.run(
         ["git", *args], cwd=ROOT, capture_output=True, check=True, text=True
+    ).stdout.strip()
+
+
+# ``git commit-tree`` refuses to run without a committer identity, and a bare CI checkout has
+# none configured (``actions/checkout`` sets no ``user.email``/``user.name``). Supplying one
+# through the environment keeps the synthetic-merge probe below hermetic: it depends on no
+# ambient git configuration, and — unlike ``git config`` — it mutates nothing, so the checkout
+# is left exactly as found. Caught by CI on run 32667212952 attempt 3, where the ambient
+# identity this development environment happens to carry was simply absent.
+_SYNTHETIC_COMMIT_IDENTITY = {
+    "GIT_AUTHOR_NAME": "xasset-0052-test",
+    "GIT_AUTHOR_EMAIL": "xasset-0052-test@invalid",
+    "GIT_COMMITTER_NAME": "xasset-0052-test",
+    "GIT_COMMITTER_EMAIL": "xasset-0052-test@invalid",
+}
+
+
+def _git_with_identity(*args: str) -> str:
+    """``_git``, but with an explicit committer identity supplied via the environment."""
+    return subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        capture_output=True,
+        check=True,
+        text=True,
+        env={**os.environ, **_SYNTHETIC_COMMIT_IDENTITY},
     ).stdout.strip()
 
 
@@ -1235,7 +1263,7 @@ class TestTheCommitRangeRuleIsSemanticallyCorrect:
         """
         obs = LINK4_OBSERVATION_HEAD
         acc = _git("rev-parse", "HEAD")
-        merge = _git(
+        merge = _git_with_identity(
             "commit-tree", _git("rev-parse", f"{acc}^{{tree}}"),
             "-p", obs, "-p", acc, "-m", "test-only synthetic merge; no ref updated",
         )
@@ -1246,6 +1274,56 @@ class TestTheCommitRangeRuleIsSemanticallyCorrect:
         assert governed == expected
         # ... while the reviewed-head rule would call hundreds of real commits a stop
         assert len(reachable - {obs, acc, merge}) > 100
+
+    def test_the_real_shape_probe_does_not_depend_on_ambient_git_identity(self):
+        """REGRESSION for CI run 32667212952 attempt 3.
+
+        The probe above first shipped calling plain ``_git("commit-tree", ...)``. It passed here,
+        where this development environment happens to carry a configured ``user.email``, and failed
+        in CI with exit 128 -- ``actions/checkout`` configures no committer identity, and
+        ``commit-tree`` refuses to run without one. A test whose result depends on ambient git
+        configuration is not a test of this repository, so the call is pinned to the explicit-identity
+        helper by AST rather than by hope.
+        """
+        tree = ast.parse(Path(__file__).read_text())
+        fn = next(
+            n for n in ast.walk(tree)
+            if isinstance(n, ast.FunctionDef)
+            and n.name == "test_the_model_matches_this_repositorys_real_shape"
+        )
+        callees = {
+            c.func.id for c in ast.walk(fn)
+            if isinstance(c, ast.Call) and isinstance(c.func, ast.Name)
+        }
+        assert "_git_with_identity" in callees
+        # and the bare helper must not be the one carrying commit-tree
+        commit_tree_calls = [
+            c for c in ast.walk(fn)
+            if isinstance(c, ast.Call)
+            and any(
+                isinstance(a, ast.Constant) and a.value == "commit-tree" for a in c.args
+            )
+        ]
+        assert commit_tree_calls, "the probe must still exercise commit-tree against the real store"
+        for call in commit_tree_calls:
+            assert isinstance(call.func, ast.Name)
+            assert call.func.id == "_git_with_identity"
+
+    def test_the_supplied_identity_covers_both_author_and_committer(self):
+        """``commit-tree`` needs BOTH identities; supplying only one still exits 128."""
+        assert set(_SYNTHETIC_COMMIT_IDENTITY) == {
+            "GIT_AUTHOR_NAME",
+            "GIT_AUTHOR_EMAIL",
+            "GIT_COMMITTER_NAME",
+            "GIT_COMMITTER_EMAIL",
+        }
+        assert all(v for v in _SYNTHETIC_COMMIT_IDENTITY.values())
+
+    def test_the_identity_is_supplied_by_environment_and_mutates_no_git_config(self):
+        """The helper must not reach for ``git config``, which would edit the checkout."""
+        source = inspect.getsource(_git_with_identity)
+        assert "env=" in source
+        assert "config" not in source
 
 
 class TestTheCanonicalRunnerArtifactException:
