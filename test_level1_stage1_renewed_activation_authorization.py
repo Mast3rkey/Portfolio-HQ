@@ -465,49 +465,130 @@ class TestTheAuthorityPerformanceDistinction:
     def test_the_determination_string_is_exact(self, decision_text):
         assert "`RENEWED_STEP_11_ACTIVATION_AND_EXECUTION_AUTHORIZED`" in decision_text
 
-    def test_section_a_grants_link_5_and_says_it_performs_no_part(self, decision_text):
+    def test_section_a_conditionally_grants_link_5_and_says_it_performs_none_of_it(
+        self, decision_text
+    ):
         a = _demphasize(_section(decision_text, "A."))
         assert "Exactly one future, separate, bounded" in a
         assert "link 5" in a and "step-11" in a
-        assert "This filing performs no part of link 5." in a
+        assert "conditionally authorized" in a
+        assert "This filing performs none of those acts." in a
         assert "Merging it arms nothing" in a
 
     def test_a1_states_the_canonical_distinction_verbatim(self, decision_text):
+        """CORRECTED after review 5003284327 MAJOR 2.
+
+        The reviewed head required the sentence "neither performed nor authorized by this filing
+        itself" -- which denies authorization of exactly the acts §A grants, and so demanded the
+        defect rather than detecting it. The canonical sentence now states CONDITIONAL
+        AUTHORIZATION, NON-PERFORMANCE, and NON-EXERCISABILITY as three separate claims.
+        """
         quote = _demphasize(_flat_prose(_raw_subsection(decision_text, "A.1")))
         assert (
-            "XASSET-0052 authorizes exactly one future, separate link-5 "
-            "activation-and-execution unit, but performs no part of it." in quote
+            "XASSET-0052 conditionally authorizes exactly one future, separate link-5 "
+            "activation-and-execution unit, but this filing performs none of those acts, and "
+            "none is exercisable unless and until §N closes and every §G and §G.1 condition "
+            "holds." in quote
         )
-        assert "neither performed nor authorized by this filing itself" in quote
 
-    def test_a1_forbids_placing_link_5_inside_a_not_authorized_list(self, decision_text):
+    def test_a1_forbids_placing_the_link_5_acts_inside_a_not_authorized_list(self, decision_text):
         a1 = _demphasize(_subsection(decision_text, "A.1"))
-        assert 'Link 5 never belongs inside a "not authorized" list.' in a1
-        assert "It is the one thing this decision grants." in a1
-        assert "authorized-but-unperformed" in a1
+        assert (
+            'Link 5 — and each of its constituent acts — never belongs inside a "not authorized" '
+            "list." in a1
+        )
+        assert "exactly what this decision is the authority for" in a1
+        assert "conditionally-authorized-but-unperformed" in a1
         assert "unsafe acceptance evidence" in a1
 
-    def test_a1_also_separates_the_grant_from_the_act(self, decision_text):
+    def test_a1_prohibits_the_three_contradictory_claims(self, decision_text):
+        """ADDED after review 5003284327 MAJOR 2 — the prohibitions must be stated, not implied."""
         a1 = _demphasize(_subsection(decision_text, "A.1"))
-        assert "the grant is of the authority, never of the act" in a1
+        assert '"not authorized by this filing itself" — this filing *is*' in a1 or (
+            '"not authorized by this filing itself"' in a1 and "conditional authority source" in a1
+        )
+        assert '"zero activation authority" or "zero activation authorizations"' in a1
+        assert "zero committed activation factors" in a1
+        assert "performed, armed, claimed, executed, or produced anything" in a1
+
+    def test_a1_separates_conditional_authority_from_the_act_and_from_exercisability(
+        self, decision_text
+    ):
+        a1 = _demphasize(_subsection(decision_text, "A.1"))
+        assert (
+            "The grant is of conditional authority, never of the act, and never of present "
+            "exercisability." in a1
+        )
         assert "may lawfully end without arming anything" in a1
+
+    def test_the_decision_never_denies_authority_for_the_link_5_acts(self, decision_text):
+        """The exact MAJOR-2 defect, encoded so it cannot recur anywhere in the governed text."""
+        flat = _demphasize(_flat_prose(decision_text)).lower()
+        forbidden = "neither performed nor authorized by this filing itself"
+        # It may appear ONLY inside §A.1's own prohibition list, never as an operative claim.
+        a1 = _demphasize(_flat_prose(_raw_subsection(decision_text, "A.1"))).lower()
+        outside = flat.replace(a1, "")
+        assert forbidden not in outside, "the denial survives outside §A.1's prohibition list"
+
+    def test_the_decision_never_claims_zero_activation_authority(self, decision_text):
+        flat = _demphasize(_flat_prose(decision_text)).lower()
+        a1 = _demphasize(_flat_prose(_raw_subsection(decision_text, "A.1"))).lower()
+        e = _demphasize(_flat_prose(_raw_section(decision_text, "E."))).lower()
+        outside = flat.replace(a1, "").replace(e, "")
+        for banned in ("zero activation authority", "zero activation authorizations"):
+            assert banned not in outside, banned
+
+    def test_the_decision_states_the_conditional_grant_at_the_point_of_grant(self, decision_text):
+        a = _demphasize(_section(decision_text, "A."))
+        assert "is **conditionally authorized**" in _section(decision_text, "A.")
+        assert "This decision is the authority source for each of those acts." in a
+        assert "The authorization is conditional, and nothing in it is exercisable yet." in a
+        assert "zero committed activation factors" in a
+
+    def test_the_decision_never_claims_to_have_performed_anything(self, decision_text):
+        flat = _demphasize(_flat_prose(decision_text)).lower()
+        for banned in (
+            "this filing armed", "this filing claimed", "this filing executed",
+            "this decision armed", "this decision claimed", "this decision executed",
+            "this filing produced the canonical", "this filing attested",
+        ):
+            assert banned not in flat, banned
 
     def test_no_governed_section_places_link_5_on_the_withheld_side(self, decision_text):
         """The exact defect XASSET-0051 §A.1 named: a record that both grants and denies link 5.
 
         §H and §O enumerate what the future UNIT and this FILING may not do. Neither may say that
-        link 5 itself is unauthorized, because §A grants it.
+        link 5 -- or any of its constituent acts -- is unauthorized, because §A conditionally
+        grants all of them. STRENGTHENED after review 5003284327 MAJOR 2 to cover the constituent
+        acts by name, not just the phrase "link 5".
         """
         for heading in ("H.", "O."):
-            body = _demphasize(_section(decision_text, heading))
+            body = _demphasize(_section(decision_text, heading)).lower()
             for banned in (
                 "link 5 is not authorized",
                 "link 5 remains unauthorized",
                 "link 5 is neither performed nor authorized",
                 "does not authorize link 5",
                 "authorizes no part of link 5",
+                "the attestation is not authorized",
+                "arming is not authorized",
+                "the claim of attempt_1 is not authorized",
+                "the 680-construction run is not authorized",
+                "neither performed nor authorized by this filing itself",
+                "zero activation authority",
+                "zero activation authorizations",
             ):
-                assert banned.lower() not in body.lower(), (heading, banned)
+                assert banned not in body, (heading, banned)
+
+    def test_section_o_declares_itself_a_non_performance_section(self, decision_text):
+        """ADDED after review 5003284327 MAJOR 2 — §O must say what it is, so a reader cannot
+        read its list as a denial of the §A grant."""
+        o = _demphasize(_section(decision_text, "O."))
+        assert "about what this filing does not *do*" in o or (
+            "what this filing does not" in o and "never a denial of the one thing" in o
+        )
+        assert "conditionally authorizes" in o.lower()
+        assert "merely unperformed and not yet exercisable" in o
 
 
 class TestExactlyOneFutureUnit:
@@ -916,19 +997,55 @@ class TestTheInterveningCommitRule:
         for relpath in PORTFOLIO_RELPATHS:
             assert relpath in g1, relpath
 
-    def test_g1_makes_any_other_commit_a_stop_before_and_after_the_merge(self, decision_text):
+    def test_g1_makes_any_extra_member_of_the_exact_range_a_stop(self, decision_text):
+        """CORRECTED after review 5003284327 MAJOR 1 — the quantifier is the RANGE, not reachability."""
         g1 = _demphasize(_subsection(decision_text, "G.1"))
-        assert "Any other commit is a stop." in g1
-        assert "between the recorded link-4 determination and that merge" in g1
-        assert "after that merge" in g1
+        assert (
+            "Any commit inside the exact range above that is not one of its two admitted classes "
+            "is a stop." in g1
+        )
         assert "fail closed and stop" in g1
+        for member in (
+            "an additional feature commit",
+            "an unexpected first-parent",
+            "a third parent on the merge",
+            "any commit after the merge",
+            "any other extra member of the exact post-checkpoint range",
+        ):
+            assert member in g1, member
+
+    def test_g1_excludes_pre_checkpoint_ancestors_from_the_governed_set(self, decision_text):
+        """The heart of MAJOR 1: history below the checkpoint must NOT be an intervening commit."""
+        g1 = _demphasize(_subsection(decision_text, "G.1"))
+        assert (
+            "Historical ancestors already reachable from the observation checkpoint are not "
+            "intervening commits and must not be treated as such." in g1
+        )
+        assert "a merge reaches its entire ancestry" in g1
+        assert "unsatisfiable" in g1
+
+    def test_g1_states_the_range_equality_explicitly(self, decision_text):
+        g1 = _subsection(decision_text, "G.1")
+        assert "commits(observation_head..acting_head)" in g1
+        assert "commits(observation_head..accepted_head)" in g1
+        assert "the one exact lifecycle-closing merge" in g1
+        assert "with **no additional member**" in g1
+
+    def test_g1_forbids_a_later_commit_after_the_merge(self, decision_text):
+        g1 = _demphasize(_subsection(decision_text, "G.1"))
+        assert "No later commit follows the merge." in g1
+
+    def test_g1_no_longer_quantifies_over_global_reachability(self, decision_text):
+        """The reviewed-head defect, encoded so it cannot return."""
+        g1 = _demphasize(_subsection(decision_text, "G.1")).lower()
+        assert "any commit reachable from the acting head" not in g1
 
     def test_g1_admits_an_exception_only_when_separately_authorized_and_admitted(
         self, decision_text
     ):
         g1 = _demphasize(_subsection(decision_text, "G.1"))
         assert "separately authorized by its own accepted governance decision" in g1
-        assert "explicitly admitted by governed text" in g1
+        assert "expressly admitted by governed text" in g1
         assert "Discovery of such a commit is not admission of it" in g1
         assert "may not admit one on its own judgment" in g1
 
@@ -936,6 +1053,280 @@ class TestTheInterveningCommitRule:
         g1 = _demphasize(_subsection(decision_text, "G.1"))
         assert "verified-clean checkpoint at one exact commit" in g1
         assert "unreviewed history" in g1
+
+
+class TestTheCommitRangeRuleIsSemanticallyCorrect:
+    """ADDED after review 5003284327 MAJOR 1 — a SET MODEL, not another substring assertion.
+
+    The reviewed head said "any commit **reachable** from the acting head" other than three named
+    identities is a stop. A merge reaches its entire ancestry, so a perfectly formed merge produced
+    211 "stop" commits against this repository's own history and the authorized unit was
+    UNSATISFIABLE. Substring guards could not see that, because the words were all present and
+    correct-sounding.
+
+    These tests therefore model the commit sets directly. ``_range`` is a deliberately tiny,
+    self-contained reimplementation of ``git rev-list A..B`` over a synthetic parent map, so the
+    model exercises the RULE rather than git. ``_reviewed_head_rule`` reimplements the DEFECT, and
+    a test proves it fails on the clean graph -- if a future edit reintroduced global reachability,
+    that test would start passing and the correct-rule tests would start failing.
+    """
+
+    #: A synthetic graph shaped exactly like the real one: a long pre-checkpoint history, an
+    #: observation checkpoint, this PR's own commits, and one lifecycle-closing merge.
+    OLD = ["h0", "h1", "h2", "h3"]          # historical ancestors BELOW the checkpoint
+    OBS = "obs"                             # the observation checkpoint (8def8bd0... in reality)
+    PR = ["c1", "c2"]                       # commits introduced by the accepted head
+    ACC = "c2"                              # the final accepted head
+    MERGE = "m"                             # the lifecycle-closing merge
+
+    @classmethod
+    def _clean_parents(cls) -> dict[str, list[str]]:
+        parents: dict[str, list[str]] = {"h0": []}
+        for prev, cur in zip(cls.OLD, cls.OLD[1:]):
+            parents[cur] = [prev]
+        parents[cls.OBS] = [cls.OLD[-1]]
+        parents["c1"] = [cls.OBS]
+        parents["c2"] = ["c1"]
+        parents[cls.MERGE] = [cls.OBS, cls.ACC]   # first parent obs, second parent accepted head
+        return parents
+
+    @staticmethod
+    def _reachable(parents: dict[str, list[str]], tip: str) -> set[str]:
+        seen, stack = set(), [tip]
+        while stack:
+            c = stack.pop()
+            if c in seen:
+                continue
+            seen.add(c)
+            stack.extend(parents.get(c, []))
+        return seen
+
+    @classmethod
+    def _range(cls, parents: dict[str, list[str]], excl: str, incl: str) -> set[str]:
+        """``git rev-list excl..incl`` — reachable from ``incl`` but not from ``excl``."""
+        return cls._reachable(parents, incl) - cls._reachable(parents, excl)
+
+    # ---- the two rules, side by side ---------------------------------------------------------
+
+    @classmethod
+    def _corrected_rule(cls, parents, acting, accepted, obs, merge) -> bool:
+        """The §G.1 rule as corrected. True == the unit may proceed."""
+        # 1. acting head IS the merge (never merely a descendant)
+        if acting != merge:
+            return False
+        # 2. exactly two ordered parents, first obs, second accepted, no third
+        if parents.get(merge) != [obs, accepted]:
+            return False
+        # 5. the exact post-checkpoint range equality
+        expected = cls._range(parents, obs, accepted) | {merge}
+        if cls._range(parents, obs, acting) != expected:
+            return False
+        # 6. no later commit follows the merge
+        later = {c for c, ps in parents.items() if merge in ps}
+        return not later
+
+    @classmethod
+    def _reviewed_head_rule(cls, parents, acting, accepted, obs, merge) -> bool:
+        """The DEFECT: quantify over everything reachable from the acting head."""
+        allowed = {obs, accepted, merge}
+        return not (cls._reachable(parents, acting) - allowed)
+
+    # ---- what the corrected rule must permit --------------------------------------------------
+
+    def test_historical_ancestors_below_the_checkpoint_are_permitted(self):
+        parents = self._clean_parents()
+        assert self._corrected_rule(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+        # and they really are present, so this is not vacuous
+        assert set(self.OLD) <= self._reachable(parents, self.MERGE)
+        assert not (set(self.OLD) & self._range(parents, self.OBS, self.MERGE))
+
+    def test_the_accepted_head_commits_plus_the_exact_merge_are_permitted(self):
+        parents = self._clean_parents()
+        governed = self._range(parents, self.OBS, self.MERGE)
+        assert governed == {"c1", "c2", self.MERGE}
+        assert self._corrected_rule(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+
+    # ---- what it must refuse -------------------------------------------------------------------
+
+    @classmethod
+    def _range_check_only(cls, parents, acting, accepted, obs, merge) -> bool:
+        """Condition 5 alone, with the parent checks removed.
+
+        Stated honestly: for a two-parent merge whose parents are exactly ``[obs, accepted]``, the
+        range equality is IMPLIED by conditions 1 and 2 — it is defence in depth there, not an
+        independent constraint. It becomes independent exactly where those conditions are the ones
+        under attack: an unexpected first parent, an extra parent, or an acting head that is not
+        the merge. This helper isolates it so those cases prove the range rule catches them on its
+        own, rather than riding on a check that a future edit might weaken.
+        """
+        expected = cls._range(parents, obs, accepted) | {merge}
+        return cls._range(parents, obs, acting) == expected
+
+    def test_one_unexpected_commit_between_observation_and_merge_is_refused(self):
+        """`main` advanced by one commit after the checkpoint, and the merge took it in.
+
+        Both the first-parent check and the range check must refuse this, and the range check must
+        refuse it *independently* — that is what makes it a real second line of defence.
+        """
+        parents = self._clean_parents()
+        parents["rogue"] = [self.OBS]                    # an unexpected main commit
+        parents[self.MERGE] = ["rogue", self.ACC]        # the merge takes it as first parent
+        governed = self._range(parents, self.OBS, self.MERGE)
+        assert "rogue" in governed, "the model must actually contain the extra commit"
+        assert governed != self._range(parents, self.OBS, self.ACC) | {self.MERGE}
+        assert not self._corrected_rule(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+        assert not self._range_check_only(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+
+    def test_the_range_check_refuses_a_later_descendant_on_its_own(self):
+        """The range check, isolated, also catches an acting head that is not the merge."""
+        parents = self._clean_parents()
+        parents["later"] = [self.MERGE]
+        assert not self._range_check_only(parents, "later", self.ACC, self.OBS, self.MERGE)
+
+    def test_the_range_check_is_defence_in_depth_for_a_well_formed_two_parent_merge(self):
+        """Disclosed rather than overclaimed: on the clean graph the range equality follows from
+        conditions 1 and 2, so it adds nothing there. It is retained because it is exactly what
+        catches the malformed cases above, and because it is the wording that replaced the
+        unsatisfiable global-reachability quantifier."""
+        parents = self._clean_parents()
+        assert self._range_check_only(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+        assert self._corrected_rule(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+
+    def test_one_later_descendant_after_the_merge_is_refused(self):
+        parents = self._clean_parents()
+        parents["later"] = [self.MERGE]
+        assert not self._corrected_rule(parents, "later", self.ACC, self.OBS, self.MERGE)
+        # and even acting AT the merge is refused once a later commit exists
+        assert not self._corrected_rule(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+
+    def test_a_third_parent_is_refused(self):
+        parents = self._clean_parents()
+        parents["extra"] = [self.OBS]
+        parents[self.MERGE] = [self.OBS, self.ACC, "extra"]
+        assert not self._corrected_rule(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+
+    def test_an_unexpected_first_parent_is_refused(self):
+        parents = self._clean_parents()
+        parents[self.MERGE] = [self.OLD[-1], self.ACC]   # first parent is NOT the checkpoint
+        assert not self._corrected_rule(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+
+    def test_mere_ancestry_is_refused(self):
+        parents = self._clean_parents()
+        parents["tip"] = [self.MERGE]
+        assert self.MERGE in self._reachable(parents, "tip")   # the merge IS an ancestor
+        assert not self._corrected_rule(parents, "tip", self.ACC, self.OBS, self.MERGE)
+
+    # ---- the defect itself -----------------------------------------------------------------------
+
+    def test_the_reviewed_head_global_reachability_rule_fails_the_clean_model(self):
+        """The MAJOR-1 defect, reproduced in the model: the clean case is refused."""
+        parents = self._clean_parents()
+        assert self._corrected_rule(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+        assert not self._reviewed_head_rule(parents, self.MERGE, self.ACC, self.OBS, self.MERGE)
+        offenders = self._reachable(parents, self.MERGE) - {self.OBS, self.ACC, self.MERGE}
+        assert offenders, "the model must actually contain pre-checkpoint history"
+        assert set(self.OLD) <= offenders
+
+    def test_the_model_matches_this_repositorys_real_shape(self):
+        """Non-vacuity: the synthetic graph must mirror the real defect, not a toy that cannot.
+
+        Built against the REAL object store with ``commit-tree``, which updates no ref. This is
+        read-only with respect to every branch, tag and tracked file.
+        """
+        obs = LINK4_OBSERVATION_HEAD
+        acc = _git("rev-parse", "HEAD")
+        merge = _git(
+            "commit-tree", _git("rev-parse", f"{acc}^{{tree}}"),
+            "-p", obs, "-p", acc, "-m", "test-only synthetic merge; no ref updated",
+        )
+        reachable = set(_git("rev-list", merge).split())
+        governed = set(_git("rev-list", f"{obs}..{merge}").split())
+        expected = set(_git("rev-list", f"{obs}..{acc}").split()) | {merge}
+        # the corrected rule is satisfied ...
+        assert governed == expected
+        # ... while the reviewed-head rule would call hundreds of real commits a stop
+        assert len(reachable - {obs, acc, merge}) > 100
+
+
+class TestTheCanonicalRunnerArtifactException:
+    """ADDED after review 5003284327 MAJOR 3.
+
+    §H's opening bullet said the unit must not "edit any repository byte", with no qualifier. §I.7
+    and §M REQUIRE the accepted runner to create
+    ``research/level1_endpoint_evidence/stage1_results.yaml``. An executor applying the strictest
+    applicable rule had to refuse, making terminal outcome §K.4 ``COMPLETED`` structurally
+    unreachable. §H.1 now carries one exact-identity exception, and these tests pin both halves.
+    """
+
+    ARTIFACT = "research/level1_endpoint_evidence/stage1_results.yaml"
+
+    def test_the_absolute_edit_any_repository_byte_wording_is_gone(self, decision_text):
+        """The reviewed-head defect, encoded so it cannot return."""
+        h = _demphasize(_section(decision_text, "H.")).lower()
+        assert "edit any repository byte" not in h
+
+    def test_the_prohibition_is_narrowed_to_pre_existing_tracked_bytes(self, withheld):
+        joined = " ".join(_demphasize(b) for b in withheld)
+        assert "modify any pre-existing tracked repository byte" in joined
+        assert "make any committed repository mutation" in joined
+
+    def test_creating_the_exact_canonical_artifact_is_permitted(self, decision_text):
+        h1 = _demphasize(_subsection(decision_text, "H.1"))
+        assert self.ARTIFACT in h1
+        assert "may create exactly one file" in h1
+        assert "isolated operational working tree" in h1
+        assert "canonical output of the single authorized run" in h1
+
+    def test_creating_it_before_the_claim_is_forbidden(self, decision_text):
+        h1 = _demphasize(_subsection(decision_text, "H.1"))
+        assert "Creation only after the lawful claim." in h1
+        assert "may not exist, and may not be written, before" in h1
+        assert "Creating it before the claim is a stop" in h1
+
+    def test_editing_or_replacing_it_after_creation_is_forbidden(self, decision_text):
+        h1 = _demphasize(_subsection(decision_text, "H.1"))
+        assert "After creation it is immutable to this unit." in h1
+        for banned in ("edited", "rewritten", "replaced", "regenerated", "interpreted"):
+            assert banned in h1, banned
+
+    def test_committing_or_delivering_it_is_forbidden(self, decision_text, withheld):
+        h1 = _demphasize(_subsection(decision_text, "H.1"))
+        assert "It stays uncommitted and undelivered." in h1
+        joined = " ".join(_demphasize(b) for b in withheld)
+        assert "edit, rewrite, replace, interpret, commit, or deliver" in joined
+        assert "P.1's" in joined or "§P.1" in _section(decision_text, "H.")
+
+    def test_creating_any_other_file_is_forbidden(self, decision_text, withheld):
+        h1 = _demphasize(_subsection(decision_text, "H.1"))
+        assert "No other file creation or mutation of any kind is permitted" in h1
+        assert "extends to exactly one path and no other" in h1
+        joined = " ".join(_demphasize(b) for b in withheld)
+        assert "create any repository file other than" in joined
+
+    def test_the_exception_is_bound_at_completion(self, decision_text):
+        h1 = _demphasize(_subsection(decision_text, "H.1"))
+        assert "Its exact identity is bound during completion" in h1
+
+    def test_the_exception_is_the_only_working_tree_write(self, decision_text):
+        h1 = _demphasize(_subsection(decision_text, "H.1"))
+        assert (
+            "This exception is the only respect in which the unit may write inside a repository "
+            "working tree." in h1
+        )
+
+    def test_i7_m_and_k4_name_the_exception_so_they_cannot_drift_apart(self, decision_text):
+        i = _demphasize(_section(decision_text, "I."))
+        m = _demphasize(_section(decision_text, "M."))
+        k = _demphasize(_section(decision_text, "K."))
+        assert self.ARTIFACT in i and "§H.1" in _section(decision_text, "I.")
+        assert self.ARTIFACT in m and "§H.1" in _section(decision_text, "M.")
+        assert "created under §H.1" in _section(decision_text, "K.")
+        assert "only after the lawful claim" in i
+
+    def test_no_artifact_exists_in_this_repository_now(self):
+        """This filing creates nothing: the exception is text, not an act."""
+        assert not (ROOT / self.ARTIFACT).exists()
+        assert [] == [p for p in ROOT.rglob("stage1_results*") if ".git" not in p.parts]
 
 
 class TestTheGrantedSequenceEndsAtItemSeven:
@@ -1118,10 +1509,11 @@ class TestP1ResultsPRRemainsSeparate:
         assert "The two are independent." in f
 
     def test_producing_results_is_not_applying_them(self, decision_text):
-        h1 = _demphasize(_subsection(decision_text, "H.1"))
-        assert "A completed run is a result, not a conclusion." in h1
+        """§H.2 after the review-5003284327 MAJOR-3 correction inserted the exception as §H.1."""
+        h2 = _demphasize(_subsection(decision_text, "H.2"))
+        assert "A completed run is a result, not a conclusion." in h2
         for token in ("percentages", "target weights", "Stage 2"):
-            assert token in h1, token
+            assert token in h2, token
 
 
 class TestProhibitionsAreBoundToTheirGoverningClause:
@@ -1142,14 +1534,16 @@ class TestProhibitionsAreBoundToTheirGoverningClause:
     @pytest.mark.parametrize(
         "fragment",
         [
-            "edit any repository byte",
+            "modify any pre-existing tracked repository byte",
+            "make any committed repository mutation",
+            "create any repository file other than",
             "rebind or repair anything",
             "correct, revert, regenerate, or re-pin",
             "rerun or re-adjudicate link 3 or link 4",
             "retry, re-attest, re-claim, recover, reset, or delete the lane",
             "execute before a lawful claim",
             "open a branch, a commit, or a pull request",
-            "commit or deliver",
+            "edit, rewrite, replace, interpret, commit, or deliver",
             "risk_lane_boundary",
             "acquire market, fundamental, economic, or Stage-2 data",
             "change any construction identity",
@@ -1295,14 +1689,25 @@ class TestStage1RemainsUnarmedAndNotExecutable:
         assert "Lane state remains ABSENT" in cons
         assert "ATTEMPT_1 is intact, unclaimed, and unconsumed" in cons
 
-    def test_zero_activation_factors_are_added(self, decision_text):
+    def test_zero_committed_activation_factors_are_added(self, decision_text):
+        """CORRECTED after review 5003284327 MAJOR 2.
+
+        "Zero activation factors" was imprecise: this filing adds exactly one CONDITIONAL
+        governance authorization, which is its entire purpose. What it adds zero of is COMMITTED
+        activation factors, and what it performs zero of is activation ACTS.
+        """
         e = _demphasize(_section(decision_text, "E."))
-        assert "It adds zero activation factors." in e
+        # ``_demphasize`` strips single-asterisk italics, so the emphasis on "committed" is gone here.
+        assert "It adds zero committed activation factors." in e
         assert "stage_1_executability.executable stays permanently false" in e
         assert (
             "no committed value in this repository — this decision included — authorizes "
             "Stage-1 execution" in e
         )
+        assert "exactly one **conditional governance authorization**" in _section(
+            decision_text, "E."
+        )
+        assert 'Saying this decision adds "zero activation authority" would be false' in e
 
     def test_this_filing_is_not_an_activation_event(self, decision_text):
         e = _demphasize(_section(decision_text, "E."))
@@ -1396,14 +1801,91 @@ class TestRegisterSynchronisation:
 
     def test_the_registers_gate_records_the_authority_performance_distinction(self, ws0014):
         gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
-        assert "AUTHORIZES" in gate
-        assert "PERFORMS NO PART" in gate
+        assert "CONDITIONALLY AUTHORIZES" in gate
+        assert "THIS FILING PERFORMS NONE OF THOSE ACTS" in gate
+        assert "NONE IS EXERCISABLE UNLESS AND UNTIL" in gate
         assert "XASSET-0040" in gate
         assert SPENT_STEP11_DETERMINATION in gate
 
+    def test_the_registers_gate_never_denies_the_authority_it_records(self, ws0014):
+        """ADDED after correction probe M2-g, which this suite MISSED at first.
+
+        The gate is a live operative record. Nothing stopped it from reasserting the exact
+        contradiction review 5003284327 MAJOR 2 identified, so the probe went uncaught. It is
+        bound here directly: the denial and the two "zero activation authority" formulations may
+        appear only inside the gate's own explicit list of PROHIBITED claims, never as an
+        operative statement.
+        """
+        gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
+        marker = "THREE CLAIMS ARE PROHIBITED"
+        assert marker in gate, "the gate must carry the prohibition list"
+        operative, prohibited = gate.split(marker, 1)
+        for banned in (
+            "NEITHER PERFORMED NOR AUTHORIZED BY",
+            "ZERO activation authorizations",
+            "ZERO activation authority",
+            "zero activation authorizations",
+            "zero activation authority",
+        ):
+            assert banned not in operative, banned
+        # non-vacuity: the prohibition list must actually quote what it forbids
+        assert "not authorized by this filing itself" in prohibited
+        assert "zero activation authority" in prohibited
+
+    def test_the_registers_latest_operative_blocks_never_deny_the_authority(self, ws0014):
+        """The same guard for `next_action` and `blocker`'s CURRENT operative blocks.
+
+        Earlier append-only history may keep its own accurate wording; the newest block may not.
+        """
+        for field in ("next_action", "blocker"):
+            text = ws0014[field]
+            latest = _flat("UPDATE, 2026-08-23" + text.rsplit("UPDATE, 2026-08-23", 1)[1])
+            assert "CONDITIONALLY AUTHORIZES" in latest, field
+            assert "ZERO COMMITTED ACTIVATION FACTORS" in latest, field
+            assert "NEITHER PERFORMED NOR AUTHORIZED BY" not in latest, field
+            # the two banned formulations may appear only where the block names them as false
+            for banned in ("ZERO activation authorizations", "ZERO activation authority"):
+                if banned in latest:
+                    idx = latest.find(banned)
+                    window = latest[max(0, idx - 200): idx + 200]
+                    assert "would be FALSE" in window or "prohibited" in window, (field, banned)
+
+    def test_the_registers_latest_operative_blocks_carry_the_corrected_range_rule(self, ws0014):
+        """MAJOR 1, in the register: the operative blocks must not restate global reachability."""
+        for field in ("next_action", "blocker"):
+            text = ws0014[field]
+            latest = _flat("UPDATE, 2026-08-23" + text.rsplit("UPDATE, 2026-08-23", 1)[1])
+            assert "commits(observation_head..acting_head)" in latest, field
+            assert "HISTORICAL ANCESTORS" in latest and "NOT INTERVENING COMMITS" in latest, field
+            assert "ANY OTHER COMMIT IS A FAIL-CLOSED STOP unless" not in latest, field
+
+    def test_the_registers_latest_operative_blocks_carry_the_artifact_exception(self, ws0014):
+        """MAJOR 3, in the register."""
+        for field in ("next_action", "blocker"):
+            text = ws0014[field]
+            latest = _flat("UPDATE, 2026-08-23" + text.rsplit("UPDATE, 2026-08-23", 1)[1])
+            assert "REPOSITORY-WRITE EXCEPTION" in latest, field
+            assert "research/level1_endpoint_evidence/stage1_results.yaml" in latest, field
+            assert "ONLY AFTER THE LAWFUL CLAIM" in latest, field
+            assert "UNCOMMITTED AND UNDELIVERED" in latest, field
+
+    def test_the_registers_gate_carries_the_artifact_exception(self, ws0014):
+        gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
+        assert "ONE EXACT REPOSITORY-WRITE EXCEPTION" in gate
+        assert "research/level1_endpoint_evidence/stage1_results.yaml" in gate
+        assert "ONLY AFTER THE LAWFUL CLAIM" in gate
+        assert "NO OTHER FILE CREATION OR MUTATION OF ANY KIND IS PERMITTED" in gate
+
+    def test_the_registers_gate_carries_the_corrected_range_rule(self, ws0014):
+        gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
+        assert "commits(observation_head..acting_head)" in gate
+        assert "UNSATISFIABLE" in gate
+        assert "HISTORICAL ANCESTORS" in gate
+
     def test_the_registers_gate_records_the_intervening_commit_rule(self, ws0014):
         gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
-        assert "DESCENDANT ANCESTRY IS NOT SUFFICIENT" in gate.upper()
+        assert "DESCENDANT ANCESTRY ALONE REMAINS" in gate.upper()
+        assert "INSUFFICIENT" in gate.upper()
         assert LINK4_OBSERVATION_HEAD in gate
 
     def test_no_sentinel_survives_anywhere_in_the_register(self):

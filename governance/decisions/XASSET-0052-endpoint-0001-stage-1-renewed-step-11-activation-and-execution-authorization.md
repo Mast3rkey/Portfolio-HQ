@@ -81,13 +81,19 @@ and nothing more.**
 ### A. Determination — `RENEWED_STEP_11_ACTIVATION_AND_EXECUTION_AUTHORIZED`
 
 **Exactly one** future, separate, bounded `XASSET-0041` §I **link 5** / `XASSET-0030` §G.B
-**step-11** unit is authorized: production of the external one-shot attestation under the existing
-authenticated mechanism exactly as it stands, arming, the single lawful claim of `ATTEMPT_1`, the
-680-construction run, and completion of that lane.
+**step-11** unit is **conditionally authorized** to: produce the external one-shot attestation under
+the existing authenticated mechanism exactly as it stands; arm; take the single lawful claim of
+`ATTEMPT_1`; execute the 680-construction run; produce the canonical runner artifact; and complete
+that lane. **This decision is the authority source for each of those acts.**
 
-**This filing performs no part of link 5.** It generates no attestation, creates no
+**The authorization is conditional, and nothing in it is exercisable yet.** No act above may be taken
+unless and until **all** of §N's seven conditions close **and** every §G and §G.1 condition holds at
+the moment the unit acts (§N).
+
+**This filing performs none of those acts.** It generates no attestation, creates no
 `AUTHORIZATION_ROOT`, arms nothing, reaches no `READY`, claims nothing, evaluates no gate, executes
-nothing, produces no result, and persists nothing. **Merging it arms nothing** (§E).
+nothing, produces no result, and persists nothing. **Merging it arms nothing**, and it adds **zero
+committed activation factors** to the two-factor mechanism (§E).
 
 #### A.1 — The distinction any summary of this filing must preserve
 
@@ -95,21 +101,33 @@ Stated once, in a form meant to be quoted verbatim, because the failure mode `XA
 independent review caught — and `XASSET-0051` §A.1 then guarded one link earlier — is a summary that
 collapses "performs none of it" into "authorizes none of it":
 
-> `XASSET-0052` **authorizes** exactly one future, separate **link-5** activation-and-execution unit,
-> but **performs no part of it**. The attestation, `AUTHORIZATION_ROOT`, arming, `READY`, the claim of
-> `ATTEMPT_1`, gate evaluation, the 680-construction run, results delivery, allocation work, and
-> protected `RISK` access remain **neither performed nor authorized by this filing itself**.
+> `XASSET-0052` **conditionally authorizes** exactly one future, separate **link-5**
+> activation-and-execution unit, but **this filing performs none of those acts**, and **none is
+> exercisable unless and until §N closes and every §G and §G.1 condition holds**.
 
-**Link 5 never belongs inside a "not authorized" list.** It is the one thing this decision grants.
-Every enumeration of what is withheld — §H, §O, the `WS-0014` gate, and any pull-request summary or
-report describing this filing — must place link 5 on the **authorized-but-unperformed** side of that
-line. A record that both grants and denies link 5 is not a wording defect; it is unsafe acceptance
-evidence, because a reader cannot tell which half governs.
+**Link 5 — and each of its constituent acts — never belongs inside a "not authorized" list.** The
+attestation, `AUTHORIZATION_ROOT`, arming, `READY`, the claim of `ATTEMPT_1`, gate evaluation, the
+680-construction run, production of the canonical runner artifact, and completion of the lane are
+**exactly what this decision is the authority for**. Every enumeration of what is withheld — §H, §O,
+the `WS-0014` gate, and any pull-request summary or report describing this filing — must place them on
+the **conditionally-authorized-but-unperformed** side of that line. A record that both grants and
+denies them is not a wording defect; it is unsafe acceptance evidence, because a reader cannot tell
+which half governs.
 
-**And the grant is of the authority, never of the act.** Nothing in this decision, its merge, or its
-lifecycle closure attests, arms, claims, or executes anything. What becomes available is a future
-unit that must still satisfy every §G condition at the moment it acts, and that may lawfully end
-without arming anything (§L).
+**Three claims are therefore prohibited anywhere in this filing's governed text, its register entry,
+its pull-request body, and any report describing it**, because each recreates that contradiction:
+
+1. that the constituent link-5 acts are "not authorized by this filing itself" — this filing *is*
+   their conditional authority source;
+2. that this filing adds "zero activation authority" or "zero activation authorizations" — it adds
+   exactly one, conditionally, which is its entire purpose. The correct and narrower statement is
+   that it adds **zero committed activation factors** and performs **zero activation acts** (§E.2);
+3. that this filing performed, armed, claimed, executed, or produced anything — it did none of those.
+
+**The grant is of conditional authority, never of the act, and never of present exercisability.**
+Nothing in this decision, its merge, or its lifecycle closure attests, arms, claims, or executes
+anything. What becomes available on complete §N closure is a future unit that must still satisfy every
+§G and §G.1 condition at the moment it acts, and that may lawfully end without arming anything (§L).
 
 ### B. `XASSET-0040` is spent as a stop, and is not revived
 
@@ -251,10 +269,14 @@ copied:
    creates no `AUTHORIZATION_ROOT`, reaches no `READY`, and takes no claim. After it merges,
    `new_execution_is_authorized()` still returns `False`, `active_execution_is_authorized()` still
    returns `False`, and the lane is still `ABSENT`. **Merging this decision arms nothing.**
-2. **It adds zero activation factors.** `XASSET-0029` §B's two-factor test is untouched:
+2. **It adds zero *committed* activation factors.** `XASSET-0029` §B's two-factor test is untouched:
    `stage_1_executability.executable` stays permanently `false`,
    `executable_is_never_the_authorization_source` stays enforced-true, and **no committed value in this
-   repository — this decision included — authorizes Stage-1 execution.**
+   repository — this decision included — authorizes Stage-1 execution.** What this filing *does* add is
+   exactly one **conditional governance authorization** for one future unit (§A), which is a different
+   thing from a committed activation factor and is precisely what the ten withholding filings said would
+   be required. Saying this decision adds "zero activation authority" would be false, and §A.1
+   prohibits it.
 3. **Arming after this filing is exactly what §E describes.** The generator is run once, outside the
    repository, by the operator, against evidence re-derived from durable git and GitHub truth. §E's own
    terminating condition holds unchanged: the final step changes no repository state.
@@ -385,27 +407,67 @@ The unit must therefore establish, from the live object store:
    `levels.py`, `targets.yaml`, `holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`) are
    byte-identical at `8def8bd0…`, at the accepted head, and at the merge.
 
-**Any other commit is a stop.** Specifically: any commit reachable from the acting head that is neither
-`8def8bd096b4edecbf10fc20870a6d03b6cb56fe` nor this decision's own accepted head nor its own
-lifecycle-closing merge — whether it appears *between* the recorded link-4 determination and that merge,
-or *after* that merge — causes the unit to **fail closed and stop** under §I, **unless** that commit is
-separately authorized by its own accepted governance decision **and** explicitly admitted by governed
-text as a permitted transition for this unit. **Discovery of such a commit is not admission of it**, and
-the unit may not admit one on its own judgment, however plainly harmless it appears.
+5. **The exact post-checkpoint commit range is exactly what it should be.** The governed set is
+   **not** everything reachable from the acting head — a merge reaches its entire ancestry, so a
+   global-reachability rule would make even a perfectly formed merge unsatisfiable. The governed set
+   is the set of commits **introduced after the observation checkpoint**, written here as
+   `observation_head..acting_head`. It must equal, exactly:
 
-**Why the rule is stated this narrowly.** The whole value of the link-4 determination is that it fixes a
-verified-clean checkpoint at one exact commit. A rule that accepted any descendant would let an
-arbitrary amount of unreviewed history accumulate between that checkpoint and an irreversible,
-non-rerunnable claim, while still reading as "continuous." Requiring exact identity, with one named and
-expected exception, is what keeps the checkpoint meaningful.
+   ```
+   commits(observation_head..acting_head)
+       ==  commits(observation_head..accepted_head)  ∪  { the one exact lifecycle-closing merge }
+   ```
+
+   with **no additional member**, where `observation_head` is
+   `8def8bd096b4edecbf10fc20870a6d03b6cb56fe`, `accepted_head` is this decision's own final accepted
+   head derived from the completed lifecycle, and the merge is derived only after the normal merge.
+6. **No later commit follows the merge.** The acting head must **be** the merge, so
+   `acting_head..<any branch or ref the unit acts on>` must be empty.
+
+**Historical ancestors already reachable from the observation checkpoint are not intervening commits
+and must not be treated as such.** They are, by construction, part of what the link-4 determination
+already verified clean. Excluding them is not a relaxation: it is what makes the checkpoint a
+checkpoint rather than an unsatisfiable condition.
+
+**Any commit inside the exact range above that is not one of its two admitted classes is a stop.**
+Specifically, each of the following causes the unit to **fail closed and stop** under §J:
+
+- an additional feature commit in `observation_head..acting_head` that is not in
+  `observation_head..accepted_head` and is not the exact lifecycle-closing merge;
+- an unexpected first-parent `main` commit — i.e. the merge's first parent is not exactly
+  `8def8bd096b4edecbf10fc20870a6d03b6cb56fe`;
+- a third parent on the merge;
+- any commit after the merge, so that the acting head is a descendant of it rather than the merge
+  itself;
+- any other extra member of the exact post-checkpoint range.
+
+**Descendant ancestry alone remains insufficient**, and containment of the merge in some later branch
+tip never satisfies condition 1.
+
+A stop of this kind is lifted **only** where the offending commit is separately authorized by its own
+accepted governance decision **and** expressly admitted by governed text as a permitted transition for
+this unit. **Discovery of such a commit is not admission of it**, and the unit may not admit one on its
+own judgment, however plainly harmless it appears.
+
+**Why the rule is scoped to the post-checkpoint range.** The whole value of the link-4 determination
+is that it fixes a verified-clean checkpoint at one exact commit. Everything below that checkpoint was
+already verified by it; quantifying over that history would refuse the clean case along with the dirty
+one, which is not caution but incoherence. What actually needs guarding is the window **after** the
+checkpoint, because that is where unreviewed history could accumulate between a verified state and an
+irreversible, non-rerunnable claim. Fixing the range to exactly the accepted head's own commits plus one
+named, expected merge — and refusing every other member, before or after — is what keeps the checkpoint
+load-bearing rather than either decorative or unsatisfiable.
 
 ### H. Authority withheld — absolute
 
 The link-5 unit **must not**:
 
-- **edit any repository byte** — no production, authorization, runner, validator, universe, canonical,
-  load-bearing, governance, portfolio, or protected byte; the mechanism is used exactly as it stands
-  (§E.1);
+- **modify any pre-existing tracked repository byte** — no production, authorization, runner,
+  validator, universe, canonical, load-bearing, governance, portfolio, or protected byte; the
+  mechanism is used exactly as it stands (§E.1). The single exception is §H.1's canonical runner
+  artifact, which is a **creation**, never a modification;
+- **make any committed repository mutation**, of any kind;
+- **create any repository file other than** the one exact runner output §H.1 permits;
 - **rebind or repair anything** — it may not extend, reduce, or re-derive `LOAD_BEARING_RELPATHS`,
   re-pin any canonical hash, alter `AUTHORIZING_DECISION`, `AUTHORIZING_PULL_REQUEST`, or
   `REVIEWED_BASE_SHA`, or perform any part of a successor operational-authorization rebinding;
@@ -418,8 +480,8 @@ The link-5 unit **must not**:
 - **execute before a lawful claim**, evaluate any gate for any registered construction before the claim
   is taken, or take the claim other than atomically immediately before the first real work;
 - **open a branch, a commit, or a pull request**, or make any committed repository change (§M);
-- **commit or deliver `stage1_results.yaml`**, or **open, consume, or pre-empt `XASSET-0027` §P.1's
-  reserved results PR**;
+- **edit, rewrite, replace, interpret, commit, or deliver `stage1_results.yaml`** after the accepted
+  runner has created it, or **open, consume, or pre-empt `XASSET-0027` §P.1's reserved results PR**;
 - read, list, open, or substantively reuse any `risk_lane_boundary` protected `RISK` result;
 - acquire market, fundamental, economic, or Stage-2 data, or perform any Stage 2 work — the GitHub
   source remains **governance metadata only** and must not become a Stage-1 data-acquisition path;
@@ -433,7 +495,35 @@ The link-5 unit **must not**:
   trade, order, or brokerage action;
 - **authorize any successor unit of any kind.**
 
-#### H.1 — Producing results is not applying them
+#### H.1 — The one exact exception: the canonical runner artifact
+
+The prohibitions above would otherwise forbid §I.7 and §M, which **require** the accepted runner to
+produce its canonical output. That collision is resolved here, narrowly and by exact identity rather
+than by category:
+
+**The accepted bound runner may create exactly one file —
+`research/level1_endpoint_evidence/stage1_results.yaml` — in the isolated operational working tree, as
+the canonical output of the single authorized run under §I.7.** Nothing else about this exception is
+permissive:
+
+1. **Creation only after the lawful claim.** The file may not exist, and may not be written, before
+   `ATTEMPT_1` is lawfully claimed (§I.1 step 3). Creating it before the claim is a stop under §J.
+2. **The accepted runner writes it, and nothing else does.** The unit may not hand-author, template,
+   pre-stage, or synthesize the artifact by any other means.
+3. **Its exact identity is bound during completion** (`complete_execution`, §I.7), so what was
+   produced is what the lane records.
+4. **After creation it is immutable to this unit.** It may not be edited, rewritten, replaced,
+   regenerated, re-run, interpreted, aggregated, committed, or delivered.
+5. **It stays uncommitted and undelivered.** Delivering it into the repository is `XASSET-0027` §P.1's
+   own exactly-one PR (§F), which this unit may not open or consume.
+6. **No other file creation or mutation of any kind is permitted** — this exception extends to exactly
+   one path and no other.
+
+**This exception is the only respect in which the unit may write inside a repository working tree.**
+Every other prohibition in §H applies to it unchanged, and §I.7, §M, §I.1 step 5 and terminal outcome
+§K.4 are to be read together with this subsection rather than against §H's opening bullets.
+
+#### H.2 — Producing results is not applying them
 
 The run produces `stage1_results.yaml` — dispositions, cell outcomes, roll-ups — and **nothing follows
 from it inside this authorization.** Delivery into the repository is §P.1's PR (§F). Interpretation,
@@ -459,9 +549,11 @@ step 11, and only after **all** of §N is complete:
    before the first real gate evaluation, per `XASSET-0029` §G.
 6. **Execute exactly the frozen 680-construction universe, once**, using the bound runner, producing
    every registered construction's disposition, the cell outcomes, and the roll-ups.
-7. **Produce the canonical Stage-1 result artifact** as the runner's own output, and **complete the
-   lane** (`complete_execution`), binding the exact attempt, the exact attestation, the exact claim
-   identity, and the exact result identity.
+7. **Produce the canonical Stage-1 result artifact** as the runner's own output — exactly
+   `research/level1_endpoint_evidence/stage1_results.yaml`, created in the isolated operational
+   working tree under the single exception §H.1 defines, only after the lawful claim, and by the
+   accepted runner alone — and **complete the lane** (`complete_execution`), binding the exact
+   attempt, the exact attestation, the exact claim identity, and the exact result identity.
 8. **Execute the fail-closed response** required by §J on any drift, missing evidence, unexpected state,
    authentication failure, stale identity, ambiguous actor evidence, continuity gap, lane mismatch,
    validation failure, or uncertainty.
@@ -558,10 +650,11 @@ The unit ends, and may go no further, in exactly these four ways. Each is termin
 3. **`STOPPED_AFTER_CLAIM`** — the run could not complete. The lane is `CLAIMED` and **`ATTEMPT_1` is
    consumed.** The unit must not retry, re-claim, recover, reset, or re-run. Report the exact condition
    and stop; any recovery is a separately authorized governed act (§J).
-4. **`COMPLETED`** — the run finished, the lane reached `COMPLETED`, and the result identity is bound.
-   The unit posts its evidence (§M) and **stops.** It does not commit the artifact, does not open
-   `XASSET-0027` §P.1's PR, does not interpret or apply the results, and does not authorize anything
-   further (§H.1).
+4. **`COMPLETED`** — the run finished, the canonical artifact was created under §H.1, the lane
+   reached `COMPLETED`, and the result identity is bound. The unit posts its evidence (§M) and
+   **stops.** It does not edit, replace, commit, or deliver the artifact, does not open `XASSET-0027`
+   §P.1's PR, does not interpret or apply the results, and does not authorize anything further
+   (§H.1, §H.2).
 
 On **any** stop — outcomes 1, 2, and 3 alike — there is **no retry, no replacement attestation, no
 second claim, no reset, no deletion, no recovery, no repair, no rebinding, and no continuation.**
@@ -591,8 +684,10 @@ destroying it also destroys the attestation, leaving the lane `ABSENT` — which
 The link-5 unit is **one** unit. It creates **no branch, no commit, and no pull request**, and makes
 **no committed repository change** — so it does not contend for the `OPS-0014` §D single mutation lane
 and should run in a clean isolated clone at the exact acting head §G.1 requires. The run's own canonical
-artifact is written by the accepted runner to its accepted path in that working tree; **producing it is
-the run's product, and committing it is `XASSET-0027` §P.1's separate PR** (§F).
+artifact is written by the accepted runner to `research/level1_endpoint_evidence/stage1_results.yaml`
+in that working tree, under the single exception §H.1 defines and subject to every condition it
+imposes; **producing it is the run's product, and committing it is `XASSET-0027` §P.1's separate PR**
+(§F). **That one creation is the only write inside a repository working tree this unit may make.**
 
 Its outcome is recorded as **durable, externally posted evidence** — a GitHub comment on the
 `ENDPOINT-0001` record of proceedings — stating the verified identities, the attestation and claim it
@@ -628,7 +723,14 @@ and executes nothing.** Immediately after this decision merges, `new_execution_i
 returns `False`, `active_execution_is_authorized()` still returns `False`, and the lane is still
 `ABSENT`.
 
-### O. Absolute non-authorization
+### O. Absolute non-performance, and what is genuinely not authorized
+
+**This section is about what this filing does not *do*, and about authority it does not *grant*. It is
+never a denial of the one thing §A conditionally authorizes.** Per §A.1, the constituent link-5 acts —
+attestation, `AUTHORIZATION_ROOT`, arming, `READY`, the claim of `ATTEMPT_1`, gate evaluation, the
+680-construction run, production of the canonical runner artifact, and lane completion — must not
+appear anywhere below as unauthorized; they are conditionally authorized by §A and merely unperformed
+and not yet exercisable.
 
 This decision generates no attestation; creates no `AUTHORIZATION_ROOT` and no `READY`, `CLAIMED`, or
 `COMPLETED` lane state or ledger entry; arms, claims, completes, executes, or recovers no Stage-1
@@ -738,9 +840,10 @@ barred from repairing, rebinding, or retrying anything it finds.
 authorizes no successor authorization, and no outcome of link 5 — including the cleanest possible one —
 authorizes any successor unit.
 
-`XASSET-0029` §E is preserved unweakened — **zero activation factors** are added,
+`XASSET-0029` §E is preserved unweakened — **zero committed activation factors** are added,
 `stage_1_executability.executable` stays permanently `false`, and **no committed value in this
-repository, this decision included, authorizes Stage-1 execution.** `XASSET-0027` §P.1 remains **one,
+repository, this decision included, authorizes Stage-1 execution.** What is added is exactly one
+**conditional governance authorization** for one future unit, unexercisable before §N closes. `XASSET-0027` §P.1 remains **one,
 unspent**, and is the separate vehicle for delivering the Stage-1 evaluation into the repository under
 its own review and acceptance.
 
