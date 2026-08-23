@@ -182,7 +182,8 @@ reader has to reconstruct it:
 
 The operative consequences, stated as this decision's own text:
 
-- **Comment 1 is the operative renewed step-9 `PASS`**, and the anchor §H.2 requires.
+- **Comment 1 is the operative renewed step-9 `PASS`**, and is the evidence §H's **anchor 2**
+  requires.
 - **Comment 2 contains no `PASS`, and does not invalidate, supersede, contradict, or weaken comment
   1.** It says so itself: it "**is not** a readiness determination, and it must not be read, cited, or
   relied on as one," and its C1–C10 observations are recorded there as "**factual observations only**"
