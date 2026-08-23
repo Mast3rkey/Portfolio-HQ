@@ -219,7 +219,7 @@ PRIOR_SENTINELS = (-1, -2, -50)
 
 #: The number GitHub ISSUED for this unit, read back from the live API after the draft was opened.
 #: Never predicted, never guessed.
-THIS_PULL_REQUEST = -51
+THIS_PULL_REQUEST = 352
 
 THIS_GATE = "xasset0051-renewed-drift-check-authorization"
 PRIOR_UNIT_GATE = "xasset0050-renewed-readiness-verification-authorization"
