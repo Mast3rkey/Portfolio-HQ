@@ -11,7 +11,7 @@ and the cluster/T1T2 trims) or margin_state.py's classifier internals
 
 import copy
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
 import yaml
@@ -803,6 +803,59 @@ def _strip_timestamp_line(text):
     return "\n".join(l for l in text.splitlines() if not l.startswith("# Allocation advisory"))
 
 
+# ── controlled clock ───────────────────────────────────────────────────────
+# allocate.py reads the wall clock in more than one place per advisory:
+# a header line ("# Allocation advisory — <ts>") *and* an unstripped
+# timestamp inside the 40% common-driver advisory body ("... + current
+# prices, <ts>) vs ..."). _strip_timestamp_line() removes only the header,
+# so two back-to-back allocate.main() calls that straddle a one-second
+# boundary produce advisories that differ in the *body* — a real, observed
+# CI failure on main (run 32603595964 attempt 1, job 97105352737):
+#
+#     - 22 22:51:54) vs **40
+#     + 22 22:51:55) vs **40
+#
+# That is a defect in the *test*, not in allocate.py: emitting a live
+# wall-clock reading in a live advisory is correct production behaviour and
+# is deliberately left untouched. Any test that compares two separate
+# advisories must therefore control the clock rather than hope the two runs
+# land in the same second.
+
+# The instant every frozen-clock test pins allocate.py's wall clock to. Its
+# exact value is arbitrary; only its *stability across calls* matters.
+_FROZEN_MOMENT = datetime(2026, 8, 22, 22, 51, 54)
+
+
+def _pin_allocate_clock(monkeypatch, moments):
+    """Pin allocate.datetime.now() to a caller-supplied sequence of instants.
+
+    `moments` is a callable taking the 1-based call ordinal and returning the
+    datetime that call should observe. Subclassing the real datetime keeps
+    every other attribute (strftime, arithmetic, comparison) genuine, so only
+    now() is controlled. Returns a list that records each observed instant, so
+    a test can assert the clock was actually consumed rather than assuming it.
+    """
+    observed = []
+
+    class _PinnedClock(datetime):
+        _calls = 0
+
+        @classmethod
+        def now(cls, tz=None):
+            cls._calls += 1
+            moment = moments(cls._calls)
+            observed.append(moment)
+            return moment
+
+    monkeypatch.setattr(allocate, "datetime", _PinnedClock)
+    return observed
+
+
+def _freeze_allocate_clock(monkeypatch, moment=_FROZEN_MOMENT):
+    """Pin every allocate.py wall-clock read to one fixed instant."""
+    return _pin_allocate_clock(monkeypatch, lambda _ordinal: moment)
+
+
 # ── finding 1: --no-log is restricted to --review ──────────────────────────
 # required tests 2, 3, 4: bare / --cash / --margin + --no-log all rejected.
 
@@ -846,6 +899,11 @@ def test_review_no_log_matches_normal_advisory_and_suppresses_writes(tmp_path, m
     perf_log_a = tmp_path / "perf_a.csv"
     perf_log_a.write_text(perf_header)
     _patch_review_cli(monkeypatch, targets_file, holdings_file, logs_dir_a, perf_log_a)
+    # Pin the wall clock for BOTH runs to the same instant. allocate.py emits
+    # a timestamp in the advisory *body* as well as the header, so without
+    # this the two runs can straddle a one-second boundary and disagree on
+    # content that is genuinely identical -- see _pin_allocate_clock above.
+    observed_a = _freeze_allocate_clock(monkeypatch)
     calls = []
     monkeypatch.setattr(allocate, "log_performance", lambda *a, **k: calls.append((a, k)))
     monkeypatch.setattr(sys, "argv", ["allocate.py", "--review"])
@@ -862,6 +920,7 @@ def test_review_no_log_matches_normal_advisory_and_suppresses_writes(tmp_path, m
     perf_log_b = tmp_path / "perf_b.csv"
     perf_log_b.write_text(perf_header)
     _patch_review_cli(monkeypatch, targets_file, holdings_file, logs_dir_b, perf_log_b)
+    observed_b = _freeze_allocate_clock(monkeypatch)
 
     def _forbidden(*a, **k):
         raise AssertionError("log_performance must not run under --review --no-log")
@@ -874,12 +933,155 @@ def test_review_no_log_matches_normal_advisory_and_suppresses_writes(tmp_path, m
     assert perf_log_b.read_text() == perf_header, \
         "--no-log must leave performance_log.csv byte-identical"
 
-    # Same advisory body in both runs -- the --no-log branch sits strictly
-    # after render()/print(out), so content cannot differ by construction;
-    # this proves it rather than assuming it. Only the timestamp header line
-    # (wall-clock, not content) is allowed to differ between the two runs.
-    assert _strip_timestamp_line(out_no_log) == _strip_timestamp_line(out_normal)
+    # Both runs observed the clock, and observed only the frozen instant --
+    # so the comparison below is a real content comparison under a
+    # controlled clock, not a comparison that happened to avoid the race.
+    assert set(observed_a) == set(observed_b) == {_FROZEN_MOMENT}
+    # Each advisory reads the clock at least twice (header + the in-body
+    # common-driver reading), and the normal run reads it exactly once more
+    # than the --no-log run -- that extra read is the allocation-log
+    # filename, which --no-log correctly never reaches.
+    assert len(observed_b) >= 2, "advisory must read the clock in header AND body"
+    assert len(observed_a) == len(observed_b) + 1, \
+        "--no-log must skip exactly the allocation-log filename timestamp"
+
+    # Same advisory in both runs -- the --no-log branch sits strictly after
+    # render()/print(out), so content cannot differ by construction; this
+    # proves it rather than assuming it. Under the frozen clock the ENTIRE
+    # advisory is compared, header included: nothing is stripped, skipped or
+    # normalised away, so no difference anywhere in the body can hide.
+    assert out_no_log == out_normal
+
+    # ...and what was compared is the real advisory, not an empty or gutted
+    # string: the header and the timestamped common-driver body line -- the
+    # exact line the historical race differed on -- are both present.
     assert "# Allocation advisory" in out_no_log
+    assert _FROZEN_MOMENT.strftime("%Y-%m-%d %H:%M:%S") in out_no_log
+    assert "## 40% AI/platform common-driver exposure" in out_no_log
+    assert out_no_log.count(_FROZEN_MOMENT.strftime("%Y-%m-%d %H:%M:%S")) >= 2, \
+        "both the header and the in-body wall-clock reading must be compared"
+
+
+# ── regression cover for the one-second advisory race ──────────────────────
+# These guard the repair above. They are deliberately written so that the
+# historical defect is *reproduced* rather than merely described.
+
+def _review_advisory_pair(tmp_path, monkeypatch, capsys, moment_normal, moment_no_log):
+    """Run `--review` then `--review --no-log`, each under its own pinned
+    clock, and return their two advisories (stdout only -- allocate.py sends
+    both log-status lines to stderr, so stdout is exactly the advisory)."""
+    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path)
+    perf_header = "date,net_equity,gross,margin_debt,qqq_price,voo_price,note\n"
+    outs = []
+    for tag, argv_tail, moment in (
+        ("a", ["--review"], moment_normal),
+        ("b", ["--review", "--no-log"], moment_no_log),
+    ):
+        perf_log = tmp_path / f"perf_{tag}.csv"
+        perf_log.write_text(perf_header)
+        _patch_review_cli(monkeypatch, targets_file, holdings_file,
+                          tmp_path / f"logs_{tag}", perf_log)
+        _freeze_allocate_clock(monkeypatch, moment)
+        monkeypatch.setattr(allocate, "log_performance", lambda *a, **k: None)
+        monkeypatch.setattr(sys, "argv", ["allocate.py", *argv_tail])
+        allocate.main()
+        outs.append(capsys.readouterr().out)
+    return outs
+
+
+def test_adjacent_second_advisories_still_differ_after_header_only_stripping(
+        tmp_path, monkeypatch, capsys):
+    """The historical failure, reproduced deterministically.
+
+    This is the non-vacuity guard: it proves that stripping only the header
+    line -- what the test did before this repair -- genuinely fails when the
+    two runs land in adjacent seconds. If allocate.py ever stopped emitting a
+    second, in-body wall-clock reading, this test would start failing and the
+    frozen-clock repair could be revisited.
+    """
+    earlier = datetime(2026, 8, 22, 22, 51, 54)
+    later = datetime(2026, 8, 22, 22, 51, 55)
+    out_normal, out_no_log = _review_advisory_pair(
+        tmp_path, monkeypatch, capsys, earlier, later)
+
+    # Header-only stripping is NOT sufficient: the advisories still differ.
+    assert _strip_timestamp_line(out_no_log) != _strip_timestamp_line(out_normal)
+
+    # ...and they differ on exactly one line: the in-body wall-clock reading.
+    differing = [
+        (x, y)
+        for x, y in zip(_strip_timestamp_line(out_normal).splitlines(),
+                        _strip_timestamp_line(out_no_log).splitlines())
+        if x != y
+    ]
+    assert len(differing) == 1, differing
+    before, after = differing[0]
+    assert earlier.strftime("%Y-%m-%d %H:%M:%S") in before
+    assert later.strftime("%Y-%m-%d %H:%M:%S") in after
+    # Everything else about that line is identical -- it is a timestamp
+    # difference, never a difference in advisory substance.
+    assert (before.replace(earlier.strftime("%Y-%m-%d %H:%M:%S"), "")
+            == after.replace(later.strftime("%Y-%m-%d %H:%M:%S"), ""))
+
+
+def test_frozen_clock_makes_the_two_advisories_byte_identical(
+        tmp_path, monkeypatch, capsys):
+    """The same adjacent-second scenario, repaired: one pinned instant for
+    both runs yields byte-identical advisories with nothing stripped."""
+    out_normal, out_no_log = _review_advisory_pair(
+        tmp_path, monkeypatch, capsys, _FROZEN_MOMENT, _FROZEN_MOMENT)
+    assert out_no_log == out_normal
+
+
+def test_frozen_clock_comparison_ignores_no_advisory_content(
+        tmp_path, monkeypatch, capsys):
+    """The repair must not work by deleting or blanket-ignoring content.
+
+    Proves the compared advisory is substantial, is compared whole, and
+    still contains the exact body line the historical race differed on.
+    """
+    out_normal, out_no_log = _review_advisory_pair(
+        tmp_path, monkeypatch, capsys, _FROZEN_MOMENT, _FROZEN_MOMENT)
+    stamp = _FROZEN_MOMENT.strftime("%Y-%m-%d %H:%M:%S")
+
+    # Nothing is stripped: the whole advisory is compared, header included.
+    assert out_no_log == out_normal
+    assert _strip_timestamp_line(out_normal) != out_normal, \
+        "the header line must still be present in the compared text"
+
+    # Real content, not a gutted string.
+    assert len(out_normal.splitlines()) > 10
+    assert "# Allocation advisory" in out_normal
+    assert "## 40% AI/platform common-driver exposure" in out_normal
+
+    # Both wall-clock readings are inside the compared text.
+    assert out_normal.count(stamp) == 2
+    body_line = next(l for l in out_normal.splitlines()
+                     if stamp in l and not l.startswith("# Allocation advisory"))
+    assert "current prices" in body_line and "ceiling" in body_line
+
+
+def test_production_wall_clock_behaviour_is_unchanged(tmp_path, monkeypatch, capsys):
+    """allocate.py's live timestamps are production behaviour, not a defect.
+
+    The repair is confined to the tests: unpatched, allocate.datetime is the
+    real stdlib class, and when the clock genuinely advances the advisory
+    genuinely reports the later instant. Nothing here asks allocate.py to
+    stop reading the wall clock.
+    """
+    # Unpatched, allocate.py holds the real datetime class.
+    assert allocate.datetime is datetime
+
+    # And it faithfully reports whatever the clock says -- a later clock
+    # produces a later advisory timestamp, in the body as well as the header.
+    earlier = datetime(2026, 8, 22, 22, 51, 54)
+    later = datetime(2026, 8, 22, 23, 45, 1)
+    out_earlier, out_later = _review_advisory_pair(
+        tmp_path, monkeypatch, capsys, earlier, later)
+    for moment, out in ((earlier, out_earlier), (later, out_later)):
+        stamp = moment.strftime("%Y-%m-%d %H:%M:%S")
+        assert out.count(stamp) == 2, \
+            "allocate.py must still emit both live wall-clock readings"
 
 
 # required test 5: normal --cash/--margin/--review logging is unchanged
