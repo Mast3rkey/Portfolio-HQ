@@ -16887,6 +16887,106 @@ workstreams:
           protected portfolio paths are unchanged, Stage 1 remains UNARMED and NOT EXECUTABLE,
           lane ABSENT, AUTHORIZATION_ROOT absent, ATTEMPT_1 intact, unclaimed and unconsumed,
           stage1_results.yaml absent, and XASSET-0027 SS-P.1 remains one, unspent.
+      - gate: xasset0055-verdict-boundary-governance
+        status: in_progress
+        pr: 356
+        description: >-
+          FORMAL-DISPOSITION VERDICT-BOUNDARY GOVERNANCE, filed as XASSET-0055. GOVERNANCE-ONLY
+          LANE G FILING: it changes NO production code --
+          level1_stage1_execution_authorization.py is byte-identical to this filing's base at
+          SHA-256 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541, blob
+          f71b08b4ebe95f161c57cdbb2a924748f13af02d -- and it AUTHORIZES exactly one future,
+          separate, bounded REPLACEMENT parser-correction implementation and nothing downstream.
+
+          WHY A REPLACEMENT IS NEEDED. PR #355, the XASSET-0053 SS-C implementation unit, was
+          rejected by two independent reviews and is CLOSED UNMERGED with its branch and history
+          preserved: FULL review 5008847293 at head 15dde3c866ced0f9ff031811f0b2b31f5d56c29b (1
+          BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE) and DELTA review 5010334966 at head
+          148a1584cd9a4c13d3d80b9712b08bf35c080a0e (1 BLOCKING / 1 MAJOR / 0 MINOR / 0 NOTE).
+          NOTHING FROM PR #355 BECAME EFFECTIVE; main is unchanged at
+          683c324629544a84d2cf75ebca37325e3375c479 and XASSET-0054 never entered the catalog.
+          Its identifier is treated as CONSUMED by that closed branch and is NOT reused.
+
+          BOTH DELTA FINDINGS WERE INDEPENDENTLY REPRODUCED BEFORE THIS FILING. Finding 1:
+          FORMAL DISPOSITION: <approval> DO NOT MERGE returns a str, not
+          MALFORMED_FORMAL_DISPOSITION, in both accepted wrapper forms. Finding 2, a real
+          regression: at PR #355's first reviewed head FORMAL DISPOSITION: approved returned the
+          exact string approved; at its corrected head a lower-case heuristic made it MALFORMED,
+          and all five previously-parseable canonical verdicts tested regressed.
+
+          THE CONFLICT IS IN THE GOVERNING TEXT, NOT IN ANY IMPLEMENTATION. A new upper-case
+          verdict such as BOUNDED CORRECTION REQUIRED -- the literal verdict of both rejecting
+          reviews -- and an approval with appended upper-case prose share every syntactic
+          feature under an OPEN verdict vocabulary: prefix, upper case throughout, no delimiter,
+          ordinary word tokens. XASSET-0053 SS-D.1/D.3/D.14 require arbitrary existing canonical
+          verdicts to keep parsing, while SS-D.9/D.17/D.19 require ALL trailing prose to become
+          MALFORMED. For the no-delimiter case these cannot both hold, and every heuristic must
+          violate one; PR #355 demonstrated both failure directions.
+
+          THE GOVERNED RESOLUTION, stated explicitly rather than left as an implementation
+          detail: the entire remaining post-prefix region is the verdict, returned verbatim and
+          never truncated; exact equality applies to that ENTIRE region, so appended text can
+          never authenticate as approval; syntactically undetectable trailing text with no
+          delimiter is rejected by VERDICT INEQUALITY rather than falsely classified MALFORMED;
+          and this is an explicit governed rule, not an undocumented exception. The narrowing
+          reaches ONLY that class -- SS-D.9/D.17/D.19 continue to require MALFORMED in full
+          wherever a boundary is syntactically locatable. The cost is stated plainly rather than
+          concealed: the refusal is equally fail-closed but the diagnostic is weaker for that
+          one class.
+
+          THE LOWER-CASE HEURISTIC IS REMOVED AND PROHIBITED. Prior mixed-case and lower-case
+          canonical-line behaviour is restored. No successor may reintroduce an uppercase-only
+          verdict grammar, or any equivalent case-, length-, or word-count-based verdict rule,
+          without its own separate governance decision. Recorded explicitly: a test may not
+          authorize the production behaviour it asserts.
+
+          PR #355'S PROVEN SEPARATOR WORK IS PRESERVED AS GOVERNED REQUIREMENT, exactly as DELTA
+          review 5010334966 independently confirmed it: recognized separator suffixes must be
+          validated as finding-count metadata and never discarded unread; arbitrary separator
+          suffixes fail MALFORMED; earliest-separator handling is preserved; and the recognized
+          separator tuple is unchanged.
+
+          A CLOSED VERDICT VOCABULARY WAS CONSIDERED AND REJECTED ON EVIDENCE. XASSET-0053
+          SS-B.7's own scan enumerated 34 formal-disposition LINES across PRs #337-#353 (20
+          plain, 8 balanced-bold, 6 heading-form) but never enumerated VERDICTS, and no
+          machine-readable verdict list has ever existed here. Any list assembled before the PR
+          #355 reviews would have refused those reviews' own verdict. Stated honestly: BOUNDED
+          CORRECTION REQUIRED is not novel -- it appears six times in this register as narrative
+          description of earlier reviews -- what is absent is any ENUMERATION a closed
+          implementation could have been built from. The closed-vocabulary route remains
+          available to a future decision willing to enumerate exhaustively and accept amendment
+          on every new verdict.
+
+          TEN PREDECESSOR SUITES WERE RE-ANCHORED, NEVER WEAKENED. active_branch, active_pr and
+          last_verified_main_sha are WS-0014's SINGLE SHARED live self-reference fields under
+          OPS-0001's Active-GitHub-fields rule, so advancing them onto this unit necessarily
+          falsified assertions in ten predecessor suites plus two catalog-tail assertions in
+          XASSET-0053's own suite. Verified, not assumed: all pass at the base 683c3246 and
+          fail only under this unit's lawful advance. Each was re-anchored onto a closed
+          immutable anchor, following the remedy XASSET-0043/XASSET-0044 already established
+          for the XASSET-0042 suite, with every superseded value retained beside the new one as
+          a NEGATIVE pin so the field stays bound at BOTH ends. There is deliberately no
+          XASSET0054 generation, because PR #355 never became main state. Two assertions that
+          could not be re-pointed at the same value were re-anchored at the durable fact
+          underneath them: XASSET-0053's own active_pr assertion now reads that unit's own
+          GATE, which does not move and still carries the real number GitHub issued rather than
+          its sentinel, and its catalog-tail assertions now name the successor set explicitly
+          rather than being relaxed to presence. NOTHING WAS DELETED, SKIPPED, XFAILED OR
+          RELAXED, every re-anchored suite's assertion count only grew, and no re-anchored
+          suite is a LOAD_BEARING_RELPATHS entry, so the module's trust boundary is untouched
+          and no rebinding is implied.
+
+          THE REPLACEMENT IMPLEMENTATION WILL AGAIN CHANGE A LOAD-BEARING BYTE.
+          level1_stage1_execution_authorization.py is LOAD_BEARING_RELPATHS[0], so its bound
+          digest will go stale by design -- the fail-closed hand-off to a LATER, SEPARATELY
+          AUTHORIZED step-8-equivalent rebinding unit. This filing authorizes NO rebinding, no
+          re-pinning, no readiness verification, no drift verification, no link 5, no
+          attestation, no lane creation, no arming, no claim, no gate evaluation, no execution,
+          no results, no allocation, no percentages, no trading, and no protected RISK work.
+          Both authorization predicates remain False, lane ABSENT, AUTHORIZATION_ROOT absent,
+          ATTEMPT_1 intact, unclaimed and unconsumed, stage1_results.yaml absent, the frozen
+          universe 680/48 unchanged, and XASSET-0027 SS-P.1 one, unspent. Stage 1 remains
+          UNARMED and NOT EXECUTABLE.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -18578,9 +18678,9 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/xasset-0053-parser-contract-auth-k7m2qx
-    active_pr: 354
-    last_verified_main_sha: cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6
+    active_branch: claude/xasset-0055-parser-contract-conflict-w4kp2n
+    active_pr: 356
+    last_verified_main_sha: 683c324629544a84d2cf75ebca37325e3375c479
     last_verified_date: "2026-08-24"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

@@ -234,6 +234,22 @@ PRIOR_CLOSURE_GATE = "xasset0052-post-merge-verification-and-link5-stop"
 
 BRANCH = "claude/xasset-0053-parser-contract-auth-k7m2qx"
 
+#: RE-ANCHORED BY XASSET-0055. `active_branch`, `active_pr` and `last_verified_main_sha` are
+#: WS-0014's SINGLE SHARED live self-reference fields, not this unit's own. PR #354 -- this
+#: unit's own pull request -- merged at `683c3246...`, so under OPS-0001's Active-GitHub-fields
+#: rule the shared fields lawfully advanced onto the successor that is now live. This unit's own
+#: values are retained below as NEGATIVE pins rather than deleted, and its own GATE still carries
+#: its own real number, which is the immutable fact those assertions were really protecting.
+#: There is deliberately no XASSET-0054 generation: XASSET-0054's pull request #355 was CLOSED
+#: UNMERGED after independent DELTA review 5010334966, so it never became `main` state.
+SUCCESSOR_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
+SUCCESSOR_BRANCH = "claude/xasset-0055-parser-contract-conflict-w4kp2n"
+#: The branch of the unit that was closed unmerged. Preserved history, never live state.
+CLOSED_UNMERGED_BRANCH = "claude/xasset-0054-parser-contract-correction-h3nq7p"
+#: Every decision appended to the catalog AFTER this one. The catalog assertions below stay
+#: EXACT by naming this set explicitly rather than being relaxed to "somewhere in the list".
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0055",)
+
 
 # =============================================================================================
 # helpers
@@ -1599,19 +1615,37 @@ class TestRegisterSynchronisation:
         assert sum(1 for w in data["workstreams"] if w.get("priority") == "primary") == 0
 
     def test_the_active_branch_names_this_unit(self, ws0014):
-        assert ws0014["active_branch"] == BRANCH
+        """RE-ANCHORED BY XASSET-0055 -- see `SUCCESSOR_BRANCH`. The shared live field moved
+        onto the successor; this unit's own branch survives in the register as history, which
+        is what this assertion was really protecting. Bound at BOTH ends."""
+        assert ws0014["active_branch"] == SUCCESSOR_BRANCH
+        assert ws0014["active_branch"] != BRANCH
+        assert ws0014["active_branch"] != CLOSED_UNMERGED_BRANCH
+        # This unit's own record in the register is its GATE, which does not move and still
+        # carries this unit's own real pull-request number. The register does not store a
+        # per-gate branch string, so that -- not the branch text -- is the durable anchor.
+        gate = next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)
+        assert gate["pr"] == THIS_PULL_REQUEST
 
     def test_the_last_verified_main_sha_advanced_and_is_bound_at_both_ends(self, ws0014):
-        assert ws0014["last_verified_main_sha"] == BASE_SHA
-        for finished in (XASSET0052_BASE, BOUND_MERGE_SHA, XASSET0052_ACCEPTED_HEAD):
+        """RE-ANCHORED BY XASSET-0055 -- see `SUCCESSOR_MAIN_SHA`. This unit's own base joins
+        the negative pins rather than being deleted, so the field stays bound at BOTH ends."""
+        assert ws0014["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
+        for finished in (BASE_SHA, XASSET0052_BASE, BOUND_MERGE_SHA, XASSET0052_ACCEPTED_HEAD):
             assert ws0014["last_verified_main_sha"] != finished, finished
 
     def test_the_active_pr_is_the_real_github_number_not_the_sentinel(self, ws0014):
-        active = ws0014["active_pr"]
-        assert active == THIS_PULL_REQUEST
-        assert active != PR_SENTINEL, "the sentinel was never replaced"
-        assert active not in PRIOR_SENTINELS
-        assert active > BOUND_AUTHORIZING_PULL_REQUEST
+        """RE-ANCHORED BY XASSET-0055. The shared live `active_pr` moved onto the successor, so
+        it no longer names this unit. What this test actually protects -- that THIS unit's own
+        number is the real one GitHub issued and never its sentinel -- is immutable history and
+        is asserted here against this unit's OWN gate, which does not move."""
+        gate = next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)
+        assert gate["pr"] == THIS_PULL_REQUEST
+        assert gate["pr"] != PR_SENTINEL, "the sentinel was never replaced"
+        assert gate["pr"] not in PRIOR_SENTINELS
+        assert gate["pr"] > BOUND_AUTHORIZING_PULL_REQUEST
+        # The shared field has advanced off this unit and must not silently revert onto it.
+        assert ws0014["active_pr"] != THIS_PULL_REQUEST
 
     def test_the_finished_units_gate_is_not_rewritten(self, ws0014):
         gate = next(g for g in ws0014["milestones"] if g["gate"] == PRIOR_UNIT_GATE)
@@ -1862,10 +1896,13 @@ class TestRegisterSynchronisation:
 
 class TestCatalogSynchronisation:
     def test_the_catalog_lists_this_decision_last_and_uniquely(self, catalog):
+        """RE-ANCHORED BY XASSET-0055. Successors append after this decision, so "last" is
+        stated EXACTLY against the named successor set rather than relaxed to "present"."""
         ids = [d["decision_id"] for d in catalog]
         assert len(ids) == len(set(ids))
-        assert ids[-1] == DECISION_ID
         assert ids.count(DECISION_ID) == 1
+        assert ids[len(ids) - 1 - len(SUCCESSORS_APPENDED_SINCE)] == DECISION_ID
+        assert tuple(ids[ids.index(DECISION_ID) + 1:]) == SUCCESSORS_APPENDED_SINCE
 
     def test_the_catalog_entry_points_at_the_real_file(self, catalog):
         entry = next(d for d in catalog if d["decision_id"] == DECISION_ID)
@@ -1916,8 +1953,12 @@ class TestNonVacuityAgainstTheBaseTree:
 
     def test_the_catalog_gained_exactly_one_entry(self, catalog):
         before = yaml.safe_load(_git("show", f"{BASE_SHA}:governance/decisions.yaml"))["decisions"]
-        assert len(catalog) == len(before) + 1
+        # RE-ANCHORED BY XASSET-0055: successors append too, so the growth this unit itself
+        # caused stays EXACT by naming them, rather than being relaxed to an inequality.
+        assert len(catalog) == len(before) + 1 + len(SUCCESSORS_APPENDED_SINCE)
         assert DECISION_ID not in {d["decision_id"] for d in before}
+        for successor in SUCCESSORS_APPENDED_SINCE:
+            assert successor not in {d["decision_id"] for d in before}
 
     def test_the_base_did_not_already_name_this_decision_anywhere(self):
         result = subprocess.run(
