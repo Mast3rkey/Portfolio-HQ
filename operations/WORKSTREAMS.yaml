@@ -16889,7 +16889,7 @@ workstreams:
           stage1_results.yaml absent, and XASSET-0027 SS-P.1 remains one, unspent.
       - gate: xasset0055-verdict-boundary-governance
         status: in_progress
-        pr: -55
+        pr: 356
         description: >-
           FORMAL-DISPOSITION VERDICT-BOUNDARY GOVERNANCE, filed as XASSET-0055. GOVERNANCE-ONLY
           LANE G FILING: it changes NO production code --
@@ -18679,7 +18679,7 @@ workstreams:
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
     active_branch: claude/xasset-0055-parser-contract-conflict-w4kp2n
-    active_pr: -55
+    active_pr: 356
     last_verified_main_sha: 683c324629544a84d2cf75ebca37325e3375c479
     last_verified_date: "2026-08-24"
     authorized_by: >

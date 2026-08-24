@@ -73,7 +73,9 @@ BRANCH = "claude/xasset-0055-parser-contract-conflict-w4kp2n"
 #: prior generation's sentinel.
 PR_SENTINEL = -55
 PRIOR_SENTINELS = (-1, -2, -50, -51, -52, -53, -54)
-THIS_PULL_REQUEST = PR_SENTINEL
+#: The number GitHub actually issued, read back from the live pull request after opening.
+#: Committed as the impossible sentinel -55 first; never predicted.
+THIS_PULL_REQUEST = 356
 
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
 

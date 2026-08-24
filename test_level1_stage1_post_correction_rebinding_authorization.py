@@ -185,7 +185,7 @@ XASSET0053_ACTIVE_PR = 354
 XASSET0055_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
 #: Committed as an impossible sentinel first (-55), then replaced by the number GitHub actually
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
-XASSET0055_ACTIVE_PR = -55
+XASSET0055_ACTIVE_PR = 356
 
 #: A real, immutable, historical commit pair in which a protected path GENUINELY changed --
 #: PR #342's base and its merge, across which the authorization module was lawfully corrected.
