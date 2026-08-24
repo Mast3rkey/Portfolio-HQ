@@ -16434,6 +16434,248 @@ workstreams:
           XASSET-0049 lawfully rebound them. Stage 1 remains UNARMED and NOT EXECUTABLE, lane
           state remains ABSENT, new_execution_is_authorized() returns False, and ATTEMPT_1 is
           intact, unclaimed and unconsumed.
+      - gate: xasset0051-post-merge-verification
+        status: complete
+        pr: 352
+        description: >-
+          ADDITIVE POST-MERGE FACTUAL SYNCHRONISATION for PR #352, recorded by the XASSET-0052
+          authoring session. The preceding xasset0051-renewed-drift-check-authorization gate's
+          own text and its status: in_progress are LEFT BYTE-UNEDITED -- they were accurate while
+          that lifecycle was live, and this repository's convention (see
+          xasset0049-post-merge-verification and xasset0050-post-merge-verification) is to CLOSE a
+          finished unit by an additive successor gate rather than by rewriting the finished gate's
+          history. This gate is that closure, and it additionally records the completed link-4
+          unit that ran under the now-effective authority.
+
+          XASSET-0051's complete seven-condition SS-N lifecycle is CLOSED and the decision is
+          EFFECTIVE. Independently re-verified live this session, not carried forward from any
+          summary: PR #352 is closed, merged, not draft, merged_by Mast3rkey, 15 files, 3 commits;
+          base ea9e74a1f4224a78df2416db9c872b0c5812894b; accepted head
+          753524a96526d2e6ccbcffb065baf3a2e1dfaf7e; independent FULL exact-head review 5002650437
+          (BOUNDED CORRECTION REQUIRED, 0 BLOCKING / 0 MAJOR / 1 MINOR); bounded metadata-only
+          correction 5386875953; clean exact-head DELTA review 5002770371 at the SAME head
+          (0/0/0/0); principal exact-head acceptance 5386910600; normal merge
+          8def8bd096b4edecbf10fc20870a6d03b6cb56fe with ordered parents ea9e74a1... then
+          753524a9..., exactly two, merge tree 30135e28977e4a8a8e4fafbfc1070d80b6439fbe
+          byte-identical to the accepted head's own tree (zero drift at merge); post-merge
+          verification 5386933946; merge-commit CI run 32650261056 / job 97220609883, attempt 1,
+          push event, head_sha equal to the exact merge SHA, conclusion success; and final
+          post-CI lifecycle closure 5386974704.
+
+          THE COMPLETED LINK-4 UNIT. The single XASSET-0051-authorized unit then ran, in a
+          separate operational session, and returned FORMAL DETERMINATION: STEP_10_NO_DRIFT,
+          recorded as durable external evidence at issuecomment-5387645607 on PR #352, posted
+          2026-08-23T18:09:48Z by Mast3rkey, NEVER EDITED (created_at == updated_at), body
+          SHA-256 898d82c75d27d9da81e7d41b1e4429101a6490bfaa8aabbc01db030d0ef57646 computed over
+          the HTML-UNESCAPED comment body as the GitHub API returns it (the raw escaped body
+          hashes differently; the normalization is recorded because a hash without one is
+          unverifiable). That determination found BOTH mandatory SS-H anchors clean -- anchor 1
+          the XASSET-0049 bound merge a941455491cc5e4d3d868775fb6b4b88f0fe2ce3 with ordered
+          parents f052efad... then b2059e80..., no third parent, tree
+          b7015b271362ae0c2fe663e8bfda9c6d10de5e7e, asserted against the live object store; anchor
+          2 the renewed step-9 PASS issuecomment-5384453102 -- with all EIGHTEEN bound paths
+          byte-identical across the bound merge, the anchor-2 checkout, current main and the
+          worktree; canonical pins and the frozen 680 / 48 / 73c0965e... universe intact; lane
+          state ABSENT; ATTEMPT_1 intact, unclaimed, unconsumed; and NO REPOSITORY MUTATION of any
+          kind. XASSET-0051's "exactly one" grant is therefore SPENT and its unit is COMPLETE AND
+          CONSUMED. Per XASSET-0051 SS-K the determination states in terms that it "authorizes
+          nothing further" and is "not permission to produce an attestation, to arm Stage 1, to
+          reach READY, to claim ATTEMPT_1, to execute the 680-construction run, or to perform any
+          part of link 5".
+
+          Nothing in this closure gate arms, claims, executes, or authorizes anything. Link 4 is
+          discharged; link 5 remains a separate question answered only by the separately filed
+          XASSET-0052 and its own complete lifecycle. Stage 1 remains UNARMED and NOT EXECUTABLE,
+          lane state ABSENT, ATTEMPT_1 intact, unclaimed and unconsumed, and XASSET-0027 SS-P.1
+          remains one, unspent.
+      - gate: xasset0052-renewed-step11-activation-authorization
+        status: in_progress
+        pr: 353
+        description: >-
+          RENEWED LINK-5 / STEP-11 ACTIVATION-AND-EXECUTION AUTHORIZATION, filed as XASSET-0052.
+          DESIGN-ONLY LANE G GOVERNANCE AUTHORIZATION: it AUTHORIZES exactly one future, separate,
+          bounded XASSET-0041 SS-I link 5 / XASSET-0030 SS-G.B step-11 activation-and-execution
+          unit against the current XASSET-0049-bound system, and it PERFORMS NO PART OF THAT UNIT
+          -- it generates no attestation, creates no AUTHORIZATION_ROOT, arms nothing, reaches no
+          READY, claims nothing, evaluates no gate, executes nothing, produces no result, and
+          persists nothing.
+
+          THE DISTINCTION ANY SUMMARY MUST PRESERVE (XASSET-0052 SS-A.1, quoted verbatim):
+          XASSET-0052 CONDITIONALLY AUTHORIZES exactly one future, separate LINK-5
+          activation-and-execution unit, but THIS FILING PERFORMS NONE OF THOSE ACTS, and NONE IS
+          EXERCISABLE UNLESS AND UNTIL SS-N CLOSES AND EVERY SS-G AND SS-G.1 CONDITION HOLDS.
+          THE ATTESTATION, AUTHORIZATION_ROOT, ARMING, READY, THE CLAIM OF ATTEMPT_1, GATE
+          EVALUATION, THE 680-CONSTRUCTION RUN, PRODUCTION OF THE CANONICAL RUNNER ARTIFACT, AND
+          COMPLETION OF THE LANE ARE EXACTLY WHAT THIS DECISION IS THE AUTHORITY FOR. Neither
+          link 5 nor any of its constituent acts ever belongs inside a "not authorized" list: they
+          are the one thing this decision grants. A record that both grants and denies them is not
+          a wording defect, it is unsafe acceptance evidence, because a reader cannot tell which
+          half governs. THREE CLAIMS ARE PROHIBITED ANYWHERE IN THIS ENTRY, THE DECISION, THE
+          PULL-REQUEST BODY OR ANY REPORT: (1) that the constituent link-5 acts are "not
+          authorized by this filing itself" -- this filing IS their conditional authority source;
+          (2) that this filing adds "zero activation authority" or "zero activation
+          authorizations" -- it adds exactly one, conditionally, which is its entire purpose, and
+          the correct narrower statement is ZERO COMMITTED ACTIVATION FACTORS and ZERO ACTIVATION
+          ACTS; (3) that this filing performed, armed, claimed, executed or produced anything --
+          it did none of those. The grant is of CONDITIONAL AUTHORITY, never of the ACT and never
+          of present exercisability: nothing in this decision, its merge, or its lifecycle closure
+          attests, arms, claims, or executes anything.
+
+          WHY A NEW AUTHORITY WAS NEEDED. XASSET-0040 does not supply it. Its SS-A authorized
+          "exactly one" step-11 unit; that unit ran under effective XASSET-0040 and reached its
+          FIRST terminal condition, recorded at issuecomment-5343692162 on PR #340 as
+          STOPPED_BEFORE_ATTESTATION -- a SS-H condition was unmet, so the unit did not attest,
+          not arm, not claim, and not execute; write_authorization, claim_execution, run_stage1,
+          write_stage1_results and complete_execution were each NEVER CALLED; and ZERO gates were
+          evaluated for any registered construction. Its single grant is therefore CONSUMED BY
+          THAT EXERCISE and XASSET-0040 IS NOT REVIVED. TEN filings named step 11 / link 5 and ALL
+          TEN declined to grant it: XASSET-0041 SS-I, XASSET-0043 SS-K, XASSET-0044 SS-I,
+          XASSET-0045, XASSET-0046, XASSET-0047, XASSET-0048 SS-G, XASSET-0049, XASSET-0050 SS-K
+          and XASSET-0051 SS-L. Every quote is machine-verified verbatim against the live
+          predecessor file, so a paraphrase drifting from source fails rather than survives.
+
+          THE DEFECT THAT STOPPED XASSET-0040 WAS CORRECTED. It was a governance-evidence gap on
+          PR #337, not a defect in the mechanism, the canonical bytes, the universe or the lane:
+          the PR #337 acceptance comment 5335697214 and its post-merge verification comment
+          5335849767 were each authored by claude[bot], not by the principal / lifecycle operator
+          Mast3rkey, so PRINCIPAL_EXACT_HEAD_ACCEPTANCE and POST_MERGE_VERIFICATION did not
+          authenticate. XASSET-0041 SS-I fixed the shape of the remedy in accepted text, and each
+          link has since been separately authorized and separately performed: link 1 correction
+          (XASSET-0041 authorized, XASSET-0042 performed, PR #342); link 2 step-8-EQUIVALENT
+          rebinding (XASSET-0048 authorized, XASSET-0049 performed, PR #349, boundary extended
+          additively to EIGHTEEN paths, step 8's own budget NOT re-consumed); link 3 renewed
+          readiness (XASSET-0050 authorized; STEP_9_READINESS_VERIFICATION_PASS at
+          issuecomment-5384453102, C1-C11 all PASS); link 4 renewed drift check (XASSET-0051
+          authorized; STEP_10_NO_DRIFT at issuecomment-5387645607). XASSET-0045 / XASSET-0046 /
+          XASSET-0047 sit inside that chain as post-merge-CI recovery filings and each withheld
+          Step 11 in terms. NEITHER CLEAN RESULT AUTHORIZES LINK 5 -- reading link 5 out of a
+          clean link-4 result is the inference XASSET-0039 SS-K first foreclosed, XASSET-0041
+          SS-I restated, and the link-4 determination itself repeated. The authority for link 5
+          comes from XASSET-0052's own SS-N lifecycle and from nowhere else.
+
+          THE INTERVENING-COMMIT RULE (XASSET-0052 SS-G.1). This decision's own normal,
+          lifecycle-closing merge is an EXPECTED GOVERNANCE-ONLY TRANSITION and the ONLY
+          transition admitted between the recorded link-4 determination and the acting head. Its
+          merge identity MUST BE DERIVED AFTER THE NORMAL MERGE AND NEVER PREDICTED -- no merge
+          SHA for this decision appears anywhere in the filing. The future unit must establish
+          from the live object store that: (1) the acting head IS EXACTLY this decision's own
+          lifecycle-closing merge commit -- DESCENDANT ANCESTRY IS NOT SUFFICIENT, and the unit
+          may not treat "the merge is an ancestor" as satisfying this condition; (2) that merge
+          has exactly two ordered parents, FIRST the link-4 observation head
+          8def8bd096b4edecbf10fc20870a6d03b6cb56fe and SECOND this decision's own final accepted
+          head, with NO THIRD PARENT; (3) the merge tree equals the accepted head's own tree,
+          byte-identical, zero drift at merge; and (4) no load-bearing or protected production
+          byte changed across that transition -- all 18 LOAD_BEARING_RELPATHS and the seven
+          protected portfolio paths identical at 8def8bd0..., at the accepted head and at the
+          merge; and (5) THE EXACT POST-CHECKPOINT COMMIT RANGE IS EXACTLY WHAT IT SHOULD BE --
+          the governed set is NOT everything reachable from the acting head (a merge reaches its
+          entire ancestry, so a global-reachability rule would make even a perfectly formed merge
+          UNSATISFIABLE) but the set of commits INTRODUCED AFTER THE OBSERVATION CHECKPOINT, i.e.
+          commits(observation_head..acting_head) must EQUAL EXACTLY
+          commits(observation_head..accepted_head) PLUS the one exact lifecycle-closing merge,
+          WITH NO ADDITIONAL MEMBER; and (6) NO LATER COMMIT FOLLOWS THE MERGE. HISTORICAL
+          ANCESTORS ALREADY REACHABLE FROM THE OBSERVATION CHECKPOINT ARE NOT INTERVENING COMMITS
+          AND MUST NOT BE TREATED AS SUCH -- they are, by construction, part of what the link-4
+          determination already verified clean. ANY COMMIT INSIDE THAT EXACT RANGE THAT IS NOT ONE
+          OF ITS TWO ADMITTED CLASSES IS A FAIL-CLOSED STOP: an additional feature commit not in
+          the accepted head's own range; an unexpected first-parent main commit; a third parent; a
+          post-merge commit; or any other extra member. DESCENDANT ANCESTRY ALONE REMAINS
+          INSUFFICIENT. A stop is lifted ONLY where the offending commit is separately authorized
+          by its own accepted governance decision AND expressly admitted by governed text.
+          DISCOVERY OF SUCH A COMMIT IS NOT ADMISSION OF IT.
+
+          WHAT THE FUTURE UNIT MAY DO (XASSET-0052 SS-I, items 1-7 only). Re-resolve all governing
+          Git and GitHub identities live; verify continuity from the XASSET-0049-bound bytes
+          through the renewed link-3 and link-4 evidence and through this decision's own
+          lifecycle-closing merge; verify all 18 load-bearing paths and the five outcome-capable
+          modules (level1_stage1_runner.py, level1_stage1_result_validator.py,
+          level1_endpoint_evidence_preregistration_validator.py,
+          level1_construction_universe_closure_validator.py,
+          level1_stage1_execution_authorization.py) byte-identical, plus canonical pins, the 680 /
+          48 universe identity, the six REQUIRED_LIFECYCLE_GATES and lane posture; produce the
+          external one-shot attestation using the accepted mechanism EXACTLY AS IT EXISTS; move
+          the lane only in the lawful order ABSENT -> READY -> CLAIMED -> COMPLETED, never
+          skipping, reordering, repeating or re-entering from another state; claim ATTEMPT_1
+          atomically and immediately before the first real gate evaluation; run EXACTLY the frozen
+          680-construction universe ONCE; produce the canonical Stage-1 result artifact as the
+          runner's own output and complete the lane, binding the exact attempt, attestation, claim
+          and result identities; then post durable external link-5 evidence and STOP. Items 8-9
+          (the fail-closed response and the durable external report) are DUTIES, NOT FURTHER
+          STEPS: they do not extend the execution sequence, do not move the lane, produce no
+          result, and authorize no successor work.
+
+          THE MECHANISM IS NOT REBOUND (XASSET-0052 SS-E.1). AUTHORIZING_DECISION remains
+          XASSET-0049, AUTHORIZING_PULL_REQUEST remains 349, REVIEWED_BASE_SHA remains
+          f052efad38e3d57e3e5615799ac3bcbebe83ff5f, LOAD_BEARING_RELPATHS remains the eighteen
+          bound paths, and REQUIRED_LIFECYCLE_GATES remains the six-element tuple. XASSET-0052
+          MUST NOT BE INSERTED into the attestation payload, whose schema is CLOSED: doing so
+          would change a load-bearing byte, invalidate the single step-8-equivalent rebinding at
+          the last possible moment before claim, and require its own separate correction,
+          rebinding and renewed readiness and drift lifecycle. XASSET-0052 is the EXTERNAL
+          GOVERNANCE PRECONDITION, never a payload field. REVIEWED_BASE_SHA is the lawful
+          rebinding base, not a "current main" field, and does not move because this decision
+          merges.
+
+          FAIL-CLOSED AND TERMINAL OUTCOMES (XASSET-0052 SS-J, SS-K, SS-L). Any drift, missing
+          evidence, unexpected state, authentication failure, stale identity, ambiguous actor
+          evidence, continuity gap, lane mismatch, validation failure or uncertainty STOPS the
+          unit: stop, report, change nothing further, and do not attest, arm, claim or execute
+          beyond whatever was already lawfully done. UNCERTAINTY IS FAILURE. The unit is an
+          executor under exact conditions, NEVER A REMEDIATOR -- it may not correct, revert,
+          regenerate, re-pin, rebind, rerun link 3 or link 4 to clear a finding, retry,
+          re-attest, re-claim, recover, reset, or delete any lane path. FINDING THE WORK IS NOT
+          AUTHORITY TO DO THE WORK. The four terminal outcomes are exactly
+          STOPPED_BEFORE_ATTESTATION, STOPPED_AFTER_ATTESTATION_BEFORE_CLAIM, STOPPED_AFTER_CLAIM
+          and COMPLETED; each is terminal, none is a pause; on ANY stop there is no retry, no
+          replacement attestation, no second claim, no reset, no deletion, no recovery, no repair,
+          no rebinding and no continuation, durable evidence must be posted, and ANY RECOVERY
+          REQUIRES NEW AUTHORITY. A post-claim stop leaves ATTEMPT_1 CONSUMED. No outcome of link
+          5 -- including the cleanest possible one -- authorizes any successor unit.
+
+          RESULTS DELIVERY IS SEPARATE (XASSET-0052 SS-F, SS-H.1). SS-G.B step 11 ends at the run.
+          The unit produces the canonical artifact in its own isolated working tree and completes
+          the lane; COMMITTING, REVIEWING AND DELIVERING that artifact into the repository is
+          XASSET-0027 SS-P.1's own exactly-one PR, under its own independent exact-head review and
+          principal acceptance. The unit may not open, consume or pre-empt that PR, may not commit
+          stage1_results.yaml, may not open any branch, commit or pull request, and may not
+          interpret, aggregate, rank or act on the results -- no endpoint, bound, point, range,
+          percentage, weight, target, ladder or allocation follows from the run. A COMPLETED RUN
+          IS A RESULT, NOT A CONCLUSION. XASSET-0027 SS-P.1 remains ONE, UNSPENT.
+
+          EFFECTIVITY (XASSET-0052 SS-N). This authorization becomes effective only after ALL
+          SEVEN of: independent FULL exact-head review; any bounded correction and exact-head
+          re-review at the FINAL accepted head; explicit principal exact-head acceptance at that
+          head; normal merge; immediate post-merge verification; successful merge-commit CI whose
+          head_sha is the EXACT merge SHA (not the PR head's own run, not a run against any other
+          commit); and final post-CI verification and lifecycle closure. NO INDIVIDUAL CONDITION
+          IS SUFFICIENT -- opening this PR authorizes nothing, a green PR-head CI run does not,
+          principal acceptance does not, merge does not. Even then, what becomes authorized is a
+          FUTURE UNIT that must still satisfy every SS-G and SS-G.1 condition at the moment it
+          acts, and that may lawfully end without arming anything.
+
+          THE ONE EXACT REPOSITORY-WRITE EXCEPTION (XASSET-0052 SS-H.1). SS-H forbids the future
+          unit from modifying any PRE-EXISTING TRACKED repository byte, making any COMMITTED
+          repository mutation, creating any branch/commit/PR, or creating any repository file
+          other than one. The single exception, by exact identity rather than category: THE
+          ACCEPTED BOUND RUNNER MAY CREATE EXACTLY
+          research/level1_endpoint_evidence/stage1_results.yaml IN THE ISOLATED OPERATIONAL
+          WORKING TREE as the canonical output of the single authorized run under SS-I.7 -- ONLY
+          AFTER THE LAWFUL CLAIM, by the accepted runner alone, with its exact identity BOUND
+          DURING COMPLETION, thereafter IMMUTABLE TO THIS UNIT (no edit, rewrite, replacement,
+          regeneration, interpretation, commit or delivery), and remaining UNCOMMITTED AND
+          UNDELIVERED. NO OTHER FILE CREATION OR MUTATION OF ANY KIND IS PERMITTED. Delivering
+          that artifact into the repository remains XASSET-0027 SS-P.1's own exactly-one PR, which
+          this unit may not open or consume.
+
+          This filing changes no module constant, no canonical file, no load-bearing path, no
+          runner, no result validator, no universe module, no protected portfolio path and no hash
+          pin, and adds ZERO COMMITTED ACTIVATION FACTORS while performing ZERO ACTIVATION ACTS --
+          what it adds is exactly one CONDITIONAL governance authorization for one future unit,
+          unexercisable before SS-N closes. stage_1_executability.executable stays
+          permanently false and no committed value in this repository -- this decision included --
+          authorizes Stage-1 execution. Stage 1 remains UNARMED and NOT EXECUTABLE, lane state
+          remains ABSENT, new_execution_is_authorized() and active_execution_is_authorized() both
+          return False, and ATTEMPT_1 is intact, unclaimed and unconsumed.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -17152,6 +17394,69 @@ workstreams:
       EXECUTABLE, lane state remains ABSENT, new_execution_is_authorized() returns False,
       stage_1_executability.executable is false, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
+
+      UPDATE, 2026-08-23 (post-XASSET-0051 merge and post-link-4 determination; supersedes the
+      block immediately above as to which unit is live). XASSET-0051's complete seven-condition
+      SS-N lifecycle is CLOSED and the decision is EFFECTIVE: PR #352 merged at
+      8def8bd096b4edecbf10fc20870a6d03b6cb56fe, merge-commit CI run 32650261056 / job 97220609883
+      succeeded at that exact SHA on attempt 1, and final closure was recorded at
+      issuecomment-5386974704. Its single authorized unit then RAN, in a separate operational
+      session, and returned FORMAL DETERMINATION: STEP_10_NO_DRIFT at issuecomment-5387645607 --
+      clean against BOTH mandatory SS-H anchors, all eighteen bound paths byte-identical, canonical
+      pins and the frozen 680 / 48 universe intact, lane state ABSENT, and NO REPOSITORY MUTATION.
+      LINK 4 IS DISCHARGED AND XASSET-0051 IS SPENT; its unit is complete and consumed and MUST NOT
+      BE RERUN OR RE-ADJUDICATED. The sentence above stating that XASSET-0051 is the sole active
+      lane is therefore SATISFIED AND SPENT, not still pending; SUPERSEDED BY EVENT.
+      XASSET-0052 AND ITS GITHUB-ISSUED PULL REQUEST ARE NOW THE SOLE ACTIVE GOVERNANCE LANE AND
+      THE SOLE ACTIVE MUTATION LANE. XASSET-0052 is DESIGN-ONLY: it CONDITIONALLY AUTHORIZES
+      exactly one future, separate, bounded XASSET-0041 SS-I LINK 5 / XASSET-0030 SS-G.B step-11
+      ACTIVATION-AND-EXECUTION unit to produce the external one-shot attestation, arm, take the
+      single lawful claim of ATTEMPT_1, execute the single 680-construction run, produce the
+      canonical runner artifact, and complete that lane -- XASSET-0052 IS THE AUTHORITY SOURCE FOR
+      EACH OF THOSE ACTS -- while THIS FILING PERFORMS NONE OF THEM and CONSUMES NONE OF THE
+      AUTHORITY IT CREATES. NONE OF THOSE ACTS IS EXERCISABLE UNLESS AND UNTIL SS-N CLOSES AND
+      EVERY SS-G AND SS-G.1 CONDITION HOLDS AT THE ACTING MOMENT. LINK 5 IS BEING CONDITIONALLY
+      AUTHORIZED, NOT PERFORMED. XASSET-0040 does not supply that authority: its own "exactly one"
+      grant was spent by the unit that ran and returned STOPPED_BEFORE_ATTESTATION
+      (issuecomment-5343692162 on PR #340), and TEN filings since -- XASSET-0041 SS-I,
+      XASSET-0043 SS-K, XASSET-0044 SS-I, XASSET-0045, XASSET-0046, XASSET-0047, XASSET-0048 SS-G,
+      XASSET-0049, XASSET-0050 SS-K and XASSET-0051 SS-L -- each named step 11 / link 5 and each
+      declined to grant it. XASSET-0040 STAYS SPENT AS A STOP AND IS NOT REVIVED.
+      THE ATTESTATION MECHANISM IS NOT REBOUND. AUTHORIZING_DECISION remains XASSET-0049,
+      AUTHORIZING_PULL_REQUEST remains 349, REVIEWED_BASE_SHA remains f052efad..., and
+      LOAD_BEARING_RELPATHS remains the eighteen bound paths. XASSET-0052 MUST NOT be inserted into
+      the closed attestation payload; it is the EXTERNAL GOVERNANCE PRECONDITION, never a payload
+      field. THE INTERVENING-COMMIT RULE. XASSET-0052's own lifecycle-closing merge is the ONLY
+      transition admitted between the link-4 determination and the acting head; its identity must be
+      DERIVED AFTER THE MERGE AND NEVER PREDICTED; the acting head must BE that merge, not a
+      descendant of it, with first parent exactly 8def8bd096b4edecbf10fc20870a6d03b6cb56fe and no
+      third parent. THE GOVERNED SET IS THE EXACT POST-CHECKPOINT RANGE, NOT GLOBAL REACHABILITY:
+      commits(observation_head..acting_head) must EQUAL EXACTLY
+      commits(observation_head..accepted_head) PLUS the one exact lifecycle-closing merge, WITH NO
+      ADDITIONAL MEMBER and NO LATER COMMIT after the merge. HISTORICAL ANCESTORS ALREADY REACHABLE
+      FROM THE OBSERVATION CHECKPOINT ARE NOT INTERVENING COMMITS and must not be treated as such --
+      a merge reaches its entire ancestry, so a global-reachability rule would make even a perfectly
+      formed merge UNSATISFIABLE. ANY OTHER MEMBER OF THAT EXACT RANGE -- an extra feature commit,
+      an unexpected first-parent main commit, a third parent, or a post-merge commit -- IS A
+      FAIL-CLOSED STOP unless separately authorized and explicitly admitted.
+      THE ONE EXACT REPOSITORY-WRITE EXCEPTION (SS-H.1): the accepted bound runner MAY CREATE
+      exactly research/level1_endpoint_evidence/stage1_results.yaml in the isolated operational
+      working tree as the canonical output of the single authorized run under SS-I.7, ONLY AFTER THE
+      LAWFUL CLAIM, with its exact identity bound during completion, thereafter IMMUTABLE to this
+      unit and remaining UNCOMMITTED AND UNDELIVERED; modifying any pre-existing tracked byte,
+      making any committed repository mutation, and creating any other repository file all remain
+      FORBIDDEN. XASSET-0027 SS-P.1's reserved evaluation/results PR remains ONE, UNSPENT,
+      and is the separate vehicle for delivering the Stage-1 evaluation into the repository.
+      XASSET-0052 adds ZERO COMMITTED ACTIVATION FACTORS and performs ZERO ACTIVATION ACTS -- what
+      it adds is exactly one CONDITIONAL governance authorization for one future unit,
+      unexercisable before SS-N closes; saying it adds "zero activation authority" would be FALSE
+      and is prohibited by SS-A.1. It creates no attestation, lane,
+      AUTHORIZATION_ROOT, claim, ledger entry, execution output or stage1_results.yaml, and
+      performs no runner execution, gate evaluation, portfolio construction, target-allocation
+      calculation, or any downstream Stage-1 operation. Stage 1 remains UNARMED and NOT EXECUTABLE,
+      lane state remains ABSENT, new_execution_is_authorized() and active_execution_is_authorized()
+      both return False, stage_1_executability.executable is false, and ATTEMPT_1 is intact,
+      unclaimed and unconsumed.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -17801,9 +18106,62 @@ workstreams:
       separate authority and its own complete lifecycle. Stage 1 remains UNARMED and NOT
       EXECUTABLE, lane state remains ABSENT, new_execution_is_authorized() returns False, and
       ATTEMPT_1 is intact, unclaimed and unconsumed.
-    active_branch: claude/xasset-0051-link4-auth-bjlfya
-    active_pr: 352
-    last_verified_main_sha: ea9e74a1f4224a78df2416db9c872b0c5812894b
+
+      UPDATE, 2026-08-23 (post-XASSET-0051 merge and post-link-4 determination; supersedes the
+      block immediately above as to which unit is live). XASSET-0051's complete seven-condition
+      SS-N lifecycle CLOSED at merge 8def8bd096b4edecbf10fc20870a6d03b6cb56fe with merge-commit CI
+      run 32650261056 succeeding at that exact SHA on attempt 1 (job 97220609883, 11,295 passed)
+      and final closure issuecomment-5386974704. Its single authorized unit then RAN and returned
+      FORMAL DETERMINATION: STEP_10_NO_DRIFT at issuecomment-5387645607, clean against BOTH
+      mandatory anchors. LINK 4 IS DISCHARGED AND XASSET-0051 IS SPENT; its unit must not be rerun
+      or re-adjudicated, and the claim above that XASSET-0051 is the sole active lane is SUPERSEDED
+      BY EVENT.
+      XASSET-0052 AND ITS GITHUB-ISSUED PULL REQUEST ARE THE SOLE ACTIVE GOVERNANCE LANE AND THE
+      SOLE MUTATION LANE. XASSET-0052 IS DESIGN-ONLY. Merging it will NOT bind bytes, will NOT
+      change any load-bearing path or module, and will NOT make Stage 1 armed or executable -- it
+      CONDITIONALLY AUTHORIZES a future ACTIVATION-AND-EXECUTION unit and IS THE AUTHORITY SOURCE
+      FOR EACH OF THAT UNIT'S ACTS, while adding ZERO COMMITTED ACTIVATION FACTORS and performing
+      ZERO ACTIVATION ACTS. NOTHING IT AUTHORIZES IS EXERCISABLE UNTIL SS-N CLOSES AND EVERY SS-G
+      AND SS-G.1 CONDITION HOLDS.
+      Its own effectivity is conjunctive across all seven SS-N conditions, including successful
+      merge-commit CI whose head_sha is the exact merge SHA -- the condition at which XASSET-0044
+      and XASSET-0045 each permanently stopped.
+      WHAT IT AUTHORIZES, AND WHAT IT DOES NOT. Link 5 of XASSET-0041 SS-I -- a new Step-11
+      authorization -- IS BEING CONDITIONALLY AUTHORIZED BUT NOT PERFORMED, AND IS NOT EXERCISABLE
+      BEFORE EFFECTIVITY. The future unit must verify all
+      eighteen bound paths and the five outcome-capable modules byte-identical to the XASSET-0049
+      bound merge a941455491cc5e4d3d868775fb6b4b88f0fe2ce3, verify continuity through the renewed
+      link-3 PASS issuecomment-5384453102 and the renewed link-4 determination
+      issuecomment-5387645607 read independently from the live comments, and satisfy the
+      INTERVENING-COMMIT RULE exactly: the acting head must BE XASSET-0052's own lifecycle-closing
+      merge -- DESCENDANT ANCESTRY IS NOT SUFFICIENT -- with exactly two ordered parents, first
+      8def8bd096b4edecbf10fc20870a6d03b6cb56fe and second the final accepted head, no third parent,
+      a merge tree byte-identical to the accepted head's own tree, no load-bearing or protected
+      byte changed, and THE EXACT POST-CHECKPOINT RANGE commits(observation_head..acting_head)
+      EQUAL TO commits(observation_head..accepted_head) PLUS the one exact merge, WITH NO
+      ADDITIONAL MEMBER and NO LATER COMMIT after the merge. The governed set is NOT everything
+      reachable from the acting head: HISTORICAL ANCESTORS ALREADY REACHABLE FROM THE OBSERVATION
+      CHECKPOINT ARE NOT INTERVENING COMMITS, since a merge reaches its entire ancestry and a
+      global-reachability rule would make even a perfectly formed merge UNSATISFIABLE. It must repair NOTHING: any drift, missing evidence, unexpected state,
+      authentication failure, stale identity, ambiguous actor evidence, continuity gap, lane
+      mismatch, validation failure or undeterminable state is a FAIL-CLOSED STOP, and uncertainty is
+      failure. DISCOVERY IS NOT AUTHORIZATION. The lane may move only ABSENT -> READY -> CLAIMED ->
+      COMPLETED, never skipped, reordered, repeated or re-entered; ATTEMPT_1 is ONE-SHOT and there
+      is NO RETRY, no replacement attestation, no second claim, no reset, no deletion, no recovery
+      and no continuation on any stop -- ANY RECOVERY REQUIRES NEW AUTHORITY. THE ONE EXACT
+      REPOSITORY-WRITE EXCEPTION (SS-H.1): the accepted bound runner MAY CREATE exactly
+      research/level1_endpoint_evidence/stage1_results.yaml in the isolated operational working
+      tree as the canonical output of the single authorized run under SS-I.7, ONLY AFTER THE
+      LAWFUL CLAIM, with its exact identity bound during completion, thereafter IMMUTABLE to this
+      unit and remaining UNCOMMITTED AND UNDELIVERED; every other repository file creation and
+      every modification of a pre-existing tracked byte remains FORBIDDEN. Delivering
+      stage1_results.yaml into the repository is XASSET-0027 SS-P.1's own exactly-one PR, which
+      remains ONE, UNSPENT. Until XASSET-0052's own seven conditions all close, Stage 1 remains
+      UNARMED and NOT EXECUTABLE, lane state remains ABSENT, new_execution_is_authorized() returns
+      False, and ATTEMPT_1 is intact, unclaimed and unconsumed.
+    active_branch: claude/xasset-0052-step11-authority-6nxaha
+    active_pr: 353
+    last_verified_main_sha: 8def8bd096b4edecbf10fc20870a6d03b6cb56fe
     last_verified_date: "2026-08-23"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

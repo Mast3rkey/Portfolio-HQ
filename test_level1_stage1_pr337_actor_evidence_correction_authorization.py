@@ -721,10 +721,21 @@ class TestCatalogAndRegisterSynchronisation:
         # that is now live. Each stays an exact value, and XASSET-0050's own superseded values
         # join the negative pins below rather than being deleted, so the field stays bound at
         # BOTH ends.
+        # ADVANCED AGAIN BY XASSET-0052: PR #352 has since merged at `8def8bd0`, so these shared
+        # fields advance once more, to the renewed link-5 / step-11 ACTIVATION AUTHORIZATION unit
+        # that is now live. Each stays an exact value, and XASSET-0051's own superseded values
+        # join the negative pins below rather than being deleted, so the field stays bound at
+        # BOTH ends.
         assert ws0014["active_branch"] == (
-            "claude/xasset-0051-link4-auth-bjlfya"
+            "claude/xasset-0052-step11-authority-6nxaha"
         )
         assert ws0014["last_verified_main_sha"] == (
+            "8def8bd096b4edecbf10fc20870a6d03b6cb56fe"
+        )
+        assert ws0014["active_branch"] != (
+            "claude/xasset-0051-link4-auth-bjlfya"
+        )
+        assert ws0014["last_verified_main_sha"] != (
             "ea9e74a1f4224a78df2416db9c872b0c5812894b"
         )
         assert ws0014["active_branch"] != (
