@@ -1001,39 +1001,99 @@ class TestTheParserOnlySurfaceWasProvedInsufficient:
 class TestTheWidenedSurfaceIsBoundedAndEnumerated:
     """§C item 2 -- a reasoned exception, not an open door into the module."""
 
-    def test_the_permitted_surface_is_exactly_three_things(self, flat):
+    def test_the_permitted_surface_points_at_its_exhaustive_enumeration(self, flat):
         assert "smallest necessary production-contract adjustment that distinguishes ABSENT from" in flat
-        assert "The permitted surface is exactly three things and stops there" in flat
+        assert "The permitted surface is enumerated exhaustively below, under" in flat
+        assert "**The permitted set**, and stops there" in flat
 
     @pytest.mark.parametrize("piece", (
         "`parse_formal_disposition()` itself",
-        "**the minimal result representation, helper, or sentinel**",
+        "**the selected minimal result representation**",
+        "exactly one newly introduced narrow helper devoted solely to distinguishing",
         "**the minimum necessary changes in its three existing production consumers**",
     ))
     def test_each_permitted_piece_is_named(self, flat, piece):
         assert piece in flat, piece
 
-    @pytest.mark.parametrize("consumer", (
+    CONSUMERS = (
         "_derive_pr337_actor_ratification",
         "verify_lifecycle_against_truth",
         "_verify_selected_review_is_final",
-    ))
+    )
+
+    @pytest.mark.parametrize("consumer", CONSUMERS)
     def test_each_consumer_is_named_inside_the_grant(self, decision, consumer):
         section = _section(decision, "### C. Authority granted")
         assert consumer in section, consumer
 
+    @pytest.mark.parametrize("consumer", CONSUMERS)
+    def test_each_consumer_is_named_in_BOTH_the_grant_bullet_and_the_permitted_set(
+        self, decision, consumer
+    ):
+        """Probe P44: item 2's bullet could lose a consumer while the permitted set kept it.
+
+        Section-wide presence survived that, because the name still appeared elsewhere in §C.
+        Both places are now bound independently, so the two lists cannot drift apart.
+        """
+        section = _section(decision, "### C. Authority granted")
+        bullet = _flat(section[section.index("**the minimum necessary changes in its three existing"):
+                               section.index("3. **Add or extend focused adversarial tests**")])
+        assert consumer in bullet, ("item 2 bullet", consumer)
+        assert consumer in self._permitted_set(decision), ("permitted set", consumer)
+
+    def test_the_grant_bullet_and_the_permitted_set_name_the_same_three(self, decision):
+        section = _section(decision, "### C. Authority granted")
+        bullet = _flat(section[section.index("**the minimum necessary changes in its three existing"):
+                               section.index("3. **Add or extend focused adversarial tests**")])
+        permitted = self._permitted_set(decision)
+        assert sum(c in bullet for c in self.CONSUMERS) == 3, bullet
+        assert sum(c in permitted for c in self.CONSUMERS) == 3, permitted
+
     def test_a_general_parsing_framework_is_refused(self, flat):
-        assert "**not** a general-purpose parsing framework" in flat
+        assert "general-purpose parsing framework is **not** permitted by any route" in flat
 
     def test_the_exception_is_declared_narrow_not_general(self, flat):
         assert "item 2 is a narrowly reasoned exception, not a general licence to" in flat
 
+    # ------------------------------------------------------------------ the permitted set
+
+    @staticmethod
+    def _permitted_set(decision: str) -> str:
+        """The exhaustive four-item permitted set, as its own span."""
+        section = _section(decision, "### C. Authority granted")
+        start = section.index("**The permitted set, stated once and exhaustively.**")
+        rest = section[start:]
+        return _flat(rest[: rest.index("**Everything outside that set is forbidden.**")])
+
+    def test_the_permitted_set_is_declared_exhaustive(self, decision):
+        span = self._permitted_set(decision)
+        assert "Exactly four things may change inside" in span
+        assert "and nothing else" in span
+
+    @pytest.mark.parametrize("item", (
+        "`parse_formal_disposition()`",
+        "**selected minimal result representation** (one added value, one small typed result, or one sentinel)",
+        "**at most one** newly introduced narrow helper",
+        "**minimum necessary lines** in the three named existing consumers",
+    ))
+    def test_each_permitted_item_is_in_the_permitted_set(self, decision, item):
+        assert item in self._permitted_set(decision), item
+
+    def test_the_helper_is_conditional_not_an_entitlement(self, flat):
+        assert "the helper is an option, not an entitlement" in flat
+        assert "only if it is genuinely the smallest solution" in flat
+
+    # ------------------------------------------------------------------ the exclusion
+
     EXCLUDED = (
-        "any change to a fourth call site",
+        "any change to any other existing production function",
+        "any fourth `parse_formal_disposition()` consumer or call site",
+        "more than one newly introduced helper",
+        "a general-purpose parsing framework",
         "review selection, chronology, pagination, exhaustion, reviewer-identity derivation",
         "redesign of the lifecycle-evidence",
         "`NATIVE_ADVERSE_REVIEW_STATES` or `NATIVE_NON_ADVERSE_REVIEW_STATES`",
-        "unrelated parsing, execution, portfolio, or risk change",
+        "unrelated parsing, lifecycle, review, execution, portfolio, or risk change",
     )
 
     @staticmethod
@@ -1045,13 +1105,15 @@ class TestTheWidenedSurfaceIsBoundedAndEnumerated:
         intact, and a presence-only assertion survived it. Same defect class as P02/P03.
         """
         section = _section(decision, "### C. Authority granted")
-        start = section.index("it does **not** authorize:")
+        start = section.index("this filing does **not** authorize:")
         rest = section[start:]
         end = rest.index("No other module,")
         return _flat(rest[:end])
 
     def test_the_exclusions_are_governed_by_a_does_not_authorize_clause(self, decision):
-        assert "it does **not** authorize:" in _section(decision, "### C. Authority granted")
+        section = _section(decision, "### C. Authority granted")
+        assert "**Everything outside that set is forbidden.**" in section
+        assert "this filing does **not** authorize:" in section
 
     @pytest.mark.parametrize("excluded", EXCLUDED)
     def test_each_still_excluded_area_is_inside_that_clause(self, decision, excluded):
@@ -1060,7 +1122,92 @@ class TestTheWidenedSurfaceIsBoundedAndEnumerated:
     @pytest.mark.parametrize("permissive", ("permits:", "may also", "is free to", "authorizes:"))
     def test_the_governing_verb_is_never_permissive(self, decision, permissive):
         section = _flat(_section(decision, "### C. Authority granted"))
-        assert f"Specifically, it {permissive}" not in section, permissive
+        assert f"Specifically, this filing {permissive}" not in section, permissive
+
+    # ------------------------------------------------------------------ DELTA review 5004859164
+
+    def test_the_retired_self_contradicting_exclusion_is_gone(self, decision):
+        """DELTA review 5004859164 MINOR 1.
+
+        'any function that is not one of the three named above' forbade the helper item 2
+        permits -- and, read literally, item 1's own parse_formal_disposition() grant too,
+        since the parser is not one of the three consumers.
+        """
+        section = _flat(_section(decision, "### C. Authority granted"))
+        assert "any function that is not one of the three named above" not in section
+
+    def test_the_helper_permission_and_the_exclusion_cannot_conflict(self, decision):
+        """The binding regression assertion: permitted and prohibited at once must FAIL.
+
+        Reproduces the finding's own literal reading mechanically rather than trusting prose:
+        anything the permitted set grants is checked against what the exclusion forbids, and
+        an overlap is an error.
+        """
+        permitted = self._permitted_set(decision)
+        excluded = self._excluded_clause(decision)
+
+        # What the permitted set actually grants, as concrete subjects.
+        grants = {
+            "parser": "`parse_formal_disposition()`" in permitted,
+            "representation": "selected minimal result representation" in permitted,
+            "helper": "newly introduced narrow helper" in permitted,
+            "consumers": "three named existing consumers" in permitted,
+        }
+        assert all(grants.values()), grants
+
+        # A blanket "every function outside the three consumers" ban would re-forbid the
+        # parser AND the helper. It must not appear in any wording.
+        for blanket in (
+            "any function that is not one of the three named",
+            "any function other than the three named",
+            "no function outside the three named",
+        ):
+            assert blanket not in excluded, blanket
+
+        # The exclusion's own function ban must be scoped to EXISTING OTHER functions, and
+        # must say so -- so a newly introduced helper is outside its reach by construction.
+        assert "any change to any other existing production function" in excluded
+        assert "other than `parse_formal_disposition()` and the three named consumers above" in excluded
+        assert "about *existing* functions" in excluded
+        assert "does **not** reach items 2 and 3" in excluded
+        assert "nothing in this list withdraws them" in excluded
+
+        # And the helper ceiling is a COUNT limit, never a prohibition on the first one.
+        assert "more than one newly introduced helper" in excluded
+        assert "one is the ceiling" in excluded
+        assert "at most one" in permitted
+
+    def test_the_two_clauses_are_declared_to_be_read_together(self, flat):
+        assert "written to be read together" in flat
+        assert "nothing the permitted set grants may be read back out of it by this list" in flat
+        assert "nothing this list forbids may be read back in by the permitted set" in flat
+
+    def test_a_fourth_call_site_is_forbidden_explicitly(self, decision):
+        excluded = self._excluded_clause(decision)
+        assert "any fourth `parse_formal_disposition()` consumer or call site" in excluded
+        assert "may not add a new call site" in excluded
+        assert "may not route an existing function through the parser for the first time" in excluded
+
+    def test_the_live_module_really_has_exactly_three_call_sites(self):
+        """Non-vacuity for the 'fourth call site' prohibition: three exist today, so a
+        fourth is a real thing the correction could add, not a hypothetical."""
+        tree = ast.parse((ROOT / AUTHORIZATION_MODULE_RELPATH).read_text())
+        sites = []
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for inner in ast.walk(node):
+                if (
+                    isinstance(inner, ast.Call)
+                    and isinstance(inner.func, ast.Name)
+                    and inner.func.id == "parse_formal_disposition"
+                ):
+                    sites.append(node.name)
+        assert set(sites) == {
+            "_derive_pr337_actor_ratification",
+            "verify_lifecycle_against_truth",
+            "_verify_selected_review_is_final",
+        }, sorted(set(sites))
 
     def test_widening_is_declared_a_larger_correction_not_a_lighter_one(self, flat):
         assert "**A widened surface is a larger correction, not a lighter one.**" in flat
@@ -1537,9 +1684,9 @@ class TestRegisterSynchronisation:
         "reproduced it at source and executably before widening anything",
         "frozenset({APPROVED})",
         "WIDENED BY THE SMALLEST AMOUNT THAT MAKES THE DISTINCTION EXPRESSIBLE AND NO MORE",
-        "the permitted surface is exactly three things",
-        "NOT a general-purpose parsing framework",
-        "The grant enumerates what stays OUT",
+        "the permitted set is now stated ONCE AND EXHAUSTIVELY",
+        "A GENERAL-PURPOSE PARSING FRAMEWORK",
+        "EVERYTHING OUTSIDE THAT SET IS FORBIDDEN",
         "A WIDENED SURFACE IS A LARGER CORRECTION, NOT A LIGHTER ONE",
         "SEVEN END-TO-END PROOFS",
         "THIS CORRECTION IMPLEMENTS NO PARSER OR CONSUMER CHANGE",
@@ -1547,6 +1694,53 @@ class TestRegisterSynchronisation:
     def test_the_registers_gate_records_the_major1_correction(self, ws0014, fragment):
         gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
         assert fragment in gate, fragment
+
+    @pytest.mark.parametrize("fragment", (
+        "DELTA review 5004859164 MINOR 1",
+        "the permitted set is now stated ONCE AND EXHAUSTIVELY",
+        "EXACTLY FOUR THINGS",
+        "AT MOST ONE newly introduced narrow helper",
+        "an option, not an entitlement",
+        "ANY CHANGE TO ANY OTHER EXISTING PRODUCTION FUNCTION",
+        "ABOUT EXISTING FUNCTIONS",
+        "nothing in this list withdraws them",
+        "ANY FOURTH parse_formal_disposition() CONSUMER OR CALL SITE",
+        "MORE THAN ONE newly introduced helper",
+        "A GENERAL-PURPOSE PARSING FRAMEWORK",
+        "ANY UNRELATED PARSING, LIFECYCLE, REVIEW, EXECUTION, PORTFOLIO OR RISK CHANGE",
+        "READ TOGETHER",
+        "regression test binds the positive helper permission",
+    ))
+    def test_the_registers_gate_records_the_delta_correction(self, ws0014, fragment):
+        gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
+        assert fragment in gate, fragment
+
+    def test_the_registers_gate_retires_the_self_contradicting_wording(self, ws0014):
+        """DELTA review 5004859164 MINOR 1: the register must not still assert the retired scope."""
+        gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
+        assert "the permitted surface is exactly three things" not in gate
+        # It may only appear as the QUOTED retired wording being corrected, never as live scope.
+        i = gate.find('"any function that is not one of the three named above"')
+        assert i > 0, "the retired wording must be quoted as corrected, not silently dropped"
+        assert "was self-contradicting" in gate
+
+    @pytest.mark.parametrize("fragment", (
+        "THIRD BOUNDED CORRECTION",
+        "INDEPENDENT EXACT-HEAD DELTA REVIEW 5004859164",
+        "0 BLOCKING / 0 MAJOR / 1 MINOR / 0 NOTE",
+        "ONE RESIDUAL SCOPE CONTRADICTION",
+        "PERMITTED AND PROHIBITED IN THE SAME SECTION",
+        "EXACTLY FOUR THINGS",
+        "AT MOST ONE newly introduced narrow helper",
+        "ANY CHANGE TO ANY OTHER EXISTING PRODUCTION FUNCTION",
+        "ANY FOURTH parse_formal_disposition() CONSUMER OR CALL SITE",
+        "READ TOGETHER",
+        "REGRESSION TEST binds the positive helper permission",
+        "NO PARSER, REPRESENTATION, HELPER OR CONSUMER CHANGE IS IMPLEMENTED HERE",
+    ))
+    def test_both_operative_blocks_carry_the_delta_correction(self, ws0014, fragment):
+        for field in ("next_action", "blocker"):
+            assert fragment in _flat(ws0014[field]), (field, fragment)
 
     @pytest.mark.parametrize("consumer", (
         "_derive_pr337_actor_ratification",

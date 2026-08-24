@@ -223,11 +223,15 @@ The future unit **may**, and only in service of this defect:
    verdict.
 2. **Make the smallest necessary production-contract adjustment that distinguishes ABSENT from
    MALFORMED / UNSUPPORTED.** §B.9 establishes that the distinction cannot be expressed through the
-   present `str | None` channel. The permitted surface is exactly three things and stops there:
+   present `str | None` channel. The permitted surface is enumerated exhaustively below, under
+   **The permitted set**, and stops there:
    - `parse_formal_disposition()` itself;
-   - **the minimal result representation, helper, or sentinel** required to preserve that
-     distinction — one added value, one small typed result, or one narrow helper, whichever is
-     smaller, and **not** a general-purpose parsing framework; and
+   - **the selected minimal result representation** required to preserve that distinction — one
+     added value, one small typed result, or one sentinel — **and, only if it is genuinely the
+     smallest solution, exactly one newly introduced narrow helper devoted solely to distinguishing
+     ABSENT from MALFORMED / UNSUPPORTED.** Whichever route is smaller is the one permitted; the
+     helper is an option, not an entitlement, and **at most one** may be introduced. A
+     general-purpose parsing framework is **not** permitted by any route; and
    - **the minimum necessary changes in its three existing production consumers** —
      `_derive_pr337_actor_ratification()`, `verify_lifecycle_against_truth()`, and
      `_verify_selected_review_is_final()` — so each enforces the distinction and fails closed on
@@ -238,13 +242,43 @@ The future unit **may**, and only in service of this defect:
    following the repository's ordinary governance-implementation conventions.
 
 **That authority ends there,** and item 2 is a narrowly reasoned exception, not a general licence to
-edit the module. Specifically, it does **not** authorize: any change to a fourth call site or any
-function that is not one of the three named above; any change to review selection, chronology,
-pagination, exhaustion, reviewer-identity derivation, attribution, lifecycle-evidence, fingerprinting,
-gate, universe, runner, validator, or attestation behaviour; any redesign of the lifecycle-evidence
-model; any change to `NATIVE_ADVERSE_REVIEW_STATES` or `NATIVE_NON_ADVERSE_REVIEW_STATES`; or any
-unrelated parsing, execution, portfolio, or risk change. No other module, validator, runner, universe
-module, canonical artifact, or protected path may be touched.
+edit the module.
+
+**The permitted set, stated once and exhaustively.** Exactly four things may change inside
+`level1_stage1_execution_authorization.py`, and nothing else:
+
+1. `parse_formal_disposition()`;
+2. the **selected minimal result representation** (one added value, one small typed result, or one
+   sentinel);
+3. **at most one** newly introduced narrow helper, and only if it is genuinely the smallest solution,
+   devoted solely to distinguishing ABSENT from MALFORMED / UNSUPPORTED; and
+4. the **minimum necessary lines** in the three named existing consumers —
+   `_derive_pr337_actor_ratification()`, `verify_lifecycle_against_truth()`,
+   `_verify_selected_review_is_final()`.
+
+**Everything outside that set is forbidden.** Specifically, this filing does **not** authorize:
+
+- **any change to any other existing production function** — that is, any existing production
+  function other than `parse_formal_disposition()` and the three named consumers above. This
+  prohibition is about *existing* functions and therefore does **not** reach items 2 and 3: the
+  selected minimal representation and the single optional narrow helper are permitted above, and
+  nothing in this list withdraws them;
+- **any fourth `parse_formal_disposition()` consumer or call site** — the correction may not add a
+  new call site, and may not route an existing function through the parser for the first time;
+- **more than one newly introduced helper** — one is the ceiling, and only when it is the smallest
+  route; two is a redesign;
+- **a general-purpose parsing framework**, by any route, however small each step looks;
+- any change to review selection, chronology, pagination, exhaustion, reviewer-identity derivation,
+  attribution, lifecycle-evidence, fingerprinting, gate, universe, runner, validator, or attestation
+  behaviour;
+- any redesign of the lifecycle-evidence model;
+- any change to `NATIVE_ADVERSE_REVIEW_STATES` or `NATIVE_NON_ADVERSE_REVIEW_STATES`; or
+- any **unrelated parsing, lifecycle, review, execution, portfolio, or risk change**.
+
+No other module, validator, runner, universe module, canonical artifact, or protected path may be
+touched. **The permitted set and this prohibition are written to be read together: nothing the
+permitted set grants may be read back out of it by this list, and nothing this list forbids may be
+read back in by the permitted set.**
 
 **A widened surface is a larger correction, not a lighter one.** Every clause of §D still binds it
 unchanged, and §H.2's consequence — that the correction changes load-bearing bytes and therefore
