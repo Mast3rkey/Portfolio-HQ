@@ -149,6 +149,21 @@ XASSET0053_MAIN_SHA = "cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6"
 #: Committed as an impossible sentinel first (-53), then replaced by the number GitHub actually
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
 XASSET0053_ACTIVE_PR = 354
+#: ADVANCED BY XASSET-0055. PR #354 merged at `683c3246...`, so WS-0014's shared live
+#: "where main is now" / "which pull request is live" fields lawfully advanced again under
+#: OPS-0001's Active-GitHub-fields rule. XASSET-0055 is a GOVERNANCE-ONLY authorization: it
+#: changes no module constant and touches no production authorization code, so
+#: `REVIEWED_BASE_SHA` stays XASSET-0049's lawful rebinding base and only the register's
+#: shared self-reference moved. There is deliberately NO XASSET0054 generation: XASSET-0054's
+#: pull request #355 was CLOSED UNMERGED after independent DELTA review 5010334966, so it
+#: never became `main` state and has no merge SHA to pin. Each prior generation's value is
+#: retained beside the current one as a NEGATIVE pin rather than deleted, so a silent revert
+#: to any finished unit's state still fails. The assertion stays EXACT and is bound at BOTH
+#: ends.
+XASSET0055_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
+#: Committed as an impossible sentinel first (-55), then replaced by the number GitHub actually
+#: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
+XASSET0055_ACTIVE_PR = -55
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 
 #: XASSET-0046's own completed lifecycle evidence, preserved by exact identity.
@@ -1769,7 +1784,8 @@ class TestCatalogAndRegisterSynchronisation:
         # onto its own base and its own number. Bound at BOTH ends, with every prior generation's
         # value retained as a negative pin -- and the module/register agreement is now an
         # EQUALITY, because the live unit is a REBINDING and therefore does bind its own number.
-        assert ws["last_verified_main_sha"] == XASSET0053_MAIN_SHA
+        assert ws["last_verified_main_sha"] == XASSET0055_MAIN_SHA
+        assert ws["last_verified_main_sha"] != XASSET0053_MAIN_SHA
         assert ws["last_verified_main_sha"] != XASSET0052_MAIN_SHA
         assert ws["last_verified_main_sha"] != XASSET0051_MAIN_SHA
         assert ws["last_verified_main_sha"] != XASSET0050_MAIN_SHA
@@ -1778,7 +1794,8 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws["last_verified_main_sha"] != PR346_MERGE_SHA
         assert ws["last_verified_main_sha"] != PR346_BASE_SHA
         assert ws["last_verified_main_sha"] != PR345_BASE_SHA
-        assert ws["active_pr"] == XASSET0053_ACTIVE_PR
+        assert ws["active_pr"] == XASSET0055_ACTIVE_PR
+        assert ws["active_pr"] != XASSET0053_ACTIVE_PR
         assert ws["active_pr"] != XASSET0052_ACTIVE_PR
         assert ws["active_pr"] != XASSET0051_ACTIVE_PR
         assert ws["active_pr"] != XASSET0050_ACTIVE_PR
@@ -2144,7 +2161,8 @@ class TestTheBoundPullRequestNumber:
         assert gate["pr"] == THIS_PULL_REQUEST
         # ADVANCED BY XASSET-0049: the register's shared active_pr now names the LIVE unit, and
         # the live unit is a rebinding, so it and the module agree exactly.
-        assert ws["active_pr"] == XASSET0053_ACTIVE_PR
+        assert ws["active_pr"] == XASSET0055_ACTIVE_PR
+        assert ws["active_pr"] != XASSET0053_ACTIVE_PR
         assert ws["active_pr"] != XASSET0052_ACTIVE_PR
         assert ws["active_pr"] != XASSET0051_ACTIVE_PR
         assert ws["active_pr"] != XASSET0050_ACTIVE_PR
