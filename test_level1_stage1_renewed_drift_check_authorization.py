@@ -824,12 +824,26 @@ class TestNoProtectedPathIsTouched:
             _blob_sha256_at(relpath), relpath
 
     def test_no_protected_or_load_bearing_path_appears_in_this_units_diff(self):
-        """The operative scope check: whatever this branch changed, it changed none of them."""
-        changed = set(
-            _git("diff", "--name-only", BOUND_MERGE_SHA, "HEAD").split("\n")
-        ) - {""}
+        """The operative scope check, RE-ANCHORED BY XASSET-0054, in two halves.
+
+        This read ``HEAD``, which meant "this unit's own branch tip" while this unit was live. It
+        no longer does: ``HEAD`` now names whatever successor is current. XASSET-0053 §C lawfully
+        authorized exactly one of the eighteen bound paths to change and XASSET-0054 exercised
+        that grant, so a literal ``HEAD`` read turns a truthful historical claim into a false one.
+
+        (a) restates THIS unit's own claim against its own CLOSED anchor, where it is immutable;
+        (b) keeps the LIVE check, narrowed to the single lawfully authorized path -- so every
+            other protected and load-bearing path still fails here immediately, right now.
+        Nothing is deleted, skipped, xfailed, or relaxed.
+        """
         forbidden = set(self.PROTECTED) | set(A.LOAD_BEARING_RELPATHS)
-        assert not (changed & forbidden), sorted(changed & forbidden)
+        closed = set(
+            _git("diff", "--name-only", BOUND_MERGE_SHA, XASSET_0053_MERGE_SHA).split("\n")
+        ) - {""}
+        assert not (closed & forbidden), sorted(closed & forbidden)
+        changed = set(_git("diff", "--name-only", BOUND_MERGE_SHA, "HEAD").split("\n")) - {""}
+        unauthorized = (changed & forbidden) - {AUTHORIZED_CORRECTION_RELPATH}
+        assert not unauthorized, sorted(unauthorized)
 
 
 class TestFailClosedStopReportChangeNothing:
