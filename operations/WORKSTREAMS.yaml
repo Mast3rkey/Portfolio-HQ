@@ -16997,6 +16997,83 @@ workstreams:
           retained as history and is NOT presented as current: SHA-256
           4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541, blob
           f71b08b4ebe95f161c57cdbb2a924748f13af02d.
+      - gate: xasset0054-blocking1-separator-suffix-validation
+        status: in_progress
+        pr: 355
+        description: >-
+          BOUNDED CORRECTION, review 5008847293 BLOCKING 1: separator suffixes are VALIDATED,
+          never discarded. Independent FULL exact-head review 5008847293 (1 BLOCKING / 0 MAJOR /
+          0 MINOR / 0 NOTE), anchored to head 15dde3c866ced0f9ff031811f0b2b31f5d56c29b,
+          established that _formal_disposition_line_verdict() split the candidate at the first
+          recognized separator and returned everything BEFORE it without ever reading what
+          followed. Reproduced against the real module before any edit: FORMAL DISPOSITION:
+          <approval> | CHANGES REQUIRED returned exactly APPROVING_REVIEW_DISPOSITION -- an
+          ADVERSE suffix authenticating as APPROVING -- for all four separators, in BOTH
+          accepted forms, and the real _verify_selected_review_is_final() accepted it with
+          errors=0.
+
+          A CLAIM OF THIS UNIT'S OWN IS WITHDRAWN, NOT RESTATED. The first version of
+          XASSET-0054 recorded trailing operative prose as an accepted asymmetry that "fails
+          closed by inequality." That was true ONLY without a separator. XASSET-0054 SS-D now
+          replaces that claim and says so explicitly; it did not satisfy SS-D.9.
+
+          THE CORRECTION, still inside XASSET-0053 SS-C's exhaustive permitted set. A separator
+          suffix is validated against the narrowest grammar the governed text and the actual
+          historical records support -- a slash-separated list of <digits> <CATEGORY> terms with
+          CATEGORY in BLOCKING, MAJOR, MINOR or NOTE -- and anything else stops classification
+          as MALFORMED. The EARLIEST separator now governs rather than the first in tuple order.
+          A verdict region containing a lower-case letter, or beginning or ending with a
+          separator character, is MALFORMED. The separator tuple itself is BYTE-UNCHANGED, so no
+          line that parsed before newly stops parsing.
+
+          STILL EXACTLY ONE NEW HELPER. The count-list validation was first extracted into a
+          second helper; this unit's own test caught that as a XASSET-0053 SS-C violation (the
+          cap is one) and it was folded back inline. Added top-level definitions remain exactly
+          _MalformedFormalDisposition and _formal_disposition_line_verdict.
+
+          A CLOSED VERDICT VOCABULARY WAS CONSIDERED AND REJECTED: it would have refused review
+          5008847293's own BOUNDED CORRECTION REQUIRED, which no prior list in this repository
+          contained. Testing a PROPERTY of the demonstrated corpus keeps a new legitimate
+          verdict parsing.
+
+          ONE RESIDUAL, STATED PRECISELY AND PINNED BY TEST, not presented as compliance.
+          Upper-case trailing prose with NO separator does not reach MALFORMED -- with no
+          separator to mark it and no lower-case letter to betray it, it is indistinguishable
+          from a longer verdict unless the verdict vocabulary is closed. It is returned VERBATIM
+          and never truncated, so it can never equal APPROVING_REVIEW_DISPOSITION, and it fails
+          closed at all three consumers; both properties are pinned by dedicated tests rather
+          than assumed.
+
+          COVERAGE. New parametrized classes drive every separator, both accepted forms, and
+          every operative-suffix class through the parser AND through all three production
+          consumers; trailing prose is covered with AND without separators; an approving prefix
+          with an adverse suffix, an adverse prefix with an approving suffix, an adverse suffix
+          after a valid count list, a dangling separator, a bare prefix, and the
+          earliest-separator ordering each get their own case; and a malformed first line is
+          proved unskippable for a later valid approval at every separator. Every real
+          finding-count suffix shape, including review 5000581301's own byte-for-byte line, is
+          proved still parsing. NO existing test was weakened, deleted, skipped, or xfailed --
+          the one test whose expectations changed (mixed-case verdicts) was STRENGTHENED,
+          asserting both the old guarantee (never the approval) and the new one (MALFORMED).
+
+          NOTHING ELSE CHANGED. No rebinding, no canonical re-pinning, no readiness or drift
+          verification, no attestation, no lane, no arming, no claim, no execution, no results,
+          no portfolio percentage, no allocation, no trade. Both authorization predicates remain
+          False, lane ABSENT, AUTHORIZATION_ROOT absent, ATTEMPT_1 intact, unclaimed and
+          unconsumed, stage1_results.yaml absent, the frozen universe 680/48 unchanged, and
+          XASSET-0027 SS-P.1 one, unspent. The module's bound load-bearing digest is STILL
+          deliberately not re-pinned; that drift remains the designed fail-closed hand-off to
+          the separately authorized step-8-equivalent rebinding unit.
+
+          CORRECTED MODULE IDENTITY, RE-DERIVED AFTER THIS CORRECTION.
+          level1_stage1_execution_authorization.py SHA-256
+          5f048a47888fb48fbad2909f7f9ae01afa72ced4b18da8b99d18a0c0c11e77e6, blob
+          225e9b71189f9a50ecd964294136b57b4163ad14. Two superseded identities are retained as
+          history and are NOT presented as current: this unit's own first head, SHA-256
+          dfc081b7179ab1c77dd06c374a29be5c3edc4a342f39be4e966c28cb5f214507, blob
+          271e8ca60a76a9c7b8b84c5411360d217661f55d; and the pre-correction identity at this
+          unit's base, SHA-256 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541,
+          blob f71b08b4ebe95f161c57cdbb2a924748f13af02d.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

@@ -1631,6 +1631,19 @@ class _MalformedFormalDisposition:
 MALFORMED_FORMAL_DISPOSITION = _MalformedFormalDisposition()
 
 
+#: The separators the PRE-EXISTING rule recognizes between a verdict and its finding counts.
+#: BLOCKING 1 (review 5008847293) is about what may FOLLOW one of these, not about which are
+#: recognized: this tuple is byte-unchanged, so no line that parsed before newly stops parsing
+#: for want of a separator. Narrowing it to the em dash alone -- the only separator any record
+#: in this repository actually uses -- was considered and declined: the enumerable corpus is
+#: not provably the whole corpus, and rejecting a legitimate historical line would be a worse
+#: failure than accepting a separator shape nobody uses.
+_FORMAL_DISPOSITION_SEPARATORS = ("—", "--", " - ", "|")
+
+#: The only finding-count categories any real formal-disposition suffix has ever used.
+_FINDING_COUNT_CATEGORIES = frozenset({"BLOCKING", "MAJOR", "MINOR", "NOTE"})
+
+
 def _formal_disposition_line_verdict(stripped: str) -> str | None:
     """Classify ONE already-stripped line. Returns the verdict, or None if not formal-looking.
 
@@ -1644,9 +1657,24 @@ def _formal_disposition_line_verdict(stripped: str) -> str | None:
       * that same line inside a precisely balanced, whole-line Markdown-bold wrapper --
         ``**FORMAL DISPOSITION: <verdict>**``, demonstrated by PR #349 review 5000581301.
 
-    Only the balanced wrapper is removed. The verdict itself is never normalized, replaced,
-    canonicalized, or fuzzy-matched -- it is returned exactly as written, so comparison with
-    APPROVING_REVIEW_DISPOSITION stays exact.
+    in either case optionally followed by ONE finding-count suffix, introduced by a recognized
+    separator and VALIDATED -- never discarded unread -- against the narrowest grammar the
+    governed text and the actual historical records support::
+
+        count_list := count ( "/" count )*
+        count      := <digits> <space> <CATEGORY>
+        CATEGORY   in {BLOCKING, MAJOR, MINOR, NOTE}
+
+    Every real suffix on record is exactly that -- review 5000581301's own
+    ``0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE`` and the shorter ``0 BLOCKING`` / ``1 MAJOR``
+    forms among them. BLOCKING 1 (review 5008847293), reproduced before correcting: the previous
+    rule split at a separator and returned everything BEFORE it without ever reading what came
+    after, so ``FORMAL DISPOSITION: <approval> | CHANGES REQUIRED`` returned the approval -- an
+    adverse suffix authenticating as approving, in both accepted forms, for all four separators.
+
+    Only the balanced wrapper and a VALIDATED finding-count suffix are removed. The verdict
+    itself is never normalized, replaced, canonicalized, or fuzzy-matched -- it is returned
+    exactly as written, so comparison with APPROVING_REVIEW_DISPOSITION stays exact.
     """
     if not stripped:
         return None
@@ -1669,9 +1697,48 @@ def _formal_disposition_line_verdict(stripped: str) -> str | None:
         return None
 
     verdict = candidate[len(FORMAL_DISPOSITION_PREFIX):].strip()
-    for separator in ("—", "--", " - ", "|"):
-        if separator in verdict:
-            verdict = verdict.split(separator, 1)[0].strip()
+
+    # Cut at the EARLIEST recognized separator, not the first in tuple order. Tuple order let
+    # `<approval> | CHANGES REQUIRED — 0 BLOCKING` keep an operative `|` clause inside the
+    # verdict because the em dash happened to be checked first; earliest-wins removes that.
+    cut = None
+    for separator in _FORMAL_DISPOSITION_SEPARATORS:
+        index = verdict.find(separator)
+        if index >= 0 and (cut is None or index < cut[0]):
+            cut = (index, separator)
+    if cut is not None:
+        index, separator = cut
+        suffix = verdict[index + len(separator):].strip()
+        verdict = verdict[:index].strip()
+        # Validate the suffix; NEVER discard it unread. Kept INLINE rather than extracted into a
+        # second helper: XASSET-0053 SS-C caps newly introduced helpers at exactly one, and that
+        # one is this function.
+        parts = [part.strip() for part in suffix.split("/")]
+        if not parts or any(not part for part in parts):
+            return None
+        for part in parts:
+            count, _, category = part.partition(" ")
+            if not count.isdigit() or category.strip() not in _FINDING_COUNT_CATEGORIES:
+                # Arbitrary trailing content, INCLUDING an adverse verdict. Never discarded.
+                return None
+
+    if not verdict:
+        return None
+    if verdict[0] in "-—|" or verdict[-1] in "-—|":
+        # A dangling separator with nothing valid after it -- `<approval> -` reaches here
+        # because stripping the line removed the trailing space that would have matched the
+        # ` - ` separator. No real verdict begins or ends with a separator character.
+        return None
+    if any(character.islower() for character in verdict):
+        # SS-D.9: additional operative words AFTER the disposition, with no separator to mark
+        # them, are otherwise undetectable without knowing where the verdict ends. Every verdict
+        # on record is upper case -- `APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE`,
+        # `CHANGES REQUIRED`, `BOUNDED CORRECTION REQUIRED`, `DELTA APPROVED` -- while operative
+        # prose ("and see below", "but see BLOCKING 1") is not. A CLOSED verdict vocabulary was
+        # considered and rejected: it would have refused review 5008847293's own
+        # `BOUNDED CORRECTION REQUIRED`, which no prior list contained. This tests a PROPERTY of
+        # the demonstrated corpus instead, so a new legitimate verdict still parses.
+        return None
     return verdict
 
 

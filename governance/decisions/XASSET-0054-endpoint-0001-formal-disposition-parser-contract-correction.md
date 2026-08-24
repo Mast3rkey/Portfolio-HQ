@@ -143,16 +143,71 @@ only inside the ABSENT branch.
 | D.17 | an unsupported formal-looking line **stops classification** and is never skipped |
 | D.19 | ABSENT and MALFORMED are separately observable at **all three** consumers, and MALFORMED fails closed even under native `APPROVED` |
 
-### D. One disclosed behaviour that is fail-closed by a different mechanism
+### D. Finding-count suffixes are validated, never discarded
 
-**Trailing operative prose.** A line such as `FORMAL DISPOSITION: <approval> and see below` is not
-classified MALFORMED; the separator rule yields a verdict string that is **not** equal to
-`APPROVING_REVIEW_DISPOSITION`, so all three consumers fail closed on the inequality instead. The
-safety outcome is identical, the mechanism differs, and it is recorded rather than papered over.
+**This section replaces an earlier claim of this filing's that was wrong, and says so plainly.**
+The first version of this decision recorded trailing operative prose as an accepted asymmetry —
+"not classified MALFORMED; the separator rule yields a verdict that is not equal to
+`APPROVING_REVIEW_DISPOSITION`, so all three consumers fail closed on the inequality instead."
+Independent review `5008847293` (BLOCKING 1) established that this was **only true when no
+separator was present**. With any recognized separator the suffix was erased unread, so
 
-The pre-existing finding-count separator rule (`—`, `--`, ` - `, `|`) is **unchanged**. Review
-`5000581301`'s own line depends on it, and altering it would be an unrelated behaviour change §C
-forbids. It is noted here as pre-existing and deliberately out of scope.
+```
+FORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE | CHANGES REQUIRED
+```
+
+returned exactly `APPROVING_REVIEW_DISPOSITION` — an **adverse** suffix authenticating as
+approving, in both accepted forms, for all four separators. Reproduced against the real module
+before correcting, including through the real `_verify_selected_review_is_final()`, which accepted
+it with `errors=0`. **That claim is withdrawn; it did not satisfy §D.9 and is not restated here.**
+
+**The correction.** A separator suffix is now **validated, never discarded**, against the narrowest
+grammar the governed text and the actual historical records support:
+
+```
+count_list := count ( "/" count )*
+count      := <digits> <space> <CATEGORY>
+CATEGORY   in { BLOCKING, MAJOR, MINOR, NOTE }
+```
+
+Every real suffix on record is exactly that — review `5000581301`'s own
+`0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE`, and the shorter `0 BLOCKING` / `1 MAJOR` forms.
+Anything else stops classification and yields `MALFORMED_FORMAL_DISPOSITION` (§D.9, §D.17).
+
+Three further points, each a deliberate choice:
+
+* **The separator tuple is byte-unchanged** (`—`, `--`, ` - `, `|`). BLOCKING 1 is about what may
+  *follow* a separator, not which are recognized, so no line that parsed before newly stops
+  parsing for want of one. Narrowing to the em dash alone — the only separator any record in this
+  repository actually uses — was considered and **declined**: the enumerable corpus is not provably
+  the whole corpus, and rejecting a legitimate historical line is a worse failure than accepting a
+  separator shape nobody uses.
+* **The earliest separator governs**, not the first in tuple order. Tuple order let
+  `<approval> | CHANGES REQUIRED — 0 BLOCKING` keep an operative `|` clause inside the verdict
+  because the em dash happened to be checked first.
+* **A verdict region containing a lower-case letter is MALFORMED.** With no separator to mark it,
+  trailing prose is otherwise undetectable without knowing where the verdict ends. Every verdict on
+  record is upper case — `APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE`, `CHANGES REQUIRED`,
+  `BOUNDED CORRECTION REQUIRED`, `DELTA APPROVED` — while operative prose is not. A **closed
+  verdict vocabulary** was considered and **rejected**: it would have refused review
+  `5008847293`'s own `BOUNDED CORRECTION REQUIRED`, which no prior list in this repository
+  contained. Testing a *property* of the demonstrated corpus keeps a new legitimate verdict
+  parsing. A verdict region beginning or ending with a separator character is likewise MALFORMED.
+
+### D.1 The one residual, stated precisely and pinned by test
+
+**Upper-case trailing prose with no separator** — `FORMAL DISPOSITION: <approval> DO NOT MERGE` —
+does **not** reach `MALFORMED_FORMAL_DISPOSITION`. With no separator to mark it and no lower-case
+letter to betray it, it is genuinely indistinguishable from a longer verdict unless the verdict
+vocabulary is closed, which this correction deliberately does not do for the reason above.
+
+What is guaranteed, and what
+`test_uppercase_trailing_prose_with_no_separator_fails_closed_by_inequality` and
+`test_the_disclosed_residual_still_fails_closed_at_all_three_consumers` pin directly: it is
+returned **verbatim and never truncated**, so it can never equal `APPROVING_REVIEW_DISPOSITION`,
+and it fails closed at **all three** consumers. This is a narrower and materially different
+residual from the withdrawn claim above, it is bounded by test rather than by assumption, and it
+is recorded as a limitation rather than presented as compliance.
 
 ### E. Tests exercise the real production paths
 
@@ -222,14 +277,17 @@ receives it exactly.
 ### H. Corrected module identity, for the separately authorized rebinding unit
 
 ```
-FINAL_CORRECTED_MODULE_SHA256: dfc081b7179ab1c77dd06c374a29be5c3edc4a342f39be4e966c28cb5f214507
+FINAL_CORRECTED_MODULE_SHA256: 5f048a47888fb48fbad2909f7f9ae01afa72ced4b18da8b99d18a0c0c11e77e6
 ```
 
-Blob `271e8ca60a76a9c7b8b84c5411360d217661f55d`.
+Blob `225e9b71189f9a50ecd964294136b57b4163ad14`.
 
-The **superseded** pre-correction identity is retained as history and is **not** presented as
-current: SHA-256 `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541`, blob
-`f71b08b4ebe95f161c57cdbb2a924748f13af02d`.
+Two **superseded** identities are retained as history and are **not** presented as current:
+
+| Identity | SHA-256 | Blob |
+|---|---|---|
+| Pre-correction, at this unit's base | `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541` | `f71b08b4ebe95f161c57cdbb2a924748f13af02d` |
+| This unit's own first head, before BLOCKING 1 | `dfc081b7179ab1c77dd06c374a29be5c3edc4a342f39be4e966c28cb5f214507` | `271e8ca60a76a9c7b8b84c5411360d217661f55d` |
 
 ### I. This unit, and this filing, **must not**:
 

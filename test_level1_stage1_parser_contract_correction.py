@@ -179,9 +179,49 @@ class TestTheAcceptedShapes:
 
     def test_only_the_wrapper_is_removed_and_the_verdict_is_never_rewritten(self):
         """No normalization, replacement, canonicalization, or fuzzy matching."""
-        for verdict in ("APPROVED", "approved", "CHANGES REQUIRED", "Approved for something"):
+        for verdict in ("APPROVED", "CHANGES REQUIRED", "BOUNDED CORRECTION REQUIRED"):
             assert A.parse_formal_disposition(f"FORMAL DISPOSITION: {verdict}") == verdict
             assert A.parse_formal_disposition(f"**FORMAL DISPOSITION: {verdict}**") == verdict
+
+    @pytest.mark.parametrize("verdict", ["approved", "Approved for something", "APPROVED but no"])
+    def test_a_mixed_case_verdict_region_is_malformed_not_a_verdict(self, verdict):
+        """STRENGTHENED after review 5008847293 BLOCKING 1, never weakened.
+
+        These previously came back verbatim -- safe only because they failed exact equality.
+        §D.9 requires operative words after the disposition not to parse at all, and with no
+        separator to mark them the only thing distinguishing a verdict from verdict-plus-prose
+        is the demonstrated corpus's own property: every real verdict is upper case. Both the
+        old guarantee (never the approval) and the new one (MALFORMED) are asserted.
+        """
+        for body in (f"FORMAL DISPOSITION: {verdict}", f"**FORMAL DISPOSITION: {verdict}**"):
+            assert A.parse_formal_disposition(body) is MALFORMED
+            assert A.parse_formal_disposition(body) != APPROVE
+
+    @pytest.mark.parametrize(
+        "suffix",
+        [
+            "0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE",
+            "1 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE",
+            "0 BLOCKING",
+            "1 MAJOR",
+            "0 BLOCKING / 3 MAJOR",
+            "12 NOTE",
+        ],
+    )
+    def test_every_real_finding_count_suffix_shape_still_parses(self, suffix):
+        """§D.1 / requirement 1: no legitimate historical line newly stops parsing."""
+        assert A.parse_formal_disposition(f"FORMAL DISPOSITION: {APPROVE} — {suffix}") == APPROVE
+        assert A.parse_formal_disposition(f"**FORMAL DISPOSITION: {APPROVE} — {suffix}**") == APPROVE
+
+    @pytest.mark.parametrize("verdict", ["BOUNDED CORRECTION REQUIRED", "DELTA APPROVED"])
+    def test_a_verdict_no_prior_list_contained_still_parses(self, verdict):
+        """Why a CLOSED verdict vocabulary was rejected: review 5008847293's own verdict is
+        `BOUNDED CORRECTION REQUIRED`, which no list in this repository contained. A closed
+        vocabulary would have refused the very review that demanded this correction.
+        """
+        got = A.parse_formal_disposition(f"FORMAL DISPOSITION: {verdict} — 1 BLOCKING")
+        assert got == verdict
+        assert got != APPROVE
 
     def test_a_near_miss_verdict_is_returned_verbatim_and_never_snapped_to_the_approval(self):
         near = APPROVE.replace("EXACT-HEAD", "EXACT HEAD")
@@ -234,6 +274,183 @@ class TestAdverseVerdictsStayAdverse:
         """§D.8: approval text as substring, quotation, heading, or code sample is not a verdict."""
         assert A.parse_formal_disposition(body) is None
         assert A.parse_formal_disposition(body) != APPROVE
+
+
+# =====================================================================================
+# BLOCKING 1 (review 5008847293) — separator suffixes are VALIDATED, never discarded
+# =====================================================================================
+
+#: Every separator the pre-existing rule recognizes. Unchanged by the correction.
+SEPARATORS = ["—", "--", " - ", "|"]
+
+#: Suffixes that are NOT a finding-count list. Each must stop classification.
+OPERATIVE_SUFFIXES = [
+    "CHANGES REQUIRED",
+    "BOUNDED CORRECTION REQUIRED",
+    "and see below",
+    "but see BLOCKING 1",
+    "DO NOT MERGE",
+    "this is not an approval",
+    "0 BLOCKING but see below",
+    "BLOCKING",
+    "0",
+    "0 CRITICAL",
+]
+
+
+def _plain(text: str) -> str:
+    return f"FORMAL DISPOSITION: {text}"
+
+
+def _bold(text: str) -> str:
+    return f"**FORMAL DISPOSITION: {text}**"
+
+
+FORMS = [("plain", _plain), ("bold", _bold)]
+
+
+class TestSeparatorSuffixesAreValidatedNotDiscarded:
+    """The exact defect review 5008847293 raised, closed and pinned.
+
+    The previous rule split at the first recognized separator and returned everything BEFORE
+    it **without reading what followed**, so an approving prefix with an adverse suffix
+    authenticated as approving -- in both accepted forms, for all four separators.
+    """
+
+    @pytest.mark.parametrize("sep", SEPARATORS)
+    @pytest.mark.parametrize("form,make", FORMS)
+    def test_the_reviews_own_worked_example_is_malformed(self, sep, form, make):
+        body = make(f"{APPROVE}{sep}CHANGES REQUIRED")
+        assert A.parse_formal_disposition(body) is MALFORMED, (form, sep)
+        assert A.parse_formal_disposition(body) != APPROVE, (form, sep)
+
+    @pytest.mark.parametrize("suffix", OPERATIVE_SUFFIXES)
+    @pytest.mark.parametrize("sep", SEPARATORS)
+    @pytest.mark.parametrize("form,make", FORMS)
+    def test_no_operative_suffix_survives_any_separator_in_either_form(
+        self, suffix, sep, form, make
+    ):
+        body = make(f"{APPROVE}{sep}{suffix}")
+        assert A.parse_formal_disposition(body) is MALFORMED, (form, sep, suffix)
+
+    @pytest.mark.parametrize(
+        "suffix", ["and see below", "but see BLOCKING 1", "this is not an approval", "pending"]
+    )
+    @pytest.mark.parametrize("form,make", FORMS)
+    def test_trailing_prose_without_any_separator_is_also_malformed(self, suffix, form, make):
+        """Requirement 5: covered WITHOUT a separator too, not only with one."""
+        body = make(f"{APPROVE} {suffix}")
+        assert A.parse_formal_disposition(body) is MALFORMED, (form, suffix)
+        assert A.parse_formal_disposition(body) != APPROVE, (form, suffix)
+
+    @pytest.mark.parametrize("suffix", ["DO NOT MERGE", "SEE BLOCKING 1", "NOT AN APPROVAL"])
+    @pytest.mark.parametrize("form,make", FORMS)
+    def test_uppercase_trailing_prose_with_no_separator_fails_closed_by_inequality(
+        self, suffix, form, make
+    ):
+        """THE DISCLOSED RESIDUAL, pinned here so it is never merely assumed.
+
+        With no separator to mark it and no lower-case letter to betray it, upper-case trailing
+        prose is genuinely indistinguishable from a longer verdict -- unless the verdict
+        vocabulary is CLOSED, which this correction deliberately does not do because a closed
+        list would have refused review 5008847293's own `BOUNDED CORRECTION REQUIRED`.
+
+        So this class does NOT reach MALFORMED, and that is stated rather than overclaimed. What
+        it does guarantee, and what these assertions pin, is the property that actually matters:
+        it can never authenticate as approving, at the parser or at any consumer.
+        """
+        body = make(f"{APPROVE} {suffix}")
+        got = A.parse_formal_disposition(body)
+        assert got != APPROVE, (form, suffix)
+        assert isinstance(got, str), (form, suffix)   # a non-approving verdict, not the approval
+        assert got == f"{APPROVE} {suffix}"           # returned verbatim, never truncated
+
+    @pytest.mark.parametrize("suffix", ["DO NOT MERGE", "SEE BLOCKING 1"])
+    def test_the_disclosed_residual_still_fails_closed_at_all_three_consumers(self, suffix):
+        body = _plain(f"{APPROVE} {suffix}")
+        errors = _finality([("APPROVED", body, LATER)])
+        assert len(errors) == 1 and "adverse formal disposition" in errors[0]
+        assert any("formal disposition is" in e for e in _selected_review_errors(body))
+        assert _ratification(body, repin=True).acceptance is False
+
+    @pytest.mark.parametrize("sep", SEPARATORS)
+    def test_a_dangling_separator_with_nothing_after_it_is_malformed(self, sep):
+        assert A.parse_formal_disposition(_plain(f"{APPROVE}{sep}")) is MALFORMED
+        assert A.parse_formal_disposition(_bold(f"{APPROVE}{sep}")) is MALFORMED
+
+    @pytest.mark.parametrize("sep", SEPARATORS)
+    def test_an_adverse_suffix_after_a_valid_count_list_is_still_malformed(self, sep):
+        body = _plain(f"{APPROVE} — 0 BLOCKING{sep}CHANGES REQUIRED")
+        assert A.parse_formal_disposition(body) is MALFORMED
+
+    def test_the_earliest_separator_governs_not_the_first_in_tuple_order(self):
+        """`| CHANGES REQUIRED — 0 BLOCKING` must not slip through by em-dash-first ordering."""
+        body = _plain(f"{APPROVE} | CHANGES REQUIRED — 0 BLOCKING")
+        assert A.parse_formal_disposition(body) is MALFORMED
+
+    @pytest.mark.parametrize("sep", SEPARATORS)
+    def test_an_adverse_prefix_with_an_approving_suffix_is_malformed_too(self, sep):
+        body = _plain(f"CHANGES REQUIRED{sep}{APPROVE}")
+        assert A.parse_formal_disposition(body) is MALFORMED
+
+    def test_a_bare_prefix_with_no_verdict_is_malformed(self):
+        assert A.parse_formal_disposition("FORMAL DISPOSITION:") is MALFORMED
+        assert A.parse_formal_disposition("FORMAL DISPOSITION:   ") is MALFORMED
+
+    @pytest.mark.parametrize("sep", SEPARATORS)
+    def test_a_malformed_first_line_is_never_skipped_for_a_later_valid_approval(self, sep):
+        """§D.17, at the exact shape BLOCKING 1 exposes."""
+        body = (
+            f"{_plain(f'{APPROVE}{sep}CHANGES REQUIRED')}\n"
+            "… later …\n"
+            f"{HISTORICAL_LINE}\n"
+        )
+        assert A.parse_formal_disposition(body) is MALFORMED
+
+
+class TestSeparatorSuffixesAtEveryRealConsumer:
+    """Requirement 7: driven through all three production consumers, not the parser alone."""
+
+    @pytest.mark.parametrize("sep", SEPARATORS)
+    @pytest.mark.parametrize("form,make", FORMS)
+    def test_finality_rejects_an_approving_prefix_with_an_adverse_suffix(self, sep, form, make):
+        errors = _finality([("APPROVED", make(f"{APPROVE}{sep}CHANGES REQUIRED"), LATER)])
+        assert len(errors) == 1, (form, sep)
+        assert "unsupported shape" in errors[0], (form, sep)
+
+    @pytest.mark.parametrize("form,make", FORMS)
+    def test_finality_rejects_trailing_prose_with_no_separator(self, form, make):
+        errors = _finality([("APPROVED", make(f"{APPROVE} and see below"), LATER)])
+        assert len(errors) == 1, form
+        assert "unsupported shape" in errors[0], form
+
+    @pytest.mark.parametrize("sep", SEPARATORS)
+    @pytest.mark.parametrize("form,make", FORMS)
+    def test_the_lifecycle_verifier_rejects_the_same_lines(self, sep, form, make):
+        errors = _selected_review_errors(make(f"{APPROVE}{sep}CHANGES REQUIRED"))
+        assert any("unsupported shape" in e for e in errors), (form, sep)
+
+    @pytest.mark.parametrize("form,make", FORMS)
+    def test_the_lifecycle_verifier_rejects_trailing_prose_with_no_separator(self, form, make):
+        errors = _selected_review_errors(make(f"{APPROVE} and see below"))
+        assert any("unsupported shape" in e for e in errors), form
+
+    @pytest.mark.parametrize("sep", SEPARATORS)
+    def test_pr337_ratification_refuses_an_approving_prefix_with_an_adverse_suffix(self, sep):
+        got = _ratification(f"{_plain(f'{APPROVE}{sep}CHANGES REQUIRED')}", repin=True)
+        assert got.acceptance is False, sep
+        assert got.post_merge_verification is False, sep
+
+    def test_pr337_ratification_refuses_trailing_prose_with_no_separator(self):
+        got = _ratification(_plain(f"{APPROVE} and see below"), repin=True)
+        assert got.acceptance is False
+
+    @pytest.mark.parametrize("form,make", FORMS)
+    def test_a_genuine_finding_count_suffix_still_authenticates_everywhere(self, form, make):
+        body = make(f"{APPROVE} — 0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE")
+        assert _finality([("COMMENTED", body, LATER)]) == [], form
+        assert _selected_review_errors(body) == [], form
+        assert _ratification(body, repin=True).acceptance is True, form
 
 
 # =====================================================================================
@@ -859,14 +1076,42 @@ class TestRegisterSynchronisation:
         )
         assert gate["pr"] == 354
 
-    def test_the_gate_records_the_corrected_module_identity_for_the_rebinding_unit(self):
+    #: This unit's own gates, oldest first. A bounded correction adds a NEW gate rather than
+    #: rewriting a prior one, so the CURRENT identity lives in the LATEST of them.
+    OWN_GATES = (
+        "xasset0054-parser-contract-correction-implementation",
+        "xasset0054-blocking1-separator-suffix-validation",
+    )
+
+    def test_every_gate_this_unit_filed_is_present_and_in_order(self):
+        names = [g["gate"] for g in self._ws0014()["milestones"]]
+        positions = [names.index(g) for g in self.OWN_GATES]
+        assert positions == sorted(positions), names[-4:]
+
+    def test_no_earlier_gate_of_this_unit_is_rewritten_by_a_later_correction(self):
+        """The first gate keeps the identity it recorded when it was filed -- that is history."""
+        first = next(
+            g for g in self._ws0014()["milestones"] if g["gate"] == self.OWN_GATES[0]
+        )
+        flat = " ".join(first["description"].split())
+        assert "dfc081b7179ab1c77dd06c374a29be5c3edc4a342f39be4e966c28cb5f214507" in flat
+        assert first["status"] == "in_progress"
+
+    def test_the_latest_gate_records_the_corrected_module_identity_for_the_rebinding_unit(self):
         gate = next(
-            g for g in self._ws0014()["milestones"]
-            if g["gate"] == "xasset0054-parser-contract-correction-implementation"
+            g for g in self._ws0014()["milestones"] if g["gate"] == self.OWN_GATES[-1]
         )
         flat = " ".join(gate["description"].split())
-        assert hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest() in flat
-        assert "NOT re-pinned" in flat or "NOT RE-PINNED" in flat.upper()
+        live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+        assert live in flat, "the latest gate must hand the rebinding unit the CURRENT identity"
+        assert "not re-pinned" in flat.lower()
+        # Every superseded identity is retained beside it, never silently replaced.
+        for superseded in (
+            "dfc081b7179ab1c77dd06c374a29be5c3edc4a342f39be4e966c28cb5f214507",
+            "4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541",
+        ):
+            assert superseded in flat, superseded
+            assert superseded != live
 
     def test_the_active_pr_is_the_real_github_number_not_the_sentinel(self):
         active = self._ws0014()["active_pr"]
@@ -888,6 +1133,60 @@ class TestRegisterSynchronisation:
         for sentinel in (PR_SENTINEL, *PRIOR_SENTINELS):
             assert f"active_pr: {sentinel}" not in raw, sentinel
             assert f"pr: {sentinel}" not in raw, sentinel
+
+
+class TestTheWithdrawnClaimIsWithdrawnInTheRecord:
+    """Requirement 10 / review 5008847293 item 4, pinned rather than assumed.
+
+    The first version of this filing recorded trailing operative prose as an accepted asymmetry
+    that "fails closed by inequality." BLOCKING 1 established that was true only WITHOUT a
+    separator. The record must now WITHDRAW that claim, not restate it -- and a mutation probe
+    found nothing was checking that, so this class does.
+    """
+
+    DECISION = (
+        ROOT / "governance/decisions"
+        / "XASSET-0054-endpoint-0001-formal-disposition-parser-contract-correction.md"
+    )
+
+    def _text(self) -> str:
+        return self.DECISION.read_text(encoding="utf-8")
+
+    def test_the_claim_is_explicitly_withdrawn(self):
+        flat = " ".join(self._text().split())
+        assert "That claim is withdrawn" in flat
+        assert "it did not satisfy" in flat.lower()
+
+    def test_the_record_no_longer_presents_the_old_behaviour_as_compliant(self):
+        flat = " ".join(self._text().split())
+        assert "One disclosed behaviour that is fail-closed by a different mechanism" not in flat
+        assert "the separator rule yields a verdict string that is **not** equal" not in flat
+
+    def test_the_record_states_the_new_grammar_and_its_source(self):
+        flat = " ".join(self._text().split())
+        assert "validated, never discarded" in flat.lower()
+        assert "BLOCKING" in flat and "MAJOR" in flat and "MINOR" in flat and "NOTE" in flat
+        assert "5008847293" in flat
+
+    def test_the_record_states_the_residual_precisely_rather_than_claiming_compliance(self):
+        flat = " ".join(self._text().split())
+        assert "The one residual, stated precisely and pinned by test" in flat
+        assert "recorded as a limitation rather than presented as compliance" in flat
+
+    def test_the_record_explains_why_a_closed_vocabulary_was_rejected(self):
+        flat = " ".join(self._text().split())
+        assert "BOUNDED CORRECTION REQUIRED" in flat
+        assert "closed" in flat.lower() and "rejected" in flat.lower()
+
+    def test_the_record_declares_the_current_module_identity(self):
+        flat = " ".join(self._text().split())
+        live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+        assert f"FINAL_CORRECTED_MODULE_SHA256: {live}" in flat
+        for superseded in (
+            "dfc081b7179ab1c77dd06c374a29be5c3edc4a342f39be4e966c28cb5f214507",
+            "4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541",
+        ):
+            assert superseded in flat and superseded != live
 
 
 class TestNoOperationalAuthorityIsRestored:
