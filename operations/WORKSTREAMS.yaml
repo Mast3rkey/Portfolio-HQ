@@ -16887,6 +16887,116 @@ workstreams:
           protected portfolio paths are unchanged, Stage 1 remains UNARMED and NOT EXECUTABLE,
           lane ABSENT, AUTHORIZATION_ROOT absent, ATTEMPT_1 intact, unclaimed and unconsumed,
           stage1_results.yaml absent, and XASSET-0027 SS-P.1 remains one, unspent.
+      - gate: xasset0054-parser-contract-correction-implementation
+        status: in_progress
+        pr: -54
+        description: >-
+          FORMAL-DISPOSITION PARSER-CONTRACT CORRECTION, IMPLEMENTED, filed as XASSET-0054. THIS
+          IS THE IMPLEMENTATION UNIT XASSET-0053 SS-C AUTHORIZED, and its sole authority is
+          XASSET-0053, whose seven SS-J conditions closed at merge
+          683c324629544a84d2cf75ebca37325e3375c479 (PR #354, accepted head
+          90a1f45426b9f1e6aa9a568985d8eacc1cfd97fc, merge tree
+          95f74cc76f75b7be151fe712aecbbc77688bb378, clean exact-head review 5005144938,
+          principal acceptance 5391819520, post-merge verification 5391836818, exact-merge CI
+          run 32699941813 / job 97349267177, lifecycle closure 5391908055), all independently
+          re-derived in this session's preflight before any file was edited.
+
+          THE DEFECT, REPRODUCED AGAINST THE REAL MODULE BEFORE ANY EDIT.
+          parse_formal_disposition() returned str | None, so ONE value carried TWO distinct
+          meanings: ABSENT (no formal-looking line exists at all) and MALFORMED/UNSUPPORTED (a
+          formal-looking line was found and refused). Four claims were reproduced and recorded
+          read-only, writing no authorization state and creating no lane: R1, PR #349 review
+          5000581301's own formal line -- located at line 8 of its body, not its first line, a
+          fixture error this session caught and corrected before building anything on it -- is a
+          precisely balanced whole-line Markdown-bold form and parsed to None; R2, a genuinely
+          absent body and a malformed/unsupported body both parsed to None, indistinguishably;
+          R3, the REAL _verify_selected_review_is_final() accepted BOTH as non-adverse under a
+          native APPROVED state (errors=0 for each), with native CHANGES_REQUESTED still
+          independently rejected as a control; R4, a naive parser-only repair executed in memory
+          only returned the approving verdict for a body whose first formal-looking line is the
+          adverse heading "## FORMAL DISPOSITION: CHANGES REQUIRED", ACTIVELY REGRESSING safety
+          by skipping the adverse line so the later approval wins.
+
+          WHAT WAS IMPLEMENTED, EXACTLY XASSET-0053 SS-C's EXHAUSTIVE PERMITTED SET AND NOTHING
+          ELSE. Inside level1_stage1_execution_authorization.py: (1) parse_formal_disposition()
+          modified; (2) the smallest result representation added -- one module-level sentinel,
+          MALFORMED_FORMAL_DISPOSITION, an instance of a __slots__-only class carrying no
+          behaviour beyond __repr__ and __bool__; (3) exactly ONE narrow helper introduced,
+          _formal_disposition_line_verdict(stripped), which classifies ONE already-stripped
+          line, takes one positional argument with no varargs/kwargs/defaults, holds no state,
+          performs no iteration over a body, no regex, and no I/O -- it is not a parsing
+          framework; and (4) the minimum necessary lines in the three named consumers.
+          _derive_pr337_actor_ratification() required NO logic change at all: it reads the
+          parser through an inequality against APPROVING_REVIEW_DISPOSITION, so both new
+          outcomes already fail closed; one clarifying comment records that this was checked,
+          not assumed. verify_lifecycle_against_truth() gained one branch so MALFORMED reports
+          its own accurate message instead of being described as an adverse verdict; its ABSENT
+          message and policy are byte-preserved. _verify_selected_review_is_final(), THE defect
+          site, gained one branch placed BEFORE the approving check so "never rescued by native
+          APPROVED, never skipped for a later approval" is structural rather than incidental;
+          its ABSENT branch, including the native NATIVE_NON_ADVERSE_REVIEW_STATES rescue, is
+          preserved exactly.
+
+          BEHAVIOUR. The plain canonical line is still accepted unchanged. The precisely
+          balanced whole-line bold form demonstrated by review 5000581301 is now accepted. ONLY
+          the balanced wrapper is stripped; the verdict is never normalized, replaced,
+          canonicalized, or fuzzy-matched, and comparison with APPROVING_REVIEW_DISPOSITION
+          stays exact -- a near-miss verdict is returned verbatim and never snapped to the
+          approval. Plain and balanced-bold CHANGES REQUIRED both parse as adverse. Native
+          CHANGES_REQUESTED remains independently adverse whatever the body says.
+          First-formal-disposition-line governance is preserved. Twenty unsupported shapes --
+          headings, deep headings, blockquotes, dash and star bullets, numbered items,
+          backticked and code-fenced lines, nested, repeated, partial, inner, unbalanced-open,
+          unbalanced-close, single-star and underscore wrappers, leading prose, leading bold
+          prose, HTML tags and table cells -- each classify MALFORMED, stop classification, and
+          are never skipped so a later valid approval can win.
+
+          TESTS EXERCISE THE REAL PRODUCTION PATHS, NOT THE PARSER ALONE.
+          test_level1_stage1_parser_contract_correction.py drives all three consumers on their
+          own authenticated seams, reusing the two established harnesses rather than inventing a
+          third, weaker stand-in: _verify_selected_review_is_final() through the real function
+          with a real FakeGovernance review set; verify_lifecycle_against_truth() through a real
+          authorization payload; and _derive_pr337_actor_ratification() through the real PR
+          #337/#341 fixture universe, with a fingerprint-repinning helper so the disposition
+          gate proves its own mechanism, and a companion test proving the SEPARATE byte-exact
+          fingerprint gate is untouched by this correction.
+
+          RE-ANCHORING, NOT RELAXATION. XASSET-0053's own suite was a pre-correction snapshot:
+          eleven assertions read the WORKING TREE where they meant "the module as XASSET-0053
+          found and left it". Each was re-pointed at a CLOSED, immutable anchor -- the base
+          commit, the accepted head, or XASSET-0053's own lifecycle-closing merge -- following
+          the XASSET-0044 / XASSET-0043 precedent already applied to the XASSET-0042 suite.
+          Nothing was deleted, skipped, xfailed, or relaxed: every one still compares real
+          bytes, and against an immutable anchor none can be made to pass by editing a file.
+          Where a live comparison still had teeth it was KEPT and only narrowed to the single
+          lawfully authorized path, so the other seventeen LOAD_BEARING_RELPATHS, the seven
+          protected portfolio paths and both canonical pins remain compared live. The one guard
+          whose literal form could not survive -- "this decision is not inserted into the
+          mechanism" -- was re-anchored to the closed merge AND given a live half checking the
+          property it was really for, since citing the authorizing decision in a comment or
+          docstring is this module's universal convention: fifteen other decision IDs already
+          appear there, and the identifier must never enter an executable identity constant or
+          operative string literal, which is now checked by AST.
+
+          NO OPERATIONAL AUTHORITY IS RESTORED, AND THE PIN IS DELIBERATELY LEFT STALE. This
+          correction repairs an authentication CONTRACT; it arms nothing. No rebinding, no
+          canonical re-pinning, no readiness or drift verification, no attestation, no lane
+          creation, no arming, no claim, no execution, no results. new_execution_is_authorized()
+          returns False, active_execution_is_authorized() returns False, pre_registration.yaml's
+          stage_1_executability.executable stays false, lane state ABSENT, AUTHORIZATION_ROOT
+          absent, ATTEMPT_1 intact, unclaimed and unconsumed, stage1_results.yaml absent, and
+          XASSET-0027 SS-P.1 remains one, unspent. The module's bound load-bearing digest is NOT
+          re-pinned here: re-pinning is the separately authorized step-8-equivalent rebinding
+          unit's work, and the drift this correction introduces is the designed fail-closed
+          hand-off to it. The corrected byte identity is recorded for that unit below.
+
+          CORRECTED MODULE IDENTITY, FOR THE SEPARATELY AUTHORIZED REBINDING UNIT.
+          level1_stage1_execution_authorization.py SHA-256
+          dfc081b7179ab1c77dd06c374a29be5c3edc4a342f39be4e966c28cb5f214507, blob
+          271e8ca60a76a9c7b8b84c5411360d217661f55d. The superseded pre-correction identity is
+          retained as history and is NOT presented as current: SHA-256
+          4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541, blob
+          f71b08b4ebe95f161c57cdbb2a924748f13af02d.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -18578,9 +18688,9 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/xasset-0053-parser-contract-auth-k7m2qx
-    active_pr: 354
-    last_verified_main_sha: cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6
+    active_branch: claude/xasset-0054-parser-contract-correction-h3nq7p
+    active_pr: -54
+    last_verified_main_sha: 683c324629544a84d2cf75ebca37325e3375c479
     last_verified_date: "2026-08-24"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

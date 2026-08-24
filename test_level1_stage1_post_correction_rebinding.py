@@ -187,6 +187,14 @@ XASSET0053_MAIN_SHA = "cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6"
 #: Committed as an impossible sentinel first (-53), then replaced by the number GitHub actually
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
 XASSET0053_ACTIVE_PR = 354
+#: ADVANCED BY XASSET-0054 -- see the note at the live-fields assertion below.
+XASSET0054_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
+XASSET0054_ACTIVE_PR = -54
+#: The CURRENT unit's own decision file, which declares the live module identity.
+XASSET_0054_DECISION_RELPATH = (
+    "governance/decisions/"
+    "XASSET-0054-endpoint-0001-formal-disposition-parser-contract-correction.md"
+)
 
 #: A real, immutable historical commit pair across which a protected path GENUINELY changed --
 #: PR #342's base and merge -- so the base->head comparison can never pass vacuously.
@@ -906,18 +914,40 @@ class TestPinsAreCurrentAndSuccessionIsRefused:
         # live fact belonging to the CURRENT unit; XASSET-0047's now describes its own merge, and
         # asserting that it no longer matches the live module is precisely what proves the newest
         # successor really rebound rather than leaving a stale pin agreeing by accident.
+        # ADVANCED AGAIN BY XASSET-0054, unchanged in KIND and applying this test's OWN stated
+        # rule: "which declaration matches the LIVE module is a live fact belonging to the CURRENT
+        # unit." XASSET-0053 SS-C lawfully authorized the module to change and XASSET-0054
+        # exercised that grant, so XASSET-0049's declaration joins XASSET-0047's as accepted
+        # merged history that must NO LONGER match the live module -- and asserting that
+        # inequality is exactly what proves the correction really landed rather than a stale pin
+        # agreeing by accident. The live identity is declared by the CURRENT unit, XASSET-0054,
+        # under the FINAL_CORRECTED_MODULE_SHA256 marker its own correction-unit lineage uses
+        # (the same marker XASSET-0042 established). No prior decision file is edited.
         live = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
         successor = (ROOT / XASSET_0047_DECISION_RELPATH).read_text(encoding="utf-8")
         assert _sole_token(successor) == XASSET_0047_FINAL_MODULE_SHA256
         assert _sole_token(successor) != live
         latest = (ROOT / XASSET_0049_DECISION_RELPATH).read_text(encoding="utf-8")
-        assert _sole_token(latest) == live
+        assert _sole_token(latest) != live
+        current = (ROOT / XASSET_0054_DECISION_RELPATH).read_text(encoding="utf-8")
+        declared_current = [
+            ln for ln in current.split("\n")
+            if ln.strip().startswith("FINAL_CORRECTED_MODULE_SHA256:")
+        ]
+        assert len(declared_current) == 1, declared_current
+        current_tokens = [
+            token for token in declared_current[0].replace("`", " ").split()
+            if len(token) == 64 and all(c in "0123456789abcdef" for c in token)
+        ]
+        assert len(current_tokens) == 1, current_tokens
+        assert current_tokens[0] == live
         # THIS decision's own declaration is unchanged history and no longer describes the module.
         assert _sole_token(decision_text) != live
         # Every generation's declaration is distinct: none was copied forward.
         assert len({
-            _sole_token(decision_text), _sole_token(successor), _sole_token(latest)
-        }) == 3
+            _sole_token(decision_text), _sole_token(successor), _sole_token(latest),
+            current_tokens[0],
+        }) == 4
 
     def test_all_four_module_identities_are_retained_and_mutually_distinct(self, decision_text):
         current = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
@@ -1312,7 +1342,10 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049. This is WS-0014's SINGLE SHARED live self-reference and moves
         # with every unit; each generation's own value is retained as a NEGATIVE pin so a silent
         # revert to any finished unit's state still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0053_MAIN_SHA
+        # ADVANCED AGAIN BY XASSET-0054, on the same terms: PR #354 merged at `683c3246`, so
+        # this shared field moves once more and XASSET-0053's value joins the negative pins.
+        assert ws0014["last_verified_main_sha"] == XASSET0054_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0053_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0052_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0051_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0050_MAIN_SHA

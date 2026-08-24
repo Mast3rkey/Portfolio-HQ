@@ -728,10 +728,21 @@ class TestCatalogAndRegisterSynchronisation:
         # BOTH ends.
         # ADVANCED BY XASSET-0053: PR #353 merged, so the shared live fields moved once more
         # onto this successor unit. XASSET-0052's superseded values join the negative pins.
+        # ADVANCED AGAIN BY XASSET-0054: PR #354 merged at `683c3246`, making XASSET-0053
+        # EFFECTIVE, so these shared fields advance once more, to the parser-contract CORRECTION
+        # unit that is now live. Each stays an exact value, and XASSET-0053's own superseded
+        # values join the negative pins below rather than being deleted, so the field stays bound
+        # at BOTH ends.
         assert ws0014["active_branch"] == (
-            "claude/xasset-0053-parser-contract-auth-k7m2qx"
+            "claude/xasset-0054-parser-contract-correction-h3nq7p"
         )
         assert ws0014["last_verified_main_sha"] == (
+            "683c324629544a84d2cf75ebca37325e3375c479"
+        )
+        assert ws0014["active_branch"] != (
+            "claude/xasset-0053-parser-contract-auth-k7m2qx"
+        )
+        assert ws0014["last_verified_main_sha"] != (
             "cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6"
         )
         assert ws0014["active_branch"] != (

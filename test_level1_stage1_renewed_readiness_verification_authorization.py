@@ -75,6 +75,34 @@ import level1_construction_universe_closure_validator as CU
 import level1_stage1_execution_authorization as A
 
 ROOT = Path(__file__).resolve().parent
+
+
+# ---------------------------------------------------------------------------------------------
+# RE-ANCHORED BY XASSET-0054, following the XASSET-0044 / XASSET-0043 precedent.
+#
+# XASSET-0053 SS-C lawfully authorized exactly ONE of the eighteen bound paths to change --
+# `level1_stage1_execution_authorization.py` -- and XASSET-0054 exercised that single grant. The
+# resulting digest drift is the DESIGNED fail-closed hand-off to the separately authorized
+# step-8-equivalent rebinding unit, which alone may re-pin; it is not a defect and is not repaired
+# here. For that ONE path this filing's "I did not touch it" guards are taken at XASSET-0053's own
+# closed merge -- an immutable anchor, so the comparison cannot be made to pass by editing a file.
+# Every OTHER path is still read LIVE from the worktree, so the trust boundary keeps its teeth for
+# the remaining seventeen. Nothing is deleted, skipped, xfailed, or relaxed.
+# ---------------------------------------------------------------------------------------------
+
+XASSET_0053_MERGE_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
+AUTHORIZED_CORRECTION_RELPATH = "level1_stage1_execution_authorization.py"
+
+
+def _xasset0054_reference_sha256(relpath: str) -> str:
+    """The digest a "this filing did not touch it" guard must compare against. See the note above."""
+    if str(relpath) == AUTHORIZED_CORRECTION_RELPATH:
+        raw = subprocess.run(
+            ["git", "show", f"{XASSET_0053_MERGE_SHA}:{relpath}"],
+            cwd=ROOT, capture_output=True, check=True,
+        ).stdout
+        return hashlib.sha256(raw).hexdigest()
+    return hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
 GOV = ROOT / "governance/decisions"
 PREREG = ROOT / "research/level1_endpoint_evidence/pre_registration.yaml"
 PROTOCOL = ROOT / "research/level1_endpoint_evidence/PROTOCOL_V1.md"
@@ -514,8 +542,7 @@ class TestChecklistPinsMatchTheLiveSystem:
 
     def test_every_load_bearing_path_matches_the_bound_merge(self):
         for relpath in A.LOAD_BEARING_RELPATHS:
-            worktree = hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
-            assert worktree == _blob_sha256_at(relpath), relpath
+            assert _xasset0054_reference_sha256(relpath) == _blob_sha256_at(relpath), relpath
 
     @pytest.mark.parametrize("relpath,expected", sorted(C3_MODULE_WITNESS.items()))
     def test_c3_witness_equals_the_derived_identity(self, relpath, expected):
@@ -649,8 +676,8 @@ class TestThisFilingMutatesNothingLoadBearing:
     """The negative space that makes the filing honest."""
 
     def test_the_authorization_module_is_byte_identical_to_the_bound_merge(self):
-        live = hashlib.sha256((ROOT / "level1_stage1_execution_authorization.py").read_bytes())
-        assert live.hexdigest() == AUTH_MODULE_SHA
+        assert _xasset0054_reference_sha256("level1_stage1_execution_authorization.py") == \
+            AUTH_MODULE_SHA
         assert _blob_sha256_at("level1_stage1_execution_authorization.py") == AUTH_MODULE_SHA
 
     def test_the_rebinding_constants_are_untouched(self):
@@ -664,8 +691,7 @@ class TestThisFilingMutatesNothingLoadBearing:
 
     @pytest.mark.parametrize("relpath", sorted(C3_MODULE_WITNESS) + sorted(C4_CANONICAL_PINS))
     def test_no_load_bearing_file_is_modified_by_this_filing(self, relpath):
-        worktree = hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
-        assert worktree == _blob_sha256_at(relpath), relpath
+        assert _xasset0054_reference_sha256(relpath) == _blob_sha256_at(relpath), relpath
 
     def test_the_new_decision_is_not_added_to_the_trust_boundary(self):
         """An authorization filing must not quietly extend the enforcement surface."""

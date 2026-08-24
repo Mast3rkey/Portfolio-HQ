@@ -165,6 +165,18 @@ XASSET0053_MAIN_SHA = "cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6"
 #: Committed as an impossible sentinel first (-53), then replaced by the number GitHub actually
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
 XASSET0053_ACTIVE_PR = 354
+#: ADVANCED BY XASSET-0054. PR #354 merged at `683c3246...`, making XASSET-0053 EFFECTIVE, so
+#: WS-0014's shared live self-reference fields lawfully advanced again under OPS-0001's
+#: Active-GitHub-fields rule. XASSET-0054 is the IMPLEMENTATION unit XASSET-0053 SS-C authorized:
+#: it lawfully changes exactly one of the eighteen bound paths and re-pins NOTHING, so the
+#: resulting digest drift is the designed fail-closed hand-off to the separately authorized
+#: step-8-equivalent rebinding unit. Every prior generation's value is retained beside the current
+#: one as a NEGATIVE pin, so a silent revert to finished work still fails. Bound at BOTH ends.
+XASSET0054_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
+#: Committed as an impossible sentinel first (-54), then replaced by the number GitHub actually
+#: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
+XASSET0054_ACTIVE_PR = -54
+XASSET0054_BRANCH = "claude/xasset-0054-parser-contract-correction-h3nq7p"
 
 #: PR #345's lifecycle evidence that DID complete, preserved as authenticated predecessor
 #: evidence.
@@ -1107,7 +1119,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
         # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
         # pin, so a silent revert to finished work still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0053_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0054_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0053_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0052_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0051_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0050_MAIN_SHA

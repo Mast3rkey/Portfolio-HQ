@@ -1594,28 +1594,118 @@ def live_load_bearing_hashes() -> dict[str, str]:
 # ======================================================================================
 
 
-def parse_formal_disposition(body: str) -> str | None:
-    """Return the review's FORMAL DISPOSITION verdict, parsed exactly from the first formal line.
+# --------------------------------------------------------------------------------------
+# XASSET-0053: the ABSENT / MALFORMED distinction.
+#
+# Reproduced before correcting: `parse_formal_disposition()` returned `str | None`, so a
+# single `None` carried two different meanings -- "no formal-looking line exists at all"
+# and "a formal-looking line was found and refused". `_verify_selected_review_is_final()`
+# reads `None` under a native APPROVED state as non-adverse, so a recorded adverse line in
+# an unsupported shape (`## FORMAL DISPOSITION: CHANGES REQUIRED`) was silently absorbed.
+# A parser-only repair cannot fix that: the distinguishing value did not exist.
+#
+# This sentinel IS that value, and nothing more. It is not a parsing framework: it adds no
+# grammar, no configuration, and no second parser. XASSET-0053 SS-C item 2.
+# --------------------------------------------------------------------------------------
 
-    MAJOR 1 (review 4946464366): the previous check was ``APPROVING_REVIEW_DISPOSITION in body``,
-    so a review whose formal line read ``CHANGES REQUIRED`` still passed if any later explanatory
-    sentence quoted the approval phrase. Reproduced before correcting.
 
-    Only the FIRST ``FORMAL DISPOSITION:`` line counts, and only the verdict up to the first
-    finding-count separator, so trailing counts such as ``— 0 BLOCKING / 0 MAJOR`` do not change
-    the verdict while a different verdict always does.
+class _MalformedFormalDisposition:
+    """A formal-looking disposition line was found and REFUSED. Never 'absent'.
+
+    Distinct from ``None`` on purpose. ``None`` means the body carries no formal-looking
+    line at all, which every consumer already has a settled policy for; this value means a
+    line named a formal disposition in a shape the accepted grammar does not admit, and it
+    must fail closed everywhere -- including where a native APPROVED state would otherwise
+    make an absent disposition non-adverse.
+    """
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:  # pragma: no cover - diagnostic only
+        return "MALFORMED_FORMAL_DISPOSITION"
+
+    def __bool__(self) -> bool:
+        return False
+
+
+MALFORMED_FORMAL_DISPOSITION = _MalformedFormalDisposition()
+
+
+def _formal_disposition_line_verdict(stripped: str) -> str | None:
+    """Classify ONE already-stripped line. Returns the verdict, or None if not formal-looking.
+
+    The single narrow helper XASSET-0053 SS-C item 2 permits, devoted solely to the
+    ABSENT / MALFORMED / verdict distinction. It answers exactly one question about exactly
+    one line and holds no state; it is deliberately not a general parser.
+
+    Accepted, and only these two shapes:
+
+      * the plain canonical line -- ``FORMAL DISPOSITION: <verdict>``; and
+      * that same line inside a precisely balanced, whole-line Markdown-bold wrapper --
+        ``**FORMAL DISPOSITION: <verdict>**``, demonstrated by PR #349 review 5000581301.
+
+    Only the balanced wrapper is removed. The verdict itself is never normalized, replaced,
+    canonicalized, or fuzzy-matched -- it is returned exactly as written, so comparison with
+    APPROVING_REVIEW_DISPOSITION stays exact.
+    """
+    if not stripped:
+        return None
+
+    candidate = stripped
+    if candidate.startswith("**") and candidate.endswith("**") and len(candidate) > 4:
+        inner = candidate[2:-2]
+        # Precisely balanced and whole-line: exactly one outer pair, nothing emphasised
+        # inside it. Nested, repeated, partial, or unbalanced markers are NOT this shape --
+        # they fall through and are classified MALFORMED below by the caller.
+        if "*" not in inner:
+            candidate = inner.strip()
+
+    if not candidate.upper().startswith(FORMAL_DISPOSITION_PREFIX):
+        return None
+    if "*" in candidate:
+        # A surviving emphasis marker means the wrapper was NOT the precisely balanced whole-line
+        # pair above -- it is partial, trailing, or otherwise unbalanced. No accepted verdict
+        # contains `*`, so refusing here costs nothing and closes the shape.
+        return None
+
+    verdict = candidate[len(FORMAL_DISPOSITION_PREFIX):].strip()
+    for separator in ("—", "--", " - ", "|"):
+        if separator in verdict:
+            verdict = verdict.split(separator, 1)[0].strip()
+    return verdict
+
+
+def parse_formal_disposition(body: str) -> str | _MalformedFormalDisposition | None:
+    """Classify a review body's FIRST formal-looking disposition line.
+
+    Three outcomes, and they are not interchangeable:
+
+      * ``str``                              -- the verdict, exactly as written;
+      * ``MALFORMED_FORMAL_DISPOSITION``     -- a formal-looking line was found and refused;
+      * ``None``                             -- ABSENT: no formal-looking line exists.
+
+    MAJOR 1 (review 4946464366): the check was once ``APPROVING_REVIEW_DISPOSITION in body``,
+    so a review whose formal line read ``CHANGES REQUIRED`` passed if any later sentence
+    quoted the approval phrase. Only the FIRST formal-looking line counts, and only the
+    verdict up to the first finding-count separator, so trailing counts such as
+    ``— 0 BLOCKING / 0 MAJOR`` do not change the verdict while a different verdict always does.
+
+    XASSET-0053 SS-D.17: an unsupported formal-looking line STOPS classification. It is never
+    skipped so a later, better-formed line can win -- that skip is what let a recorded adverse
+    heading be replaced by a subsequent approval.
     """
     if not isinstance(body, str):
         return None
     for line in body.splitlines():
         stripped = line.strip()
-        if not stripped.upper().startswith(FORMAL_DISPOSITION_PREFIX):
-            continue
-        verdict = stripped[len(FORMAL_DISPOSITION_PREFIX):].strip()
-        for separator in ("—", "--", " - ", "|"):
-            if separator in verdict:
-                verdict = verdict.split(separator, 1)[0].strip()
-        return verdict
+        verdict = _formal_disposition_line_verdict(stripped)
+        if verdict is not None:
+            return verdict
+        if FORMAL_DISPOSITION_PREFIX in stripped.upper():
+            # Formal-looking, but not in an accepted shape: a heading, blockquote, bullet,
+            # code fence, inline prose, nested/repeated/partial/unbalanced emphasis, or
+            # leading/trailing operative prose. Stop here and fail closed.
+            return MALFORMED_FORMAL_DISPOSITION
     return None
 
 
@@ -1961,6 +2051,8 @@ def _derive_pr337_actor_ratification(
     # still carries the approving formal line.
     if str(rat_review.get("state") or "").upper() in NATIVE_ADVERSE_REVIEW_STATES:
         return _NO_PR337_ACTOR_RATIFICATION
+    # XASSET-0053: an inequality test, so BOTH new outcomes fail closed here without a new
+    # branch -- ABSENT (``None``) and MALFORMED_FORMAL_DISPOSITION alike are != the approval.
     if parse_formal_disposition(rat_review.get("body") or "") != APPROVING_REVIEW_DISPOSITION:
         return _NO_PR337_ACTOR_RATIFICATION
     if not _belongs_to_pull_request(rat_review, RATIFICATION_PULL_REQUEST):
@@ -2186,7 +2278,15 @@ def verify_lifecycle_against_truth(
                 f"{review.get('commit_id')!r}, not the authorization head {head!r}"
             )
         verdict = parse_formal_disposition(review.get("body") or "")
-        if verdict is None:
+        if verdict is MALFORMED_FORMAL_DISPOSITION:
+            # XASSET-0053: a formal-looking line was found and REFUSED. Distinct from absent,
+            # and reported as such, but the fail-closed outcome is identical.
+            errors.append(
+                f"governance truth: review {review_id} carries a formal-looking "
+                f"'{FORMAL_DISPOSITION_PREFIX}' line in an unsupported shape, so its verdict "
+                "cannot be authenticated"
+            )
+        elif verdict is None:
             errors.append(
                 f"governance truth: review {review_id} carries no parseable "
                 f"'{FORMAL_DISPOSITION_PREFIX}' line, so its verdict cannot be authenticated"
@@ -3441,10 +3541,22 @@ def _verify_selected_review_is_final(
                 "not erase a later exact-head finding"
             )
             continue
+        if verdict is MALFORMED_FORMAL_DISPOSITION:
+            # XASSET-0053, THE defect this correction exists for. A formal-looking line in an
+            # unsupported shape is NOT absent: a native APPROVED state may never rescue it, and
+            # it may never be skipped so a later, better-formed approval wins. Checked BEFORE
+            # the approving check so that property is structural rather than incidental.
+            errors.append(
+                f"governance truth: review {entry.get('id')} on the exact accepted head, "
+                f"submitted after the certified review {selected_review_id}, carries a "
+                f"formal-looking '{FORMAL_DISPOSITION_PREFIX}' line in an unsupported shape, so "
+                "it cannot be proven non-adverse; finality fails closed"
+            )
+            continue
         if verdict == APPROVING_REVIEW_DISPOSITION:
             continue  # a later approving pass is not adverse
         if verdict is None:
-            # Unclassifiable: neither a native adverse state nor a parseable formal disposition.
+            # ABSENT: neither a native adverse state nor any formal-looking disposition line.
             # Finality cannot be asserted over a review whose verdict is unknown, so this fails
             # closed rather than being silently ignored.
             if state in NATIVE_NON_ADVERSE_REVIEW_STATES:

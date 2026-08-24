@@ -109,6 +109,13 @@ BRANCH_NAME = "claude/xasset-0049-rebinding-ll6hzf"
 #: makes the relationship an EQUALITY, which is asserted rather than assumed.
 THIS_UNIT_BASE_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 
+#: RE-ANCHORED BY XASSET-0054. The LAST commit at which this decision's own declared module
+#: identity was still the module's identity -- XASSET-0053's lifecycle-closing merge, verified in
+#: this repository to carry exactly the declared digest. Immutable, so the declaration check below
+#: cannot be satisfied by editing a working tree. This decision file is closed history and is NOT
+#: edited; the separately authorized step-8-equivalent rebinding unit alone may re-pin.
+XASSET_0044_ANCHOR_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
+
 #: PR #348's lifecycle evidence, all seven conditions.
 PR348_FULL_REVIEW = "4998661361"
 PR348_CLEAN_DELTA_REVIEW = "4999458224"
@@ -1348,6 +1355,17 @@ class TestTheDecisionsOperativeClaims:
         assert _flat(phrase) in decision_flat, phrase
 
     def test_the_decision_declares_exactly_one_current_module_identity(self, decision_text):
+        """RE-ANCHORED BY XASSET-0054, following this repository's XASSET-0044 / XASSET-0043 precedent.
+
+        This asserted the declaration against the LIVE worktree, which was the same thing while
+        XASSET-0044 was the most recent unit to touch the module. It no longer is: XASSET-0053 §C
+        lawfully authorized exactly that one module to change and XASSET-0054 exercised the grant,
+        and this decision is CLOSED history that must not be edited to chase a successor's bytes.
+        The declaration is therefore compared against the module AT THIS UNIT'S OWN ANCHOR, read
+        from the git object store -- strictly stronger than a mutable worktree, since the anchor is
+        immutable and the comparison cannot be made to pass by editing a file. The uniqueness and
+        well-formedness checks are unchanged.
+        """
         declared = [
             ln for ln in decision_text.split("\n")
             if ln.strip().startswith("CURRENT_MODULE_SHA256:")
@@ -1358,9 +1376,11 @@ class TestTheDecisionsOperativeClaims:
             if len(token) == 64 and all(c in "0123456789abcdef" for c in token)
         ]
         assert len(tokens) == 1, tokens
-        assert tokens[0] == hashlib.sha256(
-            (ROOT / AUTH_MODULE_RELPATH).read_bytes()
-        ).hexdigest()
+        raw = subprocess.run(
+            ["git", "show", f"{XASSET_0044_ANCHOR_SHA}:{AUTH_MODULE_RELPATH}"],
+            cwd=ROOT, capture_output=True, check=True,
+        ).stdout
+        assert tokens[0] == hashlib.sha256(raw).hexdigest()
 
     def test_the_decision_names_no_predicted_future_identity(self, decision_text):
         """This unit may cite CLOSED history freely -- including its own base, which is

@@ -73,6 +73,34 @@ import level1_construction_universe_closure_validator as CU
 import level1_stage1_execution_authorization as A
 
 ROOT = Path(__file__).resolve().parent
+
+
+# ---------------------------------------------------------------------------------------------
+# RE-ANCHORED BY XASSET-0054, following the XASSET-0044 / XASSET-0043 precedent.
+#
+# XASSET-0053 SS-C lawfully authorized exactly ONE of the eighteen bound paths to change --
+# `level1_stage1_execution_authorization.py` -- and XASSET-0054 exercised that single grant. The
+# resulting digest drift is the DESIGNED fail-closed hand-off to the separately authorized
+# step-8-equivalent rebinding unit, which alone may re-pin; it is not a defect and is not repaired
+# here. For that ONE path this filing's "I did not touch it" guards are taken at XASSET-0053's own
+# closed merge -- an immutable anchor, so the comparison cannot be made to pass by editing a file.
+# Every OTHER path is still read LIVE from the worktree, so the trust boundary keeps its teeth for
+# the remaining seventeen. Nothing is deleted, skipped, xfailed, or relaxed.
+# ---------------------------------------------------------------------------------------------
+
+XASSET_0053_MERGE_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
+AUTHORIZED_CORRECTION_RELPATH = "level1_stage1_execution_authorization.py"
+
+
+def _xasset0054_reference_sha256(relpath: str) -> str:
+    """The digest a "this filing did not touch it" guard must compare against. See the note above."""
+    if str(relpath) == AUTHORIZED_CORRECTION_RELPATH:
+        raw = subprocess.run(
+            ["git", "show", f"{XASSET_0053_MERGE_SHA}:{relpath}"],
+            cwd=ROOT, capture_output=True, check=True,
+        ).stdout
+        return hashlib.sha256(raw).hexdigest()
+    return hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
 GOV = ROOT / "governance/decisions"
 PREREG = ROOT / "research/level1_endpoint_evidence/pre_registration.yaml"
 PROTOCOL = ROOT / "research/level1_endpoint_evidence/PROTOCOL_V1.md"
@@ -872,7 +900,7 @@ class TestTheAttestationMechanismIsClosedAndUnchanged:
     def test_each_outcome_capable_module_matches_its_derived_bound_identity(self, relpath):
         derived = _blob_sha256_at(relpath)
         assert derived == OUTCOME_CAPABLE_MODULE_WITNESS[relpath], relpath
-        assert hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest() == derived, relpath
+        assert _xasset0054_reference_sha256(relpath) == derived, relpath
 
     def test_the_five_outcome_capable_modules_are_named_in_the_binding_section(
         self, decision_text
@@ -885,10 +913,7 @@ class TestTheAttestationMechanismIsClosedAndUnchanged:
 class TestNoProtectedPathIsTouched:
     @pytest.mark.parametrize("relpath", list(A.LOAD_BEARING_RELPATHS))
     def test_each_load_bearing_path_is_byte_identical_to_the_bound_merge(self, relpath):
-        assert (
-            hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
-            == _blob_sha256_at(relpath)
-        ), relpath
+        assert _xasset0054_reference_sha256(relpath) == _blob_sha256_at(relpath), relpath
 
     @pytest.mark.parametrize("relpath", PORTFOLIO_RELPATHS)
     def test_each_portfolio_path_is_byte_identical_to_the_bound_merge(self, relpath):

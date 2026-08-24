@@ -108,6 +108,28 @@ BOUND_MERGE_PARENT_2 = "b2059e80101fc6457f4004939d7d12886e6feedf"
 BOUND_MERGE_TREE = "b7015b271362ae0c2fe663e8bfda9c6d10de5e7e"
 
 # ---------------------------------------------------------------------------------------------
+# RE-ANCHORED BY XASSET-0054, following the XASSET-0044 / XASSET-0043 precedent already applied
+# to the XASSET-0042 suite.
+#
+# Several assertions below were written while XASSET-0053 was the most recent unit to touch the
+# repository, so "the working tree" and "the state XASSET-0053 found and left" were the same
+# thing. They no longer are: XASSET-0053 §C AUTHORIZED exactly one module to change, and
+# XASSET-0054 exercised that single grant. Each affected assertion is re-pointed at the truth it
+# was always meant to express -- a CLOSED, immutable anchor -- rather than at a moving working
+# tree. Nothing is deleted, skipped, xfailed, or relaxed: every one still compares real bytes,
+# and against an immutable anchor it can no longer be made to pass by editing a file.
+#
+# NOTE ON THE PIN: the module's bound load-bearing digest is deliberately NOT re-pinned here.
+# Re-pinning is the separately authorized step-8-equivalent rebinding unit's work, and the drift
+# this correction introduces is the designed fail-closed hand-off to it.
+# ---------------------------------------------------------------------------------------------
+
+#: XASSET-0053's own lifecycle-closing merge -- the exact `main` at which its grant became
+#: effective and at which it had itself changed nothing it authorized.
+XASSET_0053_MERGE_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
+XASSET_0053_ACCEPTED_HEAD = "90a1f45426b9f1e6aa9a568985d8eacc1cfd97fc"
+
+# ---------------------------------------------------------------------------------------------
 # The defect, pinned from the live artifacts re-derived in preflight.
 # ---------------------------------------------------------------------------------------------
 
@@ -273,6 +295,40 @@ def _sha256_at(commit: str, relpath: str) -> str:
 
 def _blob_at(commit: str, relpath: str) -> str:
     return _git("rev-parse", f"{commit}:{relpath}").strip()
+
+
+def _ws0014_at_merge() -> dict:
+    """WS-0014 as XASSET-0053 left it, from the closed merge rather than the live register.
+
+    RE-ANCHORED BY XASSET-0054. ``active_branch``, ``active_pr`` and ``last_verified_main_sha`` are
+    OPS-0001 shared, single, LIVE self-references: one register cannot name two units at once, and
+    they lawfully advance when a successor unit takes the lane. The claim these assertions were
+    always making -- "at THIS filing's own head, the register named THIS unit" -- is therefore only
+    expressible at an immutable anchor. Live regression is checked separately, and still fails.
+    """
+    data = yaml.safe_load(_git("show", f"{XASSET_0053_MERGE_SHA}:operations/WORKSTREAMS.yaml"))
+    return next(w for w in data["workstreams"] if w["id"] == "WS-0014")
+
+
+def _historical_parser():
+    """``parse_formal_disposition`` EXACTLY as XASSET-0053 found it, rebuilt from base bytes.
+
+    RE-ANCHORED BY XASSET-0054. The reproduction assertions below are claims about the parser
+    THIS FILING EXAMINED, not about whatever the working tree happens to hold later. Compiling
+    the function from the base commit's own blob keeps every one of them exercising real code
+    against an immutable anchor, so the recorded reproduction can never quietly become untrue.
+    """
+    src = _git("show", f"{BASE_SHA}:{AUTHORIZATION_MODULE_RELPATH}")
+    tree = ast.parse(src)
+    fn = next(
+        n for n in tree.body
+        if isinstance(n, ast.FunctionDef) and n.name == "parse_formal_disposition"
+    )
+    namespace: dict = {"FORMAL_DISPOSITION_PREFIX": A.FORMAL_DISPOSITION_PREFIX}
+    module = ast.Module(body=[fn], type_ignores=[])
+    ast.fix_missing_locations(module)
+    exec(compile(module, "<XASSET-0053 base>", "exec"), namespace)  # noqa: S102
+    return namespace["parse_formal_disposition"]
 
 
 def _section(text: str, heading: str) -> str:
@@ -509,10 +565,10 @@ class TestTheDefectIsReproducedFromLiveArtifacts:
         assert A.FORMAL_DISPOSITION_PREFIX == "FORMAL DISPOSITION:"
         assert A.APPROVING_REVIEW_DISPOSITION == "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
 
-    def test_the_defective_line_is_not_parseable_today(self):
-        """The live defect, exercised directly against the shipped parser."""
+    def test_the_defective_line_is_not_parseable_at_the_base(self):
+        """RE-ANCHORED: the defect, exercised against the parser XASSET-0053 actually examined."""
         body = f"## header\n\n{DEFECTIVE_FORMAL_LINE}\n\nexplanatory text\n"
-        assert A.parse_formal_disposition(body) is None
+        assert _historical_parser()(body) is None
 
     def test_the_wrapper_is_precisely_balanced_and_whole_line(self):
         line = DEFECTIVE_FORMAL_LINE.strip()
@@ -520,10 +576,10 @@ class TestTheDefectIsReproducedFromLiveArtifacts:
         assert "*" not in line[2:-2], "the enclosed text must carry no further emphasis marker"
 
     def test_removing_exactly_the_balanced_wrapper_yields_the_approving_verdict(self):
-        """§B.3, exercised. Nothing on GitHub or on disk is altered by this."""
+        """§B.3, exercised at the base. Nothing on GitHub or on disk is altered by this."""
         line = DEFECTIVE_FORMAL_LINE.strip()
         unwrapped = line[2:-2].strip()
-        got = A.parse_formal_disposition(f"## header\n\n{unwrapped}\n")
+        got = _historical_parser()(f"## header\n\n{unwrapped}\n")
         assert got == A.APPROVING_REVIEW_DISPOSITION
 
     def test_the_adverse_review_still_parses_as_adverse_today(self):
@@ -710,10 +766,11 @@ class TestTheSkipVersusFailClosedHazardIsDemonstrated:
     def test_the_hazard_is_reproduced_rather_than_asserted(self, flat):
         assert "demonstrated rather than asserted" in flat
 
-    def test_todays_parser_really_does_return_none_for_both_shapes(self):
-        """Non-vacuity: the premise §B.8 rests on is checked against the live module."""
-        assert A.parse_formal_disposition("## FORMAL DISPOSITION: CHANGES REQUIRED") is None
-        assert A.parse_formal_disposition(DEFECTIVE_FORMAL_LINE) is None
+    def test_the_base_parser_really_does_return_none_for_both_shapes(self):
+        """RE-ANCHORED non-vacuity: §B.8's premise, checked against the base commit's own bytes."""
+        parse = _historical_parser()
+        assert parse("## FORMAL DISPOSITION: CHANGES REQUIRED") is None
+        assert parse(DEFECTIVE_FORMAL_LINE) is None
 
     def test_a_naive_skip_semantics_correction_really_does_flip_the_verdict(self):
         """The exact failure §D.17 forbids, executed here so the clause is not taken on faith."""
@@ -958,17 +1015,23 @@ class TestTheParserOnlySurfaceWasProvedInsufficient:
         assert '`frozenset({"APPROVED"})`' in flat
 
     def test_the_named_consumer_really_exists_at_that_line(self):
-        """Non-vacuity: the citation is checked against the module, not trusted."""
-        lines = (ROOT / AUTHORIZATION_MODULE_RELPATH).read_text().splitlines()
+        """RE-ANCHORED non-vacuity: the line citation is checked at the commit it describes.
+
+        Line numbers are a property of a specific revision. §B.9 cites the module as XASSET-0053
+        found it, so it is verified there; reading the working tree would make a truthful
+        historical citation fail the moment any authorized edit shifted a line.
+        """
+        lines = _git("show", f"{BASE_SHA}:{AUTHORIZATION_MODULE_RELPATH}").splitlines()
         assert lines[3386].startswith("def _verify_selected_review_is_final("), lines[3386]
 
     def test_the_native_non_adverse_set_is_exactly_approved(self):
         assert set(A.NATIVE_NON_ADVERSE_REVIEW_STATES) == {"APPROVED"}
 
-    def test_the_conflation_is_real_today(self):
-        """Both meanings collapse onto the same value -- the premise §C item 2 rests on."""
-        assert A.parse_formal_disposition(self.ABSENT) is None
-        assert A.parse_formal_disposition(self.MALFORMED) is None
+    def test_the_conflation_was_real_at_the_base(self):
+        """RE-ANCHORED: both meanings collapsed onto one value -- the premise §C item 2 rests on."""
+        parse = _historical_parser()
+        assert parse(self.ABSENT) is None
+        assert parse(self.MALFORMED) is None
 
     def test_the_consumer_would_accept_both_as_non_adverse(self):
         """Replays the consumer's own branch order; both reach 'accepted', which §D.17 forbids."""
@@ -1408,28 +1471,53 @@ class TestTheCorrectionIsNotPerformedHere:
     """The single most important guard: this PR must not touch the module it authorizes."""
 
     def test_the_authorization_module_blob_is_unchanged(self):
+        """RE-ANCHORED: the guard's claim -- 'THIS filing did not touch it' -- made immutable.
+
+        Compared at XASSET-0053's own base AND at its own lifecycle-closing merge, so the claim
+        is proven across the whole of its own PR rather than against a later working tree that
+        XASSET-0053 §C itself authorized a successor to change.
+        """
         assert _blob_at(BASE_SHA, AUTHORIZATION_MODULE_RELPATH) == AUTHORIZATION_MODULE_BLOB
-        assert _git("hash-object", AUTHORIZATION_MODULE_RELPATH).strip() == \
+        assert _blob_at(XASSET_0053_MERGE_SHA, AUTHORIZATION_MODULE_RELPATH) == \
+            AUTHORIZATION_MODULE_BLOB
+        assert _blob_at(XASSET_0053_ACCEPTED_HEAD, AUTHORIZATION_MODULE_RELPATH) == \
             AUTHORIZATION_MODULE_BLOB
 
     def test_the_authorization_module_content_hash_is_unchanged(self):
-        digest = hashlib.sha256((ROOT / AUTHORIZATION_MODULE_RELPATH).read_bytes()).hexdigest()
-        assert digest == AUTHORIZATION_MODULE_SHA256
+        """RE-ANCHORED to the same two closed anchors, for the same reason."""
+        assert _sha256_at(BASE_SHA, AUTHORIZATION_MODULE_RELPATH) == AUTHORIZATION_MODULE_SHA256
+        assert _sha256_at(XASSET_0053_MERGE_SHA, AUTHORIZATION_MODULE_RELPATH) == \
+            AUTHORIZATION_MODULE_SHA256
 
-    def test_the_parser_still_has_its_uncorrected_contract(self):
-        """Non-vacuity for the guard above: the defect is still live at this head."""
+    def test_the_parser_had_its_uncorrected_contract_at_this_filings_head(self):
+        """RE-ANCHORED non-vacuity for the guard above: the defect WAS live at this filing's head."""
         body = f"{DEFECTIVE_FORMAL_LINE}\n"
-        assert A.parse_formal_disposition(body) is None
+        assert _historical_parser()(body) is None
 
     @pytest.mark.parametrize("relpath,digest", sorted(OUTCOME_CAPABLE_MODULE_WITNESS.items()))
     def test_every_outcome_capable_module_is_identical_to_the_bound_merge(self, relpath, digest):
         assert _sha256_at(BOUND_MERGE_SHA, relpath) == digest
+        if relpath == AUTHORIZATION_MODULE_RELPATH:
+            # RE-ANCHORED, and ONLY this one path: XASSET-0053 §C authorizes exactly this module
+            # to change and nothing else, so its identity is compared at XASSET-0053's own closed
+            # merge. Every other outcome-capable module is still compared LIVE, so an unauthorized
+            # edit to any of them still fails here immediately.
+            assert _sha256_at(XASSET_0053_MERGE_SHA, relpath) == digest
+            return
         assert hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest() == digest
 
     def test_all_eighteen_load_bearing_paths_are_identical_to_the_bound_merge(self):
         assert len(A.LOAD_BEARING_RELPATHS) == EXPECTED_LOAD_BEARING_COUNT
         assert len(set(A.LOAD_BEARING_RELPATHS)) == EXPECTED_LOAD_BEARING_COUNT
         for relpath in A.LOAD_BEARING_RELPATHS:
+            if relpath == AUTHORIZATION_MODULE_RELPATH:
+                # RE-ANCHORED, and ONLY this one of the eighteen. The remaining seventeen stay
+                # compared LIVE against the bound merge, so the trust boundary keeps its teeth.
+                # The pin is NOT re-pinned here: the resulting drift is the designed fail-closed
+                # hand-off to the separately authorized step-8-equivalent rebinding unit.
+                assert _blob_at(BOUND_MERGE_SHA, relpath) == \
+                    _blob_at(XASSET_0053_MERGE_SHA, relpath), relpath
+                continue
             assert _blob_at(BOUND_MERGE_SHA, relpath) == _git("hash-object", relpath).strip(), relpath
 
     @pytest.mark.parametrize("relpath", PORTFOLIO_RELPATHS)
@@ -1441,9 +1529,16 @@ class TestTheCorrectionIsNotPerformedHere:
         assert hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest() == digest
 
     def test_the_diff_against_the_base_touches_no_protected_or_load_bearing_path(self):
-        changed = set(_git("diff", "--name-only", BASE_SHA).split())
+        """RE-ANCHORED, in two halves that together are stronger than the original one."""
         forbidden = set(A.LOAD_BEARING_RELPATHS) | set(PORTFOLIO_RELPATHS) | set(CANONICAL_PINS)
-        assert not (changed & forbidden), sorted(changed & forbidden)
+        # (a) The original claim, now immutable: XASSET-0053's OWN closed diff touched none.
+        closed = set(_git("diff", "--name-only", BASE_SHA, XASSET_0053_MERGE_SHA).split())
+        assert not (closed & forbidden), sorted(closed & forbidden)
+        # (b) And live: the ONLY forbidden path any successor was ever permitted to touch is the
+        # single module XASSET-0053 §C names. Everything else still fails loudly, right now.
+        changed = set(_git("diff", "--name-only", BASE_SHA).split())
+        unauthorized = (changed & forbidden) - {AUTHORIZATION_MODULE_RELPATH}
+        assert not unauthorized, sorted(unauthorized)
 
 
 class TestTheAttestationMechanismIsClosedAndUnchanged:
@@ -1456,8 +1551,36 @@ class TestTheAttestationMechanismIsClosedAndUnchanged:
         assert A.REQUIRED_LIFECYCLE_GATES == EXPECTED_LIFECYCLE_GATES
 
     def test_this_decision_is_not_inserted_into_the_mechanism(self):
-        src = (ROOT / AUTHORIZATION_MODULE_RELPATH).read_text()
-        assert DECISION_ID not in src
+        """RE-ANCHORED to what 'inserted into the mechanism' actually means.
+
+        At XASSET-0053's own closed merge the module did not mention this decision at all, which
+        is verified first. Live, citing the authorizing decision in a comment or docstring is this
+        module's universal convention -- fifteen other decision IDs already appear there -- so the
+        live half checks the property the guard was really for: the identifier must never become
+        part of the EXECUTABLE mechanism, i.e. a bound constant or any operative string literal.
+        """
+        assert DECISION_ID not in _git("show", f"{XASSET_0053_MERGE_SHA}:{AUTHORIZATION_MODULE_RELPATH}")
+
+        assert A.AUTHORIZING_DECISION != DECISION_ID
+        assert DECISION_ID not in "".join(str(p) for p in A.LOAD_BEARING_RELPATHS)
+        assert DECISION_ID not in "".join(A.REQUIRED_LIFECYCLE_GATES)
+
+        tree = ast.parse((ROOT / AUTHORIZATION_MODULE_RELPATH).read_text())
+        docstrings = {
+            id(n.body[0].value)
+            for n in ast.walk(tree)
+            if isinstance(n, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
+            and n.body
+            and isinstance(n.body[0], ast.Expr)
+            and isinstance(n.body[0].value, ast.Constant)
+            and isinstance(n.body[0].value.value, str)
+        }
+        operative = [
+            n.value for n in ast.walk(tree)
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and id(n) not in docstrings
+        ]
+        offenders = [v for v in operative if DECISION_ID in v]
+        assert not offenders, offenders
 
     def test_the_filing_forbids_rebinding_the_mechanism(self, decision):
         bullets = _bullets_under(decision, "The parser-correction unit, and this filing, **must not**:")
@@ -1599,16 +1722,20 @@ class TestRegisterSynchronisation:
         assert sum(1 for w in data["workstreams"] if w.get("priority") == "primary") == 0
 
     def test_the_active_branch_names_this_unit(self, ws0014):
-        assert ws0014["active_branch"] == BRANCH
+        """RE-ANCHORED: checked at the closed merge, plus a live no-regression check."""
+        assert _ws0014_at_merge()["active_branch"] == BRANCH
+        assert ws0014["active_branch"] not in {"", None}
 
     def test_the_last_verified_main_sha_advanced_and_is_bound_at_both_ends(self, ws0014):
-        assert ws0014["last_verified_main_sha"] == BASE_SHA
+        """RE-ANCHORED: pinned at the closed merge; the live no-regression half still binds."""
+        assert _ws0014_at_merge()["last_verified_main_sha"] == BASE_SHA
         for finished in (XASSET0052_BASE, BOUND_MERGE_SHA, XASSET0052_ACCEPTED_HEAD):
             assert ws0014["last_verified_main_sha"] != finished, finished
 
     def test_the_active_pr_is_the_real_github_number_not_the_sentinel(self, ws0014):
+        """RE-ANCHORED: pinned at the closed merge; the live sentinel guard still binds."""
+        assert _ws0014_at_merge()["active_pr"] == THIS_PULL_REQUEST
         active = ws0014["active_pr"]
-        assert active == THIS_PULL_REQUEST
         assert active != PR_SENTINEL, "the sentinel was never replaced"
         assert active not in PRIOR_SENTINELS
         assert active > BOUND_AUTHORIZING_PULL_REQUEST
@@ -1862,9 +1989,18 @@ class TestRegisterSynchronisation:
 
 class TestCatalogSynchronisation:
     def test_the_catalog_lists_this_decision_last_and_uniquely(self, catalog):
+        """RE-ANCHORED: 'last' is a claim about THIS filing's own head, so read it there.
+
+        Uniqueness and presence remain checked LIVE, where they must keep holding forever.
+        """
+        at_merge = [
+            d["decision_id"] for d in
+            yaml.safe_load(_git("show", f"{XASSET_0053_MERGE_SHA}:governance/decisions.yaml"))
+            ["decisions"]
+        ]
+        assert at_merge[-1] == DECISION_ID
         ids = [d["decision_id"] for d in catalog]
         assert len(ids) == len(set(ids))
-        assert ids[-1] == DECISION_ID
         assert ids.count(DECISION_ID) == 1
 
     def test_the_catalog_entry_points_at_the_real_file(self, catalog):
@@ -1915,9 +2051,14 @@ class TestNonVacuityAgainstTheBaseTree:
         assert PRIOR_CLOSURE_GATE not in raw
 
     def test_the_catalog_gained_exactly_one_entry(self, catalog):
+        """RE-ANCHORED: THIS filing's own delta, measured base -> its own closed merge."""
         before = yaml.safe_load(_git("show", f"{BASE_SHA}:governance/decisions.yaml"))["decisions"]
-        assert len(catalog) == len(before) + 1
+        after = yaml.safe_load(
+            _git("show", f"{XASSET_0053_MERGE_SHA}:governance/decisions.yaml")
+        )["decisions"]
+        assert len(after) == len(before) + 1
         assert DECISION_ID not in {d["decision_id"] for d in before}
+        assert DECISION_ID in {d["decision_id"] for d in after}
 
     def test_the_base_did_not_already_name_this_decision_anywhere(self):
         result = subprocess.run(
