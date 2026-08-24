@@ -226,7 +226,7 @@ PRIOR_SENTINELS = (-1, -2, -50, -51, -52)
 #: The number GitHub ISSUED for this unit, read back from the live API after the draft was opened.
 #: Never predicted, never guessed. Committed as the sentinel first; bound in a fast-forward
 #: follow-up commit once GitHub has actually issued the number.
-THIS_PULL_REQUEST = PR_SENTINEL
+THIS_PULL_REQUEST = 354
 
 THIS_GATE = "xasset0053-parser-contract-correction-authorization"
 PRIOR_UNIT_GATE = "xasset0052-renewed-step11-activation-authorization"
