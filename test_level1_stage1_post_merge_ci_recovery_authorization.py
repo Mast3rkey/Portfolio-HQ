@@ -1262,7 +1262,12 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["last_verified_main_sha"] != PR345_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR344_MERGE_SHA
         # ADVANCED BY XASSET-0051, with the shared fields above. Bound at BOTH ends.
-        assert str(ws0014["last_verified_date"]) == "2026-08-23"
+        # ADVANCED BY XASSET-0053, with the shared fields above: PR #353 merged and the
+        # register's shared live self-reference moved onto this successor unit. Every
+        # prior generation is retained as a NEGATIVE pin, so the field stays bound at
+        # BOTH ends and a silent revert to finished work still fails.
+        assert str(ws0014["last_verified_date"]) == "2026-08-24"
+        assert str(ws0014["last_verified_date"]) != "2026-08-23"
         assert str(ws0014["last_verified_date"]) != "2026-08-22"
         assert ws0014["active_branch"] != "claude/xasset-0043-rebinding-7ywmdx"
         assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"

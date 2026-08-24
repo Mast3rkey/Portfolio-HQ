@@ -937,7 +937,12 @@ class TestCatalogAndRegisterSynchronisation:
         assert MERGE_SHA != CURRENT_MAIN_SHA
         assert SUCCESSOR_MERGE_SHA != CURRENT_MAIN_SHA
         # ADVANCED BY XASSET-0051, with the shared fields above. Bound at BOTH ends.
-        assert str(workstream["last_verified_date"]).startswith("2026-08-23")
+        # ADVANCED BY XASSET-0053, with the shared fields above: PR #353 merged and the
+        # register's shared live self-reference moved onto this successor unit. Every
+        # prior generation is retained as a NEGATIVE pin, so the field stays bound at
+        # BOTH ends and a silent revert to finished work still fails.
+        assert str(workstream["last_verified_date"]).startswith("2026-08-24")
+        assert not str(workstream["last_verified_date"]).startswith("2026-08-23")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-22")
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
