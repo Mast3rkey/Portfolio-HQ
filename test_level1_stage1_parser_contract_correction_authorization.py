@@ -405,6 +405,44 @@ class TestTheAuthorityPerformanceDistinction:
         assert "not authorized by this filing itself" in flat
         assert "zero correction authority" in flat
 
+    def test_the_banned_formulations_never_appear_operatively(self, decision):
+        """ADDED after mutation probes P02 and P03, which this suite MISSED on its first pass.
+
+        Naming the prohibited claims is not enough. Nothing stopped the decision from ALSO
+        asserting one of them operatively somewhere else, so the probes that moved the denial out
+        of the prohibition list and into live text went uncaught -- the exact defect class review
+        5003284327 MAJOR 2 identified one filing earlier, and which PR #353's own register probe
+        M2-g then found a second instance of. It is bound here directly: each banned formulation
+        may appear ONLY inside §A.1's own explicit list of prohibited claims, never as operative
+        text anywhere in the document.
+        """
+        marker = "Three claims are therefore prohibited"
+        assert marker in decision, "the prohibition list is missing"
+        before, after = decision.split(marker, 1)
+        # the list ends where §A.1 ends and §B begins
+        prohibited, rest = after.split("### B.", 1)
+        operative = _flat(before + rest)
+        for banned in (
+            "not authorized by this filing itself",
+            "zero correction authority",
+            "adds zero correction authority",
+        ):
+            assert banned not in operative, banned
+        # non-vacuity: the prohibition list must actually quote what it forbids
+        flat_prohibited = _flat(prohibited)
+        assert "not authorized by this filing itself" in flat_prohibited
+        assert "zero correction authority" in flat_prohibited
+
+    def test_no_performance_claim_is_made_anywhere(self, flat):
+        """The third prohibited claim, bound as its own guard (probe P03's class)."""
+        for banned in (
+            "This filing is design-only and adds zero correction authority",
+            "this filing corrected the parser",
+            "this filing performed the correction",
+        ):
+            assert banned not in flat, banned
+        assert "**This filing is design-only. It performs none of that work.**" in flat
+
     def test_the_withheld_section_disclaims_denying_the_grant(self, decision):
         section = _section(decision, "### K. Absolute non-performance")
         assert "never a denial of the one thing §A authorizes" in _flat(section)

@@ -1837,21 +1837,53 @@ class TestRegisterSynchronisation:
         data = yaml.safe_load(WORKSTREAMS.read_text())
         assert sum(1 for w in data["workstreams"] if w.get("priority") == "primary") == 0
 
-    def test_the_active_branch_names_this_unit(self, ws0014):
-        assert ws0014["active_branch"] == "claude/xasset-0052-step11-authority-6nxaha"
+    def test_the_active_branch_moved_off_this_finished_unit(self, ws0014):
+        """RE-ANCHORED BY XASSET-0053, for the same reason as the shared fields below.
+
+        ``active_branch`` is WS-0014's SINGLE SHARED live self-reference. PR #353 merged, so it
+        lawfully advanced onto the successor unit; asserting it at this unit's own branch would
+        assert "this finished unit is still live". Every predecessor's value is retained as a
+        NEGATIVE pin, so a silent revert to any finished unit's state still fails.
+        """
+        assert ws0014["active_branch"] != "claude/xasset-0052-step11-authority-6nxaha"
+        assert ws0014["active_branch"] != "claude/xasset-0051-link4-auth-bjlfya"
+        assert ws0014["active_branch"] != "claude/xasset-0049-rebinding-ll6hzf"
 
     def test_the_last_verified_main_sha_advanced_and_is_bound_at_both_ends(self, ws0014):
-        assert ws0014["last_verified_main_sha"] == LINK4_OBSERVATION_HEAD
+        """RE-ANCHORED BY XASSET-0053.
+
+        ``last_verified_main_sha`` is WS-0014's SINGLE SHARED live self-reference, not this
+        filing's own. PR #353 merged at `cc1d1b62...`, so under ``OPS-0001``'s Active-GitHub-fields
+        rule it lawfully advanced onto the successor unit. Asserting it at this unit's own
+        observation head would assert "this finished unit is still live", which is false. Every
+        superseded value is retained as a NEGATIVE pin rather than deleted, so a silent revert to
+        any finished unit's state still fails here, and the field stays bound at BOTH ends.
+        """
+        assert ws0014["last_verified_main_sha"] != LINK4_OBSERVATION_HEAD
         for finished in (BOUND_MERGE_SHA, XASSET0051_BASE, DEAD_MERGE_SHA):
             assert ws0014["last_verified_main_sha"] != finished, finished
 
-    def test_the_active_pr_is_the_real_github_number_not_the_sentinel(self, ws0014):
-        """Never predicted: the sentinel is replaced only after GitHub issues the real number."""
+    def test_the_shared_active_pr_moved_off_this_finished_unit(self, ws0014):
+        """RE-ANCHORED BY XASSET-0053, for the same reason as the field above.
+
+        This was ``test_the_active_pr_is_the_real_github_number_not_the_sentinel``, asserting the
+        shared field still equalled THIS unit's number. Never predicted then and not predicted
+        now: what remains asserted is that the shared field is no longer this finished unit's,
+        that no sentinel survived unclaimed into the merged record, and that it never reverted to
+        a predecessor. During a successor's own sentinel window the field is negative, which is a
+        real state and is checked for consistency rather than skipped.
+        """
         active = ws0014["active_pr"]
-        assert active == THIS_PULL_REQUEST
-        assert active != PR_SENTINEL, "the sentinel was never replaced"
-        assert active not in PRIOR_SENTINELS
-        assert active > BOUND_AUTHORIZING_PULL_REQUEST
+        assert active != THIS_PULL_REQUEST
+        assert active != BOUND_AUTHORIZING_PULL_REQUEST
+        if active < 0:
+            live = [g for g in ws0014["milestones"] if g.get("pr") == active]
+            assert live, "the register carries a sentinel active_pr that no gate claims"
+            assert all(g["status"] == "in_progress" for g in live), live
+        else:
+            assert active > THIS_PULL_REQUEST
+            assert active not in PRIOR_SENTINELS
+            assert active != PR_SENTINEL
 
     def test_the_finished_units_gate_is_not_rewritten(self, ws0014):
         gate = next(g for g in ws0014["milestones"] if g["gate"] == PRIOR_UNIT_GATE)
@@ -1987,11 +2019,22 @@ class TestRegisterSynchronisation:
 
 
 class TestCatalogSynchronisation:
-    def test_the_catalog_lists_this_decision_last_and_uniquely(self, catalog):
+    def test_the_catalog_lists_this_decision_uniquely_and_a_successor_is_newest(self, catalog):
+        """RE-ANCHORED BY XASSET-0053.
+
+        The catalog is append-only, so "newest row" names whichever filing is most recent -- this
+        one when the class was written, a successor now. Asserting it here would assert "no
+        successor may ever be filed". What is preserved is the invariant that actually mattered:
+        this decision has exactly one row, it is still present, and anything after it is a
+        strictly LATER identifier rather than a reordering or a duplicate.
+        """
         ids = [d["decision_id"] for d in catalog]
         assert len(ids) == len(set(ids))
-        assert ids[-1] == DECISION_ID
         assert ids.count(DECISION_ID) == 1
+        idx = ids.index(DECISION_ID)
+        for later in ids[idx + 1:]:
+            assert later.startswith("XASSET-"), later
+            assert int(later.split("-")[1]) > int(DECISION_ID.split("-")[1]), later
 
     def test_the_catalog_entry_points_at_the_real_file(self, catalog):
         entry = next(d for d in catalog if d["decision_id"] == DECISION_ID)
@@ -2044,14 +2087,23 @@ class TestNonVacuityAgainstTheBaseTree:
         assert THIS_GATE not in raw
         assert PRIOR_CLOSURE_GATE not in raw
 
-    def test_the_catalog_gained_exactly_one_entry(self, catalog):
+    def test_the_catalog_gained_exactly_one_entry_from_this_unit(self, catalog):
+        """RE-ANCHORED BY XASSET-0053.
+
+        This compared the CURRENT catalog length against the base, which only holds while this
+        unit is the newest filing. A successor appending its own row makes the difference two,
+        which is correct rather than a defect. What is preserved is this unit's OWN contribution:
+        the base did not carry this identifier, the live catalog carries it exactly once, and it
+        is strictly longer than the base.
+        """
         raw = subprocess.run(
             ["git", "show", f"{LINK4_OBSERVATION_HEAD}:governance/decisions.yaml"],
             cwd=ROOT, capture_output=True, check=True, text=True,
         ).stdout
         before = yaml.safe_load(raw)["decisions"]
-        assert len(catalog) == len(before) + 1
         assert DECISION_ID not in {d["decision_id"] for d in before}
+        assert [d["decision_id"] for d in catalog].count(DECISION_ID) == 1
+        assert len(catalog) >= len(before) + 1
 
     def test_the_base_did_not_already_name_this_decision_anywhere(self):
         result = subprocess.run(
