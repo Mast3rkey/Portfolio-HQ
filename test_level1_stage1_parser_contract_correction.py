@@ -950,3 +950,32 @@ class TestNoOperationalAuthorityIsRestored:
 
     def test_the_correction_cites_its_authority(self):
         assert AUTHORIZING_DECISION_ID in _module_source()
+
+    @pytest.mark.parametrize("decision_id", [DECISION_ID, AUTHORIZING_DECISION_ID])
+    def test_no_decision_id_is_inserted_into_the_executable_mechanism(self, decision_id):
+        """Citing an authority in a comment or docstring is this module's universal convention --
+        fifteen other decision IDs already appear there. Becoming part of the MECHANISM is not:
+        neither identifier may enter a bound constant or any operative (non-docstring) literal.
+        """
+        assert A.AUTHORIZING_DECISION != decision_id
+        assert decision_id not in "".join(str(p) for p in A.LOAD_BEARING_RELPATHS)
+        assert decision_id not in "".join(A.REQUIRED_LIFECYCLE_GATES)
+
+        tree = ast.parse(_module_source())
+        docstrings = {
+            id(n.body[0].value)
+            for n in ast.walk(tree)
+            if isinstance(n, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
+            and n.body
+            and isinstance(n.body[0], ast.Expr)
+            and isinstance(n.body[0].value, ast.Constant)
+            and isinstance(n.body[0].value.value, str)
+        }
+        offenders = [
+            n.value for n in ast.walk(tree)
+            if isinstance(n, ast.Constant)
+            and isinstance(n.value, str)
+            and id(n) not in docstrings
+            and decision_id in n.value
+        ]
+        assert not offenders, offenders
