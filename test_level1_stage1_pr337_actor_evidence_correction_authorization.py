@@ -726,10 +726,18 @@ class TestCatalogAndRegisterSynchronisation:
         # that is now live. Each stays an exact value, and XASSET-0051's own superseded values
         # join the negative pins below rather than being deleted, so the field stays bound at
         # BOTH ends.
+        # ADVANCED BY XASSET-0053: PR #353 merged, so the shared live fields moved once more
+        # onto this successor unit. XASSET-0052's superseded values join the negative pins.
         assert ws0014["active_branch"] == (
-            "claude/xasset-0052-step11-authority-6nxaha"
+            "claude/xasset-0053-parser-contract-auth-k7m2qx"
         )
         assert ws0014["last_verified_main_sha"] == (
+            "cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6"
+        )
+        assert ws0014["active_branch"] != (
+            "claude/xasset-0052-step11-authority-6nxaha"
+        )
+        assert ws0014["last_verified_main_sha"] != (
             "8def8bd096b4edecbf10fc20870a6d03b6cb56fe"
         )
         assert ws0014["active_branch"] != (
@@ -755,7 +763,9 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["last_verified_main_sha"] != (
             "bb95ed26964b1bc7a2e230c76060fec82752efa1"
         )
-        assert str(ws0014["last_verified_date"]) == "2026-08-23"
+        # ADVANCED BY XASSET-0053, with the shared fields above. Bound at BOTH ends.
+        assert str(ws0014["last_verified_date"]) == "2026-08-24"
+        assert str(ws0014["last_verified_date"]) != "2026-08-23"
         # PR #343's, #344's, #345's and #346's own closed records survive in the register as
         # history, not as live state.
         assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
