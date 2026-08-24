@@ -187,6 +187,33 @@ than asserted, and it is why "preserve *first formal disposition line governs*" 
 own sufficient: under skip semantics, "first" means "first line the parser happens to recognise."
 
 
+**B.9 — Why a parser-only surface is not sufficient, reproduced.** Independent FULL exact-head
+review `5004478133` found the filing's first form **internally unsatisfiable**, and this session
+reproduced the finding at source and executably before widening anything.
+
+`_verify_selected_review_is_final()` (`level1_stage1_execution_authorization.py:3387`) calls the
+parser at line 3431 and then, at lines 3446–3451, treats `verdict is None` as **non-adverse**
+whenever the review's native GitHub state is in `NATIVE_NON_ADVERSE_REVIEW_STATES` — which is
+exactly `frozenset({"APPROVED"})`. The parser's whole output channel is `str | None`, so `None`
+carries **two different meanings at once**:
+
+1. **ABSENT** — the body contains no formal-looking disposition at all; and
+2. **MALFORMED / UNSUPPORTED** — a formal-looking disposition was encountered and refused.
+
+Executed in this session against the live module: `parse_formal_disposition()` returns `None` for a
+plain approving comment with no formal line *and* for the real unsupported adverse shape
+
+```
+## FORMAL DISPOSITION: CHANGES REQUIRED
+**FORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE — 0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE**
+```
+
+and replaying the consumer's own branch order over both, with native state `APPROVED`, accepts
+**both** as non-adverse. §D.17 requires the second to fail closed. A parser confined to returning
+`str | None` cannot make that consumer distinguish them, because the distinguishing value does not
+exist. §C is therefore widened by the smallest amount that makes the distinction expressible —
+**and by no more**.
+
 ### C. Authority granted — exactly one future, separate parser-contract correction unit
 
 The future unit **may**, and only in service of this defect:
@@ -194,14 +221,34 @@ The future unit **may**, and only in service of this defect:
 1. **Modify `parse_formal_disposition()`** in `level1_stage1_execution_authorization.py` so that the
    exact legitimate formatting demonstrated by review `5000581301` yields its correct approving
    verdict.
-2. **Add or extend focused adversarial tests** proving the corrected behaviour and the preserved
-   rejections §D requires.
-3. **Record its own bounded scope** in the catalog, the register, and its own pull-request evidence,
+2. **Make the smallest necessary production-contract adjustment that distinguishes ABSENT from
+   MALFORMED / UNSUPPORTED.** §B.9 establishes that the distinction cannot be expressed through the
+   present `str | None` channel. The permitted surface is exactly three things and stops there:
+   - `parse_formal_disposition()` itself;
+   - **the minimal result representation, helper, or sentinel** required to preserve that
+     distinction — one added value, one small typed result, or one narrow helper, whichever is
+     smaller, and **not** a general-purpose parsing framework; and
+   - **the minimum necessary changes in its three existing production consumers** —
+     `_derive_pr337_actor_ratification()`, `verify_lifecycle_against_truth()`, and
+     `_verify_selected_review_is_final()` — so each enforces the distinction and fails closed on
+     MALFORMED / UNSUPPORTED.
+3. **Add or extend focused adversarial tests** proving the corrected behaviour and the preserved
+   rejections §D requires, including the end-to-end proofs §D.20 enumerates.
+4. **Record its own bounded scope** in the catalog, the register, and its own pull-request evidence,
    following the repository's ordinary governance-implementation conventions.
 
-**That authority ends there.** No other module, function, validator, runner, universe module,
-canonical artifact, or protected path may be touched, and no other behaviour of the authorization
-mechanism may be altered.
+**That authority ends there,** and item 2 is a narrowly reasoned exception, not a general licence to
+edit the module. Specifically, it does **not** authorize: any change to a fourth call site or any
+function that is not one of the three named above; any change to review selection, chronology,
+pagination, exhaustion, reviewer-identity derivation, attribution, lifecycle-evidence, fingerprinting,
+gate, universe, runner, validator, or attestation behaviour; any redesign of the lifecycle-evidence
+model; any change to `NATIVE_ADVERSE_REVIEW_STATES` or `NATIVE_NON_ADVERSE_REVIEW_STATES`; or any
+unrelated parsing, execution, portfolio, or risk change. No other module, validator, runner, universe
+module, canonical artifact, or protected path may be touched.
+
+**A widened surface is a larger correction, not a lighter one.** Every clause of §D still binds it
+unchanged, and §H.2's consequence — that the correction changes load-bearing bytes and therefore
+**arms nothing** — applies with more force, not less, now that more of the module moves.
 
 ### D. The required safety boundary — conjunctive, and every clause binding
 
@@ -255,10 +302,14 @@ marker with no matching close, a closing marker with no matching open, nested or
 a wrapper on one side only, or any construction whose intended verdict is not unambiguous must fail
 closed rather than be guessed at.
 
-**D.11 — Preserve every surrounding protection unchanged.** Review identity, accepted-head identity,
-chronology, finality, pagination and exhaustion semantics, reviewer identity derivation,
-attribution, lifecycle evidence, and record fingerprinting all remain exactly as they are. The
-correction touches the disposition *parse* and nothing else.
+**D.11 — Preserve every surrounding protection unchanged in behaviour.** Review identity,
+accepted-head identity, chronology, pagination and exhaustion semantics, reviewer identity
+derivation, attribution, lifecycle evidence, and record fingerprinting all remain exactly as they
+are. Finality's *policy* likewise remains as it is except for the one change §C item 2 and §D.19
+require — MALFORMED / UNSUPPORTED must stop being absorbed as ABSENT. The correction touches the
+disposition parse, the minimal result representation that distinction needs, and the minimum
+necessary lines in exactly the three named consumers — **and nothing else**. Any behaviour change
+outside that is a defect in the correction, not a permitted consequence of it.
 
 **D.12 — Add behavioral and mutation tests** proving that the exact historical review
 `5000581301` changes from **unparseable** to **correctly approving**, while adverse and ambiguous
@@ -269,10 +320,11 @@ own directly-exercised case, and must fail if any of them regresses.
 closure record as the remediation.** The durable record is evidence, not a repair surface. Editing
 it would destroy the very artifact the correction exists to authenticate, and is prohibited outright.
 
-**D.14 — Do not repair any other parser, and do not broaden the accepted review grammar beyond what
-this demonstrated mismatch requires.** No other formatting convention, no other emphasis style, no
-other disposition vocabulary, and no other parsing surface is in scope. A second genuine mismatch,
-if one is ever demonstrated, is its own separate authorization.
+**D.14 — Do not repair any other parser (the three named consumers are not "another parser"), and
+do not broaden the accepted review grammar beyond what this demonstrated mismatch requires.** No
+other formatting convention, no other emphasis style, no other disposition vocabulary, and no other
+parsing surface is in scope. A second genuine mismatch, if one is ever demonstrated, is its own
+separate authorization.
 
 **D.15 — Exercise all three production consumers.** `parse_formal_disposition()` has exactly three
 call sites in `level1_stage1_execution_authorization.py`, verified in this session by direct source
@@ -323,6 +375,36 @@ following as its own directly-exercised case, and must fail if any regresses:
     approving verdict;
 11. review `5000581301` itself, and every historical GitHub record, **remain unedited**;
 12. existing record **fingerprints remain unchanged**.
+
+**D.19 — ABSENT and MALFORMED / UNSUPPORTED must be distinguishable end to end, and MALFORMED must
+never be absorbed as ABSENT.** This is the clause §B.9's reproduction earns, and it is the reason §C
+item 2 exists at all. Concretely:
+
+- a body carrying **no** formal-looking disposition is **ABSENT**;
+- a body carrying a formal-looking disposition that is **not** in an accepted form (§D.16) is
+  **MALFORMED / UNSUPPORTED**, and per §D.17 it stops the parse and yields no verdict;
+- the two must be **separately observable** by every consumer — one value may not stand for both;
+- **MALFORMED / UNSUPPORTED fails closed everywhere**, including where the review's native GitHub
+  state is `APPROVED`; a native state may never rescue a refused formal line; and
+- the existing policy for a genuinely **ABSENT** disposition is **preserved**, not silently
+  repurposed. Changing that policy is a separate governance question, and if the correction unit
+  concludes it should change, that is a finding to report under §G — never work to perform.
+
+**D.20 — Required end-to-end proofs.** Beyond §D.18's parser-level coverage, the correction's tests
+must prove all seven of the following **through the real production path**, not against the parser
+in isolation:
+
+1. a later native `APPROVED` review with genuinely **no** formal-looking disposition retains the
+   existing non-adverse policy, that policy being intentionally preserved (§D.19);
+2. a later native `APPROVED` review containing an **unsupported formal-looking adverse line** fails
+   finality;
+3. the real balanced whole-line bold approval from PR #349 review `5000581301` is **accepted**;
+4. wrapped **and** unwrapped adverse dispositions remain **rejected**;
+5. a **heading-form adverse line before a later valid-looking approval cannot be skipped**;
+6. **all three** production consumers — `_derive_pr337_actor_ratification()`,
+   `verify_lifecycle_against_truth()`, `_verify_selected_review_is_final()` — enforce the corrected
+   distinction; and
+7. unsupported formal-looking lines are **never silently treated as absent**.
 
 ### E. This filing does not restore operational authority, and cannot
 
@@ -391,7 +473,10 @@ clean correction.
    construction, no longer byte-identical to the module the `XASSET-0049` bound merge bound. Merging
    the correction therefore leaves the trust boundary pointing at bytes that no longer exist, and
    **arms nothing**. A correction that appeared to restore authority would be a defect, not a
-   success.
+   success. This holds **more** strongly under §C item 2's widened surface, not less: a
+   correction that touches the parser, a minimal result representation, and three consumers moves
+   more load-bearing bytes than a parser-only one, so the trust boundary is left further from the
+   bound module, never closer to armed.
 
 3. **A later step-8-equivalent rebinding requires its own separately authorized and performed
    lifecycle**, of the same kind and rigour as `XASSET-0048` / `XASSET-0049`, and it must be based
@@ -554,6 +639,20 @@ the correction's own merge leaves the trust boundary stale by construction. Sayi
 and requiring the later rebinding to derive the correction's real merge identity after the fact
 rather than predicting it — is what keeps the chain honest instead of appearing continuous.
 
+**Why the permitted surface had to widen, and why widening it is the conservative move.**
+The filing's first form authorized a change to `parse_formal_disposition()` and nothing else, and
+independent FULL review `5004478133` found that form internally unsatisfiable: §D.15 and §D.17 demand
+that malformed or unsupported formal-looking lines fail closed *through the finality consumer*, and
+§B.9 shows the consumer cannot see the difference, because the parser's only "no verdict" value
+already means "absent" to it. Faced with an unsatisfiable pair, there were two honest moves — narrow
+the requirement, or widen the surface. Narrowing would have meant accepting that a real, recorded
+adverse heading can be silently absorbed under a native `APPROVED` state, which is the exact hole
+§B.8 demonstrated and §D.17 exists to close; that is the *less* safe option, not the smaller one.
+Widening is bounded instead: one parser, one minimal result representation, three already-existing
+consumers named individually, with every other behaviour in the module explicitly out of scope and
+every §D clause still binding. The cost is that the correction moves more load-bearing bytes — which
+does not weaken §H.2, it strengthens it.
+
 ## Alternatives Considered
 
 | Alternative | Why rejected |
@@ -566,6 +665,9 @@ rather than predicting it — is what keeps the chain honest instead of appearin
 | Bundle the correction, the rebinding, and a fresh link-5 authorization into one filing | §H. Each is a distinct authority with its own lifecycle, and the rebinding cannot even be specified until the correction's real merge identity exists. Batching them would let one review cover a module edit, a trust-boundary rebinding, and an irreversible execution grant. |
 | Predict the correction's merge SHA so the rebinding can be authorized now | §H.3. A predicted merge identity is an unverifiable constant; the rebinding must derive it after the normal merge. |
 | Revive `XASSET-0052` rather than file separately | §H.5. Its grant is one-shot and spent as a stop; topping it up would make "one-shot" meaningless, and its own §K made every terminal outcome end in report-and-stop. |
+| Keep the surface at `parse_formal_disposition()` alone and narrow §D.15 / §D.17 instead | §B.9, Rationale. It resolves the contradiction by permitting the very absorption §D.17 exists to forbid — a real adverse heading swallowed under a native `APPROVED` state. Narrowing the requirement is the less safe branch, not the smaller one. |
+| Widen §C to "whatever the correction needs inside the module" | §C. An open-ended surface inside a load-bearing module is unreviewable. The grant names one parser, one minimal result representation, and three existing consumers by name, and enumerates what stays out. |
+| Change `NATIVE_NON_ADVERSE_REVIEW_STATES` so a native `APPROVED` no longer rescues an unclassifiable verdict | §C, §D.11. That alters durable native-state policy for every review, far beyond this mismatch, and would change behaviour for genuinely ABSENT dispositions too — which §D.19 preserves deliberately. |
 | Correct the parser and also harden neighbouring parsers while the module is open | §D.14, §F. Scope creep inside a load-bearing module is how a bounded correction becomes an unreviewable one. |
 
 ## Consequences
@@ -573,8 +675,11 @@ rather than predicting it — is what keeps the chain honest instead of appearin
 On complete closure of this decision's §J lifecycle — and not before — **exactly one** future,
 separate, bounded parser-contract correction unit becomes authorized: to make
 `parse_formal_disposition()` recognise the exact balanced whole-line Markdown-bold formatting
-demonstrated by PR #349 review `5000581301`, bounded by §§C–G, required to satisfy every clause of
-§D, and fail-closed on anything it cannot determine with certainty.
+demonstrated by PR #349 review `5000581301`, **and** — per §C item 2, and only to the smallest extent
+that makes it expressible — to distinguish ABSENT from MALFORMED / UNSUPPORTED through a minimal
+result representation and the minimum necessary lines in its three named existing consumers. It is
+bounded by §§C–G, required to satisfy every clause of §D including §D.19's distinction and §D.20's
+seven end-to-end proofs, and fail-closed on anything it cannot determine with certainty.
 
 That correction, when it happens, **will change a load-bearing byte and therefore cannot restore
 operational authority by itself**. A step-8-equivalent rebinding, renewed readiness verification, a

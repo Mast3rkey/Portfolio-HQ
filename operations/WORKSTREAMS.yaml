@@ -16735,7 +16735,7 @@ workstreams:
           outer markers IN MEMORY ONLY yields exactly APPROVING_REVIEW_DISPOSITION; and the public
           path returns valid=False with exactly one error. This is a FORMATTING/PARSER-CONTRACT
           MISMATCH -- not an adverse review, not a governance-evidence gap, and not drift. THE
-          REQUIRED SAFETY BOUNDARY (SS-D, eighteen conjunctive clauses) requires the correction to
+          REQUIRED SAFETY BOUNDARY (SS-D, twenty conjunctive clauses) requires the correction to
           keep accepting the existing unformatted canonical line; accept ONLY a precisely balanced,
           whole-line Markdown-bold wrapper around the same grammar; normalize FORMATTING before
           extracting the verdict and NEVER normalize or replace the VERDICT; preserve "first formal
@@ -16813,6 +16813,58 @@ workstreams:
           those reviews are durable history), and changes NO historical record. THE ADDENDUM
           AUTHORIZES NOTHING: it does not authorize the correction, a rebinding, a readiness
           check, a drift check, a link-5 attempt, or any Stage-1 work in this PR.
+          A SECOND BOUNDED CORRECTION was then made in the same draft PR, in response to
+          INDEPENDENT FULL EXACT-HEAD REVIEW 5004478133 at
+          7bc3dc0059ff452ee5c6905249e02951b075c0cb (BOUNDED CORRECTION REQUIRED -- 0 BLOCKING / 1
+          MAJOR / 2 MINOR / 0 NOTE), which is the FIRST COMPLETED FULL GitHub review on this pull
+          request. MAJOR 1 found the filing INTERNALLY UNSATISFIABLE and this session reproduced
+          it at source and executably before widening anything: SS-D.15 and SS-D.17 require
+          malformed or unsupported formal-looking lines to fail closed THROUGH ALL THREE
+          PRODUCTION CONSUMERS, while the original SS-C confined the future unit to
+          parse_formal_disposition() alone. _verify_selected_review_is_final
+          (level1_stage1_execution_authorization.py:3387) calls the parser at line 3431 and at
+          lines 3446-3451 treats verdict is None as NON-ADVERSE whenever the review's native
+          GitHub state is in NATIVE_NON_ADVERSE_REVIEW_STATES, which is exactly
+          frozenset({APPROVED}). The parser's whole output channel is str|None, so None means BOTH
+          (1) ABSENT -- no formal-looking disposition exists -- and (2) MALFORMED/UNSUPPORTED --
+          one was encountered and refused. Executed live: the parser returns None for a plain
+          approving comment AND for the real unsupported adverse shape, and replaying the
+          consumer's own branch order accepts BOTH as non-adverse under native APPROVED. A
+          parser-only change cannot fix that, because the distinguishing value does not exist.
+          SS-C IS THEREFORE WIDENED BY THE SMALLEST AMOUNT THAT MAKES THE DISTINCTION EXPRESSIBLE
+          AND NO MORE: the permitted surface is exactly three things -- parse_formal_disposition()
+          itself; the MINIMAL result representation, helper or sentinel required to preserve the
+          distinction (one added value, one small typed result, or one narrow helper, NOT a
+          general-purpose parsing framework); and the MINIMUM NECESSARY changes in its three
+          existing production consumers, _derive_pr337_actor_ratification,
+          verify_lifecycle_against_truth and _verify_selected_review_is_final. The grant
+          enumerates what stays OUT: any fourth call site or any other function; review selection,
+          chronology, pagination, exhaustion, reviewer-identity derivation, attribution,
+          lifecycle-evidence, fingerprinting, gate, universe, runner, validator or attestation
+          behaviour; any lifecycle-evidence redesign; any change to NATIVE_ADVERSE_REVIEW_STATES
+          or NATIVE_NON_ADVERSE_REVIEW_STATES; and any unrelated parsing, lifecycle, review,
+          execution, portfolio or risk change. A WIDENED SURFACE IS A LARGER CORRECTION, NOT A
+          LIGHTER ONE -- every SS-D clause still binds unchanged and SS-H.2's consequence (the
+          correction changes load-bearing bytes and therefore ARMS NOTHING) applies with MORE
+          force, since more of the module moves. New SS-B.9 records the reproduced finding; new
+          SS-D.19 makes ABSENT versus MALFORMED/UNSUPPORTED separately observable by EVERY
+          consumer, requires MALFORMED to fail closed EVERYWHERE including under a native APPROVED
+          state (a native state may never rescue a refused formal line), and DELIBERATELY
+          PRESERVES the existing policy for a genuinely ABSENT disposition -- changing that is a
+          finding to report under SS-G, never work to perform; new SS-D.20 requires SEVEN
+          END-TO-END PROOFS through the real production path, not against the parser in isolation.
+          SS-D.11 is reconciled (protections unchanged in BEHAVIOUR; the retired "touches the
+          disposition parse and nothing else" absolute would now contradict SS-C item 2) and
+          SS-D.14 clarified (the three named consumers are not "another parser"). MINOR 1 (stale
+          simulated-merge tree) and MINOR 2 (a DELTA review was requested when no completed FULL
+          review existed) are corrected in the pull-request body and correction report. THIS
+          CORRECTION IMPLEMENTS NO PARSER OR CONSUMER CHANGE:
+          level1_stage1_execution_authorization.py stays byte-identical to both the base and the
+          reviewed head at blob f71b08b4ebe95f161c57cdbb2a924748f13af02d, all 18
+          LOAD_BEARING_RELPATHS, both canonical pins, the frozen 680/48 universe and the seven
+          protected portfolio paths are unchanged, Stage 1 remains UNARMED and NOT EXECUTABLE,
+          lane ABSENT, AUTHORIZATION_ROOT absent, ATTEMPT_1 intact, unclaimed and unconsumed,
+          stage1_results.yaml absent, and XASSET-0027 SS-P.1 remains one, unspent.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -17634,8 +17686,9 @@ workstreams:
       API returned 34 FORMAL DISPOSITION lines (20 plain, 8 balanced whole-line bold, 6 heading),
       on which SS-D.16 CLOSES the accepted grammar at exactly the 20 plain and 8 bold forms and
       forbids silent expansion to headings, blockquotes, bullets, inline prose or code fences
-      without separate proof AND explicit governed text. SS-D.17 requires an unsupported formal-
-      looking line to FAIL CLOSED, never be skipped -- grounded in SS-B.7 (a real bolded ADVERSE
+      without separate proof AND explicit governed text. SS-D.17 requires an unsupported
+      formal-looking line to FAIL CLOSED, never be skipped -- grounded in SS-B.7 (a real bolded
+      ADVERSE
       line exists at PR #350 review 5000866476; the heading form appears six times on PRs
       #344/#345) and SS-B.8, where a NAIVE strip-the-bold-but-still-skip correction was executed
       IN MEMORY ONLY and returned APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE for a body whose
@@ -17652,6 +17705,27 @@ workstreams:
       changes NO historical record. THE ADDENDUM AUTHORIZES NOTHING -- not the correction, not a
       rebinding, not a readiness or drift check, not a link-5 attempt, and no Stage-1 work in this
       PR.
+      SECOND BOUNDED CORRECTION, in response to INDEPENDENT FULL EXACT-HEAD REVIEW 5004478133
+      (BOUNDED CORRECTION REQUIRED -- 0 BLOCKING / 1 MAJOR / 2 MINOR / 0 NOTE), the FIRST
+      completed FULL GitHub review on PR #354. MAJOR 1: the filing was INTERNALLY UNSATISFIABLE --
+      SS-D.15/SS-D.17 require malformed or unsupported formal-looking lines to fail closed through
+      all three production consumers, while SS-C confined the future unit to
+      parse_formal_disposition() alone. Reproduced at source and executably before any edit:
+      _verify_selected_review_is_final treats verdict is None as NON-ADVERSE under native
+      APPROVED, and None means BOTH ABSENT and MALFORMED/UNSUPPORTED, so a parser-only change
+      cannot distinguish them. SS-C is widened by the smallest amount that makes the distinction
+      expressible and no more -- the parser, a MINIMAL result representation/helper/sentinel, and
+      the MINIMUM necessary changes in its three named existing consumers -- with every other
+      behaviour in the module explicitly out of scope and every SS-D clause still binding. New
+      SS-B.9 records the reproduction; new SS-D.19 requires ABSENT and MALFORMED/UNSUPPORTED to be
+      separately observable by every consumer, MALFORMED to fail closed even under native
+      APPROVED, and the ABSENT policy to be deliberately preserved; new SS-D.20 requires seven
+      end-to-end proofs through the real production path. SS-D.11 reconciled and SS-D.14
+      clarified. MINOR 1 (stale simulated-merge tree) and MINOR 2 (a DELTA review requested with
+      no completed FULL review in existence) corrected in the pull-request body and report. NO
+      PARSER OR CONSUMER CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py
+      stays byte-identical to base and reviewed head, and Stage 1 remains UNARMED and NOT
+      EXECUTABLE with ATTEMPT_1 intact, unclaimed and unconsumed.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -18394,8 +18468,9 @@ workstreams:
       API returned 34 FORMAL DISPOSITION lines (20 plain, 8 balanced whole-line bold, 6 heading),
       on which SS-D.16 CLOSES the accepted grammar at exactly the 20 plain and 8 bold forms and
       forbids silent expansion to headings, blockquotes, bullets, inline prose or code fences
-      without separate proof AND explicit governed text. SS-D.17 requires an unsupported formal-
-      looking line to FAIL CLOSED, never be skipped -- grounded in SS-B.7 (a real bolded ADVERSE
+      without separate proof AND explicit governed text. SS-D.17 requires an unsupported
+      formal-looking line to FAIL CLOSED, never be skipped -- grounded in SS-B.7 (a real bolded
+      ADVERSE
       line exists at PR #350 review 5000866476; the heading form appears six times on PRs
       #344/#345) and SS-B.8, where a NAIVE strip-the-bold-but-still-skip correction was executed
       IN MEMORY ONLY and returned APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE for a body whose
@@ -18412,6 +18487,27 @@ workstreams:
       changes NO historical record. THE ADDENDUM AUTHORIZES NOTHING -- not the correction, not a
       rebinding, not a readiness or drift check, not a link-5 attempt, and no Stage-1 work in this
       PR.
+      SECOND BOUNDED CORRECTION, in response to INDEPENDENT FULL EXACT-HEAD REVIEW 5004478133
+      (BOUNDED CORRECTION REQUIRED -- 0 BLOCKING / 1 MAJOR / 2 MINOR / 0 NOTE), the FIRST
+      completed FULL GitHub review on PR #354. MAJOR 1: the filing was INTERNALLY UNSATISFIABLE --
+      SS-D.15/SS-D.17 require malformed or unsupported formal-looking lines to fail closed through
+      all three production consumers, while SS-C confined the future unit to
+      parse_formal_disposition() alone. Reproduced at source and executably before any edit:
+      _verify_selected_review_is_final treats verdict is None as NON-ADVERSE under native
+      APPROVED, and None means BOTH ABSENT and MALFORMED/UNSUPPORTED, so a parser-only change
+      cannot distinguish them. SS-C is widened by the smallest amount that makes the distinction
+      expressible and no more -- the parser, a MINIMAL result representation/helper/sentinel, and
+      the MINIMUM necessary changes in its three named existing consumers -- with every other
+      behaviour in the module explicitly out of scope and every SS-D clause still binding. New
+      SS-B.9 records the reproduction; new SS-D.19 requires ABSENT and MALFORMED/UNSUPPORTED to be
+      separately observable by every consumer, MALFORMED to fail closed even under native
+      APPROVED, and the ABSENT policy to be deliberately preserved; new SS-D.20 requires seven
+      end-to-end proofs through the real production path. SS-D.11 reconciled and SS-D.14
+      clarified. MINOR 1 (stale simulated-merge tree) and MINOR 2 (a DELTA review requested with
+      no completed FULL review in existence) corrected in the pull-request body and report. NO
+      PARSER OR CONSUMER CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py
+      stays byte-identical to base and reviewed head, and Stage 1 remains UNARMED and NOT
+      EXECUTABLE with ATTEMPT_1 intact, unclaimed and unconsumed.
     active_branch: claude/xasset-0053-parser-contract-auth-k7m2qx
     active_pr: 354
     last_verified_main_sha: cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6
