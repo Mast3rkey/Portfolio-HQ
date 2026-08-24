@@ -373,6 +373,8 @@ class TestTheFilingExistsAndIsWellFormed:
             "### I. Packaging and evidence",
             "### J. Effectivity",
             "### K. Absolute non-performance",
+            "### L. Mandatory downstream prevention",
+            "### M. Review-format convention",
             "## Rationale",
             "## Alternatives Considered",
             "## Consequences",
@@ -396,9 +398,7 @@ class TestTheAuthorityPerformanceDistinction:
 
     def test_the_canonical_sentence_carries_the_exercisability_clause(self, decision):
         quoted = _flat_quote(decision)
-        assert "not exercisable unless and\nuntil" in decision or (
-            "not exercisable unless and until §J's seven conditions close" in quoted
-        )
+        assert "not exercisable unless and until §J's seven conditions close" in quoted
 
     def test_the_three_prohibited_claims_are_named(self, flat):
         assert "Three claims are therefore prohibited" in flat
@@ -547,7 +547,7 @@ class TestTheDefectIsReproducedFromLiveArtifacts:
 
 
 class TestTheSafetyBoundaryIsConjunctiveAndComplete:
-    """All fourteen §D clauses, bound as whole lines."""
+    """All eighteen §D clauses, bound as whole lines."""
 
     REQUIRED = {
         "D.1": "Continue accepting the existing unformatted canonical line",
@@ -564,11 +564,15 @@ class TestTheSafetyBoundaryIsConjunctiveAndComplete:
         "D.12": "Add behavioral and mutation tests",
         "D.13": "Do not edit review `5000581301`, any historical review, comment, acceptance",
         "D.14": "Do not repair any other parser, and do not broaden the accepted review grammar",
+        "D.15": "Exercise all three production consumers",
+        "D.16": "The accepted grammar is exactly the two demonstrated forms, and no more",
+        "D.17": "An unsupported formal-looking line FAILS CLOSED; it is never skipped",
+        "D.18": "Required behavioral coverage",
     }
 
     @pytest.mark.parametrize("clause,text", sorted(REQUIRED.items()))
     def test_each_clause_is_present(self, decision, clause, text):
-        assert f"**{clause} — {text}" in decision or f"**{clause} — {text}" in decision, clause
+        assert f"**{clause} — {text}" in decision, clause
 
     def test_the_boundary_is_declared_conjunctive(self, flat):
         assert "must** satisfy **all** of the following" in flat
@@ -582,8 +586,7 @@ class TestTheSafetyBoundaryIsConjunctiveAndComplete:
 
 class TestTheRelaxationIsBoundedToTheDemonstratedShape:
     def test_verdict_rewriting_is_prohibited(self, flat):
-        assert "never normalize or replace the\nverdict itself" in _flat(DECISION.read_text()) or \
-               "never normalize or replace the verdict itself" in flat
+        assert "never normalize or replace the verdict itself" in flat
         assert "may **not** rewrite, substitute, canonicalize, fuzzy-match, or coerce" in flat
 
     def test_mapping_a_non_approving_verdict_to_approving_is_prohibited(self, flat):
@@ -626,18 +629,301 @@ class TestTheHistoricalRecordIsNotEditable:
         assert "Edit review `5000581301` to unbolded text" in decision
 
 
+class TestTheLiveFormatScanIsRecordedAndGrounded:
+    """§B.7 -- the scan is stated with its counts, and with the two records that make it bite."""
+
+    def test_the_scan_is_declared_independently_re_run(self, flat):
+        assert "B.7 — The live review-format scan, independently re-run." in flat
+        assert "enumerated directly from the GitHub review API in this session" in flat
+        assert "the counts were re-derived rather than accepted" in flat
+
+    @pytest.mark.parametrize(
+        "fragment",
+        (
+            "**34** such lines exist",
+            "**20** plain canonical",
+            "**8** precisely balanced whole-line bold",
+            "**6** Markdown-heading",
+        ),
+    )
+    def test_each_count_is_stated(self, flat, fragment):
+        assert fragment in flat, fragment
+
+    def test_the_scan_covers_the_whole_lifecycle_range(self, flat):
+        assert "across PRs #337–#353" in flat
+
+    def test_a_real_bolded_adverse_line_is_cited(self, flat):
+        """Without this, §D.7 would read as a hypothetical guard rather than a recorded refusal."""
+        assert "PR #350 review `5000866476`" in flat
+        assert "**FORMAL DISPOSITION: CHANGES REQUIRED — …**" in flat
+        assert "would flip a real, recorded refusal" in flat
+
+    def test_a_real_heading_form_adverse_line_is_cited(self, flat):
+        assert "six times across PRs #344 and #345" in flat
+        assert "grounded in the durable record" in flat
+
+    def test_the_scan_and_the_grammar_clause_are_tied_in_both_directions(self, decision):
+        """A count with no clause, or a clause with no evidence, is the failure this prevents."""
+        scan = _section(decision, "### B. The defect, reproduced independently")
+        grammar = _section(decision, "### D. The required safety boundary")
+        assert "§D.7" in scan and "§D.17" in scan, "the scan must name the clauses it grounds"
+        assert "Grounded in §B.7" in grammar, "the grammar clause must name its evidence"
+
+
+class TestTheSkipVersusFailClosedHazardIsDemonstrated:
+    """§B.8 -- the hazard is reproduced, not asserted."""
+
+    def test_the_hazard_section_exists_and_names_the_naive_correction(self, flat):
+        assert "B.8 — The skip-versus-fail-closed hazard, reproduced." in flat
+        assert "strips a balanced bold wrapper but otherwise keeps the existing **skip** semantics" in flat
+
+    def test_the_demonstrated_outcome_is_the_wrong_one(self, flat):
+        assert "the adverse heading silently skipped" in flat
+        assert "and the later approval winning" in flat
+
+    def test_the_worked_body_is_recorded_verbatim(self, decision):
+        section = _section(decision, "### B. The defect, reproduced independently")
+        assert "## FORMAL DISPOSITION: CHANGES REQUIRED" in section
+        assert "**FORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE" in section
+
+    def test_first_line_governs_is_declared_insufficient_on_its_own(self, flat):
+        """The trap: 'first' silently means 'first *recognised*' under skip semantics."""
+        assert "is **not** on its own sufficient" in flat
+        assert "first line the parser happens to recognise" in flat
+
+    def test_the_hazard_is_reproduced_rather_than_asserted(self, flat):
+        assert "demonstrated rather than asserted" in flat
+
+    def test_todays_parser_really_does_return_none_for_both_shapes(self):
+        """Non-vacuity: the premise §B.8 rests on is checked against the live module."""
+        assert A.parse_formal_disposition("## FORMAL DISPOSITION: CHANGES REQUIRED") is None
+        assert A.parse_formal_disposition(DEFECTIVE_FORMAL_LINE) is None
+
+    def test_a_naive_skip_semantics_correction_really_does_flip_the_verdict(self):
+        """The exact failure §D.17 forbids, executed here so the clause is not taken on faith."""
+        body = (
+            "## FORMAL DISPOSITION: CHANGES REQUIRED\n"
+            "   … later …\n"
+            + DEFECTIVE_FORMAL_LINE
+            + "\n"
+        )
+
+        def naive(text: str) -> str | None:
+            for line in text.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("**") and stripped.endswith("**"):
+                    stripped = stripped[2:-2].strip()
+                if not stripped.upper().startswith(A.FORMAL_DISPOSITION_PREFIX):
+                    continue  # <-- the skip that §D.17 forbids
+                verdict = stripped[len(A.FORMAL_DISPOSITION_PREFIX):].strip()
+                for separator in ("—", "--", " - ", "|"):
+                    if separator in verdict:
+                        verdict = verdict.split(separator, 1)[0].strip()
+                return verdict
+            return None
+
+        assert naive(body) == A.APPROVING_REVIEW_DISPOSITION
+
+
+class TestAllThreeProductionConsumersAreNamed:
+    """§D.15 -- correctness at the function is not correctness at the consumers."""
+
+    CONSUMERS = (
+        "_derive_pr337_actor_ratification",
+        "verify_lifecycle_against_truth",
+        "_verify_selected_review_is_final",
+    )
+
+    @pytest.mark.parametrize("name", CONSUMERS)
+    def test_each_named_consumer_is_cited_in_the_clause(self, decision, name):
+        section = _section(decision, "### D. The required safety boundary")
+        assert f"`{name}()`" in section, name
+
+    @pytest.mark.parametrize("role", (
+        "PR #337 ratification parsing",
+        "the selected independent-review Gate 1",
+        "later-review finality classification",
+    ))
+    def test_each_consumers_role_is_stated(self, flat, role):
+        assert role in flat, role
+
+    def test_the_clause_requires_exercising_all_three(self, flat):
+        assert "must exercise the corrected behaviour through **all three**, not through the function alone" in flat
+        assert "correct in isolation and wrong at one consumer is not corrected" in flat
+
+    def test_the_named_consumers_are_exactly_the_live_call_sites(self):
+        """Non-vacuity: the claim is re-derived from the module, not trusted from the prose."""
+        tree = ast.parse((ROOT / AUTHORIZATION_MODULE_RELPATH).read_text())
+        enclosing: list[str] = []
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for inner in ast.walk(node):
+                if (
+                    isinstance(inner, ast.Call)
+                    and isinstance(inner.func, ast.Name)
+                    and inner.func.id == "parse_formal_disposition"
+                ):
+                    enclosing.append(node.name)
+        # Nested definitions would double-count; the set is what the clause asserts.
+        assert set(enclosing) == set(self.CONSUMERS), sorted(set(enclosing))
+
+
+class TestTheAcceptedGrammarIsClosedAtTwoForms:
+    """§D.16 -- the two demonstrated shapes, and no convenience generalisation."""
+
+    def test_the_two_accepted_forms_are_bound_to_the_scan_counts(self, flat):
+        assert "the **20** existing plain canonical lines and the" in flat
+        assert "**8** precisely balanced whole-line `**…**` forms" in flat
+
+    @pytest.mark.parametrize("rejected", (
+        "Markdown headings", "blockquotes", "bullets", "inline prose", "code fences",
+    ))
+    def test_each_named_decoration_is_refused_by_default(self, flat, rejected):
+        assert rejected in flat, rejected
+
+    def test_expansion_requires_proof_and_governed_text_together(self, flat):
+        assert "must **not** silently expand the accepted grammar" in flat
+        assert "its own separate proof **and** its own explicit governed text" in flat
+
+    def test_appearing_in_the_record_is_not_itself_admission(self, flat):
+        """The heading form appears six times; that must not make it accepted."""
+        assert "never because a rejected form happens to appear in the record" in flat
+        assert "never by a convenience generalisation" in flat
+
+
+class TestUnsupportedFormalLinesFailClosed:
+    """§D.17 -- the clause the demonstration exists to justify."""
+
+    def test_the_rule_is_stated_as_stopping_the_parse(self, flat):
+        assert "must **stop the parse and yield no verdict**" in flat
+
+    def test_skipping_is_named_as_the_failure_mode(self, flat):
+        assert "may not be passed over so that a later, better-formed line wins" in flat
+        assert "**Skipping is the failure mode; failing closed is the requirement.**" in flat
+
+    def test_the_worked_example_is_present_in_the_clause(self, decision):
+        section = _section(decision, "### D. The required safety boundary")
+        assert "## FORMAL DISPOSITION: CHANGES REQUIRED" in section
+        assert "this body must **not** authenticate" in _flat(section)
+
+    def test_the_required_outcome_of_the_worked_example_is_stated(self, flat):
+        assert "The unsupported first formal-looking line must prevent the later approval from winning." in flat
+
+    @pytest.mark.parametrize("shape", (
+        "blockquotes", "bullets", "malformed or unbalanced emphasis", "nested emphasis",
+        "leading or trailing\nprose", "partial wrappers", "code-fenced lines",
+    ))
+    def test_the_rule_generalises_to_every_other_unsupported_shape(self, decision, shape):
+        assert shape in decision, shape
+
+
+class TestRequiredBehavioralCoverage:
+    """§D.18 -- twelve cases, each its own directly-exercised item."""
+
+    ITEMS = (
+        "exact plain approval **accepted**",
+        "exact balanced whole-line bold approval **accepted**",
+        "exact bold `CHANGES REQUIRED` parsed as **adverse** and rejected",
+        "an adverse first line followed by a later approval **rejected**",
+        "native `CHANGES_REQUESTED` **independently** rejected",
+        "approval appearing only in explanatory prose **rejected**",
+        "heading, blockquote, bullet, code-fenced, nested, repeated, partial, and unbalanced wrappers",
+        "the first valid formal line **remains governing**",
+        "**all three** production consumers named in §D.15",
+        "changes from **unparseable** to the **exact**",
+        "**remain unedited**",
+        "fingerprints remain unchanged",
+    )
+
+    @pytest.mark.parametrize("item", ITEMS)
+    def test_each_coverage_item_is_present(self, decision, item):
+        assert item in decision, item
+
+    def test_exactly_twelve_items_are_enumerated(self, decision):
+        section = _section(decision, "### D. The required safety boundary")
+        body = section[section.index("**D.18"):]
+        numbers = re.findall(r"^(\d+)\. ", body, flags=re.M)
+        assert numbers == [str(n) for n in range(1, 13)], numbers
+
+    def test_the_coverage_is_a_floor_not_a_ceiling(self, flat):
+        assert "must cover, at minimum, each of the" in flat
+        assert "must fail if any regresses" in flat
+
+
+class TestTheMandatoryZeroWriteRehearsal:
+    """§L -- the prevention rule the link-5 stop actually earns."""
+
+    def test_the_section_states_why_part_checking_failed(self, flat):
+        assert "a defect that only appears at the **whole" in flat
+        assert "Checking the parts is what failed." in flat
+
+    def test_the_rehearsal_is_bound_to_the_real_public_path(self, decision):
+        section = _section(decision, "### L. Mandatory downstream prevention")
+        assert "build_authorization_payload()" in section
+        assert "validate_authorization_document()" in section
+
+    def test_the_rehearsal_uses_complete_evidence_and_an_exhaustive_review_list(self, flat):
+        assert "**complete live lifecycle evidence**" in flat
+        assert "**exhaustive** review list" in flat
+
+    def test_the_pass_condition_is_valid_true_and_exactly_zero_errors(self, flat):
+        assert "**`valid = True` with exactly zero errors**" in flat
+        assert "A single error is a stop" in flat
+
+    def test_the_rehearsal_is_a_precondition_on_drift_and_link5(self, flat):
+        assert "before a renewed drift check or a fresh link-5 authorization" in flat
+
+    def test_the_rehearsal_is_zero_write_and_arms_nothing(self, flat):
+        assert "It calls neither `write_authorization()` nor any lane-mutating function" in flat
+        assert "Rehearsing is not arming." in flat
+
+    def test_part_checking_is_explicitly_refused_as_a_substitute(self, flat):
+        assert "**Checking individual identities and validators is not a substitute**" in flat
+
+    def test_the_section_grants_nothing(self, flat):
+        assert "**This section imposes a precondition; it grants nothing.**" in flat
+        assert "each remains separately unauthorized under" in flat
+
+    def test_a_second_error_class_is_a_finding_not_work(self, flat):
+        assert "a finding to report under §G, never work to perform" in flat
+
+
+class TestTheReviewFormatConvention:
+    """§M -- fix the source, without licensing a narrower parser or an edited record."""
+
+    def test_the_convention_is_stated_for_future_reviews(self, flat):
+        assert "the operative formal disposition must be a standalone, unformatted plain-text line" in flat
+        assert "beginning exactly with `FORMAL DISPOSITION:`" in flat
+
+    @pytest.mark.parametrize("banned", ("no bold", "no\nheading", "no quotation", "no bullet", "no code formatting"))
+    def test_each_banned_decoration_is_named(self, decision, banned):
+        assert banned in decision, banned
+
+    def test_the_convention_does_not_narrow_the_parser(self, flat):
+        assert "deliberately **not** a licence to narrow the parser" in flat
+        assert "§D.16 still" in flat
+        assert "cannot be reformatted" in flat
+
+    def test_the_convention_governs_forward_only(self, flat):
+        assert "governs what is written from here" in flat
+        assert "§D governs what must be read" in flat
+
+    def test_the_convention_licenses_no_edit_to_history(self, flat):
+        assert "**This section changes no historical record**" in flat
+        assert "may be edited to conform to it" in flat
+
+
 class TestTheCorrectionCannotRestoreOperationalAuthority:
     def test_section_e_states_the_load_bearing_consequence(self, flat):
         assert "load-bearing path #1" in flat
         assert "necessarily changes a load-bearing byte" in flat
 
     def test_the_consequence_is_framed_as_defining_not_incidental(self, flat):
-        assert "not a side effect to be\nmanaged" in _flat(DECISION.read_text()) or \
-               "not a side effect to be managed" in flat
+        assert "not a side effect to be managed" in flat
 
     def test_a_correction_that_appeared_to_restore_authority_is_a_defect(self, flat):
-        assert "would be a defect, not a\nsuccess" in _flat(DECISION.read_text()) or \
-               "would be a defect, not a success" in flat
+        assert "would be a defect, not a success" in flat
 
 
 class TestDownstreamConsequences:
@@ -841,8 +1127,7 @@ class TestEffectivityRequiresCompleteLifecycleClosure:
         assert "not the PR head's own" in flat
 
     def test_even_after_closure_the_boundary_still_binds(self, flat):
-        assert "which must still satisfy\nevery clause of §D" in _flat(DECISION.read_text()) or \
-               "which must still satisfy every clause of §D" in flat
+        assert "which must still satisfy every clause of §D" in flat
 
 
 class TestStage1RemainsUnarmedAndNotExecutable:
@@ -873,8 +1158,7 @@ class TestStage1RemainsUnarmedAndNotExecutable:
         assert A.CONSTRUCTION_UNIVERSE_SHA256 == UNIVERSE_SHA
 
     def test_the_filing_states_the_posture(self, flat):
-        assert "Stage 1 remains UNARMED and NOT\nEXECUTABLE" in _flat(DECISION.read_text()) or \
-               "Stage 1 remains UNARMED and NOT EXECUTABLE" in flat
+        assert "Stage 1 remains UNARMED and NOT EXECUTABLE" in flat
         assert "`ATTEMPT_1` is intact, unclaimed, and unconsumed" in flat
 
     def test_the_reserved_results_pr_is_untouched(self, flat):
@@ -979,6 +1263,51 @@ class TestRegisterSynchronisation:
         gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
         assert LINK5_STOP_DETERMINATION in gate
         assert "SPENT" in gate
+
+    def test_the_registers_gate_records_the_eighteen_clause_boundary(self, ws0014):
+        """The count is load-bearing: a stale 'fourteen' would understate the boundary."""
+        gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
+        assert "eighteen conjunctive clauses" in gate
+        assert "fourteen conjunctive clauses" not in gate
+
+    @pytest.mark.parametrize("fragment", (
+        "EXACTLY THREE production call sites",
+        "_derive_pr337_actor_ratification",
+        "verify_lifecycle_against_truth",
+        "_verify_selected_review_is_final",
+        "34 FORMAL DISPOSITION lines",
+        "20 plain canonical",
+        "CLOSES THE ACCEPTED GRAMMAR",
+        "FAIL CLOSED RATHER THAN BE SKIPPED",
+        "END-TO-END, ZERO-WRITE REHEARSAL",
+        "EXACTLY ZERO ERRORS",
+        "NOT A SUBSTITUTE",
+        "REVIEW-FORMAT CONVENTION",
+    ))
+    def test_the_registers_gate_records_the_audit_addendum(self, ws0014, fragment):
+        gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
+        assert fragment in gate, fragment
+
+    def test_the_registers_gate_states_the_addendum_grants_nothing(self, ws0014):
+        gate = _flat(next(g for g in ws0014["milestones"] if g["gate"] == THIS_GATE)["description"])
+        assert "THE ADDENDUM AUTHORIZES NOTHING" in gate
+        assert "adds no authority" in gate
+
+    @pytest.mark.parametrize("fragment", (
+        "AN INCORPORATED READ-ONLY AUDIT ADDENDUM",
+        "adding NO authority",
+        "EXACTLY THREE production call sites (AST-confirmed)",
+        "34 FORMAL DISPOSITION lines (20 plain, 8 balanced whole-line bold, 6 heading)",
+        "FAIL CLOSED, never be skipped",
+        "ZERO-WRITE rehearsal through the real public path",
+        "EXACTLY ZERO ERRORS",
+        "NOT a substitute",
+        "rehearsing is not arming",
+        "THE ADDENDUM AUTHORIZES NOTHING",
+    ))
+    def test_both_operative_blocks_carry_the_addendum(self, ws0014, fragment):
+        for field in ("next_action", "blocker"):
+            assert fragment in _flat(ws0014[field]), (field, fragment)
 
     def test_the_registers_latest_operative_blocks_carry_the_grant_and_its_bound(self, ws0014):
         for field in ("next_action", "blocker"):

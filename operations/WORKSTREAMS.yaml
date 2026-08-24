@@ -16735,7 +16735,7 @@ workstreams:
           outer markers IN MEMORY ONLY yields exactly APPROVING_REVIEW_DISPOSITION; and the public
           path returns valid=False with exactly one error. This is a FORMATTING/PARSER-CONTRACT
           MISMATCH -- not an adverse review, not a governance-evidence gap, and not drift. THE
-          REQUIRED SAFETY BOUNDARY (SS-D, fourteen conjunctive clauses) requires the correction to
+          REQUIRED SAFETY BOUNDARY (SS-D, eighteen conjunctive clauses) requires the correction to
           keep accepting the existing unformatted canonical line; accept ONLY a precisely balanced,
           whole-line Markdown-bold wrapper around the same grammar; normalize FORMATTING before
           extracting the verdict and NEVER normalize or replace the VERDICT; preserve "first formal
@@ -16770,6 +16770,49 @@ workstreams:
           REQUIRED_LIFECYCLE_GATES stays the six-element tuple. Stage 1 remains UNARMED and NOT
           EXECUTABLE, lane state ABSENT, AUTHORIZATION_ROOT absent, ATTEMPT_1 intact, unclaimed and
           unconsumed, stage1_results.yaml absent, and XASSET-0027 SS-P.1 remains one, unspent.
+          A READ-ONLY AUDIT ADDENDUM WAS INCORPORATED AS A BOUNDED CORRECTION TO THIS SAME DRAFT
+          PR, and adds no authority: both of its factual claims were INDEPENDENTLY RE-DERIVED in
+          this session before being written down. parse_formal_disposition() has EXACTLY THREE
+          production call sites, confirmed by AST inspection of the live module --
+          _derive_pr337_actor_ratification (PR #337 ratification parsing),
+          verify_lifecycle_against_truth (the selected independent-review Gate 1) and
+          _verify_selected_review_is_final (later-review finality classification) -- and SS-D.15
+          now requires the future correction's tests to exercise all three, because a parser
+          correct in isolation and wrong at one consumer is not corrected. A live review-format
+          scan across PRs #337-#353 was re-run directly against the GitHub review API and returned
+          34 FORMAL DISPOSITION lines: 20 plain canonical, 8 precisely balanced whole-line
+          Markdown-bold, 6 Markdown-heading. SS-D.16 CLOSES THE ACCEPTED GRAMMAR AT EXACTLY THOSE
+          TWO FORMS -- the 20 plain and the 8 balanced whole-line bold -- and forbids silently
+          expanding it to headings, blockquotes, bullets, inline prose, code fences or any other
+          decoration; each of those is admitted only by its own separate proof AND its own
+          explicit governed text, never by convenience and never because a rejected form happens
+          to appear in the record. SS-D.17 REQUIRES AN UNSUPPORTED FORMAL-LOOKING LINE TO FAIL
+          CLOSED RATHER THAN BE SKIPPED: it must stop the parse and yield no verdict, and may not
+          be passed over so a later, better-formed line wins. That clause is grounded, not assumed
+          -- SS-B.7 records that a bolded ADVERSE line really exists (PR #350 review 5000866476)
+          and that the heading form appears six times across PRs #344 and #345, and SS-B.8 records
+          that a NAIVE correction which strips the bold wrapper but keeps skip semantics was
+          executed IN MEMORY ONLY in this session and returned APPROVED FOR PRINCIPAL EXACT-HEAD
+          ACCEPTANCE for a body whose first formal-looking line was ## FORMAL DISPOSITION: CHANGES
+          REQUIRED -- the adverse line silently skipped and the later approval winning. SS-D.18
+          enumerates twelve required behavioral coverage items as a floor, not a ceiling. SS-L
+          RECORDS A MANDATORY DOWNSTREAM PREVENTION RULE: the next renewed-readiness authorization
+          and its operational checklist must require an END-TO-END, ZERO-WRITE REHEARSAL through
+          the real public path -- build_authorization_payload() followed by
+          validate_authorization_document() -- using the complete live lifecycle evidence and the
+          exhaustive review list, returning valid=True with EXACTLY ZERO ERRORS before a renewed
+          drift check or a fresh link-5 authorization may proceed; checking individual identities
+          and validators is NOT A SUBSTITUTE, because that is precisely what passed while the
+          composed path failed; the rehearsal writes nothing, produces no attestation, no
+          AUTHORIZATION_ROOT, no lane state and no claim, and rehearsing is not arming. SS-M
+          RECORDS A REVIEW-FORMAT CONVENTION for all future lifecycle reviews -- the operative
+          formal disposition must be a standalone, unformatted plain-text line beginning exactly
+          with FORMAL DISPOSITION:, with no bold, heading, quotation, bullet or code formatting --
+          which governs what is WRITTEN from here on, is deliberately NOT a licence to narrow the
+          parser (SS-D.16 still requires accepting the 8 already-recorded bold forms, because
+          those reviews are durable history), and changes NO historical record. THE ADDENDUM
+          AUTHORIZES NOTHING: it does not authorize the correction, a rebinding, a readiness
+          check, a drift check, a link-5 attempt, or any Stage-1 work in this PR.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -17581,6 +17624,34 @@ workstreams:
       seven protected portfolio paths are byte-identical to the XASSET-0049 bound merge.
       Stage 1 remains UNARMED and NOT EXECUTABLE, lane state ABSENT, ATTEMPT_1 intact,
       unclaimed and unconsumed, and XASSET-0027 SS-P.1 remains one, unspent.
+      AN INCORPORATED READ-ONLY AUDIT ADDENDUM (bounded correction to this same draft PR, adding
+      NO authority) records four further requirements ON THE FUTURE CORRECTION and two downstream
+      rules. Both of its factual claims were independently re-derived here first:
+      parse_formal_disposition() has EXACTLY THREE production call sites (AST-confirmed) --
+      _derive_pr337_actor_ratification, verify_lifecycle_against_truth and
+      _verify_selected_review_is_final -- which SS-D.15 requires the correction's tests to
+      exercise ALL THREE of; and a live PRs #337-#353 review-format scan re-run against the GitHub
+      API returned 34 FORMAL DISPOSITION lines (20 plain, 8 balanced whole-line bold, 6 heading),
+      on which SS-D.16 CLOSES the accepted grammar at exactly the 20 plain and 8 bold forms and
+      forbids silent expansion to headings, blockquotes, bullets, inline prose or code fences
+      without separate proof AND explicit governed text. SS-D.17 requires an unsupported formal-
+      looking line to FAIL CLOSED, never be skipped -- grounded in SS-B.7 (a real bolded ADVERSE
+      line exists at PR #350 review 5000866476; the heading form appears six times on PRs
+      #344/#345) and SS-B.8, where a NAIVE strip-the-bold-but-still-skip correction was executed
+      IN MEMORY ONLY and returned APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE for a body whose
+      first formal-looking line was ## FORMAL DISPOSITION: CHANGES REQUIRED. SS-D.18 enumerates
+      twelve required behavioral coverage items as a floor. SS-L imposes a MANDATORY DOWNSTREAM
+      PREVENTION RULE on the next renewed-readiness unit: an END-TO-END, ZERO-WRITE rehearsal
+      through the real public path -- build_authorization_payload() then
+      validate_authorization_document() -- on complete live lifecycle evidence and the exhaustive
+      review list, returning valid=True with EXACTLY ZERO ERRORS before any renewed drift check or
+      fresh link-5 authorization; checking individual identities and validators is NOT a
+      substitute, and rehearsing is not arming. SS-M records a forward-only REVIEW-FORMAT
+      CONVENTION (operative formal disposition = standalone unformatted plain-text line beginning
+      exactly FORMAL DISPOSITION:), which is deliberately NOT a licence to narrow the parser and
+      changes NO historical record. THE ADDENDUM AUTHORIZES NOTHING -- not the correction, not a
+      rebinding, not a readiness or drift check, not a link-5 attempt, and no Stage-1 work in this
+      PR.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -18313,6 +18384,34 @@ workstreams:
       seven protected portfolio paths are byte-identical to the XASSET-0049 bound merge.
       Stage 1 remains UNARMED and NOT EXECUTABLE, lane state ABSENT, ATTEMPT_1 intact,
       unclaimed and unconsumed, and XASSET-0027 SS-P.1 remains one, unspent.
+      AN INCORPORATED READ-ONLY AUDIT ADDENDUM (bounded correction to this same draft PR, adding
+      NO authority) records four further requirements ON THE FUTURE CORRECTION and two downstream
+      rules. Both of its factual claims were independently re-derived here first:
+      parse_formal_disposition() has EXACTLY THREE production call sites (AST-confirmed) --
+      _derive_pr337_actor_ratification, verify_lifecycle_against_truth and
+      _verify_selected_review_is_final -- which SS-D.15 requires the correction's tests to
+      exercise ALL THREE of; and a live PRs #337-#353 review-format scan re-run against the GitHub
+      API returned 34 FORMAL DISPOSITION lines (20 plain, 8 balanced whole-line bold, 6 heading),
+      on which SS-D.16 CLOSES the accepted grammar at exactly the 20 plain and 8 bold forms and
+      forbids silent expansion to headings, blockquotes, bullets, inline prose or code fences
+      without separate proof AND explicit governed text. SS-D.17 requires an unsupported formal-
+      looking line to FAIL CLOSED, never be skipped -- grounded in SS-B.7 (a real bolded ADVERSE
+      line exists at PR #350 review 5000866476; the heading form appears six times on PRs
+      #344/#345) and SS-B.8, where a NAIVE strip-the-bold-but-still-skip correction was executed
+      IN MEMORY ONLY and returned APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE for a body whose
+      first formal-looking line was ## FORMAL DISPOSITION: CHANGES REQUIRED. SS-D.18 enumerates
+      twelve required behavioral coverage items as a floor. SS-L imposes a MANDATORY DOWNSTREAM
+      PREVENTION RULE on the next renewed-readiness unit: an END-TO-END, ZERO-WRITE rehearsal
+      through the real public path -- build_authorization_payload() then
+      validate_authorization_document() -- on complete live lifecycle evidence and the exhaustive
+      review list, returning valid=True with EXACTLY ZERO ERRORS before any renewed drift check or
+      fresh link-5 authorization; checking individual identities and validators is NOT a
+      substitute, and rehearsing is not arming. SS-M records a forward-only REVIEW-FORMAT
+      CONVENTION (operative formal disposition = standalone unformatted plain-text line beginning
+      exactly FORMAL DISPOSITION:), which is deliberately NOT a licence to narrow the parser and
+      changes NO historical record. THE ADDENDUM AUTHORIZES NOTHING -- not the correction, not a
+      rebinding, not a readiness or drift check, not a link-5 attempt, and no Stage-1 work in this
+      PR.
     active_branch: claude/xasset-0053-parser-contract-auth-k7m2qx
     active_pr: 354
     last_verified_main_sha: cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6

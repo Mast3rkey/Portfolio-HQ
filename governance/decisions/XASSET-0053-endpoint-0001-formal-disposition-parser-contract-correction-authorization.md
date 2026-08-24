@@ -157,6 +157,36 @@ corrected, and **not** drift: the module blob `f71b08b4ebe95f161c57cdbb2a924748f
 load-bearing paths, both canonical pins, the frozen universe, and the seven protected portfolio
 paths were all verified byte-identical, and the lane was verified `ABSENT` throughout.
 
+**B.7 — The live review-format scan, independently re-run.** Every `FORMAL DISPOSITION:`-bearing
+line across PRs #337–#353 was enumerated directly from the GitHub review API in this session, and the
+counts were re-derived rather than accepted: **34** such lines exist — **20** plain canonical, **8**
+precisely balanced whole-line bold, **6** Markdown-heading (`## FORMAL DISPOSITION: …`). Two facts in
+that record matter more than the totals:
+
+1. **A bolded *adverse* line really exists** — PR #350 review `5000866476` reads
+   `**FORMAL DISPOSITION: CHANGES REQUIRED — …**`. So §D.7 is not a hypothetical guard: admitting the
+   bold wrapper without keeping adverse verdicts adverse would flip a real, recorded refusal.
+2. **A heading-form adverse line really exists** — `## FORMAL DISPOSITION: CHANGES REQUIRED` appears
+   six times across PRs #344 and #345. So §D.17's fail-closed rule is grounded in the durable record
+   too, not invented.
+
+**B.8 — The skip-versus-fail-closed hazard, reproduced.** Today's parser returns `None` for both
+shapes, because neither line starts with the bare prefix. A *naive* correction that strips a balanced
+bold wrapper but otherwise keeps the existing **skip** semantics was written and executed in memory in
+this session against the exact body
+
+```
+## FORMAL DISPOSITION: CHANGES REQUIRED
+   … later …
+**FORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE — 0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE**
+```
+
+and returned **`APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE`** — the adverse heading silently skipped
+and the later approval winning. That is the precise failure §D.17 exists to forbid, demonstrated rather
+than asserted, and it is why "preserve *first formal disposition line governs*" (§D.4) is **not** on its
+own sufficient: under skip semantics, "first" means "first line the parser happens to recognise."
+
+
 ### C. Authority granted — exactly one future, separate parser-contract correction unit
 
 The future unit **may**, and only in service of this defect:
@@ -244,6 +274,56 @@ this demonstrated mismatch requires.** No other formatting convention, no other 
 other disposition vocabulary, and no other parsing surface is in scope. A second genuine mismatch,
 if one is ever demonstrated, is its own separate authorization.
 
+**D.15 — Exercise all three production consumers.** `parse_formal_disposition()` has exactly three
+call sites in `level1_stage1_execution_authorization.py`, verified in this session by direct source
+inspection: `_derive_pr337_actor_ratification()` (PR #337 ratification parsing),
+`verify_lifecycle_against_truth()` (the selected independent-review Gate 1), and
+`_verify_selected_review_is_final()` (later-review finality classification). The correction's tests
+must exercise the corrected behaviour through **all three**, not through the function alone. A parser
+that is correct in isolation and wrong at one consumer is not corrected.
+
+**D.16 — The accepted grammar is exactly the two demonstrated forms, and no more.** Grounded in §B.7's
+independently re-run scan: the correction must accept the **20** existing plain canonical lines and the
+**8** precisely balanced whole-line `**…**` forms. It must **not** silently expand the accepted grammar
+to Markdown headings, blockquotes, bullets, inline prose, code fences, or any other decoration. Each of
+those is admitted only by its own separate proof **and** its own explicit governed text — never by a
+convenience generalisation, and never because a rejected form happens to appear in the record.
+
+**D.17 — An unsupported formal-looking line FAILS CLOSED; it is never skipped.** This is the clause
+§B.8 demonstrates the need for, and it is the one most likely to be got wrong. A line that names a
+formal disposition but is **not** in an accepted form must **stop the parse and yield no verdict**. It
+may not be passed over so that a later, better-formed line wins. Concretely, this body must **not**
+authenticate:
+
+```
+## FORMAL DISPOSITION: CHANGES REQUIRED
+   … later …
+**FORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE — 0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE**
+```
+
+The unsupported first formal-looking line must prevent the later approval from winning. The same rule
+applies to blockquotes, bullets, malformed or unbalanced emphasis, nested emphasis, leading or trailing
+prose, partial wrappers, and code-fenced lines. **Skipping is the failure mode; failing closed is the
+requirement.**
+
+**D.18 — Required behavioral coverage.** The correction's tests must cover, at minimum, each of the
+following as its own directly-exercised case, and must fail if any regresses:
+
+1. exact plain approval **accepted**;
+2. exact balanced whole-line bold approval **accepted**;
+3. exact bold `CHANGES REQUIRED` parsed as **adverse** and rejected;
+4. an adverse first line followed by a later approval **rejected**;
+5. native `CHANGES_REQUESTED` **independently** rejected;
+6. approval appearing only in explanatory prose **rejected**;
+7. heading, blockquote, bullet, code-fenced, nested, repeated, partial, and unbalanced wrappers
+   **rejected**;
+8. the first valid formal line **remains governing**;
+9. **all three** production consumers named in §D.15 exercise the corrected behaviour;
+10. the exact live formal line from review `5000581301` changes from **unparseable** to the **exact**
+    approving verdict;
+11. review `5000581301` itself, and every historical GitHub record, **remain unedited**;
+12. existing record **fingerprints remain unchanged**.
+
 ### E. This filing does not restore operational authority, and cannot
 
 Stated plainly, because the nearest inference a successor could draw is that correcting the parser
@@ -322,7 +402,8 @@ clean correction.
 4. **Renewed readiness verification, renewed drift verification, and a fresh link-5 authorization
    each remain separately unauthorized**, and each requires its own authority and its own separate
    operational unit. Completing any one of them authorizes none of the others, and completing all of
-   them authorizes link 5 only through a new decision of link 5's own.
+   them authorizes link 5 only through a new decision of link 5's own. **§L additionally imposes a
+   mandatory rehearsal precondition on the next renewed-readiness unit**, which none of them may skip.
 
 5. **`XASSET-0052` remains effective as a historical decision, but its one-shot operational grant is
    spent** as `STOPPED_BEFORE_ATTESTATION`. It is not revived, reinterpreted, extended, or re-opened
@@ -393,6 +474,51 @@ research, intelligence, or protected portfolio path; creates no endpoint, bound,
 percentage, weight, rank, target, or allocation; changes no `targets.yaml`, `holdings.yaml`,
 `gates.yaml`, `issuer_lookthrough.yaml`, allocator, tier, cluster, cap, or margin state; authorizes
 no chart, ladder, deployment, trade, order, or brokerage action; and rewrites no accepted history.
+
+### L. Mandatory downstream prevention — the end-to-end zero-write rehearsal
+
+`XASSET-0052`'s link-5 unit reached a terminal stop because a defect that only appears at the **whole
+public path** was never exercised there. Every individual identity, pin, validator, and lifecycle fact
+verified clean; the composition did not. Checking the parts is what failed.
+
+Accordingly, and as a requirement recorded here for the units that follow this one to adopt: **the next
+renewed-readiness authorization and its operational checklist must require an end-to-end, zero-write
+rehearsal through the real public path** —
+
+```
+build_authorization_payload()  followed by  validate_authorization_document()
+```
+
+— using the **complete live lifecycle evidence** and the **exhaustive** review list, and it must return
+**`valid = True` with exactly zero errors** before a renewed drift check or a fresh link-5 authorization
+may proceed.
+
+Three properties of that rehearsal are load-bearing:
+
+1. **Zero-write.** It calls neither `write_authorization()` nor any lane-mutating function. It produces
+   no attestation, no `AUTHORIZATION_ROOT`, no lane state, and no claim. Rehearsing is not arming.
+2. **End-to-end, through the real public path.** Not a reimplementation, not a subset, and not a
+   sequence of individual checks. **Checking individual identities and validators is not a substitute** —
+   that is exactly what passed while the composed path failed.
+3. **Exactly zero errors.** Not "only one known error", not "errors we understand". A single error is a
+   stop, and the condition it names is a finding to report under §G, never work to perform.
+
+**This section imposes a precondition; it grants nothing.** It does not authorize the rehearsal, the
+renewed readiness verification, the drift check, or link 5 — each remains separately unauthorized under
+§F and §H.4, and each still requires its own governance decision.
+
+### M. Review-format convention for future lifecycle reviews
+
+For all future lifecycle reviews in this repository: **the operative formal disposition must be a
+standalone, unformatted plain-text line beginning exactly with `FORMAL DISPOSITION:`** — no bold, no
+heading, no quotation, no bullet, and no code formatting.
+
+This is a convention for **authors of future reviews**, adopted so the defect this decision addresses
+stops recurring at its source. It is deliberately **not** a licence to narrow the parser: §D.16 still
+requires the correction to accept the 8 already-recorded balanced whole-line bold forms, because those
+reviews are durable history and cannot be reformatted. The convention governs what is written from here
+on; §D governs what must be read. **This section changes no historical record**, and per §D.13 and §F no
+existing review, comment, acceptance record, or closure record may be edited to conform to it.
 
 ## Rationale
 
