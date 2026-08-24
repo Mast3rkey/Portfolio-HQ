@@ -175,9 +175,9 @@ XASSET0053_ACTIVE_PR = 354
 #: value is retained beside the current one as a NEGATIVE pin rather than deleted, so a silent
 #: revert to any finished unit's state still fails. The assertion stays EXACT and bound at BOTH ends.
 XASSET0054_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
-#: Committed as an impossible sentinel first (-54), then replaced by the number GitHub actually
+#: Committed as an impossible sentinel first (-54), then replaced by the number GitHub issued
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
-XASSET0054_ACTIVE_PR = -54
+XASSET0054_ACTIVE_PR = 355
 XASSET0054_BRANCH = "claude/xasset-0054-parser-contract-correction-h3nq7p"
 XASSET0043_ACTIVE_PR = 343
 #: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number

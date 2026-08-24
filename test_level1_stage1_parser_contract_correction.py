@@ -61,7 +61,7 @@ PRIOR_SENTINELS = (-1, -2, -50, -51, -52, -53)
 
 #: The number GitHub ISSUED for this unit, read back from the live API after the draft was
 #: opened. Bound in the fast-forward follow-up commit; the sentinel above until then.
-THIS_PULL_REQUEST = PR_SENTINEL
+THIS_PULL_REQUEST = 355
 
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
 ADVERSE = "CHANGES REQUIRED"

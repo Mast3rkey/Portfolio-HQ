@@ -248,7 +248,15 @@ current: SHA-256 `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d45
 - read, list, open, or substantively reuse any `risk_lane_boundary` protected `RISK` artifact; or
 - create any endpoint, bound, point, range, percentage, weight, rank, target, ladder, or trade.
 
-### J. Lifecycle
+### J. This unit's own pull request
+
+Pull request **#355**, opened as a draft against `main` at
+`683c324629544a84d2cf75ebca37325e3375c479`. The number was **never predicted**: it was committed
+as the structurally impossible sentinel `-54`, read back from the live GitHub API after the draft
+was opened, and bound in a fast-forward follow-up commit. No history was force-pushed, amended,
+squashed, or rewritten.
+
+### K. Lifecycle
 
 Effective only on complete closure of all seven conditions, in order: independent **FULL**
 exact-head review under `OPS-0007` §1; any bounded correction and exact-head re-review; principal

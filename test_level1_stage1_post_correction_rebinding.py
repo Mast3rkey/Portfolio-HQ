@@ -189,7 +189,7 @@ XASSET0053_MAIN_SHA = "cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6"
 XASSET0053_ACTIVE_PR = 354
 #: ADVANCED BY XASSET-0054 -- see the note at the live-fields assertion below.
 XASSET0054_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
-XASSET0054_ACTIVE_PR = -54
+XASSET0054_ACTIVE_PR = 355
 #: The CURRENT unit's own decision file, which declares the live module identity.
 XASSET_0054_DECISION_RELPATH = (
     "governance/decisions/"
