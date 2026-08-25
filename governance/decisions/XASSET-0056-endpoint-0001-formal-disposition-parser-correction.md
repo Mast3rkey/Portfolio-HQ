@@ -225,8 +225,8 @@ MINOR 3 identified, where prose said "twelve suites", a table said 17, and the r
 | Pre-existing suites in which assertions were **re-anchored** | **16** (none additive-only) |
 | Individual assertion **lines** re-anchored (replaced `assert` lines, base→head diff) | **59** |
 | Pre-existing suites' own assertion totals | 4 237 → 4 301 (**+64**) |
-| New suite's own assertions | **357** |
-| Assertions across the 17 changed test files | 4 237 → **4 658** (**+421**) |
+| New suite's own assertions | **397** |
+| Assertions across the 17 changed test files | 4 237 → **4 698** (**+461**) |
 
 The new suite is a **new** file, not a predecessor, and is counted in **no** "existing changed
 suites" figure. Each re-anchored assertion was moved onto an **immutable closed lifecycle fact** —
@@ -260,7 +260,8 @@ it, so its bound digest is stale:
 | At the reviewed head `e573262…` (superseded, retained as a negative pin) | SHA-256 `55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c`, blob `07d62cabca24b278b9b458b015f0dee7f85ca24f` |
 | After the first BLOCKING 1 correction (superseded, retained as a negative pin) | SHA-256 `aa34c5c7264653b8edc7e35253ada87323c6f3c3b114a786e3ada15f46950d99`, blob `2c2e6748739ab95937231ab40b27a72738bb5e63` |
 | After the DELTA review `5019911766` correction (superseded, retained as a negative pin) | SHA-256 `5d1c33a1828cd08f2d4e4aad78cc9cff77c496154e3038b212cb73f30fe7e76b`, blob `d554c2f409a129dfcde408cbfa54a49f82a091b6` |
-| Derived here, after the DELTA review `5020912146` BLOCKING 1 correction | SHA-256 `2683727fe997d5fd0b851b261b824d4a14908f5b8d5483f11146a4b74391501e`, blob `d1fa23fa487e3f796f7b283ee5e312b66244802f` |
+| After the DELTA review `5020912146` correction (superseded, retained as a negative pin) | SHA-256 `2683727fe997d5fd0b851b261b824d4a14908f5b8d5483f11146a4b74391501e`, blob `d1fa23fa487e3f796f7b283ee5e312b66244802f` |
+| Derived here, after the DELTA review `5022602312` BLOCKING 1 correction | SHA-256 `12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5`, blob `b5622f9e412afd604a11cde04317b79c5e57920a` |
 
 That divergence is the **fail-closed hand-off** `XASSET-0055` §J describes. `_verify_git_anchored_identity()`
 is byte-identical to the base and still raises `enforcement drift`. Both authorization predicates
@@ -284,10 +285,10 @@ harness is not committed. No surface claims all five are independently re-derive
 
 | Check | Result |
 |---|---|
-| New adversarial suite | **972 tests**, all passing |
-| Non-vacuity against the exact base | **619 of 972 fail** at the unchanged base `29e4969…`, measured by running this suite against a pristine base checkout whose module digest was verified as `4ff28941…` first — never extrapolated |
-| Mutation probes | **73 / 73 caught, 0 missed** — 6 covering the fence rule as first reviewed, 6 covering D1–D4, 9 covering D5, 5 covering the opener rule, 4 covering the closer and line-splitting rules, 2 covering the record classifications, 8 covering every clause of the accepted-line rule, and 3 covering the positive-control count (including one that adds a control without updating the records); every probed file restored byte-identically and SHA-256-verified |
-| Positive controls | **27 / 27 positive controls** authenticate — 16 fence shapes and 11 accepted-line shapes; the claimed figure is compared mechanically against the size of the mapping the parametrized tests actually iterate |
+| New adversarial suite | **1 214 tests**, all passing |
+| Non-vacuity against the exact base | **766 of 1214 fail** at the unchanged base `29e4969…`, measured by running this suite against a pristine base checkout whose module digest was verified as `4ff28941…` first — never extrapolated |
+| Mutation probes | **82 / 82 caught, 0 missed, 0 aborted** — 6 covering the fence rule as first reviewed, 6 covering D1–D4, 9 covering D5, 5 covering the opener rule, 4 covering the closer and line-splitting rules, 2 covering the record classifications, 8 covering every clause of the accepted-line rule, 3 covering the positive-control count (including one that adds a control without updating the records), and 9 covering every clause of the prefix rule; every probed file restored byte-identically and SHA-256-verified |
+| Positive controls | **35 / 35 positive controls** authenticate — 16 fence shapes, 11 accepted-line shapes and 8 ASCII-case shapes; the claimed figure is compared mechanically against the size of the single mapping the parametrized tests actually iterate |
 | Real-review blast radius | 6 real bodies parsed base→head: **exactly one** changes; parsed reviewed-head→corrected-head: **zero** change |
 | Zero-write rehearsal | all three consumer paths exercised; no lane record, no `AUTHORIZATION_ROOT`, no attestation, no claim, no results file; both predicates still `False` |
 | Re-anchored predecessor suites | assertion counts only grew; no deletion, skip, `xfail` or relaxation |

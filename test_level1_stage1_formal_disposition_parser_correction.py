@@ -1627,7 +1627,7 @@ class TestDeltaBlockingOneCorrectionShape:
         """The specific defect: strip()/lstrip() treated NBSP and friends as indentation."""
         parser = _toplevel(_live_source())["parse_formal_disposition"]
         start = parser.index("indent = 0")
-        end = parser.index("if FORMAL_DISPOSITION_PREFIX not in line.upper()")
+        end = parser.index("if FORMAL_DISPOSITION_PREFIX not in ascii_upper")
         fence_block = parser[start:end]
         for banned in (".strip()", ".lstrip()", ".rstrip()", "isspace()"):
             assert banned not in fence_block, banned
@@ -1858,9 +1858,12 @@ class TestAllPositiveControls:
     def test_the_control_still_authenticates(self, name):
         assert P(ALL_POSITIVE_CONTROLS[name]) == APPROVE, name
 
-    def test_the_two_mappings_do_not_overlap(self):
+    def test_the_contributing_mappings_do_not_overlap(self):
+        """The derived total is the exact sum of its three disjoint sources."""
         assert len(ALL_POSITIVE_CONTROLS) == (
-            len(COMMONMARK_POSITIVE_CONTROLS) + len(ACCEPTED_LINE_POSITIVE_CONTROLS)
+            len(COMMONMARK_POSITIVE_CONTROLS)
+            + len(ACCEPTED_LINE_POSITIVE_CONTROLS)
+            + len(ASCII_CASE_POSITIVE_CONTROLS)
         )
 
 
@@ -1985,6 +1988,352 @@ class TestAcceptedLineCorrectionShape:
             assert (before is None) == (after is None)
             if isinstance(before, str):
                 assert before == after
+
+
+# ======================================================================================
+# DELTA review 5022602312 BLOCKING 1 -- the PREFIX boundary
+#
+# Two Unicode-wide operations decided the prefix, and they failed in OPPOSITE directions.
+#
+#   * ``.upper()`` maps some non-ASCII letters ONTO ASCII ones. U+017F and U+0131
+#     uppercase to S and I, so ``DISPOſITION`` and ``DıSPOSITION`` -- neither the
+#     canonical prefix -- passed the accepted-form branch and AUTHENTICATED.
+#   * An invisible or bidi code point placed INSIDE the prefix removed the literal
+#     substring, so the formal-looking first line was treated as ABSENT and SKIPPED and a
+#     later approval won. None of U+200B, U+202E, U+00AD or U+2060 starts a new Markdown
+#     line, so a reviewer still reads one formal record. That is the SS-D.17 failure.
+#
+# MEASURED at the reviewed head e4c5032, not asserted: 7 of 7 authenticated there.
+# ======================================================================================
+
+SIXTH_REVIEWED_HEAD_SHA = "e4c5032389486cb907a31a1e7eed032d9b08d096"
+
+_APPROVING_LINE = f"{PREFIX} {APPROVE}\n"
+_ADVERSE = "CHANGES REQUIRED"
+
+#: The five first-line-skipping bodies the review names verbatim. Each is an ADVERSE
+#: first line whose prefix carries one invisible character, followed by the exact
+#: canonical approval -- so a skip is directly observable as an authentication.
+PREFIX_SKIP_ATTACKS: dict[str, str] = {
+    "U+200B zero-width space inside FORMAL":
+        f"FOR​MAL DISPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+200B immediately before the colon":
+        f"FORMAL DISPOSITION​: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+202E right-to-left override inside FORMAL":
+        f"FOR‮MAL DISPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+00AD soft hyphen inside FORMAL":
+        f"FOR­MAL DISPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+2060 word joiner inside FORMAL":
+        f"FOR⁠MAL DISPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+}
+
+#: The two direct authentications caused by Unicode-wide case mapping.
+PREFIX_UPPER_ATTACKS: dict[str, str] = {
+    "U+017F latin small letter long s": f"FORMAL DISPOſITION: {APPROVE}\n",
+    "U+0131 latin small letter dotless i": f"FORMAL DıSPOSITION: {APPROVE}\n",
+}
+
+#: The same two families moved to the whole-line-bold form, to further invisible and
+#: combining characters, and to a trailing approval after each -- so the defect cannot
+#: simply reappear on a neighbouring path.
+PREFIX_VARIANT_ATTACKS: dict[str, str] = {
+    "U+200B inside FORMAL, whole-line bold":
+        f"**FOR​MAL DISPOSITION: {_ADVERSE}**\n" + _APPROVING_LINE,
+    "U+00AD inside FORMAL, whole-line bold":
+        f"**FOR­MAL DISPOSITION: {_ADVERSE}**\n" + _APPROVING_LINE,
+    "U+017F long s, whole-line bold": f"**FORMAL DISPOſITION: {APPROVE}**\n",
+    "U+0131 dotless i, whole-line bold": f"**FORMAL DıSPOSITION: {APPROVE}**\n",
+    "U+017F long s, then a valid approval":
+        f"FORMAL DISPOſITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+0131 dotless i, then a valid approval":
+        f"FORMAL DıSPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+FEFF zero-width no-break space inside FORMAL":
+        f"FOR﻿MAL DISPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+200D zero-width joiner inside DISPOSITION":
+        f"FORMAL DISPO‍SITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+200C zero-width non-joiner inside FORMAL":
+        f"FOR‌MAL DISPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+202D left-to-right override inside FORMAL":
+        f"FOR‭MAL DISPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+0301 combining acute inside FORMAL":
+        f"FOŔMAL DISPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "a NUL control character inside FORMAL":
+        f"FOR\x00MAL DISPOSITION: {_ADVERSE}\n" + _APPROVING_LINE,
+    "U+017F long s inside a fence marker line":
+        f"```FORMAL DISPOſITION: {_ADVERSE}\n```\n" + _APPROVING_LINE,
+    "U+200B inside a fence marker line":
+        f"```FOR​MAL DISPOSITION: {_ADVERSE}\n```\n" + _APPROVING_LINE,
+}
+
+#: Every shape that must NOT yield the approving verdict.
+PREFIX_ATTACKS: dict[str, str] = {
+    **PREFIX_SKIP_ATTACKS,
+    **PREFIX_UPPER_ATTACKS,
+    **PREFIX_VARIANT_ATTACKS,
+}
+
+#: ASCII case compatibility is REQUIRED and must survive the correction untouched.
+ASCII_CASE_POSITIVE_CONTROLS: dict[str, str] = {
+    "the exact upper-case prefix": f"{PREFIX} {APPROVE}\n",
+    "an all-lower-case prefix": f"{PREFIX.lower()} {APPROVE}\n",
+    "a mixed-case prefix": f"Formal Disposition: {APPROVE}\n",
+    "a mixed-case prefix, whole-line bold": f"**Formal Disposition: {APPROVE}**\n",
+    "an all-lower-case prefix, whole-line bold": f"**{PREFIX.lower()} {APPROVE}**\n",
+    "an upper-case prefix indented three ASCII spaces": f"   {PREFIX} {APPROVE}\n",
+    "a lower-case prefix carrying a finding suffix":
+        f"{PREFIX.lower()} {APPROVE} — 0 BLOCKING\n",
+    "an aLtErNaTiNg-case ASCII prefix": f"fOrMaL dIsPoSiTiOn: {APPROVE}\n",
+}
+
+# One derived count covers every positive control in the suite. Extending the existing
+# mapping keeps ``len(ALL_POSITIVE_CONTROLS)`` the single durable figure the records
+# quote and the guard compares against -- a second "all" set would reintroduce exactly
+# the two-sets-reported-as-one defect DELTA review 5020912146 MINOR 1 found.
+ALL_POSITIVE_CONTROLS.update(
+    {f"ascii-case: {name}": body for name, body in ASCII_CASE_POSITIVE_CONTROLS.items()}
+)
+
+
+class TestPrefixBoundary:
+    """The prefix is matched on ASCII characters only, and tampering fails closed."""
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_SKIP_ATTACKS))
+    def test_an_invisible_tampered_prefix_is_malformed_not_absent(self, name):
+        """SS-D.17: it must STOP the parse, so the later valid approval cannot win."""
+        assert P(PREFIX_SKIP_ATTACKS[name]) is MALFORMED, name
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_UPPER_ATTACKS))
+    def test_a_unicode_case_mapped_prefix_never_authenticates(self, name):
+        assert P(PREFIX_UPPER_ATTACKS[name]) is MALFORMED, name
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_VARIANT_ATTACKS))
+    def test_each_variant_fails_closed(self, name):
+        assert P(PREFIX_VARIANT_ATTACKS[name]) is MALFORMED, name
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_ATTACKS))
+    def test_no_attack_yields_the_approval(self, name):
+        assert P(PREFIX_ATTACKS[name]) != APPROVE, name
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_ATTACKS))
+    def test_no_attack_is_silently_absent(self, name):
+        """ABSENT is the dangerous outcome here: it means the line was SKIPPED."""
+        assert P(PREFIX_ATTACKS[name]) is not None, name
+
+    def test_a_genuinely_absent_body_is_still_absent(self):
+        """The wide resemblance test must not make ordinary prose formal-looking."""
+        for body in (
+            "Looks fine to me.\n",
+            "No formal line here at all.\n",
+            "We discussed the disposition of the formal review.\n",
+            "​‮­⁠ stray invisible characters, no prefix\n",
+        ):
+            assert P(body) is None, body
+
+    def test_a_tampered_prefix_is_not_normalized_into_an_accepted_prefix(self):
+        """It must never be repaired into the canonical form and then accepted."""
+        for body in PREFIX_ATTACKS.values():
+            assert P(body) is not APPROVE
+            assert P(body) is MALFORMED
+
+
+class TestPrefixBoundaryNonVacuity:
+    """Measured against the reviewed head by EXECUTING it, never by matching its text."""
+
+    @staticmethod
+    def _sixth_reviewed_parse(body: str):
+        name = "_sixth_head_" + SIXTH_REVIEWED_HEAD_SHA[:12]
+        module = sys.modules.get(name)
+        if module is None:
+            module = types.ModuleType(name)
+            module.__file__ = str(ROOT / MODULE_RELPATH)
+            sys.modules[name] = module
+            source = _git("show", f"{SIXTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+            exec(compile(source, module.__file__, "exec"), module.__dict__)
+        return module.parse_formal_disposition(body)
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_SKIP_ATTACKS))
+    def test_each_skip_body_authenticated_at_the_reviewed_head(self, name):
+        assert self._sixth_reviewed_parse(PREFIX_SKIP_ATTACKS[name]) == APPROVE, name
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_UPPER_ATTACKS))
+    def test_each_upper_body_authenticated_at_the_reviewed_head(self, name):
+        assert self._sixth_reviewed_parse(PREFIX_UPPER_ATTACKS[name]) == APPROVE, name
+
+    def test_the_seven_named_bodies_all_authenticated(self):
+        """Measured once, reported as a whole: 7 of 7, not rounded up from a sample."""
+        named = {**PREFIX_SKIP_ATTACKS, **PREFIX_UPPER_ATTACKS}
+        authenticated = {
+            name for name, body in named.items()
+            if self._sixth_reviewed_parse(body) == APPROVE
+        }
+        assert authenticated == set(named), sorted(set(named) - authenticated)
+
+    @pytest.mark.parametrize("name", sorted(ASCII_CASE_POSITIVE_CONTROLS))
+    def test_ascii_case_compatibility_was_not_collaterally_broken(self, name):
+        body = ASCII_CASE_POSITIVE_CONTROLS[name]
+        assert self._sixth_reviewed_parse(body) == APPROVE, name
+        assert P(body) == APPROVE, name
+
+    @pytest.mark.parametrize("name", sorted(ALL_POSITIVE_CONTROLS))
+    def test_the_correction_only_tightened(self, name):
+        body = ALL_POSITIVE_CONTROLS[name]
+        if self._sixth_reviewed_parse(body) == APPROVE:
+            assert P(body) == APPROVE, name
+
+
+class TestAsciiCasePositiveControls:
+    """ASCII upper, lower and mixed case remain interchangeable."""
+
+    @pytest.mark.parametrize("name", sorted(ASCII_CASE_POSITIVE_CONTROLS))
+    def test_the_control_still_authenticates(self, name):
+        assert P(ASCII_CASE_POSITIVE_CONTROLS[name]) == APPROVE, name
+
+    def test_the_ascii_fold_covers_the_whole_alphabet(self):
+        """Every ASCII letter folds, so no single letter can be a hidden exception."""
+        for offset in range(26):
+            lower = chr(ord("a") + offset)
+            scrambled = "".join(
+                character.lower() if character.upper() == lower.upper() else character
+                for character in PREFIX
+            )
+            assert P(f"{scrambled} {APPROVE}\n") == APPROVE, scrambled
+
+
+class TestPrefixBoundaryAtTheThreeConsumerSeams:
+    """The same attacks, driven through every real production consumer."""
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_ATTACKS))
+    @pytest.mark.parametrize("state", ["COMMENTED", "APPROVED"])
+    def test_consumer_one_refuses(self, name, state, monkeypatch):
+        recorder = _run_consumer_one(PREFIX_ATTACKS[name], monkeypatch, state=state)
+        assert not any(call.startswith("reviews:") for call in recorder.calls), name
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_ATTACKS))
+    @pytest.mark.parametrize("state", ["COMMENTED", "APPROVED"])
+    def test_consumer_two_refuses(self, name, state):
+        errors = _run_consumer_two(PREFIX_ATTACKS[name], state=state)
+        assert any(
+            "accepted form" in e or "carries no parseable" in e or "formal disposition is" in e
+            for e in errors
+        ), name
+
+    @pytest.mark.parametrize("name", sorted(PREFIX_ATTACKS))
+    def test_consumer_three_refuses_even_a_native_approved_rescue(self, name):
+        assert _run_consumer_three(PREFIX_ATTACKS[name], "APPROVED"), name
+
+    def test_the_legitimate_absent_policy_is_preserved(self):
+        assert _run_consumer_three("Nothing formal here at all.", "APPROVED") == []
+
+
+class TestPrefixBoundaryCorrectionShape:
+    """Acceptance never consults a Unicode-wide case mapping."""
+
+    @staticmethod
+    def _executable_source() -> str:
+        tree = ast.parse(_toplevel(_live_source())["parse_formal_disposition"])
+        node = tree.body[0]
+        assert isinstance(node, ast.FunctionDef)
+        if (
+            node.body
+            and isinstance(node.body[0], ast.Expr)
+            and isinstance(node.body[0].value, ast.Constant)
+            and isinstance(node.body[0].value.value, str)
+        ):
+            node.body = node.body[1:]
+        return ast.unparse(node)
+
+    def test_exactly_one_unicode_wide_upper_survives_and_it_only_widens(self):
+        """``.upper()`` may decide RESEMBLANCE, never ACCEPTANCE.
+
+        Counted on what EXECUTES, not on the prose -- this correction's own comments
+        necessarily name ``.upper()`` in order to explain what was removed.
+        """
+        source = self._executable_source()
+        calls = [
+            node
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "upper"
+        ]
+        # one inside the ASCII fold (guarded by an "a" <= c <= "z" test), one in the
+        # deliberately wide resemblance expression.
+        assert len(calls) == 2, ast.unparse(ast.parse(source))
+        assert "resembles_prefix" in source
+        assert "FORMAL_DISPOSITION_PREFIX in ''.join" in source
+
+    def test_the_ascii_fold_is_bounded_to_ascii_lower_case(self):
+        source = self._executable_source()
+        assert "'a' <= character <= 'z'" in source
+
+    def test_acceptance_reads_the_ascii_folded_view_only(self):
+        source = self._executable_source()
+        assert "revealed_upper = ascii_upper[indent:end]" in source
+        assert "revealed_upper.startswith(FORMAL_DISPOSITION_PREFIX)" in source
+        assert "revealed.upper()" not in source
+        assert "inner.upper()" not in source
+
+    def test_a_resembling_line_returns_malformed_rather_than_continuing(self):
+        source = self._executable_source()
+        index = source.index("if FORMAL_DISPOSITION_PREFIX not in ascii_upper:")
+        window = source[index : index + 220]
+        assert "if resembles_prefix:" in window
+        assert "return MALFORMED_FORMAL_DISPOSITION" in window
+        assert window.index("return MALFORMED_FORMAL_DISPOSITION") < window.index("continue")
+
+    def test_the_resemblance_test_is_a_strict_superset_of_the_canonical_one(self):
+        """Proved by execution over the real corpus, not by reading the expression."""
+        for mapping in (ALL_POSITIVE_CONTROLS, PREFIX_ATTACKS, ACCEPTED_LINE_ATTACKS):
+            for body in mapping.values():
+                for line in body.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+                    ascii_upper = "".join(
+                        c.upper() if "a" <= c <= "z" else c for c in line
+                    )
+                    resembles = PREFIX in "".join(
+                        c for c in line.upper() if " " <= c <= "~"
+                    )
+                    if PREFIX in ascii_upper:
+                        assert resembles, repr(line)
+
+    def test_the_correction_added_no_module_level_name(self):
+        def names(source: str) -> set[str]:
+            found = set()
+            for node in ast.parse(source).body:
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    found.add(node.name)
+                elif isinstance(node, ast.Assign):
+                    found.update(t.id for t in node.targets if isinstance(t, ast.Name))
+                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                    found.add(node.target.id)
+            return found
+
+        assert names(_live_source()) == names(
+            _git("show", f"{SIXTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+        )
+
+    def test_only_the_parser_changed_since_the_reviewed_head(self):
+        reviewed = _toplevel(_git("show", f"{SIXTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}"))
+        live = _toplevel(_live_source())
+        changed = {n for n in live if reviewed.get(n) != live[n]}
+        assert changed == {"parse_formal_disposition"}, sorted(changed)
+
+    def test_the_call_site_count_is_unchanged(self):
+        assert len(_call_sites(_live_source())) == 3
+
+    def test_every_real_review_body_is_unchanged_by_this_correction(self):
+        for body in list(REAL_REVIEW_BODIES.values()) + [REVIEW_5000581301_LINE]:
+            before = TestPrefixBoundaryNonVacuity._sixth_reviewed_parse(body)
+            after = P(body)
+            assert (before is None) == (after is None)
+            if isinstance(before, str):
+                assert before == after
+
+    def test_no_earlier_round_regressed(self):
+        """Every previously closed attack family still fails closed."""
+        for mapping in (DELTA_BLOCKING_ONE_ATTACKS, ACCEPTED_LINE_ATTACKS):
+            for name, body in mapping.items():
+                assert P(body) != APPROVE, name
+
 
 
 class TestTheScopeBoundaryHolds:
@@ -2366,6 +2715,9 @@ class TestTheGovernanceRecord:
             hashlib.sha256(
                 _git("show", f"{FIFTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
             ).hexdigest(),
+            hashlib.sha256(
+                _git("show", f"{SIXTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
+            ).hexdigest(),
             live,
         ):
             assert pin in flat, pin
@@ -2383,6 +2735,20 @@ class TestTheGovernanceRecord:
         flat = WORKSTREAMS.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
         assert fifth in flat
         assert fifth != hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+
+    def test_the_sixth_reviewed_module_identity_is_also_retained(self):
+        """Review 5022602312 supersedes a FIFTH recorded identity.
+
+        The reviewed head e4c5032 carried the corrected accepted-line rule but the
+        Unicode-wide prefix comparison. Retaining it as a negative pin means a silent
+        revert to the reviewed-and-rejected prefix handling fails.
+        """
+        sixth = hashlib.sha256(
+            _git("show", f"{SIXTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
+        ).hexdigest()
+        flat = WORKSTREAMS.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
+        assert sixth in flat
+        assert sixth != hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
 
     def test_the_register_no_longer_claims_the_pull_request_number_is_unbound(self):
         """MINOR 2 of review 5015482594: structured pr and prose must agree."""
@@ -2405,11 +2771,13 @@ class TestTheGovernanceRecord:
         flat = " ".join(self._gate_text().split())
         assert "and the bound-merge value BOTH supersede" not in flat
         assert " -- is RETAINED " not in flat
-        assert "FOUR superseded values are RETAINED" in flat
-        assert "THREE superseded values are RETAINED" not in flat
-        assert "TWO superseded values are RETAINED" not in flat
+        assert "FIVE superseded values are RETAINED" in flat
+        for superseded in ("FOUR", "THREE", "TWO"):
+            assert f"{superseded} superseded values are RETAINED" not in flat
         # the pins themselves survive the rewording -- each correction ADDS one
         for pin in (
+            "2683727fe997d5fd0b851b261b824d4a14908f5b8d5483f11146a4b74391501e",
+            "d1fa23fa487e3f796f7b283ee5e312b66244802f",
             "5d1c33a1828cd08f2d4e4aad78cc9cff77c496154e3038b212cb73f30fe7e76b",
             "d554c2f409a129dfcde408cbfa54a49f82a091b6",
             "aa34c5c7264653b8edc7e35253ada87323c6f3c3b114a786e3ada15f46950d99",

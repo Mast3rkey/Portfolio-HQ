@@ -1662,6 +1662,36 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
     # the way Markdown does is more conservative in every case: such a character now stays ON
     # its line, where it disqualifies the marker rather than manufacturing one.
     for line in body.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        # BLOCKING 1 (review 5022602312): two Unicode-wide operations decided the prefix,
+        # and they failed in OPPOSITE directions.
+        #
+        # ``.upper()`` maps some non-ASCII letters ONTO ASCII ones, so ``DISPOſITION`` and
+        # ``DıSPOSITION`` -- neither the canonical prefix -- uppercased into it and
+        # AUTHENTICATED. And an invisible or bidi code point placed INSIDE the prefix
+        # (U+200B, U+202E, U+00AD, U+2060) removed the literal substring, so an adverse
+        # first line was treated as ABSENT and SKIPPED, letting a later approval win --
+        # exactly the §D.17 failure, since none of those characters starts a new line.
+        #
+        # The two questions are therefore answered by two DIFFERENT views of the same line:
+        #
+        #   ascii_upper      -- ASCII-only case folding, and the ONLY basis for ACCEPTANCE.
+        #                       ASCII upper, lower and mixed case stay interchangeable;
+        #                       a non-ASCII character never becomes an ASCII prefix letter.
+        #   resembles_prefix -- deliberately WIDE, and the only basis for "does a reviewer
+        #                       still read this as a formal record?". It folds with Unicode
+        #                       ``.upper()`` and drops every non-printable-ASCII character,
+        #                       so both tampering families are caught. It is a strict
+        #                       SUPERSET of the canonical test, so it can only ever fail
+        #                       MORE closed, never less.
+        #
+        # A line that resembles the prefix without matching it exactly is MALFORMED, never
+        # ABSENT, so it stops the parse and no later approval can win past it.
+        ascii_upper = "".join(
+            character.upper() if "a" <= character <= "z" else character for character in line
+        )
+        resembles_prefix = FORMAL_DISPOSITION_PREFIX in "".join(
+            character for character in line.upper() if " " <= character <= "~"
+        )
         # §D.17 names code-fenced lines among the shapes that must fail closed. Fence
         # recognition follows the CommonMark fenced-code-block rules on BOTH sides of the
         # state transition, because an invalid line must never invert the state either way.
@@ -1690,7 +1720,7 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
             if run >= 3 and indent <= 3:
                 # Never skipped: an opening, closing or marker line that itself carries the
                 # formal prefix fails closed, so a later approval can never win past it (§D.17).
-                if FORMAL_DISPOSITION_PREFIX in line.upper():
+                if resembles_prefix:
                     return MALFORMED_FORMAL_DISPOSITION
                 if not fence_char:
                     # An opener. A BACKTICK fence's info string may contain no backtick; a
@@ -1708,8 +1738,12 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
                 # None of those closes the active fence.
                 continue
             # run < 3, or indentation past column three: not a fence line on either side.
-        if FORMAL_DISPOSITION_PREFIX not in line.upper():
-            continue  # not formal-looking: still ABSENT so far, keep scanning
+        if FORMAL_DISPOSITION_PREFIX not in ascii_upper:
+            if resembles_prefix:
+                # Formal-looking to a reader, but not the canonical ASCII prefix: a
+                # tampered prefix FAILS CLOSED rather than being silently skipped.
+                return MALFORMED_FORMAL_DISPOSITION
+            continue  # genuinely not formal-looking: still ABSENT, keep scanning
         if fence_char:
             return MALFORMED_FORMAL_DISPOSITION
 
@@ -1736,7 +1770,10 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
         while end > indent and line[end - 1] in " \t":
             end -= 1
         revealed = line[indent:end]
-        if not revealed.upper().startswith(FORMAL_DISPOSITION_PREFIX):
+        # ``ascii_upper`` is a character-for-character fold of ``line``, so the same slice
+        # is the ASCII-folded view of ``revealed``. Acceptance never consults ``.upper()``.
+        revealed_upper = ascii_upper[indent:end]
+        if not revealed_upper.startswith(FORMAL_DISPOSITION_PREFIX):
             if not (
                 len(revealed) >= 4
                 and revealed.startswith("**")
@@ -1746,7 +1783,7 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
             inner = revealed[2:-2]
             # A further ``*`` means nested, doubled, partial or ambiguous emphasis (§D.10); and
             # the enclosed text must itself be a plain canonical line, never prose (§D.9).
-            if "*" in inner or not inner.upper().startswith(FORMAL_DISPOSITION_PREFIX):
+            if "*" in inner or not revealed_upper[2:-2].startswith(FORMAL_DISPOSITION_PREFIX):
                 return MALFORMED_FORMAL_DISPOSITION
             revealed = inner
 

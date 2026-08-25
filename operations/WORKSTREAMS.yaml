@@ -17110,8 +17110,8 @@ workstreams:
           of those pre-existing suites -- none was additive-only. The number of INDIVIDUAL
           assertion LINES re-anchored, counted as replaced assert lines in the base-to-head
           diff, is 59. Pre-existing suites' own assertion totals moved 4237 to 4301, a net
-          increase of 64; the new suite contributes 357 assertions of its own on top, so the
-          total across the 17 changed test files moves 4237 to 4658, a net increase of 421.
+          increase of 64; the new suite contributes 397 assertions of its own on top, so the
+          total across the 17 changed test files moves 4237 to 4698, a net increase of 461.
           That category counts the CHANGED test files only -- the paths come from
           git diff --name-only BASE_SHA -- test_*.py -- and is never a repository-wide
           total, the naming DELTA review 5019911766 MINOR 1 corrected. Each re-anchored
@@ -17132,10 +17132,13 @@ workstreams:
 
           THE LOAD-BEARING DIGEST IS NOW STALE, BY DESIGN, AND IS NOT REPAIRED HERE.
           level1_stage1_execution_authorization.py is LOAD_BEARING_RELPATHS index 0. Its CURRENT
-          identity, after the DELTA review 5020912146 BLOCKING 1 bounded correction below, is
-          SHA-256 2683727fe997d5fd0b851b261b824d4a14908f5b8d5483f11146a4b74391501e, blob
-          d1fa23fa487e3f796f7b283ee5e312b66244802f. FOUR superseded values are RETAINED above
+          identity, after the DELTA review 5022602312 BLOCKING 1 bounded correction below, is
+          SHA-256 12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5, blob
+          b5622f9e412afd604a11cde04317b79c5e57920a. FIVE superseded values are RETAINED above
           and elsewhere in this register as NEGATIVE PINS, never overwritten: the
+          review-5020912146 value, SHA-256
+          2683727fe997d5fd0b851b261b824d4a14908f5b8d5483f11146a4b74391501e, blob
+          d1fa23fa487e3f796f7b283ee5e312b66244802f; the
           review-5019911766 value, SHA-256
           5d1c33a1828cd08f2d4e4aad78cc9cff77c496154e3038b212cb73f30fe7e76b, blob
           d554c2f409a129dfcde408cbfa54a49f82a091b6; the first
@@ -17163,16 +17166,17 @@ workstreams:
           probe harness is not committed, so no lawful in-suite mechanism recounts either.
           No surface claims all five are independently re-derived.
 
-          VALIDATION. New adversarial suite 972 tests; non-vacuity 619 of 972 fail at the
+          VALIDATION. New adversarial suite 1214 tests; non-vacuity 766 of 1214 fail at the
           unchanged base, measured by running the suite against a pristine base checkout whose
           module digest was verified as 4ff28941 first, never extrapolated; mutation probes
-          73 of 73 caught with 0 missed -- 6 for the fence rule as first reviewed, 6 for
-          D1-D4, 9 for D5, 5 for the opener rule, 4 for the closer and line-splitting rules,
-          2 for the record classifications, 8 for every clause of the accepted-line rule and
-          3 for the positive-control count, one of which adds a control without updating the
-          records -- positive controls 27 of 27 authenticate, 16 fence shapes and 11
-          accepted-line shapes, the claimed figure compared mechanically against the size of
-          the mapping the parametrized tests actually iterate -- every probed file
+          82 of 82 caught with 0 missed and 0 aborted -- 6 for the fence rule as first
+          reviewed, 6 for D1-D4, 9 for D5, 5 for the opener rule, 4 for the closer and
+          line-splitting rules, 2 for the record classifications, 8 for every clause of the
+          accepted-line rule, 3 for the positive-control count, one of which adds a control
+          without updating the records, and 9 for every clause of the prefix rule --
+          positive controls 35 of 35 authenticate, 16 fence shapes, 11 accepted-line shapes
+          and 8 ASCII-case shapes, the claimed figure compared mechanically against the size
+          of the single mapping the parametrized tests actually iterate -- every probed file
           restored byte-identically and SHA-256-verified; zero-write rehearsal through all three
           real consumer paths writing no lane record, no AUTHORIZATION_ROOT, no attestation, no
           claim and no results file, with both predicates still False afterwards.
