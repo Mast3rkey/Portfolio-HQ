@@ -17110,7 +17110,7 @@ workstreams:
           later, separately authorized step-8-equivalent rebinding unit, and is applied by
           nothing here.
 
-          VALIDATION. New adversarial suite 206 tests; non-vacuity 88 of 206 fail at the
+          VALIDATION. New adversarial suite 207 tests; non-vacuity 88 of 207 fail at the
           unchanged base; mutation probes 19 of 19 caught with 0 missed, every probed file
           restored byte-identically and SHA-256-verified; zero-write rehearsal through all three
           real consumer paths writing no lane record, no AUTHORIZATION_ROOT, no attestation, no

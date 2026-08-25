@@ -194,8 +194,8 @@ here.
 
 | Check | Result |
 |---|---|
-| New adversarial suite | **206 tests**, all passing |
-| Non-vacuity against the exact base | **88 of 206 fail** at the unchanged base `29e4969…` |
+| New adversarial suite | **207 tests**, all passing |
+| Non-vacuity against the exact base | **88 of 207 fail** at the unchanged base `29e4969…` |
 | Mutation probes | **19 / 19 caught, 0 missed** — every probed file restored byte-identically and SHA-256-verified |
 | Real-review blast radius | 6 real bodies parsed under both modules; **exactly one** changes |
 | Zero-write rehearsal | all three consumer paths exercised; no lane record, no `AUTHORIZATION_ROOT`, no attestation, no claim, no results file; both predicates still `False` |
