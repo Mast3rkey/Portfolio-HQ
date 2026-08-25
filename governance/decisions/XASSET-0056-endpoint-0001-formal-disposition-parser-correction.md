@@ -133,12 +133,43 @@ are all untouched.
 ### E. One disclosed behavioural addition beyond the demonstrated defect
 
 `XASSET-0053` §D.17 and §D.18.7 require **code-fenced** lines to fail closed. At the base a fenced
-line parsed as an ordinary canonical line, so a fenced approval authenticated. Closing this needs
-one boolean of line context inside the existing loop — no helper, no state machine, no framework —
-and it is implemented. It is disclosed here as a real behavioural change rather than folded
-silently into "the correction", because it fixes a shape the demonstrated defect did not itself
-exhibit. A fenced sample **below** an operative first line is unaffected, which is the real shape
-of review `5004478133`.
+line parsed as an ordinary canonical line, so a fenced approval authenticated. It is disclosed
+here as a real behavioural change rather than folded silently into "the correction", because it
+fixes a shape the demonstrated defect did not itself exhibit. A fenced sample **below** an
+operative first line is unaffected, which is the real shape of review `5004478133`.
+
+**E.1 — BLOCKING 1 (review `5015482594`): the first attempt at this was not a fence parser.**
+It toggled one shared boolean on any line beginning `` ``` `` or `~~~`, retaining neither the
+opener's marker character nor its length and never distinguishing an opener from a valid closer.
+So while inside a backtick fence, a `~~~` line, a `` ```python `` line, a shorter same-character
+run, an over-indented or tab-indented marker, or a marker carrying its own info string each
+toggled the parser **out** of a fence Markdown still holds **open**, and the approval that
+followed authenticated. A marker line whose own text carried the formal prefix was also *skipped*
+before the first-formal-line check, letting a later approval win past it.
+
+**E.2 — the bounded correction.** The **active** fence's marker character and opening length are
+retained, and exactly one shape may close it:
+
+* the **same** marker character;
+* a run of **at least** the opening length;
+* **marker and spaces only** — a closer may carry no info string;
+* at most **three columns** of indentation, a tab counted as four.
+
+A mismatched marker, a nested opener, a shorter run, an info-string marker or an over-indented
+marker **never** closes the active fence. An unclosed fence stays open. Any formal-looking content
+inside a fence returns `MALFORMED_FORMAL_DISPOSITION`, and any opening, closing or marker line
+carrying the formal prefix fails closed and is **never** skipped, preserving first-formal-line
+governance. The open verdict vocabulary, the separator grammar, the ABSENT-versus-MALFORMED
+distinction and all three consumers' legitimate ABSENT policies are untouched.
+
+The repair is confined to `parse_formal_disposition()`: no new module-level name, no new helper,
+no fourth call site, and no other definition changed since the reviewed head. Twelve adversarial
+shapes are driven through the parser and all three consumer seams; **ten** of them authenticated
+at the reviewed head, and **two** failed closed there only because their marker lines toggled the
+shared boolean an *even* number of times — an accident of parity, not a property, labelled as
+such in the suite rather than counted as reproductions, and demonstrated by a thirteenth shape
+that flips the parity back open. The BLOCKING 1 repair's own blast radius is **zero**: all six
+real lifecycle review bodies parse identically before and after it.
 
 ### E-bis. The count grammar is strict, and the permitted set stays exhaustive
 
@@ -182,10 +213,25 @@ fenced disposition sample), `5004859164`, `5005144938` and `5011963664` parse **
 
 ### G. The predecessor suites were re-anchored, never weakened
 
-Advancing this unit necessarily falsified assertions in three predecessor suites: `XASSET-0053`'s
-own suite (11), `XASSET-0055`'s own suite (5), and the PR #337 actor-evidence suite (1). Each was
-**re-anchored onto an immutable closed lifecycle fact** — its own unit's merge SHA — rather than
-against a live working tree that a lawful successor now also occupies:
+Measured **once**, with each category named precisely — the inconsistency review `5015482594`
+MINOR 3 identified, where prose said "twelve suites", a table said 17, and the register said
+"seventeen assertions across three suites":
+
+| Category | Count |
+|---|---|
+| Test files changed in total | **17** |
+| — of those, **new** (this unit's own adversarial suite) | **1** |
+| — of those, **pre-existing** suites changed | **16** |
+| Pre-existing suites in which assertions were **re-anchored** | **16** (none additive-only) |
+| Individual assertion **lines** re-anchored (replaced `assert` lines, base→head diff) | **59** |
+| Pre-existing suites' own assertion totals | 4 237 → 4 301 (**+64**) |
+| New suite's own assertions | **244** |
+| Repository-wide assertion total | 4 237 → **4 545** (**+308**) |
+
+The new suite is a **new** file, not a predecessor, and is counted in **no** "existing changed
+suites" figure. Each re-anchored assertion was moved onto an **immutable closed lifecycle fact** —
+its own unit's merge SHA — rather than against a live working tree that a lawful successor now
+also occupies:
 
 * `XASSET-0053`'s suite anchors at `683c324629544a84d2cf75ebca37325e3375c479` (PR #354's merge).
 * `XASSET-0055`'s suite anchors at `29e4969885970d942a5acecc1424fb2e2b080d60` (PR #356's merge),
@@ -211,7 +257,8 @@ it, so its bound digest is stale:
 | | |
 |---|---|
 | At the bound merge | SHA-256 `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541`, blob `f71b08b4ebe95f161c57cdbb2a924748f13af02d` |
-| Derived here | SHA-256 `55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c`, blob `07d62cabca24b278b9b458b015f0dee7f85ca24f` |
+| At the reviewed head `e573262…` (superseded, retained as a negative pin) | SHA-256 `55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c`, blob `07d62cabca24b278b9b458b015f0dee7f85ca24f` |
+| Derived here, after the BLOCKING 1 correction | SHA-256 `aa34c5c7264653b8edc7e35253ada87323c6f3c3b114a786e3ada15f46950d99`, blob `2c2e6748739ab95937231ab40b27a72738bb5e63` |
 
 That divergence is the **fail-closed hand-off** `XASSET-0055` §J describes. `_verify_git_anchored_identity()`
 is byte-identical to the base and still raises `enforcement drift`. Both authorization predicates
@@ -227,10 +274,10 @@ here.
 
 | Check | Result |
 |---|---|
-| New adversarial suite | **317 tests**, all passing |
-| Non-vacuity against the exact base | **189 of 317 fail** at the unchanged base `29e4969…` |
-| Mutation probes | **28 / 28 caught, 0 missed** — every probed file restored byte-identically and SHA-256-verified |
-| Real-review blast radius | 6 real bodies parsed under both modules; **exactly one** changes |
+| New adversarial suite | **465 tests**, all passing |
+| Non-vacuity against the exact base | **336 of 465 fail** at the unchanged base `29e4969…` |
+| Mutation probes | **36 / 36 caught, 0 missed** — including 9 covering every clause of the BLOCKING 1 fence rule; every probed file restored byte-identically and SHA-256-verified |
+| Real-review blast radius | 6 real bodies parsed base→head: **exactly one** changes; parsed reviewed-head→corrected-head: **zero** change |
 | Zero-write rehearsal | all three consumer paths exercised; no lane record, no `AUTHORIZATION_ROOT`, no attestation, no claim, no results file; both predicates still `False` |
 | Re-anchored predecessor suites | assertion counts only grew; no deletion, skip, `xfail` or relaxation |
 
@@ -260,6 +307,21 @@ whose `head_sha` is the exact merge SHA; and final post-CI verification and life
 
 **This filing does not mark its own unit complete.** It is opened as a **draft**, is not
 self-reviewed, is not principal-accepted, and is not merged in the session that authored it.
+
+**K.1 — bounded correction, review `5015482594`.** The independent FULL exact-head review of
+`29e4969…..e573262…` returned **1 BLOCKING / 0 MAJOR / 2 MINOR / 0 NOTE**. All three findings are
+resolved in one linear fast-forward correction commit, with nothing amended and nothing
+force-pushed:
+
+| Finding | Resolution |
+|---|---|
+| **BLOCKING 1** — the fence handling was not a fence parser and let a fenced approval authenticate | §E.1 / §E.2. Ten of twelve reproduced shapes authenticated at the reviewed head; all twelve now fail closed at the parser and at all three consumer seams, including against a native `APPROVED` rescue |
+| **MINOR 2** — the register's prose still said "in_progress with `pr` null" while the structured field said `pr: 357` | The prose now records that GitHub **issued** and this filing **bound** #357, and that the gate stays `in_progress` because the PR is unmerged. A test asserts the two agree |
+| **MINOR 3** — three inconsistent accounts of the predecessor-test changes | §G. Measured **once**, each category named; the same measured figures appear in the PR body, this decision, and the register. A test asserts the register carries them |
+
+The correction changes exactly one definition since the reviewed head —
+`parse_formal_disposition()` — adds no module-level name, no helper and no call site, and leaves
+every real lifecycle review body parsing identically.
 
 ## Rationale
 
@@ -291,8 +353,16 @@ permitted helper for something §C describes as devoted solely to the ABSENT/MAL
 and the validation is four lines inline.
 
 **Leaving the code-fence gap and disclosing it.** Rejected: §D.17 and §D.18.7 name code-fenced
-lines explicitly, one boolean closes it, and disclosing a requirement as a limitation when it is
-cheaply satisfiable is not the honest trade.
+lines explicitly, and disclosing a requirement as a limitation when it is cheaply satisfiable is
+not the honest trade. Review `5015482594` then showed the *first* attempt at closing it was itself
+unsound (§E.1), which does not revive this alternative — it argues for a correct fence rule, not
+for leaving the shape open.
+
+**Repairing the fence rule with a general Markdown parser, or a new helper.** Rejected: §C's
+permitted set is exhaustive and its single-helper ceiling is an option, not an entitlement. The
+correct rule is a marker character, a length, and three conditions on a closer — it fits inside
+`parse_formal_disposition()` and adds no module-level name, which is exactly what the scope tests
+now assert against the reviewed head.
 
 ## Consequences
 

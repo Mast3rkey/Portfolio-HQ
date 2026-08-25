@@ -17029,9 +17029,11 @@ workstreams:
           SS-H, filed as XASSET-0056. It implements the correction XASSET-0053 SS-C authorizes,
           within that SS-C permitted set unchanged, and supersedes and replaces PR #355 -- which
           is closed unmerged and whose identifier XASSET-0054 remains CONSUMED and is NOT
-          reused. This gate is deliberately in_progress with pr null: this filing does not mark
-          its own unmerged work complete, and its own pull-request number is bound only after
-          GitHub issues it.
+          reused. GitHub has ISSUED and this filing has BOUND pull request #357: the structured
+          pr field above records it, and the impossible sentinel -56 the first commit carried
+          was replaced in a fast-forward follow-up once the live number could be read back. The
+          gate remains in_progress because PR #357 is still UNMERGED -- this filing does not
+          mark its own unmerged work complete.
 
           PRODUCTION SCOPE, EXHAUSTIVE AND MECHANICALLY ASSERTED. Exactly FOUR existing
           top-level definitions in level1_stage1_execution_authorization.py changed --
@@ -17068,11 +17070,31 @@ workstreams:
           while a genuinely ABSENT disposition with a native APPROVED state keeps its existing
           non-adverse policy exactly.
 
-          ONE DISCLOSED ADDITION BEYOND THE DEMONSTRATED DEFECT. XASSET-0053 SS-D.17 and
-          SS-D.18.7 name code-fenced lines among the shapes that must fail closed, and at the
-          base a fenced approval authenticated. One boolean of line context inside the existing
-          loop closes it -- no helper, no state machine, no framework. It is disclosed as a real
-          behavioural change rather than folded silently into "the correction".
+          ONE DISCLOSED ADDITION BEYOND THE DEMONSTRATED DEFECT, AND ITS OWN BOUNDED
+          CORRECTION. XASSET-0053 SS-D.17 and SS-D.18.7 name code-fenced lines among the shapes
+          that must fail closed, and at the base a fenced approval authenticated. It is
+          disclosed as a real behavioural change rather than folded silently into "the
+          correction". Independent FULL exact-head review 5015482594 then found the FIRST
+          attempt at it BLOCKING: a single shared boolean toggled on ANY marker line, so while
+          inside a backtick fence a tilde marker, an info-string marker, a shorter
+          same-character run, an over-indented or tab-indented marker, or a marker carrying its
+          own info string each toggled the parser OUT of a fence Markdown still holds OPEN, and
+          the approval that followed authenticated; a marker line whose own text carried the
+          formal prefix was also SKIPPED, letting a later approval win past it. The bounded
+          correction retains the ACTIVE fence's marker CHARACTER and OPENING LENGTH and admits
+          only a syntactically valid closer -- same character, at least the opening length,
+          marker and spaces only with no info string, and at most three columns of indentation
+          with a tab counted as four. A mismatched marker, a nested opener, a shorter run, an
+          info-string marker or an over-indented marker NEVER closes the active fence, an
+          unclosed fence stays open, any formal-looking content inside a fence is MALFORMED, and
+          any opening, closing or marker line carrying the formal prefix fails closed and is
+          never skipped. The repair is confined to parse_formal_disposition: no new module-level
+          name, no new helper, no fourth call site, and no other definition changed. TWELVE
+          adversarial shapes were driven through the parser and all three consumer seams; TEN of
+          them authenticated at the reviewed head and TWO failed closed there only by even
+          marker parity -- an accident, not a property, and labelled as such in the suite rather
+          than counted as reproductions. The BLOCKING 1 repair's own blast radius is ZERO: all
+          six real lifecycle review bodies parse IDENTICALLY before and after it.
 
           BLAST RADIUS, MEASURED NOT ASSERTED. Every real lifecycle review body was parsed under
           both the base module and the corrected module. EXACTLY ONE changed -- review
@@ -17080,9 +17102,17 @@ workstreams:
           exists to fix. Reviews 4974291044, 5004478133 (which itself quotes a fenced
           disposition sample), 5004859164, 5005144938 and 5011963664 parse IDENTICALLY.
 
-          PREDECESSOR SUITES RE-ANCHORED, NEVER WEAKENED. Seventeen assertions across three
-          suites were lawfully falsified by this advance, and each was re-anchored onto an
-          IMMUTABLE CLOSED lifecycle fact -- its own unit's merge SHA -- rather than against a
+          PREDECESSOR SUITES RE-ANCHORED, NEVER WEAKENED. Measured ONCE, with each category
+          named precisely rather than conflated (the inconsistency review 5015482594 MINOR 3
+          identified): 17 test files changed in total, of which 1 is NEW (this unit's own
+          adversarial suite, which is NOT a predecessor and is counted in NO "existing changed
+          suites" figure) and 16 are PRE-EXISTING suites. Assertions were re-anchored in ALL 16
+          of those pre-existing suites -- none was additive-only. The number of INDIVIDUAL
+          assertion LINES re-anchored, counted as replaced assert lines in the base-to-head
+          diff, is 59. Pre-existing suites' own assertion totals moved 4237 to 4301, a net
+          increase of 64; the new suite contributes 244 assertions of its own on top, so the
+          repository-wide total moves 4237 to 4545, a net increase of 308. Each re-anchored
+          assertion was moved onto an IMMUTABLE CLOSED lifecycle fact -- its own unit's merge SHA -- rather than against a
           live working tree that a lawful successor now also occupies: XASSET-0053's suite at
           683c324629544a84d2cf75ebca37325e3375c479, and XASSET-0055's suite at
           29e4969885970d942a5acecc1424fb2e2b080d60, its _changed_paths now measuring its own
@@ -17097,9 +17127,11 @@ workstreams:
 
           THE LOAD-BEARING DIGEST IS NOW STALE, BY DESIGN, AND IS NOT REPAIRED HERE.
           level1_stage1_execution_authorization.py is LOAD_BEARING_RELPATHS index 0. Its CURRENT
-          identity is SHA-256
-          55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c, blob
-          07d62cabca24b278b9b458b015f0dee7f85ca24f. The bound-merge value it supersedes --
+          identity, after the BLOCKING 1 bounded correction below, is SHA-256
+          aa34c5c7264653b8edc7e35253ada87323c6f3c3b114a786e3ada15f46950d99, blob
+          2c2e6748739ab95937231ab40b27a72738bb5e63. The reviewed-head value it supersedes --
+          SHA-256 55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c, blob
+          07d62cabca24b278b9b458b015f0dee7f85ca24f -- and the bound-merge value BOTH supersede --
           SHA-256 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541, blob
           f71b08b4ebe95f161c57cdbb2a924748f13af02d -- is RETAINED above and elsewhere in this
           register as a negative pin, never overwritten. _verify_git_anchored_identity is
@@ -17110,8 +17142,8 @@ workstreams:
           later, separately authorized step-8-equivalent rebinding unit, and is applied by
           nothing here.
 
-          VALIDATION. New adversarial suite 317 tests; non-vacuity 189 of 317 fail at the
-          unchanged base; mutation probes 28 of 28 caught with 0 missed, every probed file
+          VALIDATION. New adversarial suite 465 tests; non-vacuity 336 of 465 fail at the
+          unchanged base; mutation probes 36 of 36 caught with 0 missed, every probed file
           restored byte-identically and SHA-256-verified; zero-write rehearsal through all three
           real consumer paths writing no lane record, no AUTHORIZATION_ROOT, no attestation, no
           claim and no results file, with both predicates still False afterwards.

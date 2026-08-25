@@ -1653,18 +1653,45 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
     """
     if not isinstance(body, str):
         return None
-    inside_code_fence = False
+    fence_char = ""  # "" means NOT inside a fence; otherwise the OPENING marker character
+    fence_len = 0  # and the OPENING marker's run length
     for line in body.splitlines():
         stripped = line.strip()
-        # §D.17 names code-fenced lines among the shapes that must fail closed. A fence is the
-        # one unsupported shape not visible in the line itself, so it needs this single boolean
-        # of context and nothing more. An unclosed fence leaves the flag set, which fails closed.
-        if stripped.startswith("```") or stripped.startswith("~~~"):
-            inside_code_fence = not inside_code_fence
-            continue
+        # §D.17 names code-fenced lines among the shapes that must fail closed. BLOCKING 1
+        # (review 5015482594): a single shared boolean was toggled by ANY line starting with a
+        # marker, so while inside a backtick fence a ``~~~`` line, a ```` ```python ```` line, a
+        # shorter same-character run or an over-indented marker each toggled the parser OUT of a
+        # fence Markdown still holds OPEN -- and the approval that followed authenticated. The
+        # ACTIVE fence's marker character and opening length are retained instead, and only a
+        # syntactically valid closer may end it. An unclosed fence stays open: that fails closed.
+        marker = stripped[:1]
+        if marker in ("`", "~"):
+            run = len(stripped) - len(stripped.lstrip(marker))
+            if run >= 3:
+                # Never skipped: an opening, closing or marker line that itself carries the
+                # formal prefix fails closed, so a later approval can never win past it (§D.17).
+                if FORMAL_DISPOSITION_PREFIX in stripped.upper():
+                    return MALFORMED_FORMAL_DISPOSITION
+                if not fence_char:
+                    fence_char, fence_len = marker, run  # an opening fence
+                elif (
+                    marker == fence_char  # same marker character
+                    and run >= fence_len  # at least the opening length
+                    and not stripped[run:].strip()  # marker and spaces only, no info string
+                    # a closer may carry at most three columns of indentation (tab == 4)
+                    and sum(
+                        4 if c == "\t" else 1
+                        for c in line[: len(line) - len(line.lstrip())]
+                    )
+                    <= 3
+                ):
+                    fence_char, fence_len = "", 0  # the ONE shape that may close it
+                # else: a mismatched marker, a nested opener, a shorter run, an info string or
+                # an over-indented marker. None of those closes the active fence.
+                continue
         if FORMAL_DISPOSITION_PREFIX not in stripped.upper():
             continue  # not formal-looking: still ABSENT so far, keep scanning
-        if inside_code_fence:
+        if fence_char:
             return MALFORMED_FORMAL_DISPOSITION
 
         # --- the two accepted wrapper forms, and nothing else (§D.2, §D.16) ---------------

@@ -26,6 +26,8 @@ from __future__ import annotations
 import ast
 import hashlib
 import subprocess
+import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -1020,6 +1022,333 @@ class TestEveryRealReviewParsesIdenticallyExceptTheDefectiveOne:
 
 
 # =====================================================================================
+# 7-ter. BLOCKING 1 (review 5015482594) -- a fence must be a REAL fence
+# =====================================================================================
+
+#: The reviewed head that review 5015482594 was anchored to. Every attack below AUTHENTICATED
+#: there; each non-vacuity test proves that against the real historical module, by EXECUTING it,
+#: never by matching its text.
+REVIEWED_HEAD_SHA = "e5732620606628051c93c5fbccdbc74037405c2e"
+
+BT = "`" * 3
+BT4 = "`" * 4
+TL = "~" * 3
+
+#: Every shape that Markdown still renders INSIDE the opening fence, but which the reviewed
+#: head's single shared boolean toggled its way out of. Keyed by the review's own description.
+FENCE_ESCAPE_ATTACKS: dict[str, str] = {
+    "mismatched tilde marker inside a backtick fence": f"{BT}\n{TL}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "info-string marker inside a backtick fence": f"{BT}\n{BT}python\n{PREFIX} {APPROVE}\n{BT}\n",
+    "shorter same-character marker cannot close": f"{BT4}\n{BT}\n{PREFIX} {APPROVE}\n{BT4}\n",
+    "mismatched backtick marker inside a tilde fence": f"{TL}\n{BT}\n{PREFIX} {APPROVE}\n{TL}\n",
+    "a closer carrying an info string is not a closer": f"{BT}\n{BT}tail\n{PREFIX} {APPROVE}\n{BT}\n",
+    "an over-indented marker cannot close": f"{BT}\n    {BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "a tab-indented marker cannot close": f"{BT}\n\t{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "a nested opener does not close the active fence": f"{BT}\n{BT}\n{BT}\n{PREFIX} {APPROVE}\n",
+}
+
+#: A fence-marker line whose own text carries the formal prefix. It must NEVER be skipped, so a
+#: later, better-formed approval can never win past it.
+MARKER_LINES_CARRYING_THE_PREFIX: dict[str, str] = {
+    "an OPENING marker's info string carries an adverse verdict":
+        f"{BT} {PREFIX} CHANGES REQUIRED\ncode\n{BT}\n{PREFIX} {APPROVE}\n",
+    "a CLOSING-shaped marker line carries an adverse verdict":
+        f"{BT}\ncode\n{BT} {PREFIX} CHANGES REQUIRED\n{PREFIX} {APPROVE}\n",
+    "a nested marker line carries an adverse verdict":
+        f"{BT}\n{TL} {PREFIX} CHANGES REQUIRED\n{BT}\n{PREFIX} {APPROVE}\n",
+    "a tilde marker's info string carries an adverse verdict":
+        f"{TL} {PREFIX} CHANGES REQUIRED\n{TL}\n{PREFIX} {APPROVE}\n",
+}
+
+ALL_BLOCKING_ONE_ATTACKS: dict[str, str] = {
+    **FENCE_ESCAPE_ATTACKS,
+    **MARKER_LINES_CARRYING_THE_PREFIX,
+}
+
+#: Two of the twelve shapes happened to fail closed at the reviewed head as well -- not because
+#: that parser understood fences, but because their marker lines toggled the shared boolean an
+#: EVEN number of times. That is an accident of parity, not a property: adding or removing one
+#: marker line flips it. They are kept as hardening guards and are named here so the non-vacuity
+#: measurement below states the truth rather than over-claiming twelve reproductions.
+PARITY_ACCIDENT_GUARDS: frozenset[str] = frozenset(
+    {
+        "a nested opener does not close the active fence",
+        "a nested marker line carries an adverse verdict",
+    }
+)
+
+#: Measured, not assumed: the shapes that really did authenticate at the reviewed head.
+BLOCKING_ONE_REPRODUCTIONS: tuple[str, ...] = tuple(
+    sorted(set(ALL_BLOCKING_ONE_ATTACKS) - PARITY_ACCIDENT_GUARDS)
+)
+
+
+_REVIEWED_HEAD_MODULE: "types.ModuleType | None" = None
+
+
+def _reviewed_head_module() -> "types.ModuleType":
+    """Import the module EXACTLY as review 5015482594 saw it, once.
+
+    A real module object is registered in ``sys.modules`` before execution because the module
+    defines ``@dataclass`` types, which resolve their own module during class creation.
+    """
+    global _REVIEWED_HEAD_MODULE
+    if _REVIEWED_HEAD_MODULE is None:
+        name = "_reviewed_head_" + REVIEWED_HEAD_SHA[:12]
+        module = types.ModuleType(name)
+        module.__file__ = str(ROOT / MODULE_RELPATH)
+        sys.modules[name] = module
+        source = _git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+        exec(compile(source, module.__file__, "exec"), module.__dict__)
+        _REVIEWED_HEAD_MODULE = module
+    return _REVIEWED_HEAD_MODULE
+
+
+def _reviewed_head_parse(body: str):
+    """Parse ``body`` with the reviewed head's own parser.
+
+    Executes the historical module rather than matching its text, so non-vacuity here is a
+    behavioural fact about the reviewed head and not a claim about its source.
+    """
+    return _reviewed_head_module().parse_formal_disposition(body)
+
+
+class TestBlockingOneFenceEscapes:
+    """The parser seam. Every attack must fail CLOSED, and must have authenticated before."""
+
+    @pytest.mark.parametrize("name", sorted(ALL_BLOCKING_ONE_ATTACKS))
+    def test_the_attack_now_fails_closed(self, name):
+        assert P(ALL_BLOCKING_ONE_ATTACKS[name]) is MALFORMED
+
+    @pytest.mark.parametrize("name", sorted(ALL_BLOCKING_ONE_ATTACKS))
+    def test_the_attack_never_yields_the_approval(self, name):
+        assert P(ALL_BLOCKING_ONE_ATTACKS[name]) != APPROVE
+
+    @pytest.mark.parametrize("name", BLOCKING_ONE_REPRODUCTIONS)
+    def test_the_attack_really_authenticated_at_the_reviewed_head(self, name):
+        """Non-vacuity: BLOCKING 1 was real, measured by EXECUTING the reviewed head."""
+        assert _reviewed_head_parse(ALL_BLOCKING_ONE_ATTACKS[name]) == APPROVE
+
+    @pytest.mark.parametrize("name", sorted(PARITY_ACCIDENT_GUARDS))
+    def test_the_parity_guards_are_honestly_labelled(self, name):
+        """These two failed closed at the reviewed head only by EVEN marker parity."""
+        reviewed = _reviewed_head_module()
+        assert (
+            _reviewed_head_parse(ALL_BLOCKING_ONE_ATTACKS[name])
+            is reviewed.MALFORMED_FORMAL_DISPOSITION
+        )
+
+    def test_the_reproduction_count_is_measured_not_asserted(self):
+        """Ten of twelve shapes authenticated at the reviewed head; two did not."""
+        reviewed = _reviewed_head_module()
+        authenticated = {
+            name
+            for name, body in ALL_BLOCKING_ONE_ATTACKS.items()
+            if reviewed.parse_formal_disposition(body) == APPROVE
+        }
+        assert authenticated == set(BLOCKING_ONE_REPRODUCTIONS)
+        assert len(authenticated) == 10
+        assert len(PARITY_ACCIDENT_GUARDS) == 2
+        assert len(ALL_BLOCKING_ONE_ATTACKS) == 12
+
+    def test_a_single_extra_marker_line_flips_a_parity_guard_open(self):
+        """Why parity is an accident, not a property.
+
+        Three backtick markers then a tilde marker. Markdown pairs the first two, re-opens on
+        the third, and treats the tilde line as CONTENT of that still-open fence -- so the
+        approval below it is fenced. The reviewed head simply counted four toggles, landed on
+        ``False``, and authenticated it.
+        """
+        flipped = f"{BT}\n{BT}\n{BT}\n{TL}\n{PREFIX} {APPROVE}\n"
+        assert _reviewed_head_parse(flipped) == APPROVE
+        assert P(flipped) is MALFORMED
+
+    @pytest.mark.parametrize("name", sorted(ALL_BLOCKING_ONE_ATTACKS))
+    def test_the_attack_is_malformed_not_absent(self, name):
+        """§D.19: an unsupported shape is never allowed to masquerade as ABSENT."""
+        assert P(ALL_BLOCKING_ONE_ATTACKS[name]) is not None
+
+
+class TestBlockingOneValidClosersStillClose:
+    """The correction may only TIGHTEN. A syntactically valid closer must still close."""
+
+    def test_an_exactly_matching_closer_closes_the_fence(self):
+        body = f"{BT}\ncode\n{BT}\n{PREFIX} {APPROVE}\n"
+        assert P(body) == APPROVE
+
+    def test_a_longer_closer_closes_the_fence(self):
+        """CommonMark: a closer needs AT LEAST the opening length, not exactly it."""
+        body = f"{BT}\ncode\n{BT4}\n{PREFIX} {APPROVE}\n"
+        assert P(body) == APPROVE
+
+    def test_a_tilde_fence_closes_on_its_own_marker(self):
+        body = f"{TL}\ncode\n{TL}\n{PREFIX} {APPROVE}\n"
+        assert P(body) == APPROVE
+
+    @pytest.mark.parametrize("indent", ["", " ", "  ", "   "])
+    def test_a_closer_indented_up_to_three_columns_closes(self, indent):
+        body = f"{BT}\ncode\n{indent}{BT}\n{PREFIX} {APPROVE}\n"
+        assert P(body) == APPROVE
+
+    def test_a_closer_with_trailing_spaces_closes(self):
+        body = f"{BT}\ncode\n{BT}   \n{PREFIX} {APPROVE}\n"
+        assert P(body) == APPROVE
+
+    def test_a_two_character_run_is_not_a_fence_marker_at_all(self):
+        assert P(f"``\n{PREFIX} {APPROVE}\n") == APPROVE
+
+    def test_a_reopened_fence_after_a_valid_close_still_fences(self):
+        body = f"{BT}\na\n{BT}\n{BT}\n{PREFIX} {APPROVE}\n{BT}\n"
+        assert P(body) is MALFORMED
+
+
+class TestBlockingOnePreservedInvariants:
+    """Everything BLOCKING 1's repair was forbidden to disturb."""
+
+    def test_first_formal_line_governance_is_preserved(self):
+        """The real shape of review 5004478133: a fenced sample BELOW an operative line."""
+        body = (
+            f"{PREFIX} BOUNDED CORRECTION REQUIRED — 1 BLOCKING / 0 MAJOR\n"
+            f"\n{BT}\n{TL}\n{PREFIX} {APPROVE}\n{BT}\n"
+        )
+        assert P(body) == "BOUNDED CORRECTION REQUIRED"
+
+    def test_absent_is_still_absent_when_a_fence_never_opens(self):
+        assert P("no disposition here at all\n") is None
+
+    def test_a_body_of_only_fences_is_absent_not_malformed(self):
+        assert P(f"{BT}\ncode\n{BT}\n") is None
+
+    def test_the_open_verdict_vocabulary_survives(self):
+        body = f"{BT}\ncode\n{BT}\n{PREFIX} SOME ENTIRELY NEW VERDICT\n"
+        assert P(body) == "SOME ENTIRELY NEW VERDICT"
+
+    def test_the_separator_grammar_still_applies_after_a_closed_fence(self):
+        good = f"{BT}\ncode\n{BT}\n{PREFIX} {APPROVE} — 0 BLOCKING / 1 MINOR\n"
+        bad = f"{BT}\ncode\n{BT}\n{PREFIX} {APPROVE} — anything at all\n"
+        assert P(good) == APPROVE
+        assert P(bad) is MALFORMED
+
+    def test_the_bold_wrapper_still_works_after_a_closed_fence(self):
+        body = f"{BT}\ncode\n{BT}\n**{PREFIX} {APPROVE}**\n"
+        assert P(body) == APPROVE
+
+    def test_every_real_review_body_is_unchanged_by_this_correction(self):
+        """Blast radius of the BLOCKING 1 repair, measured: ZERO real reviews change."""
+        for body in list(REAL_REVIEW_BODIES.values()) + [REVIEW_5000581301_LINE]:
+            before, after = _reviewed_head_parse(body), P(body)
+            reviewed_malformed = _reviewed_head_module().MALFORMED_FORMAL_DISPOSITION
+            classify = lambda v, mal: (  # noqa: E731
+                "MALFORMED" if v is mal else "ABSENT" if v is None else v
+            )
+            assert classify(before, reviewed_malformed) == classify(after, MALFORMED)
+
+    def test_this_reviews_own_adverse_body_parses_to_its_true_verdict(self):
+        """Review 5015482594's own first line, with its validated finding-count suffix."""
+        body = (
+            f"{PREFIX} BOUNDED CORRECTION REQUIRED — 1 BLOCKING / 0 MAJOR / 2 MINOR / 0 NOTE\n"
+            f"\nIndependent FULL exact-head review of `{BASE_SHA}..{REVIEWED_HEAD_SHA}`.\n"
+        )
+        assert P(body) == "BOUNDED CORRECTION REQUIRED"
+
+
+class TestBlockingOneAtTheThreeConsumerSeams:
+    """The same attacks, driven through every real production consumer."""
+
+    @pytest.mark.parametrize("name", sorted(ALL_BLOCKING_ONE_ATTACKS))
+    def test_consumer_one_stops_at_the_parser_gate(self, name, monkeypatch):
+        recorder = _run_consumer_one(ALL_BLOCKING_ONE_ATTACKS[name], monkeypatch)
+        assert not any(c.startswith("reviews:") for c in recorder.calls), recorder.calls
+
+    @pytest.mark.parametrize("name", sorted(ALL_BLOCKING_ONE_ATTACKS))
+    def test_consumer_one_refuses_even_with_a_native_approved_state(self, name, monkeypatch):
+        recorder = _run_consumer_one(
+            ALL_BLOCKING_ONE_ATTACKS[name], monkeypatch, state="APPROVED"
+        )
+        assert not any(c.startswith("reviews:") for c in recorder.calls), recorder.calls
+
+    @pytest.mark.parametrize("name", sorted(ALL_BLOCKING_ONE_ATTACKS))
+    def test_consumer_two_reports_the_malformed_error(self, name):
+        errors = _run_consumer_two(ALL_BLOCKING_ONE_ATTACKS[name])
+        assert any("is not in an accepted form" in e for e in errors), errors
+        assert not any("carries no parseable" in e for e in errors), errors
+
+    @pytest.mark.parametrize("name", sorted(ALL_BLOCKING_ONE_ATTACKS))
+    def test_consumer_two_refuses_even_with_a_native_approved_state(self, name):
+        errors = _run_consumer_two(ALL_BLOCKING_ONE_ATTACKS[name], state="APPROVED")
+        assert any("is not in an accepted form" in e for e in errors), errors
+
+    @pytest.mark.parametrize("name", sorted(ALL_BLOCKING_ONE_ATTACKS))
+    def test_consumer_three_fails_finality_despite_a_native_approved_state(self, name):
+        """§D.20.2 -- the load-bearing seam: a native APPROVED never rescues MALFORMED."""
+        errors = _run_consumer_three(ALL_BLOCKING_ONE_ATTACKS[name], "APPROVED")
+        assert errors
+        assert any("not in an accepted form" in e for e in errors), errors
+
+    @pytest.mark.parametrize("name", BLOCKING_ONE_REPRODUCTIONS)
+    def test_consumer_three_was_silent_at_the_reviewed_head(self, name):
+        """Non-vacuity at the consumer seam, established from the reviewed head's own verdict.
+
+        Consumer 3 treats an approving verdict as "a later approving pass is not adverse" and
+        moves on, so a verdict of APPROVE at the reviewed head is exactly finality falling
+        silent over a review Markdown still renders as fenced.
+        """
+        assert _reviewed_head_parse(ALL_BLOCKING_ONE_ATTACKS[name]) == APPROVE
+
+    def test_consumer_three_still_preserves_the_genuinely_absent_policy(self):
+        """§D.20.1 -- ABSENT + native APPROVED stays non-adverse. Untouched by this repair."""
+        assert _run_consumer_three("Looks fine, shipping it.", "APPROVED") == []
+
+
+class TestBlockingOneCorrectionShape:
+    """The repair is confined to the parser and introduces no new surface."""
+
+    def test_the_repair_lives_only_inside_the_parser(self):
+        live = _toplevel(_live_source())
+        assert "fence_char" in live["parse_formal_disposition"]
+        for name, source in live.items():
+            if name != "parse_formal_disposition":
+                assert "fence_char" not in source, name
+
+    def test_the_single_shared_boolean_is_gone(self):
+        live = _live_source()
+        assert "inside_code_fence" not in live
+        assert "inside_code_fence" in _git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+
+    def test_the_repair_added_no_module_level_name(self):
+        reviewed = _git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+
+        def names(source: str) -> set[str]:
+            found = set()
+            for node in ast.parse(source).body:
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    found.add(node.name)
+                elif isinstance(node, ast.Assign):
+                    found.update(t.id for t in node.targets if isinstance(t, ast.Name))
+                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                    found.add(node.target.id)
+            return found
+
+        assert names(_live_source()) == names(reviewed)
+
+    def test_the_repair_added_no_call_site(self):
+        assert len(_call_sites(_live_source())) == 3
+        assert len(_call_sites(_git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}"))) == 3
+
+    def test_only_the_parser_changed_since_the_reviewed_head(self):
+        reviewed = _toplevel(_git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}"))
+        live = _toplevel(_live_source())
+        changed = {n for n in live if reviewed.get(n) != live[n]}
+        assert changed == {"parse_formal_disposition"}, sorted(changed)
+
+    def test_the_closer_rule_names_all_three_conditions(self):
+        parser = _toplevel(_live_source())["parse_formal_disposition"]
+        assert "marker == fence_char" in parser  # same character
+        assert "run >= fence_len" in parser  # at least the opening length
+        assert "stripped[run:].strip()" in parser  # marker and spaces only
+
+
+# =====================================================================================
 # 8. The scope boundary -- exhaustively, against the base
 # =====================================================================================
 
@@ -1330,3 +1659,37 @@ class TestTheGovernanceRecord:
     def test_the_superseded_module_identity_is_retained_as_a_negative_pin(self):
         flat = WORKSTREAMS.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
         assert BASE_MODULE_SHA256 in flat
+
+    def test_the_reviewed_head_module_identity_is_also_retained(self):
+        """BLOCKING 1's correction supersedes a value the register already recorded.
+
+        Both superseded identities stay as negative pins, so a silent revert to EITHER of them
+        fails rather than quietly reinstating a reviewed-and-rejected parser.
+        """
+        reviewed = hashlib.sha256(
+            _git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
+        ).hexdigest()
+        flat = WORKSTREAMS.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
+        assert reviewed in flat
+        assert reviewed != hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+
+    def test_the_register_no_longer_claims_the_pull_request_number_is_unbound(self):
+        """MINOR 2 of review 5015482594: structured pr and prose must agree."""
+        text = WORKSTREAMS.read_text(encoding="utf-8")
+        gate = text.split("gate: xasset0056-formal-disposition-parser-correction", 1)[1]
+        gate = gate.split("      - gate:", 1)[0]
+        assert "in_progress with pr null" not in gate
+        assert "pr: 357" in gate
+        assert "status: in_progress" in gate
+        assert "BOUND pull request #357" in gate
+
+    def test_the_register_states_one_measured_test_change_account(self):
+        """MINOR 3 of review 5015482594: one measurement, categories named precisely."""
+        text = WORKSTREAMS.read_text(encoding="utf-8")
+        gate = text.split("gate: xasset0056-formal-disposition-parser-correction", 1)[1]
+        gate = gate.split("      - gate:", 1)[0]
+        flat = " ".join(gate.split())
+        assert "17 test files changed in total" in flat
+        assert "16 are PRE-EXISTING suites" in flat
+        assert "assertion LINES re-anchored" in flat
+        assert "seventeen assertions across three suites" not in flat
