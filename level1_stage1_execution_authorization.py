@@ -1662,7 +1662,6 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
     # the way Markdown does is more conservative in every case: such a character now stays ON
     # its line, where it disqualifies the marker rather than manufacturing one.
     for line in body.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
-        stripped = line.strip()
         # §D.17 names code-fenced lines among the shapes that must fail closed. Fence
         # recognition follows the CommonMark fenced-code-block rules on BOTH sides of the
         # state transition, because an invalid line must never invert the state either way.
@@ -1709,13 +1708,34 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
                 # None of those closes the active fence.
                 continue
             # run < 3, or indentation past column three: not a fence line on either side.
-        if FORMAL_DISPOSITION_PREFIX not in stripped.upper():
+        if FORMAL_DISPOSITION_PREFIX not in line.upper():
             continue  # not formal-looking: still ABSENT so far, keep scanning
         if fence_char:
             return MALFORMED_FORMAL_DISPOSITION
 
         # --- the two accepted wrapper forms, and nothing else (§D.2, §D.16) ---------------
-        revealed = stripped
+        # BLOCKING 1 (review 5020912146): the accepted form is decided on the RAW line. A broad
+        # ``line.strip()`` erased exactly the characters the line and fence layers had just
+        # preserved, so FOUR ASCII spaces or a leading tab -- an INDENTED CODE BLOCK, whose
+        # contents are literal code and can never authenticate (§D.8) -- and a leading vertical
+        # tab, non-breaking space or U+2028 all reached the prefix test with the offending
+        # character already gone, and authenticated.
+        #
+        # ``indent`` above counts ASCII spaces ONLY, so it is reused here unchanged: four or
+        # more columns is code, and a tab never advances it, so a tab-indented line simply
+        # fails the prefix test below. Zero to three ASCII spaces are kept because CommonMark
+        # treats them as INSIGNIFICANT within a paragraph -- such a line renders identically to
+        # an unindented one, so accepting it admits no second form and does not expand the
+        # grammar §D.16 fixes at exactly two.
+        if indent > 3:
+            return MALFORMED_FORMAL_DISPOSITION
+        # Trailing padding is trimmed with ASCII spaces and tabs ONLY. A trailing non-breaking
+        # space, vertical tab or U+2028 therefore SURVIVES into the region and is refused by
+        # whole-verdict inequality (§C.4) rather than being normalized into the approval.
+        end = len(line)
+        while end > indent and line[end - 1] in " \t":
+            end -= 1
+        revealed = line[indent:end]
         if not revealed.upper().startswith(FORMAL_DISPOSITION_PREFIX):
             if not (
                 len(revealed) >= 4
@@ -1730,7 +1750,7 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
                 return MALFORMED_FORMAL_DISPOSITION
             revealed = inner
 
-        region = revealed[len(FORMAL_DISPOSITION_PREFIX):].strip()
+        region = revealed[len(FORMAL_DISPOSITION_PREFIX):].strip(" \t")
 
         # --- §E.3: the EARLIEST recognized separator governs, never tuple order ------------
         # Splitting on each separator in tuple order let ``<approval> | <adverse> — 0 BLOCKING``
@@ -1743,7 +1763,7 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
         if earliest is None:
             return region  # §C.1: the ENTIRE region is the verdict, verbatim
 
-        verdict = region[: earliest[0]].strip()
+        verdict = region[: earliest[0]].strip(" \t")
         suffix = region[earliest[0] + len(earliest[1]):].strip(" ")
         # §E.1/§E.2: a recognized separator suffix is finding-count metadata and is VALIDATED,
         # never discarded unread. Grammar: count ( "/" count )*, count := digits SPACE CATEGORY.

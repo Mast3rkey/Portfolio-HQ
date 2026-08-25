@@ -17110,8 +17110,8 @@ workstreams:
           of those pre-existing suites -- none was additive-only. The number of INDIVIDUAL
           assertion LINES re-anchored, counted as replaced assert lines in the base-to-head
           diff, is 59. Pre-existing suites' own assertion totals moved 4237 to 4301, a net
-          increase of 64; the new suite contributes 314 assertions of its own on top, so the
-          total across the 17 changed test files moves 4237 to 4615, a net increase of 378.
+          increase of 64; the new suite contributes 357 assertions of its own on top, so the
+          total across the 17 changed test files moves 4237 to 4658, a net increase of 421.
           That category counts the CHANGED test files only -- the paths come from
           git diff --name-only BASE_SHA -- test_*.py -- and is never a repository-wide
           total, the naming DELTA review 5019911766 MINOR 1 corrected. Each re-anchored
@@ -17132,10 +17132,13 @@ workstreams:
 
           THE LOAD-BEARING DIGEST IS NOW STALE, BY DESIGN, AND IS NOT REPAIRED HERE.
           level1_stage1_execution_authorization.py is LOAD_BEARING_RELPATHS index 0. Its CURRENT
-          identity, after the DELTA review 5019911766 BLOCKING 1 bounded correction below, is
-          SHA-256 5d1c33a1828cd08f2d4e4aad78cc9cff77c496154e3038b212cb73f30fe7e76b, blob
-          d554c2f409a129dfcde408cbfa54a49f82a091b6. THREE superseded values are RETAINED above
-          and elsewhere in this register as NEGATIVE PINS, never overwritten: the first
+          identity, after the DELTA review 5020912146 BLOCKING 1 bounded correction below, is
+          SHA-256 2683727fe997d5fd0b851b261b824d4a14908f5b8d5483f11146a4b74391501e, blob
+          d1fa23fa487e3f796f7b283ee5e312b66244802f. FOUR superseded values are RETAINED above
+          and elsewhere in this register as NEGATIVE PINS, never overwritten: the
+          review-5019911766 value, SHA-256
+          5d1c33a1828cd08f2d4e4aad78cc9cff77c496154e3038b212cb73f30fe7e76b, blob
+          d554c2f409a129dfcde408cbfa54a49f82a091b6; the first
           corrected value, SHA-256
           aa34c5c7264653b8edc7e35253ada87323c6f3c3b114a786e3ada15f46950d99, blob
           2c2e6748739ab95937231ab40b27a72738bb5e63; the reviewed-head
@@ -17160,13 +17163,16 @@ workstreams:
           probe harness is not committed, so no lawful in-suite mechanism recounts either.
           No surface claims all five are independently re-derived.
 
-          VALIDATION. New adversarial suite 736 tests; non-vacuity 473 of 736 fail at the
+          VALIDATION. New adversarial suite 972 tests; non-vacuity 619 of 972 fail at the
           unchanged base, measured by running the suite against a pristine base checkout whose
           module digest was verified as 4ff28941 first, never extrapolated; mutation probes
-          62 of 62 caught with 0 missed -- 6 for the BLOCKING 1 fence rule as reviewed, 6 for
-          D1-D4, 9 for D5, one of which adds a test without updating the records, 5 for every
-          clause of the DELTA opener rule, 4 for the DELTA closer and line-splitting rules and
-          2 for the DELTA record classifications -- every probed file
+          73 of 73 caught with 0 missed -- 6 for the fence rule as first reviewed, 6 for
+          D1-D4, 9 for D5, 5 for the opener rule, 4 for the closer and line-splitting rules,
+          2 for the record classifications, 8 for every clause of the accepted-line rule and
+          3 for the positive-control count, one of which adds a control without updating the
+          records -- positive controls 27 of 27 authenticate, 16 fence shapes and 11
+          accepted-line shapes, the claimed figure compared mechanically against the size of
+          the mapping the parametrized tests actually iterate -- every probed file
           restored byte-identically and SHA-256-verified; zero-write rehearsal through all three
           real consumer paths writing no lane record, no AUTHORIZATION_ROOT, no attestation, no
           claim and no results file, with both predicates still False afterwards.

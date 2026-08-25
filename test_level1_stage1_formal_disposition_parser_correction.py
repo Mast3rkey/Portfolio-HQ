@@ -313,15 +313,23 @@ class TestTheFindingCountSuffixGrammar:
     def test_a_trailing_tab_at_end_of_line_is_base_behaviour_not_this_corrections_scope(self):
         """Disclosed precisely rather than overclaimed.
 
-        A tab at the very END of the line is removed by the pre-existing whole-line
-        ``line.strip()`` before any grammar runs. That strip is byte-identical to the base and
-        is not this correction's to change, so the outcome here is IDENTICAL to the base. Every
-        tab that survives that strip is rejected, which is the test immediately above.
+        A tab at the very END of the line is trimmed before any grammar runs, so the outcome
+        here is IDENTICAL to the base. Every tab that survives that trim is rejected, which is
+        the test immediately above.
+
+        RE-ANCHORED for DELTA review 5020912146. The base did this with a whole-line
+        ``line.strip()``; that broad strip is exactly what BLOCKING 1 required removing, so the
+        premise "not this correction's to change" is superseded. The trim is now explicit --
+        ASCII spaces and tabs only -- which is why the BEHAVIOUR is unchanged while the
+        mechanism is not. Both ends are pinned: the base form is gone, the explicit form is
+        present, and the observable outcome still matches the base.
         """
         body = f"{PREFIX} {APPROVE} \u2014 0 BLOCKING\t"
         assert P(body) == APPROVE
+        assert _base_module().parse_formal_disposition(body) == APPROVE  # identical to base
         assert "stripped = line.strip()" in _base_source()
-        assert "stripped = line.strip()" in _live_source()
+        assert "stripped = line.strip()" not in _live_source()  # the broad strip is gone
+        assert 'line[end - 1] in " \\t"' in _live_source()  # replaced by an explicit trim
 
     def test_a_suffix_is_never_discarded_unread(self):
         """§E.1: the pre-correction parser split and threw the suffix away."""
@@ -1619,7 +1627,7 @@ class TestDeltaBlockingOneCorrectionShape:
         """The specific defect: strip()/lstrip() treated NBSP and friends as indentation."""
         parser = _toplevel(_live_source())["parse_formal_disposition"]
         start = parser.index("indent = 0")
-        end = parser.index("if FORMAL_DISPOSITION_PREFIX not in stripped.upper()")
+        end = parser.index("if FORMAL_DISPOSITION_PREFIX not in line.upper()")
         fence_block = parser[start:end]
         for banned in (".strip()", ".lstrip()", ".rstrip()", "isspace()"):
             assert banned not in fence_block, banned
@@ -1666,6 +1674,317 @@ class TestDeltaBlockingOneCorrectionShape:
 # =====================================================================================
 # 8. The scope boundary -- exhaustively, against the base
 # =====================================================================================
+
+
+
+# ======================================================================================
+# DELTA review 5020912146 BLOCKING 1 -- the ACCEPTED-LINE boundary
+#
+# The fence state machine was materially correct, but the very next step began with
+# ``stripped = line.strip()`` and decided the accepted form from THAT value -- erasing
+# exactly the indentation and control characters the line and fence layers had just
+# preserved. Four ASCII spaces or a leading tab is an INDENTED CODE BLOCK under
+# CommonMark, whose contents are literal code and can never authenticate (XASSET-0053
+# SS-D.8); a leading vertical tab, non-breaking space or U+2028 is not either accepted
+# wrapper form (SS-D.16) and must fail closed (SS-D.17). All of them authenticated.
+#
+# MEASURED at the reviewed head 840cd74, not asserted: 16 of the 17 shapes below
+# authenticated there, and they produced 80 bypasses across the three consumer seams.
+# ======================================================================================
+
+FIFTH_REVIEWED_HEAD_SHA = "840cd74ef020f328583ab88ec02967bb9c414e20"
+
+_LINE = f"{PREFIX} {APPROVE}"
+_BOLD = f"**{_LINE}**"
+
+#: The five bodies review 5020912146 names verbatim.
+ACCEPTED_LINE_NAMED_ATTACKS: dict[str, str] = {
+    "four ASCII spaces -- an indented code block": f"    {_LINE}\n",
+    "a leading tab -- four columns, also code": f"\t{_LINE}\n",
+    "a leading vertical tab U+000B": f"\x0b{_LINE}\n",
+    "a leading non-breaking space U+00A0": f"\u00a0{_LINE}\n",
+    "a leading line separator U+2028": f"\u2028{_LINE}\n",
+}
+
+#: The same defect moved to the whole-line-bold form, and to the trailing edge, so a
+#: broad strip cannot simply reappear somewhere else on the accepted-line path.
+ACCEPTED_LINE_VARIANT_ATTACKS: dict[str, str] = {
+    "four ASCII spaces, whole-line bold": f"    {_BOLD}\n",
+    "a leading tab, whole-line bold": f"\t{_BOLD}\n",
+    "a leading vertical tab, whole-line bold": f"\x0b{_BOLD}\n",
+    "a leading non-breaking space, whole-line bold": f"\u00a0{_BOLD}\n",
+    "a leading line separator, whole-line bold": f"\u2028{_BOLD}\n",
+    "five ASCII spaces": f"     {_LINE}\n",
+    "three ASCII spaces then a tab": f"   \t{_LINE}\n",
+    "a leading form feed U+000C": f"\x0c{_LINE}\n",
+    "a leading paragraph separator U+2029": f"\u2029{_LINE}\n",
+    "a leading ideographic space U+3000": f"\u3000{_LINE}\n",
+    "a leading next line U+0085": f"\x85{_LINE}\n",
+    "a non-breaking space inside the bold wrapper": f"** {_LINE}**\n",
+}
+
+#: Trailing shapes. These are refused by whole-verdict INEQUALITY rather than by
+#: MALFORMED -- undelimited trailing text is not falsely classified (XASSET-0055 SS-C.4).
+#: What matters is that the character is never NORMALIZED INTO the approving verdict.
+ACCEPTED_LINE_TRAILING_ATTACKS: dict[str, str] = {
+    "a trailing non-breaking space": f"{_LINE}\u00a0\n",
+    "a trailing vertical tab": f"{_LINE}\x0b\n",
+    "a trailing line separator U+2028": f"{_LINE}\u2028\n",
+    "a trailing em space U+2003": f"{_LINE}\u2003\n",
+    "a non-breaking space before the bold close": f"**{_LINE}\u00a0**\n",
+    "a non-breaking space before a finding suffix": f"{PREFIX} {APPROVE}\u00a0 \u2014 0 BLOCKING\n",
+}
+
+#: Every shape that must NOT yield the approving verdict.
+ACCEPTED_LINE_ATTACKS: dict[str, str] = {
+    **ACCEPTED_LINE_NAMED_ATTACKS,
+    **ACCEPTED_LINE_VARIANT_ATTACKS,
+    **ACCEPTED_LINE_TRAILING_ATTACKS,
+}
+
+#: Legitimate accepted-line shapes. These exist so the repair cannot be
+#: "reject everything": zero to three ASCII spaces are INSIGNIFICANT indentation within
+#: a CommonMark paragraph, so such a line renders identically to an unindented one and
+#: is the same accepted form, not a second one.
+ACCEPTED_LINE_POSITIVE_CONTROLS: dict[str, str] = {
+    "the exact plain canonical form": f"{_LINE}\n",
+    "the exact whole-line bold form": f"{_BOLD}\n",
+    "one leading ASCII space": f" {_LINE}\n",
+    "two leading ASCII spaces": f"  {_LINE}\n",
+    "three leading ASCII spaces": f"   {_LINE}\n",
+    "three leading ASCII spaces, bold": f"   {_BOLD}\n",
+    "trailing ASCII spaces": f"{_LINE}   \n",
+    "trailing ASCII tab": f"{_LINE}\t\n",
+    "bold with trailing ASCII spaces": f"{_BOLD}  \n",
+    "bold with a trailing ASCII tab": f"{_BOLD}\t\n",
+    "the plain form carrying a finding suffix": f"{PREFIX} {APPROVE} \u2014 0 BLOCKING\n",
+}
+
+#: Every positive control this suite defines, across BOTH mappings. The durable records
+#: quote len(ALL_POSITIVE_CONTROLS); a guard below compares the two mechanically, because
+#: DELTA review 5020912146 MINOR 1 found a durable "9 / 9" beside a 16-entry mapping.
+ALL_POSITIVE_CONTROLS: dict[str, str] = {
+    **{f"fence: {k}": v for k, v in COMMONMARK_POSITIVE_CONTROLS.items()},
+    **{f"line: {k}": v for k, v in ACCEPTED_LINE_POSITIVE_CONTROLS.items()},
+}
+
+
+class TestAcceptedLineBoundary:
+    """The accepted form is decided on the RAW line, never on a broadly stripped one."""
+
+    @pytest.mark.parametrize("name", sorted(ACCEPTED_LINE_NAMED_ATTACKS))
+    def test_each_named_body_fails_closed(self, name):
+        assert P(ACCEPTED_LINE_NAMED_ATTACKS[name]) is MALFORMED, name
+
+    @pytest.mark.parametrize("name", sorted(ACCEPTED_LINE_VARIANT_ATTACKS))
+    def test_each_variant_fails_closed(self, name):
+        assert P(ACCEPTED_LINE_VARIANT_ATTACKS[name]) is MALFORMED, name
+
+    @pytest.mark.parametrize("name", sorted(ACCEPTED_LINE_TRAILING_ATTACKS))
+    def test_no_trailing_character_is_normalized_into_the_approval(self, name):
+        """Refused by INEQUALITY, not by MALFORMED -- and never silently normalized.
+
+        SS-C.4 forbids classifying undelimited trailing text as MALFORMED, so the correct
+        outcome is that the character SURVIVES into the verdict and whole-verdict equality
+        refuses it. Both halves are asserted: not the approval, and the offending
+        character still present.
+        """
+        body = ACCEPTED_LINE_TRAILING_ATTACKS[name]
+        verdict = P(body)
+        assert verdict != APPROVE, name
+        if isinstance(verdict, str):
+            assert verdict.startswith(APPROVE) and len(verdict) > len(APPROVE), name
+
+    @pytest.mark.parametrize("name", sorted(ACCEPTED_LINE_ATTACKS))
+    def test_no_attack_yields_the_approval(self, name):
+        assert P(ACCEPTED_LINE_ATTACKS[name]) != APPROVE, name
+
+    def test_the_four_space_boundary_is_exact(self):
+        """Three ASCII spaces is a paragraph; four is an indented code block."""
+        assert P(f"   {_LINE}\n") == APPROVE
+        assert P(f"    {_LINE}\n") is MALFORMED
+
+    def test_an_unsupported_formal_line_still_stops_the_parse(self):
+        """SS-D.17: a later, better-formed approval must never win past it."""
+        assert P(f"    {_LINE}\n{_LINE}\n") is MALFORMED
+        assert P(f"\t{_LINE}\n{_LINE}\n") is MALFORMED
+        assert P(f"\u00a0{_LINE}\n{_LINE}\n") is MALFORMED
+
+
+class TestAcceptedLineNonVacuity:
+    """Measured against the reviewed head by EXECUTING it, never by matching its text."""
+
+    @staticmethod
+    def _fifth_reviewed_parse(body: str):
+        name = "_fifth_head_" + FIFTH_REVIEWED_HEAD_SHA[:12]
+        module = sys.modules.get(name)
+        if module is None:
+            module = types.ModuleType(name)
+            module.__file__ = str(ROOT / MODULE_RELPATH)
+            sys.modules[name] = module
+            source = _git("show", f"{FIFTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+            exec(compile(source, module.__file__, "exec"), module.__dict__)
+        return module.parse_formal_disposition(body)
+
+    @pytest.mark.parametrize("name", sorted(ACCEPTED_LINE_NAMED_ATTACKS))
+    def test_each_named_body_authenticated_at_the_reviewed_head(self, name):
+        """Non-vacuity: the review's five bodies really did authenticate at 840cd74."""
+        assert self._fifth_reviewed_parse(ACCEPTED_LINE_NAMED_ATTACKS[name]) == APPROVE, name
+
+    def test_most_variants_authenticated_at_the_reviewed_head(self):
+        """Measured, not asserted, and reported honestly rather than rounded up."""
+        authenticated = {
+            name
+            for name, body in ACCEPTED_LINE_ATTACKS.items()
+            if self._fifth_reviewed_parse(body) == APPROVE
+        }
+        # 16 of the 17 named-plus-variant shapes authenticated; the bold wrapper carrying
+        # an inner NBSP already failed closed, because the enclosed text must itself be a
+        # plain canonical line. That one is NOT counted as a reproduction.
+        assert "a non-breaking space inside the bold wrapper" not in authenticated
+        assert len(authenticated) >= len(ACCEPTED_LINE_ATTACKS) - 1
+
+    @pytest.mark.parametrize("name", sorted(ALL_POSITIVE_CONTROLS))
+    def test_the_correction_only_tightened(self, name):
+        body = ALL_POSITIVE_CONTROLS[name]
+        if self._fifth_reviewed_parse(body) == APPROVE:
+            assert P(body) == APPROVE, name
+
+
+class TestAllPositiveControls:
+    """Legitimate shapes must keep authenticating -- this is not "reject everything"."""
+
+    @pytest.mark.parametrize("name", sorted(ALL_POSITIVE_CONTROLS))
+    def test_the_control_still_authenticates(self, name):
+        assert P(ALL_POSITIVE_CONTROLS[name]) == APPROVE, name
+
+    def test_the_two_mappings_do_not_overlap(self):
+        assert len(ALL_POSITIVE_CONTROLS) == (
+            len(COMMONMARK_POSITIVE_CONTROLS) + len(ACCEPTED_LINE_POSITIVE_CONTROLS)
+        )
+
+
+class TestAcceptedLineAtTheThreeConsumerSeams:
+    """The same attacks, driven through every real production consumer."""
+
+    @pytest.mark.parametrize("name", sorted(ACCEPTED_LINE_ATTACKS))
+    @pytest.mark.parametrize("state", ["COMMENTED", "APPROVED"])
+    def test_consumer_one_refuses(self, name, state, monkeypatch):
+        recorder = _run_consumer_one(ACCEPTED_LINE_ATTACKS[name], monkeypatch, state=state)
+        assert not any(call.startswith("reviews:") for call in recorder.calls), name
+
+    @pytest.mark.parametrize("name", sorted(ACCEPTED_LINE_ATTACKS))
+    @pytest.mark.parametrize("state", ["COMMENTED", "APPROVED"])
+    def test_consumer_two_refuses(self, name, state):
+        errors = _run_consumer_two(ACCEPTED_LINE_ATTACKS[name], state=state)
+        assert any(
+            "accepted form" in e or "carries no parseable" in e or "formal disposition is" in e
+            for e in errors
+        ), name
+
+    @pytest.mark.parametrize("name", sorted(ACCEPTED_LINE_ATTACKS))
+    def test_consumer_three_refuses_even_a_native_approved_rescue(self, name):
+        assert _run_consumer_three(ACCEPTED_LINE_ATTACKS[name], "APPROVED"), name
+
+    def test_the_legitimate_absent_policy_is_preserved(self):
+        assert _run_consumer_three("Nothing formal here at all.", "APPROVED") == []
+
+
+class TestAcceptedLineCorrectionShape:
+    """The correction is confined, and no broad Unicode operation decides the form."""
+
+    @staticmethod
+    def _parser_source() -> str:
+        return _toplevel(_live_source())["parse_formal_disposition"]
+
+    @staticmethod
+    def _executable_source() -> str:
+        """The parser with comments and its docstring REMOVED.
+
+        A substring scan over the raw function would false-positive on this correction's
+        own prose, which necessarily NAMES ``line.strip()`` and ``lstrip()`` in order to
+        explain what was removed. Unparsing the AST drops comments and the docstring, so
+        what remains is only what actually executes.
+        """
+        tree = ast.parse(TestAcceptedLineCorrectionShape._parser_source())
+        node = tree.body[0]
+        assert isinstance(node, ast.FunctionDef)
+        if (
+            node.body
+            and isinstance(node.body[0], ast.Expr)
+            and isinstance(node.body[0].value, ast.Constant)
+            and isinstance(node.body[0].value.value, str)
+        ):
+            node.body = node.body[1:]
+        return ast.unparse(node)
+
+    def test_the_broad_stripped_line_is_gone_entirely(self):
+        """``stripped = line.strip()`` had three uses; the correction removed all three."""
+        source = self._executable_source()
+        assert "line.strip()" not in source
+        assert "stripped" not in source
+
+    def test_no_broad_whitespace_operation_decides_the_accepted_form(self):
+        """No bare strip anywhere in what executes; every strip names its characters."""
+        source = self._executable_source()
+        for call in ("lstrip(", "rstrip(", "isspace(", "splitlines(", ".strip()"):
+            assert call not in source, call
+        # Every strip argument is an explicit character set, checked by AST rather than by
+        # guessing at how ``unparse`` renders an escape.
+        for node in ast.walk(ast.parse(source)):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr in ("strip", "lstrip", "rstrip")
+            ):
+                assert node.func.attr == "strip", node.func.attr
+                assert len(node.args) == 1, ast.unparse(node)
+                arg = node.args[0]
+                assert isinstance(arg, ast.Constant) and arg.value in (" ", " \t"), (
+                    ast.unparse(node)
+                )
+
+    def test_indentation_is_reused_not_recomputed(self):
+        """The raw-line ASCII-space count already existed; no second counter was added."""
+        source = self._executable_source()
+        assert source.count("indent = 0") == 1
+        assert "if indent > 3:" in source
+
+    def test_trailing_trim_admits_only_ascii_space_and_tab(self):
+        assert "line[end - 1] in ' \\t'" in self._executable_source()
+
+    def test_the_correction_added_no_module_level_name(self):
+        def names(source: str) -> set[str]:
+            found = set()
+            for node in ast.parse(source).body:
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    found.add(node.name)
+                elif isinstance(node, ast.Assign):
+                    found.update(t.id for t in node.targets if isinstance(t, ast.Name))
+                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                    found.add(node.target.id)
+            return found
+
+        assert names(_live_source()) == names(
+            _git("show", f"{FIFTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+        )
+
+    def test_only_the_parser_changed_since_the_reviewed_head(self):
+        reviewed = _toplevel(_git("show", f"{FIFTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}"))
+        live = _toplevel(_live_source())
+        changed = {n for n in live if reviewed.get(n) != live[n]}
+        assert changed == {"parse_formal_disposition"}, sorted(changed)
+
+    def test_the_call_site_count_is_unchanged(self):
+        assert len(_call_sites(_live_source())) == 3
+
+    def test_every_real_review_body_is_unchanged_by_this_correction(self):
+        for body in list(REAL_REVIEW_BODIES.values()) + [REVIEW_5000581301_LINE]:
+            before = TestAcceptedLineNonVacuity._fifth_reviewed_parse(body)
+            after = P(body)
+            assert (before is None) == (after is None)
+            if isinstance(before, str):
+                assert before == after
 
 
 class TestTheScopeBoundaryHolds:
@@ -2032,8 +2351,8 @@ class TestTheGovernanceRecord:
         assert delta in flat
         assert delta != hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
 
-    def test_the_decision_records_all_four_module_identities(self):
-        """The decision's §H table carries the bound, both superseded and the current value."""
+    def test_the_decision_records_every_module_identity(self):
+        """The decision's §H table carries the bound value, every superseded one, and now."""
         flat = DECISION.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
         live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
         for pin in (
@@ -2044,9 +2363,26 @@ class TestTheGovernanceRecord:
             hashlib.sha256(
                 _git("show", f"{DELTA_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
             ).hexdigest(),
+            hashlib.sha256(
+                _git("show", f"{FIFTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
+            ).hexdigest(),
             live,
         ):
             assert pin in flat, pin
+
+    def test_the_fifth_reviewed_module_identity_is_also_retained(self):
+        """Review 5020912146 supersedes a FOURTH recorded identity.
+
+        The reviewed head 840cd74 carried the corrected fence rule but the broad-stripped
+        accepted-line boundary. Retaining it as a negative pin means a silent revert to the
+        reviewed-and-rejected accepted-line handling fails.
+        """
+        fifth = hashlib.sha256(
+            _git("show", f"{FIFTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
+        ).hexdigest()
+        flat = WORKSTREAMS.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
+        assert fifth in flat
+        assert fifth != hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
 
     def test_the_register_no_longer_claims_the_pull_request_number_is_unbound(self):
         """MINOR 2 of review 5015482594: structured pr and prose must agree."""
@@ -2069,10 +2405,13 @@ class TestTheGovernanceRecord:
         flat = " ".join(self._gate_text().split())
         assert "and the bound-merge value BOTH supersede" not in flat
         assert " -- is RETAINED " not in flat
-        assert "THREE superseded values are RETAINED" in flat
+        assert "FOUR superseded values are RETAINED" in flat
+        assert "THREE superseded values are RETAINED" not in flat
         assert "TWO superseded values are RETAINED" not in flat
-        # the pins themselves survive the rewording -- the DELTA correction ADDED one
+        # the pins themselves survive the rewording -- each correction ADDS one
         for pin in (
+            "5d1c33a1828cd08f2d4e4aad78cc9cff77c496154e3038b212cb73f30fe7e76b",
+            "d554c2f409a129dfcde408cbfa54a49f82a091b6",
             "aa34c5c7264653b8edc7e35253ada87323c6f3c3b114a786e3ada15f46950d99",
             "2c2e6748739ab95937231ab40b27a72738bb5e63",
             "55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c",
@@ -2254,6 +2593,36 @@ class TestTheGovernanceRecord:
         assert dec == dec_total, (dec, dec_total)
         assert reg == reg_total, (reg, reg_total)
         assert dec == reg, (dec, reg)
+
+    def test_the_stated_positive_control_count_equals_the_defined_one(self):
+        """DELTA review 5020912146 MINOR 1: a durable "9 / 9" stood beside a 16-entry mapping.
+
+        INDEPENDENTLY RE-DERIVED. The claimed count is compared against the real size of the
+        mapping the parametrized controls actually iterate, so a control added or removed
+        without updating the records fails here rather than going unnoticed. The earlier 9 / 9
+        was the scratch reproduction script's own control list, never this suite's mapping --
+        two different sets reported as one.
+        """
+        defined = len(ALL_POSITIVE_CONTROLS)
+        text = DECISION.read_text(encoding="utf-8")
+        flat = " ".join(self._gate_text().split())
+        dec = self._stated(r"\*\*([\d]+) / [\d]+ positive controls\*\*", text)
+        dec_total = self._stated(r"\*\*[\d]+ / ([\d]+) positive controls\*\*", text)
+        reg = self._stated(r"positive controls ([\d]+) of [\d]+", flat)
+        reg_total = self._stated(r"positive controls [\d]+ of ([\d]+)", flat)
+        assert dec == dec_total == defined, (dec, dec_total, defined)
+        assert reg == reg_total == defined, (reg, reg_total, defined)
+
+    def test_no_durable_surface_still_claims_nine_positive_controls(self):
+        """The specific stale claim, pinned so it cannot come back by copy-paste."""
+        surfaces = (
+            DECISION.read_text(encoding="utf-8"),
+            " ".join(self._gate_text().split()),
+        )
+        for surface in surfaces:
+            flat = " ".join(surface.split())
+            for stale in ("9 / 9 positive", "9/9 positive", "nine positive controls"):
+                assert stale not in flat, stale
 
     #: The two figures no committed mechanism re-derives. Named once, asserted everywhere.
     EXTERNALLY_MEASURED = ("non-vacuity numerator", "mutation-probe tally")
