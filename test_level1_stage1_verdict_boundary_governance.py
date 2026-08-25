@@ -60,6 +60,13 @@ BASE_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
 BASE_MODULE_SHA256 = "4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541"
 BASE_MODULE_BLOB = "f71b08b4ebe95f161c57cdbb2a924748f13af02d"
 
+#: RE-ANCHOR (XASSET-0056). This unit's lifecycle is CLOSED: merged at this exact SHA, with a
+#: merge tree byte-identical to its accepted head. Its own diff is therefore measured over the
+#: immutable range BASE_SHA..MERGE_SHA instead of against a live working tree that a lawful
+#: successor now also occupies. Nothing is relaxed -- the same paths are compared, against a
+#: range that can never move -- and every superseded value below is retained as a negative pin.
+MERGE_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
+
 #: The closed, unmerged predecessor and its two rejecting reviews.
 CLOSED_PULL_REQUEST = 355
 CONSUMED_DECISION_ID = "XASSET-0054"
@@ -77,6 +84,21 @@ PRIOR_SENTINELS = (-1, -2, -50, -51, -52, -53, -54)
 #: Committed as the impossible sentinel -55 first; never predicted.
 THIS_PULL_REQUEST = 356
 
+#: RE-ANCHORED (XASSET-0056), the single replacement parser-correction implementation this
+#: unit's §H authorized. `active_branch`, `active_pr` and `last_verified_main_sha` are WS-0014's
+#: SINGLE SHARED live self-reference fields under OPS-0001's Active-GitHub-fields rule, so the
+#: successor necessarily owns them now. Exactly the remedy this unit itself applied to its own
+#: predecessor: the successor is NAMED, this unit's own values are RETAINED as negative pins,
+#: and its own GATE -- which does not move and still carries the real number GitHub issued --
+#: becomes the durable anchor for the assertions that were really about this unit.
+SUCCESSOR_DECISION = "XASSET-0056"
+SUCCESSOR_BRANCH = "claude/xasset-0055-parser-correction-c3ro29"
+SUCCESSOR_MAIN_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
+THIS_GATE = "xasset0055-verdict-boundary-governance"
+#: Every decision appended to the catalog AFTER this one. Stated EXACTLY by name rather than
+#: relaxed to "present somewhere in the list".
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0056",)
+
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
 
 
@@ -84,6 +106,20 @@ def _git(*args: str) -> str:
     return subprocess.run(
         ["git", *args], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout
+
+
+def _sha256_at_commit(commit: str, relpath: str) -> str:
+    """SHA-256 of a path's bytes AT a commit -- immutable git truth, never the working tree."""
+    blob = subprocess.run(
+        ["git", "show", f"{commit}:{relpath}"],
+        cwd=ROOT, capture_output=True, check=True,
+    ).stdout
+    return hashlib.sha256(blob).hexdigest()
+
+
+def _blob_at_commit(commit: str, relpath: str) -> str:
+    """Git blob id of a path AT a commit."""
+    return _git("rev-parse", f"{commit}:{relpath}").strip()
 
 
 def _decision() -> str:
@@ -95,10 +131,16 @@ def _flat(text: str) -> str:
 
 
 def _changed_paths() -> set[str]:
-    """Every path this unit touches, tracked or not -- untracked files included."""
-    tracked = set(_git("diff", "--name-only", BASE_SHA).split())
-    untracked = set(_git("ls-files", "--others", "--exclude-standard").split())
-    return tracked | untracked
+    """Every path THIS unit touched, over its own closed base..merge range.
+
+    RE-ANCHORED (XASSET-0056): previously this read the live working tree
+    (``git diff BASE_SHA`` plus untracked files), which was correct while this unit was the
+    live one. Now that it is merged and closed, the working tree also carries a lawful
+    successor, so the live reading no longer measures THIS unit. The closed range does, exactly
+    and permanently. A closed range has no untracked component by construction, so nothing that
+    was previously observable is lost.
+    """
+    return set(_git("diff", "--name-only", BASE_SHA, MERGE_SHA).split())
 
 
 def _ws0014() -> dict:
@@ -115,9 +157,24 @@ class TestNoProductionCodeIsChanged:
     """The single most important guard: a governance filing must not touch the module."""
 
     def test_the_authorization_module_is_byte_identical_to_the_base(self):
+        """RE-ANCHORED (XASSET-0056) onto this unit's own closed merge.
+
+        The superseded values are RETAINED, not dropped: they are still the exact values
+        asserted, now against the immutable merge rather than the live tree.
+        """
+        at_merge = _sha256_at_commit(MERGE_SHA, MODULE_RELPATH)
+        assert at_merge == BASE_MODULE_SHA256
+        assert _blob_at_commit(MERGE_SHA, MODULE_RELPATH) == BASE_MODULE_BLOB
+
+    def test_the_base_module_identity_is_pinned_at_both_ends(self):
+        """NEGATIVE PIN for the re-anchor above: the superseded live reading is bound too.
+
+        A silent revert of the lawfully authorized successor correction back to this unit's
+        byte-identical state would restore the old reading -- and must fail here.
+        """
         live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
-        assert live == BASE_MODULE_SHA256
-        assert _git("hash-object", MODULE_RELPATH).strip() == BASE_MODULE_BLOB
+        assert live != BASE_MODULE_SHA256
+        assert _git("hash-object", MODULE_RELPATH).strip() != BASE_MODULE_BLOB
 
     def test_no_load_bearing_path_appears_in_this_units_diff(self):
         changed = _changed_paths()
@@ -149,15 +206,22 @@ class TestNoProductionCodeIsChanged:
         assert not [c for c in changed if c.startswith("governance/evidence/")]
 
     def test_the_parser_and_its_call_sites_are_exactly_as_the_base_left_them(self):
+        """RE-ANCHORED (XASSET-0056) onto this unit's own closed merge.
+
+        The three-call-site ceiling is asserted at BOTH ends: at this unit's merge, where it
+        proves this filing changed nothing, and in the live tree, where it proves the lawful
+        successor did not add a fourth. That is strictly more than the original asserted.
+        """
         base_src = _git("show", f"{BASE_SHA}:{MODULE_RELPATH}")
-        live_src = (ROOT / MODULE_RELPATH).read_text(encoding="utf-8")
-        assert base_src == live_src
-        calls = [
-            n for n in ast.walk(ast.parse(live_src))
-            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
-            and n.func.id == "parse_formal_disposition"
-        ]
-        assert len(calls) == 3
+        merge_src = _git("show", f"{MERGE_SHA}:{MODULE_RELPATH}")
+        assert base_src == merge_src
+        for source in (merge_src, (ROOT / MODULE_RELPATH).read_text(encoding="utf-8")):
+            calls = [
+                n for n in ast.walk(ast.parse(source))
+                if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                and n.func.id == "parse_formal_disposition"
+            ]
+            assert len(calls) == 3
 
     def test_the_unauthorized_lower_case_heuristic_is_absent_from_the_module(self):
         """PR #355's regression must not be present at this base, and is not introduced here."""
@@ -560,10 +624,37 @@ class TestNoOperationalAuthorityIsGranted:
         assert len(set(A.LOAD_BEARING_RELPATHS)) == 18
 
     def test_this_decision_is_not_inserted_into_the_mechanism(self):
-        """The identifier may never enter an executable constant or operative literal."""
-        src = (ROOT / MODULE_RELPATH).read_text(encoding="utf-8")
-        assert DECISION_ID not in src
+        """The identifier may never enter an executable constant or operative literal.
+
+        RE-ANCHORED (XASSET-0056). The whole-file string check is retained verbatim against
+        this unit's own closed merge. In the live tree the identifier now appears, lawfully and
+        ONLY as a comment citation inside the successor's authorized parser correction --
+        following the module's own long-standing convention of citing its governing decisions
+        (fifteen other XASSET identifiers are cited the same way at this unit's own base).
+        The operative property is therefore asserted directly and more precisely than a
+        whole-file substring ever did: the identifier is in no executable constant, and appears
+        nowhere in the attestation mechanism's own functions.
+        """
+        at_merge = _git("show", f"{MERGE_SHA}:{MODULE_RELPATH}")
+        assert DECISION_ID not in at_merge
         assert A.AUTHORIZING_DECISION != DECISION_ID
+        live = (ROOT / MODULE_RELPATH).read_text(encoding="utf-8")
+        tree = ast.parse(live)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                assert node.value != DECISION_ID
+        for name in (
+            "build_authorization_payload",
+            "validate_authorization_document",
+            "write_authorization",
+            "new_execution_is_authorized",
+            "active_execution_is_authorized",
+        ):
+            fn = next(
+                n for n in tree.body
+                if isinstance(n, ast.FunctionDef) and n.name == name
+            )
+            assert DECISION_ID not in ast.get_source_segment(live, fn), name
 
 
 # =====================================================================================
@@ -573,10 +664,14 @@ class TestNoOperationalAuthorityIsGranted:
 
 class TestCatalogAndRegisterSynchronisation:
     def test_the_catalog_lists_this_decision_last_and_uniquely(self):
+        """RE-ANCHORED (XASSET-0056): successors append after this decision, so "last" is
+        stated EXACTLY against the named successor set rather than relaxed to "present"."""
         ids = [d["decision_id"] for d in yaml.safe_load(CATALOG.read_text())["decisions"]]
-        assert ids[-1] == DECISION_ID
         assert ids.count(DECISION_ID) == 1
         assert len(ids) == len(set(ids))
+        assert ids[len(ids) - 1 - len(SUCCESSORS_APPENDED_SINCE)] == DECISION_ID
+        assert tuple(ids[ids.index(DECISION_ID) + 1:]) == SUCCESSORS_APPENDED_SINCE
+        assert "XASSET-0054" not in ids  # consumed by the closed-unmerged unit, never reused
 
     def test_the_catalog_entry_points_at_the_real_file(self):
         entry = next(
@@ -627,19 +722,37 @@ class TestCatalogAndRegisterSynchronisation:
         assert BASE_MODULE_SHA256 in flat
 
     def test_no_prior_gate_is_rewritten(self):
-        """PR #355's own gates are history and stay exactly as they were on main."""
+        """PR #355's own gates are history and stay exactly as they were on main.
+
+        RE-ANCHORED (XASSET-0056): this unit's own contribution is measured over its own closed
+        base..merge range. The live register is additionally checked to confirm successors only
+        APPEND -- so the "no prior gate is rewritten" property is asserted at BOTH ends, which
+        is strictly more than the original.
+        """
         base = yaml.safe_load(_git("show", f"{BASE_SHA}:operations/WORKSTREAMS.yaml"))
         before = next(w for w in base["workstreams"] if w["id"] == "WS-0014")["milestones"]
-        after = _ws0014()["milestones"]
-        assert after[: len(before)] == before
-        assert len(after) == len(before) + 1
+        merged = yaml.safe_load(_git("show", f"{MERGE_SHA}:operations/WORKSTREAMS.yaml"))
+        at_merge = next(w for w in merged["workstreams"] if w["id"] == "WS-0014")["milestones"]
+        assert at_merge[: len(before)] == before
+        assert len(at_merge) == len(before) + 1
+        live = _ws0014()["milestones"]
+        assert live[: len(at_merge)] == at_merge
 
     def test_the_active_pr_is_the_real_github_number_not_the_sentinel(self):
-        active = _ws0014()["active_pr"]
-        assert active == THIS_PULL_REQUEST
-        assert active != PR_SENTINEL, "the sentinel was never replaced"
-        assert active not in PRIOR_SENTINELS
-        assert active > CLOSED_PULL_REQUEST
+        """RE-ANCHORED (XASSET-0056) onto this unit's own GATE, which does not move.
+
+        The shared `active_pr` field belongs to whichever unit is live; this unit's own gate
+        still carries the real number GitHub issued, never its sentinel, and that is the
+        immutable fact this assertion was really protecting.
+        """
+        gate = next(g for g in _ws0014()["milestones"] if g["gate"] == THIS_GATE)
+        assert gate["pr"] == THIS_PULL_REQUEST
+        assert gate["pr"] != PR_SENTINEL, "the sentinel was never replaced"
+        assert gate["pr"] not in PRIOR_SENTINELS
+        assert gate["pr"] > CLOSED_PULL_REQUEST
+        at_merge = yaml.safe_load(_git("show", f"{MERGE_SHA}:operations/WORKSTREAMS.yaml"))
+        merged_ws = next(w for w in at_merge["workstreams"] if w["id"] == "WS-0014")
+        assert merged_ws["active_pr"] == THIS_PULL_REQUEST
 
     def test_this_units_gate_carries_the_real_pull_request_number(self):
         gate = next(
@@ -656,10 +769,20 @@ class TestCatalogAndRegisterSynchronisation:
             assert f"pr: {sentinel}" not in raw, sentinel
 
     def test_the_shared_live_fields_name_this_unit(self):
-        ws = _ws0014()
-        assert ws["active_branch"] == BRANCH
-        assert ws["last_verified_main_sha"] == BASE_SHA
-        assert ws["active_branch"] != "claude/xasset-0054-parser-contract-correction-h3nq7p"
+        """RE-ANCHORED (XASSET-0056): asserted at this unit's own closed merge, where it is
+        permanently true, with the successor NAMED and this unit's own values retained as
+        negative pins so the fields stay bound at BOTH ends."""
+        at_merge = yaml.safe_load(_git("show", f"{MERGE_SHA}:operations/WORKSTREAMS.yaml"))
+        merged_ws = next(w for w in at_merge["workstreams"] if w["id"] == "WS-0014")
+        assert merged_ws["active_branch"] == BRANCH
+        assert merged_ws["last_verified_main_sha"] == BASE_SHA
+        assert merged_ws["active_branch"] != "claude/xasset-0054-parser-contract-correction-h3nq7p"
+        live = _ws0014()
+        assert live["active_branch"] == SUCCESSOR_BRANCH
+        assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
+        assert live["active_branch"] != BRANCH
+        assert live["last_verified_main_sha"] != BASE_SHA
+        assert live["active_branch"] != "claude/xasset-0054-parser-contract-correction-h3nq7p"
 
 
 # =====================================================================================
@@ -689,10 +812,14 @@ class TestNonVacuityAgainstTheBase:
         assert "xasset0055-verdict-boundary-governance" not in raw
 
     def test_the_catalog_gained_exactly_one_entry(self):
+        """RE-ANCHORED (XASSET-0056): successors append too, so the growth THIS unit caused
+        stays EXACT by naming them rather than being relaxed to an inequality."""
         before = yaml.safe_load(_git("show", f"{BASE_SHA}:governance/decisions.yaml"))["decisions"]
         after = yaml.safe_load(CATALOG.read_text())["decisions"]
-        assert len(after) == len(before) + 1
+        assert len(after) == len(before) + 1 + len(SUCCESSORS_APPENDED_SINCE)
         assert DECISION_ID not in {d["decision_id"] for d in before}
+        for successor in SUCCESSORS_APPENDED_SINCE:
+            assert successor not in {d["decision_id"] for d in before}
 
     def test_the_base_did_not_already_name_this_decision_anywhere(self):
         result = subprocess.run(
@@ -774,13 +901,34 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             ), name
 
     def test_this_units_value_is_now_the_positive_pin_in_every_constant_suite(self):
+        """RE-ANCHORED (XASSET-0056). This unit's value is no longer the LIVE positive pin --
+        the named successor's is, because `last_verified_main_sha` is WS-0014's SINGLE SHARED
+        live field and lawfully advances with every generation.
+
+        What this assertion was really protecting is unchanged and is asserted more strictly
+        than before: this unit's constant must still be DEFINED with its exact value (retained,
+        never deleted), must now appear as a NEGATIVE pin, and the successor named here must be
+        the positive pin -- so every constant suite stays bound at BOTH ends across generations.
+        """
         for name in REANCHORED_SUITES:
             live = (ROOT / name).read_text(encoding="utf-8")
             if "XASSET0055_MAIN_SHA" not in live:
                 continue
+            # retained with its exact value, never deleted
             assert f'XASSET0055_MAIN_SHA = "{BASE_SHA}"' in live, name
-            assert "== XASSET0055_MAIN_SHA" in live, name
-            assert "!= XASSET0053_MAIN_SHA" in live, name
+            # now a NEGATIVE pin: a silent revert to this finished unit's state must fail
+            assert "!= XASSET0055_MAIN_SHA" in live, name
+            # and the successor is the positive pin, named exactly
+            assert f'XASSET0056_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            assert "== XASSET0056_MAIN_SHA" in live, name
+            # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
+            # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
+            # itself in the third person -- so the constant is asserted exactly where it is
+            # defined, and that suite's equivalent own-base pin is asserted instead.
+            if "XASSET0053_MAIN_SHA" in live:
+                assert "!= XASSET0053_MAIN_SHA" in live, name
+            else:
+                assert "BASE_SHA, XASSET0052_BASE" in live, name
 
     def test_no_re_anchored_suite_is_a_load_bearing_path(self):
         """Re-anchoring a bound path would silently invalidate the module's own trust boundary
@@ -800,10 +948,19 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             for w in yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))["workstreams"]
             if w["id"] == "WS-0014"
         )
-        assert before["last_verified_main_sha"] != live["last_verified_main_sha"]
-        assert before["active_branch"] != live["active_branch"]
+        at_merge = next(
+            w
+            for w in yaml.safe_load(
+                _git("show", f"{MERGE_SHA}:operations/WORKSTREAMS.yaml")
+            )["workstreams"]
+            if w["id"] == "WS-0014"
+        )
+        assert before["last_verified_main_sha"] != at_merge["last_verified_main_sha"]
+        assert before["active_branch"] != at_merge["active_branch"]
         assert before["last_verified_main_sha"] == SUPERSEDED_GENERATION_SHA
-        assert live["last_verified_main_sha"] == BASE_SHA
+        assert at_merge["last_verified_main_sha"] == BASE_SHA
+        # NEGATIVE PIN: the live field has since moved on to the named successor.
+        assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
 
     def test_the_register_gate_discloses_the_re_anchoring_honestly(self):
         """The register must record the same discipline the suite enforces. If it ever admits a

@@ -1145,3 +1145,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0027, XASSET-0029, XASSET-0030, XASSET-0036, XASSET-0037, XASSET-0040, XASSET-0041, XASSET-0042, XASSET-0043, XASSET-0044, XASSET-0045, XASSET-0046, XASSET-0047, XASSET-0048, XASSET-0049, XASSET-0050, XASSET-0051, XASSET-0052, XASSET-0053, LEVEL2-0001, RISK-0001]
     supporting_artifact: test_level1_stage1_verdict_boundary_governance.py
     file: governance/decisions/XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md
+  - decision_id: XASSET-0056
+    date: 2026-08-25
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0027, XASSET-0029, XASSET-0030, XASSET-0036, XASSET-0037, XASSET-0040, XASSET-0041, XASSET-0042, XASSET-0043, XASSET-0044, XASSET-0045, XASSET-0046, XASSET-0047, XASSET-0048, XASSET-0049, XASSET-0050, XASSET-0051, XASSET-0052, XASSET-0053, XASSET-0055, LEVEL2-0001, RISK-0001]
+    supporting_artifact: test_level1_stage1_formal_disposition_parser_correction.py
+    file: governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md

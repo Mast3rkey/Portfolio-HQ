@@ -1594,27 +1594,233 @@ def live_load_bearing_hashes() -> dict[str, str]:
 # ======================================================================================
 
 
-def parse_formal_disposition(body: str) -> str | None:
+#: XASSET-0055 §C / XASSET-0053 §C item 2 -- THE minimal result representation, and the only one.
+#: ``parse_formal_disposition`` must separate two outcomes the previous ``str | None`` channel
+#: collapsed into a single ``None``:
+#:
+#:   * **ABSENT** -- the body carries no formal-looking disposition at all. Still ``None``, so every
+#:     consumer's existing ABSENT policy is preserved literally rather than re-derived.
+#:   * **MALFORMED / UNSUPPORTED** -- the body carries a formal-looking disposition line that is not
+#:     in one of the two accepted wrapper forms. This value, and never ``None``.
+#:
+#: One sentinel is the smallest of the three routes §C item 2 permits (one added value, one small
+#: typed result, or one sentinel), so no helper is introduced and none is needed. This is a
+#: sentinel, not a parsing framework: it carries no behaviour and parses nothing.
+class _MalformedFormalDisposition:
+    """The single MALFORMED / UNSUPPORTED sentinel type."""
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:  # pragma: no cover - trivial, but keeps error text readable
+        return "MALFORMED_FORMAL_DISPOSITION"
+
+
+MALFORMED_FORMAL_DISPOSITION = _MalformedFormalDisposition()
+
+
+def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposition":
     """Return the review's FORMAL DISPOSITION verdict, parsed exactly from the first formal line.
 
     MAJOR 1 (review 4946464366): the previous check was ``APPROVING_REVIEW_DISPOSITION in body``,
     so a review whose formal line read ``CHANGES REQUIRED`` still passed if any later explanatory
     sentence quoted the approval phrase. Reproduced before correcting.
 
-    Only the FIRST ``FORMAL DISPOSITION:`` line counts, and only the verdict up to the first
-    finding-count separator, so trailing counts such as ``— 0 BLOCKING / 0 MAJOR`` do not change
-    the verdict while a different verdict always does.
+    Only the FIRST formal-looking line counts (XASSET-0053 §D.4). It is never skipped: a
+    formal-looking line that is not in an accepted form STOPS the parse and yields no verdict
+    (§D.17), so a later, better-formed line can never win past it.
+
+    Exactly two wrapper forms are accepted, and no others (§D.2, §D.16): the plain canonical line,
+    and a precisely balanced WHOLE-LINE Markdown-bold pair whose enclosed text is itself a plain
+    canonical line and carries no further ``*``. Headings, blockquotes, bullets, code fences,
+    leading or trailing prose, and unbalanced, partial, nested or repeated emphasis are all
+    MALFORMED.
+
+    Returns:
+        * ``str`` -- the verdict, verbatim. Never normalized, truncated, case-folded,
+          fuzzy-matched, canonicalized or coerced (§D.3), and never restricted to a closed
+          vocabulary. A mixed-case or lower-case canonical verdict returns exactly as written;
+          XASSET-0055 §D removes and PROHIBITS the lower-case heuristic that regressed this, and
+          forbids any equivalent case-, length- or word-count-based verdict rule.
+        * ``None`` -- ABSENT.
+        * ``MALFORMED_FORMAL_DISPOSITION`` -- MALFORMED / UNSUPPORTED.
+
+    XASSET-0055 §C -- the verdict boundary. After any recognized separator suffix has been
+    VALIDATED as finding-count metadata (§E.1), the ENTIRE remaining post-prefix region is the
+    verdict. Exact equality applies to that whole region, so appended text can never authenticate
+    as approval -- a property of exact equality, not of a heuristic. Where no delimiter marks a
+    boundary the parser does not pretend it can find one: it returns the region verbatim and lets
+    inequality reject it, rather than falsely classifying it MALFORMED (§C.4).
     """
     if not isinstance(body, str):
         return None
-    for line in body.splitlines():
-        stripped = line.strip()
-        if not stripped.upper().startswith(FORMAL_DISPOSITION_PREFIX):
-            continue
-        verdict = stripped[len(FORMAL_DISPOSITION_PREFIX):].strip()
+    fence_char = ""  # "" means NOT inside a fence; otherwise the OPENING marker character
+    fence_len = 0  # and the OPENING marker's run length
+    # CommonMark ends a line at U+000A, U+000D or CRLF and at nothing else. ``splitlines()``
+    # additionally breaks on U+000B, U+000C, U+001C-1E, U+0085, U+2028 and U+2029, so a
+    # vertical tab before a marker became its own line and left a bare, legitimate-looking
+    # closer -- inverting the fence state on content Markdown keeps inside the fence. Splitting
+    # the way Markdown does is more conservative in every case: such a character now stays ON
+    # its line, where it disqualifies the marker rather than manufacturing one.
+    for line in body.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        # BLOCKING 1 (review 5022602312): two Unicode-wide operations decided the prefix,
+        # and they failed in OPPOSITE directions.
+        #
+        # ``.upper()`` maps some non-ASCII letters ONTO ASCII ones, so ``DISPOſITION`` and
+        # ``DıSPOSITION`` -- neither the canonical prefix -- uppercased into it and
+        # AUTHENTICATED. And an invisible or bidi code point placed INSIDE the prefix
+        # (U+200B, U+202E, U+00AD, U+2060) removed the literal substring, so an adverse
+        # first line was treated as ABSENT and SKIPPED, letting a later approval win --
+        # exactly the §D.17 failure, since none of those characters starts a new line.
+        #
+        # The two questions are therefore answered by two DIFFERENT views of the same line:
+        #
+        #   ascii_upper      -- ASCII-only case folding, and the ONLY basis for ACCEPTANCE.
+        #                       ASCII upper, lower and mixed case stay interchangeable;
+        #                       a non-ASCII character never becomes an ASCII prefix letter.
+        #   resembles_prefix -- deliberately WIDE, and the only basis for "does a reviewer
+        #                       still read this as a formal record?". It folds with Unicode
+        #                       ``.upper()`` and drops every non-printable-ASCII character,
+        #                       so both tampering families are caught. It is a strict
+        #                       SUPERSET of the canonical test, so it can only ever fail
+        #                       MORE closed, never less.
+        #
+        # A line that resembles the prefix without matching it exactly is MALFORMED, never
+        # ABSENT, so it stops the parse and no later approval can win past it.
+        ascii_upper = "".join(
+            character.upper() if "a" <= character <= "z" else character for character in line
+        )
+        resembles_prefix = FORMAL_DISPOSITION_PREFIX in "".join(
+            character for character in line.upper() if " " <= character <= "~"
+        )
+        # §D.17 names code-fenced lines among the shapes that must fail closed. Fence
+        # recognition follows the CommonMark fenced-code-block rules on BOTH sides of the
+        # state transition, because an invalid line must never invert the state either way.
+        #
+        # BLOCKING 1 (review 5015482594) fixed the CLOSER: one shared boolean was toggled by
+        # any marker line, so a mismatched marker, an info-string marker or a shorter run
+        # toggled the parser OUT of a fence Markdown still held open.
+        #
+        # BLOCKING 1 (review 5019911766) fixed the OPENER, which had the same flaw mirrored:
+        # every candidate was reduced with ``strip()`` and any run of three accepted, so a
+        # FOUR-space or tab-indented pseudo-opener, a backtick opener whose info string
+        # contained a backtick, or a pseudo-closer prefixed with non-breaking space or any
+        # other Unicode whitespace all inverted the state -- and the approval that followed
+        # authenticated. Indentation and validity are therefore decided on the RAW line using
+        # ASCII spaces only; no ``strip()``/``lstrip()`` or other broad Unicode-whitespace
+        # operation participates in either decision. An unclosed fence stays open: fail-closed.
+        indent = 0
+        while indent < len(line) and line[indent] == " ":
+            indent += 1  # ASCII spaces ONLY -- a tab reaches column four and cannot open
+        marker = line[indent] if indent < len(line) else ""
+        if marker in ("`", "~"):
+            run = 0
+            while indent + run < len(line) and line[indent + run] == marker:
+                run += 1
+            rest = line[indent + run:]  # the info string, or a closer's trailing run
+            if run >= 3 and indent <= 3:
+                # Never skipped: an opening, closing or marker line that itself carries the
+                # formal prefix fails closed, so a later approval can never win past it (§D.17).
+                if resembles_prefix:
+                    return MALFORMED_FORMAL_DISPOSITION
+                if not fence_char:
+                    # An opener. A BACKTICK fence's info string may contain no backtick; a
+                    # tilde fence's may. An invalid opener is not a fence line at all, so it
+                    # leaves the state untouched rather than opening one.
+                    if not (marker == "`" and "`" in rest):
+                        fence_char, fence_len = marker, run
+                elif (
+                    marker == fence_char  # same marker character
+                    and run >= fence_len  # at least the opening length
+                    and all(character in " \t" for character in rest)  # spaces/tabs only
+                ):
+                    fence_char, fence_len = "", 0  # the ONE shape that may close it
+                # else: a mismatched marker, a nested opener, a shorter run or an info string.
+                # None of those closes the active fence.
+                continue
+            # run < 3, or indentation past column three: not a fence line on either side.
+        if FORMAL_DISPOSITION_PREFIX not in ascii_upper:
+            if resembles_prefix:
+                # Formal-looking to a reader, but not the canonical ASCII prefix: a
+                # tampered prefix FAILS CLOSED rather than being silently skipped.
+                return MALFORMED_FORMAL_DISPOSITION
+            continue  # genuinely not formal-looking: still ABSENT, keep scanning
+        if fence_char:
+            return MALFORMED_FORMAL_DISPOSITION
+
+        # --- the two accepted wrapper forms, and nothing else (§D.2, §D.16) ---------------
+        # BLOCKING 1 (review 5020912146): the accepted form is decided on the RAW line. A broad
+        # ``line.strip()`` erased exactly the characters the line and fence layers had just
+        # preserved, so FOUR ASCII spaces or a leading tab -- an INDENTED CODE BLOCK, whose
+        # contents are literal code and can never authenticate (§D.8) -- and a leading vertical
+        # tab, non-breaking space or U+2028 all reached the prefix test with the offending
+        # character already gone, and authenticated.
+        #
+        # ``indent`` above counts ASCII spaces ONLY, so it is reused here unchanged: four or
+        # more columns is code, and a tab never advances it, so a tab-indented line simply
+        # fails the prefix test below. Zero to three ASCII spaces are kept because CommonMark
+        # treats them as INSIGNIFICANT within a paragraph -- such a line renders identically to
+        # an unindented one, so accepting it admits no second form and does not expand the
+        # grammar §D.16 fixes at exactly two.
+        if indent > 3:
+            return MALFORMED_FORMAL_DISPOSITION
+        # Trailing padding is trimmed with ASCII spaces and tabs ONLY. A trailing non-breaking
+        # space, vertical tab or U+2028 therefore SURVIVES into the region and is refused by
+        # whole-verdict inequality (§C.4) rather than being normalized into the approval.
+        end = len(line)
+        while end > indent and line[end - 1] in " \t":
+            end -= 1
+        revealed = line[indent:end]
+        # ``ascii_upper`` is a character-for-character fold of ``line``, so the same slice
+        # is the ASCII-folded view of ``revealed``. Acceptance never consults ``.upper()``.
+        revealed_upper = ascii_upper[indent:end]
+        if not revealed_upper.startswith(FORMAL_DISPOSITION_PREFIX):
+            if not (
+                len(revealed) >= 4
+                and revealed.startswith("**")
+                and revealed.endswith("**")
+            ):
+                return MALFORMED_FORMAL_DISPOSITION
+            inner = revealed[2:-2]
+            # A further ``*`` means nested, doubled, partial or ambiguous emphasis (§D.10); and
+            # the enclosed text must itself be a plain canonical line, never prose (§D.9).
+            if "*" in inner or not revealed_upper[2:-2].startswith(FORMAL_DISPOSITION_PREFIX):
+                return MALFORMED_FORMAL_DISPOSITION
+            revealed = inner
+
+        region = revealed[len(FORMAL_DISPOSITION_PREFIX):].strip(" \t")
+
+        # --- §E.3: the EARLIEST recognized separator governs, never tuple order ------------
+        # Splitting on each separator in tuple order let ``<approval> | <adverse> — 0 BLOCKING``
+        # authenticate: the em dash is split first and erases the adverse ``|`` text.
+        earliest: tuple[int, str] | None = None
         for separator in ("—", "--", " - ", "|"):
-            if separator in verdict:
-                verdict = verdict.split(separator, 1)[0].strip()
+            index = region.find(separator)
+            if index != -1 and (earliest is None or index < earliest[0]):
+                earliest = (index, separator)
+        if earliest is None:
+            return region  # §C.1: the ENTIRE region is the verdict, verbatim
+
+        verdict = region[: earliest[0]].strip(" \t")
+        suffix = region[earliest[0] + len(earliest[1]):].strip(" ")
+        # §E.1/§E.2: a recognized separator suffix is finding-count metadata and is VALIDATED,
+        # never discarded unread. Grammar: count ( "/" count )*, count := digits SPACE CATEGORY.
+        #
+        # Every clause below is strict on purpose. ``.strip(" ")`` trims ORDINARY SPACES ONLY --
+        # bare ``.strip()`` would silently swallow a tab around a count and accept it. The
+        # category is compared UNSTRIPPED, so ``0<space><space>BLOCKING`` fails on the leading
+        # space that ``partition`` leaves attached rather than being quietly normalized away.
+        # ``isascii() and isdigit()`` together reject a signed or decimal count and every
+        # non-ASCII digit form. An empty element -- from a leading, doubled or trailing "/" --
+        # has no space and fails too.
+        for element in suffix.split("/"):
+            digits, spacer, category = element.strip(" ").partition(" ")
+            if (
+                not spacer
+                or not digits.isascii()
+                or not digits.isdigit()
+                or category not in ("BLOCKING", "MAJOR", "MINOR", "NOTE")
+            ):
+                return MALFORMED_FORMAL_DISPOSITION
         return verdict
     return None
 
@@ -1961,7 +2167,12 @@ def _derive_pr337_actor_ratification(
     # still carries the approving formal line.
     if str(rat_review.get("state") or "").upper() in NATIVE_ADVERSE_REVIEW_STATES:
         return _NO_PR337_ACTOR_RATIFICATION
-    if parse_formal_disposition(rat_review.get("body") or "") != APPROVING_REVIEW_DISPOSITION:
+    # XASSET-0053 §D.19: MALFORMED / UNSUPPORTED is refused explicitly, never merely as an
+    # incidental consequence of inequality, and a native APPROVED state never rescues it.
+    rat_verdict = parse_formal_disposition(rat_review.get("body") or "")
+    if rat_verdict is MALFORMED_FORMAL_DISPOSITION:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if rat_verdict != APPROVING_REVIEW_DISPOSITION:
         return _NO_PR337_ACTOR_RATIFICATION
     if not _belongs_to_pull_request(rat_review, RATIFICATION_PULL_REQUEST):
         return _NO_PR337_ACTOR_RATIFICATION
@@ -2186,7 +2397,16 @@ def verify_lifecycle_against_truth(
                 f"{review.get('commit_id')!r}, not the authorization head {head!r}"
             )
         verdict = parse_formal_disposition(review.get("body") or "")
-        if verdict is None:
+        # XASSET-0053 §D.19: MALFORMED / UNSUPPORTED is reported separately from ABSENT; one
+        # value may not stand for both. The ABSENT branch below is preserved verbatim.
+        if verdict is MALFORMED_FORMAL_DISPOSITION:
+            errors.append(
+                f"governance truth: review {review_id} carries a "
+                f"'{FORMAL_DISPOSITION_PREFIX}' line that is not in an accepted form, so its "
+                "verdict cannot be authenticated; an unsupported formal line fails closed and "
+                "is never treated as absent"
+            )
+        elif verdict is None:
             errors.append(
                 f"governance truth: review {review_id} carries no parseable "
                 f"'{FORMAL_DISPOSITION_PREFIX}' line, so its verdict cannot be authenticated"
@@ -3439,6 +3659,18 @@ def _verify_selected_review_is_final(
                 f"later non-dismissed {state} review submitted after the certified review "
                 f"{selected_review_id}; principal certification of an earlier clean pass does "
                 "not erase a later exact-head finding"
+            )
+            continue
+        # XASSET-0053 §D.19 / §D.20.2: an unsupported formal-looking line fails closed HERE,
+        # before any native-state branch, so a native APPROVED can never rescue it. The
+        # genuinely-ABSENT policy immediately below is deliberately PRESERVED (§D.20.1).
+        if verdict is MALFORMED_FORMAL_DISPOSITION:
+            errors.append(
+                f"governance truth: review {entry.get('id')} on the exact accepted head, "
+                f"submitted after the certified review {selected_review_id}, carries a "
+                f"'{FORMAL_DISPOSITION_PREFIX}' line that is not in an accepted form; an "
+                f"unsupported formal line fails closed and its native state "
+                f"({state or 'unset'!r}) never rescues it"
             )
             continue
         if verdict == APPROVING_REVIEW_DISPOSITION:

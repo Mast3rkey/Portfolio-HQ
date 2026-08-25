@@ -181,6 +181,20 @@ XASSET0055_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
 XASSET0055_ACTIVE_PR = 356
 
+#: RE-ANCHORED BY XASSET-0056, the single replacement parser-correction implementation
+#: XASSET-0055 §H authorized. `active_branch`, `active_pr` and `last_verified_main_sha` are
+#: WS-0014's SINGLE SHARED live self-reference fields under OPS-0001's Active-GitHub-fields
+#: rule, so they lawfully advance to whichever unit is live. The XASSET-0055 generation is
+#: RETAINED below as a negative pin rather than deleted, so every field stays bound at BOTH
+#: ends and a silent revert to ANY finished unit's state still fails here.
+XASSET0056_MAIN_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
+#: Read back from the live pull request AFTER GitHub issued it, never predicted. The
+#: branch's first commit carried the impossible sentinel -56 (negative, so structurally
+#: cannot be a real pull-request number); this value replaced it in a fast-forward
+#: follow-up commit, with no amend and no force-push.
+XASSET0056_ACTIVE_PR = 357
+
+
 #: PR #345's lifecycle evidence that DID complete, preserved as authenticated predecessor
 #: evidence.
 PR345_FINAL_CLEAN_REVIEW = "4993994386"
@@ -1122,7 +1136,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
         # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
         # pin, so a silent revert to finished work still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0055_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0056_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0055_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0053_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0052_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0051_MAIN_SHA

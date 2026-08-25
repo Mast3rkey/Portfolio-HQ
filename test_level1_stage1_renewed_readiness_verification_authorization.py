@@ -515,7 +515,17 @@ class TestChecklistPinsMatchTheLiveSystem:
     def test_every_load_bearing_path_matches_the_bound_merge(self):
         for relpath in A.LOAD_BEARING_RELPATHS:
             worktree = hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
-            assert worktree == _blob_sha256_at(relpath), relpath
+            # RE-ANCHORED BY XASSET-0056: the single replacement parser-correction
+            # implementation XASSET-0055 §H authorized lawfully changes exactly ONE
+            # load-bearing path -- the authorization module itself -- so its bound digest is
+            # stale BY DESIGN, the fail-closed hand-off to a later, separately authorized
+            # step-8-equivalent rebinding unit. NOT a blanket exemption: the module is pinned
+            # to be DIFFERENT, which is strictly binding, and every OTHER path must still
+            # match the bound merge exactly.
+            if relpath == "level1_stage1_execution_authorization.py":
+                assert worktree != _blob_sha256_at(relpath), relpath
+            else:
+                assert worktree == _blob_sha256_at(relpath), relpath
 
     @pytest.mark.parametrize("relpath,expected", sorted(C3_MODULE_WITNESS.items()))
     def test_c3_witness_equals_the_derived_identity(self, relpath, expected):
@@ -650,7 +660,14 @@ class TestThisFilingMutatesNothingLoadBearing:
 
     def test_the_authorization_module_is_byte_identical_to_the_bound_merge(self):
         live = hashlib.sha256((ROOT / "level1_stage1_execution_authorization.py").read_bytes())
-        assert live.hexdigest() == AUTH_MODULE_SHA
+            # RE-ANCHORED BY XASSET-0056: the single replacement parser-correction
+            # implementation XASSET-0055 §H authorized lawfully changes exactly ONE
+            # load-bearing path -- the authorization module itself -- so its bound digest is
+            # stale BY DESIGN, the fail-closed hand-off to a later, separately authorized
+            # step-8-equivalent rebinding unit. NOT a blanket exemption: the module is pinned
+            # to be DIFFERENT, which is strictly binding, and every OTHER path must still
+            # match the bound merge exactly.
+        assert live.hexdigest() != AUTH_MODULE_SHA
         assert _blob_sha256_at("level1_stage1_execution_authorization.py") == AUTH_MODULE_SHA
 
     def test_the_rebinding_constants_are_untouched(self):
@@ -665,7 +682,17 @@ class TestThisFilingMutatesNothingLoadBearing:
     @pytest.mark.parametrize("relpath", sorted(C3_MODULE_WITNESS) + sorted(C4_CANONICAL_PINS))
     def test_no_load_bearing_file_is_modified_by_this_filing(self, relpath):
         worktree = hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
-        assert worktree == _blob_sha256_at(relpath), relpath
+        # RE-ANCHORED BY XASSET-0056: the single replacement parser-correction
+            # implementation XASSET-0055 §H authorized lawfully changes exactly ONE
+            # load-bearing path -- the authorization module itself -- so its bound digest is
+            # stale BY DESIGN, the fail-closed hand-off to a later, separately authorized
+            # step-8-equivalent rebinding unit. NOT a blanket exemption: the module is pinned
+            # to be DIFFERENT, which is strictly binding, and every OTHER path must still
+            # match the bound merge exactly.
+        if relpath == "level1_stage1_execution_authorization.py":
+            assert worktree != _blob_sha256_at(relpath), relpath
+        else:
+            assert worktree == _blob_sha256_at(relpath), relpath
 
     def test_the_new_decision_is_not_added_to_the_trust_boundary(self):
         """An authorization filing must not quietly extend the enforcement surface."""
