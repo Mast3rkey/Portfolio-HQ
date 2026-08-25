@@ -200,9 +200,11 @@ XASSET0055_ACTIVE_PR = 356
 #: RETAINED below as a negative pin rather than deleted, so every field stays bound at BOTH
 #: ends and a silent revert to ANY finished unit's state still fails here.
 XASSET0056_MAIN_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
-#: An IMPOSSIBLE sentinel until GitHub issues the real number, which is then bound in a
-#: fast-forward follow-up commit. Never predicted.
-XASSET0056_ACTIVE_PR = -56
+#: Read back from the live pull request AFTER GitHub issued it, never predicted. The
+#: branch's first commit carried the impossible sentinel -56 (negative, so structurally
+#: cannot be a real pull-request number); this value replaced it in a fast-forward
+#: follow-up commit, with no amend and no force-push.
+XASSET0056_ACTIVE_PR = 357
 
 XASSET0043_ACTIVE_PR = 343
 #: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number
