@@ -1655,40 +1655,60 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
         return None
     fence_char = ""  # "" means NOT inside a fence; otherwise the OPENING marker character
     fence_len = 0  # and the OPENING marker's run length
-    for line in body.splitlines():
+    # CommonMark ends a line at U+000A, U+000D or CRLF and at nothing else. ``splitlines()``
+    # additionally breaks on U+000B, U+000C, U+001C-1E, U+0085, U+2028 and U+2029, so a
+    # vertical tab before a marker became its own line and left a bare, legitimate-looking
+    # closer -- inverting the fence state on content Markdown keeps inside the fence. Splitting
+    # the way Markdown does is more conservative in every case: such a character now stays ON
+    # its line, where it disqualifies the marker rather than manufacturing one.
+    for line in body.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
         stripped = line.strip()
-        # §D.17 names code-fenced lines among the shapes that must fail closed. BLOCKING 1
-        # (review 5015482594): a single shared boolean was toggled by ANY line starting with a
-        # marker, so while inside a backtick fence a ``~~~`` line, a ```` ```python ```` line, a
-        # shorter same-character run or an over-indented marker each toggled the parser OUT of a
-        # fence Markdown still holds OPEN -- and the approval that followed authenticated. The
-        # ACTIVE fence's marker character and opening length are retained instead, and only a
-        # syntactically valid closer may end it. An unclosed fence stays open: that fails closed.
-        marker = stripped[:1]
+        # §D.17 names code-fenced lines among the shapes that must fail closed. Fence
+        # recognition follows the CommonMark fenced-code-block rules on BOTH sides of the
+        # state transition, because an invalid line must never invert the state either way.
+        #
+        # BLOCKING 1 (review 5015482594) fixed the CLOSER: one shared boolean was toggled by
+        # any marker line, so a mismatched marker, an info-string marker or a shorter run
+        # toggled the parser OUT of a fence Markdown still held open.
+        #
+        # BLOCKING 1 (review 5019911766) fixed the OPENER, which had the same flaw mirrored:
+        # every candidate was reduced with ``strip()`` and any run of three accepted, so a
+        # FOUR-space or tab-indented pseudo-opener, a backtick opener whose info string
+        # contained a backtick, or a pseudo-closer prefixed with non-breaking space or any
+        # other Unicode whitespace all inverted the state -- and the approval that followed
+        # authenticated. Indentation and validity are therefore decided on the RAW line using
+        # ASCII spaces only; no ``strip()``/``lstrip()`` or other broad Unicode-whitespace
+        # operation participates in either decision. An unclosed fence stays open: fail-closed.
+        indent = 0
+        while indent < len(line) and line[indent] == " ":
+            indent += 1  # ASCII spaces ONLY -- a tab reaches column four and cannot open
+        marker = line[indent] if indent < len(line) else ""
         if marker in ("`", "~"):
-            run = len(stripped) - len(stripped.lstrip(marker))
-            if run >= 3:
+            run = 0
+            while indent + run < len(line) and line[indent + run] == marker:
+                run += 1
+            rest = line[indent + run:]  # the info string, or a closer's trailing run
+            if run >= 3 and indent <= 3:
                 # Never skipped: an opening, closing or marker line that itself carries the
                 # formal prefix fails closed, so a later approval can never win past it (§D.17).
-                if FORMAL_DISPOSITION_PREFIX in stripped.upper():
+                if FORMAL_DISPOSITION_PREFIX in line.upper():
                     return MALFORMED_FORMAL_DISPOSITION
                 if not fence_char:
-                    fence_char, fence_len = marker, run  # an opening fence
+                    # An opener. A BACKTICK fence's info string may contain no backtick; a
+                    # tilde fence's may. An invalid opener is not a fence line at all, so it
+                    # leaves the state untouched rather than opening one.
+                    if not (marker == "`" and "`" in rest):
+                        fence_char, fence_len = marker, run
                 elif (
                     marker == fence_char  # same marker character
                     and run >= fence_len  # at least the opening length
-                    and not stripped[run:].strip()  # marker and spaces only, no info string
-                    # a closer may carry at most three columns of indentation (tab == 4)
-                    and sum(
-                        4 if c == "\t" else 1
-                        for c in line[: len(line) - len(line.lstrip())]
-                    )
-                    <= 3
+                    and all(character in " \t" for character in rest)  # spaces/tabs only
                 ):
                     fence_char, fence_len = "", 0  # the ONE shape that may close it
-                # else: a mismatched marker, a nested opener, a shorter run, an info string or
-                # an over-indented marker. None of those closes the active fence.
+                # else: a mismatched marker, a nested opener, a shorter run or an info string.
+                # None of those closes the active fence.
                 continue
+            # run < 3, or indentation past column three: not a fence line on either side.
         if FORMAL_DISPOSITION_PREFIX not in stripped.upper():
             continue  # not formal-looking: still ABSENT so far, keep scanning
         if fence_char:

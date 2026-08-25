@@ -17110,8 +17110,11 @@ workstreams:
           of those pre-existing suites -- none was additive-only. The number of INDIVIDUAL
           assertion LINES re-anchored, counted as replaced assert lines in the base-to-head
           diff, is 59. Pre-existing suites' own assertion totals moved 4237 to 4301, a net
-          increase of 64; the new suite contributes 269 assertions of its own on top, so the
-          repository-wide total moves 4237 to 4570, a net increase of 333. Each re-anchored
+          increase of 64; the new suite contributes 314 assertions of its own on top, so the
+          total across the 17 changed test files moves 4237 to 4615, a net increase of 378.
+          That category counts the CHANGED test files only -- the paths come from
+          git diff --name-only BASE_SHA -- test_*.py -- and is never a repository-wide
+          total, the naming DELTA review 5019911766 MINOR 1 corrected. Each re-anchored
           assertion was moved onto an IMMUTABLE CLOSED lifecycle fact -- its own unit's merge
           SHA -- rather than against a live working tree that a lawful successor now also
           occupies. Two of the sixteen, by way of illustration and not as a complete list:
@@ -17129,10 +17132,13 @@ workstreams:
 
           THE LOAD-BEARING DIGEST IS NOW STALE, BY DESIGN, AND IS NOT REPAIRED HERE.
           level1_stage1_execution_authorization.py is LOAD_BEARING_RELPATHS index 0. Its CURRENT
-          identity, after the BLOCKING 1 bounded correction below, is SHA-256
+          identity, after the DELTA review 5019911766 BLOCKING 1 bounded correction below, is
+          SHA-256 5d1c33a1828cd08f2d4e4aad78cc9cff77c496154e3038b212cb73f30fe7e76b, blob
+          d554c2f409a129dfcde408cbfa54a49f82a091b6. THREE superseded values are RETAINED above
+          and elsewhere in this register as NEGATIVE PINS, never overwritten: the first
+          corrected value, SHA-256
           aa34c5c7264653b8edc7e35253ada87323c6f3c3b114a786e3ada15f46950d99, blob
-          2c2e6748739ab95937231ab40b27a72738bb5e63. TWO superseded values are RETAINED above
-          and elsewhere in this register as NEGATIVE PINS, never overwritten: the reviewed-head
+          2c2e6748739ab95937231ab40b27a72738bb5e63; the reviewed-head
           value, SHA-256 55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c, blob
           07d62cabca24b278b9b458b015f0dee7f85ca24f; and the bound-merge value, SHA-256
           4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541, blob
@@ -17144,11 +17150,23 @@ workstreams:
           later, separately authorized step-8-equivalent rebinding unit, and is applied by
           nothing here.
 
-          VALIDATION. New adversarial suite 478 tests; non-vacuity 349 of 478 fail at the
+          EVIDENCE CLASSIFICATION (DELTA review 5019911766 MINOR 2). Two of the five D5
+          figures are EXTERNALLY MEASURED evidence, not self-verifying values. The suite
+          INDEPENDENTLY RE-DERIVES the suite assertion count, the suite test count, the
+          changed-file assertion total, and the non-vacuity DENOMINATOR (that same test
+          count). It CROSS-CHECKS the non-vacuity NUMERATOR and the mutation-probe tally
+          between this register and the decision record, and claims nothing more: the
+          numerator comes from running the suite against a pristine base checkout, and the
+          probe harness is not committed, so no lawful in-suite mechanism recounts either.
+          No surface claims all five are independently re-derived.
+
+          VALIDATION. New adversarial suite 736 tests; non-vacuity 473 of 736 fail at the
           unchanged base, measured by running the suite against a pristine base checkout whose
           module digest was verified as 4ff28941 first, never extrapolated; mutation probes
-          51 of 51 caught with 0 missed -- 9 for the BLOCKING 1 fence rule, 6 for D1-D4 and 9
-          for D5, one of which adds a test without updating the records -- every probed file
+          62 of 62 caught with 0 missed -- 6 for the BLOCKING 1 fence rule as reviewed, 6 for
+          D1-D4, 9 for D5, one of which adds a test without updating the records, 5 for every
+          clause of the DELTA opener rule, 4 for the DELTA closer and line-splitting rules and
+          2 for the DELTA record classifications -- every probed file
           restored byte-identically and SHA-256-verified; zero-write rehearsal through all three
           real consumer paths writing no lane record, no AUTHORIZATION_ROOT, no attestation, no
           claim and no results file, with both predicates still False afterwards.

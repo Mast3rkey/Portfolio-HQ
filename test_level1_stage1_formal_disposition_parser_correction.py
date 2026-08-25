@@ -1356,10 +1356,311 @@ class TestBlockingOneCorrectionShape:
         assert changed == {"parse_formal_disposition"}, sorted(changed)
 
     def test_the_closer_rule_names_all_three_conditions(self):
+        """DELTA 5019911766: the suffix check moved off ``stripped`` onto the RAW line."""
         parser = _toplevel(_live_source())["parse_formal_disposition"]
         assert "marker == fence_char" in parser  # same character
         assert "run >= fence_len" in parser  # at least the opening length
-        assert "stripped[run:].strip()" in parser  # marker and spaces only
+        assert r'character in " \t"' in parser  # marker, then ASCII spaces/tabs only
+        assert "stripped[run:].strip()" not in parser  # the superseded Unicode-broad form
+
+
+# =====================================================================================
+# 7-quater. DELTA review 5019911766 BLOCKING 1 -- a fence is a REAL CommonMark fence,
+#           on BOTH sides of the state transition
+# =====================================================================================
+
+#: The head DELTA review 5019911766 was anchored to. Every attack below AUTHENTICATED there.
+DELTA_REVIEWED_HEAD_SHA = "30a5cf0c904e0fd90d12eb9671e5561f1a369105"
+
+#: https://spec.commonmark.org/current/#fenced-code-blocks is the syntax authority. An opening
+#: fence takes 0-3 columns of ASCII-space indentation (a tab reaches column four and cannot
+#: open), needs three or more identical backticks or tildes, and -- for a BACKTICK fence only --
+#: an info string containing no backtick. A closer matches the opener's character, is at least
+#: as long, sits within the same 0-3 columns, and carries only spaces or tabs after the marker.
+OPENER_ATTACKS: dict[str, str] = {
+    # the three bodies the review names verbatim
+    "four-space pseudo-opener, then the real opener":
+        f"    {BT}\n{BT}\n{PREFIX} {APPROVE}\n",
+    "backtick-in-info pseudo-opener, then the real opener":
+        f"{BT}bad`\n{BT}\n{PREFIX} {APPROVE}\n",
+    # leading tabs and further over-indentation
+    "leading-TAB pseudo-opener, then the real opener":
+        f"\t{BT}\n{BT}\n{PREFIX} {APPROVE}\n",
+    "five-space pseudo-opener, then the real opener":
+        f"     {BT}\n{BT}\n{PREFIX} {APPROVE}\n",
+    "NBSP-prefixed pseudo-opener, then the real opener":
+        f"\u00a0{BT}\n{BT}\n{PREFIX} {APPROVE}\n",
+    "tilde four-space pseudo-opener, then the real opener":
+        f"    {TL}\n{TL}\n{PREFIX} {APPROVE}\n",
+    "backtick-in-info with a longer run":
+        f"{'`' * 5}x`y\n{'`' * 5}\n{PREFIX} {APPROVE}\n",
+}
+
+CLOSER_ATTACKS: dict[str, str] = {
+    "NBSP-prefixed pseudo-closer inside a real fence":
+        f"{BT}\n\u00a0{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "TAB-prefixed pseudo-closer inside a real fence":
+        f"{BT}\n\t{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "EM-SPACE pseudo-closer inside a real fence":
+        f"{BT}\n\u2003{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "HAIR-SPACE pseudo-closer inside a real fence":
+        f"{BT}\n\u200a{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "IDEOGRAPHIC-SPACE pseudo-closer inside a real fence":
+        f"{BT}\n\u3000{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "VERTICAL-TAB pseudo-closer inside a real fence":
+        f"{BT}\n\x0b{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "FORM-FEED pseudo-closer inside a real fence":
+        f"{BT}\n\x0c{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "U+2028 LINE SEPARATOR pseudo-closer":
+        f"{BT}\n\u2028{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "U+0085 NEL pseudo-closer":
+        f"{BT}\n\u0085{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "four-space over-indented pseudo-closer":
+        f"{BT}\n    {BT}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "closer carrying an info string":
+        f"{BT}\n{BT}tail\n{PREFIX} {APPROVE}\n{BT}\n",
+    "shorter same-character marker cannot close":
+        f"{'`' * 4}\n{BT}\n{PREFIX} {APPROVE}\n{'`' * 4}\n",
+    "mismatched tilde marker inside a backtick fence":
+        f"{BT}\n{TL}\n{PREFIX} {APPROVE}\n{BT}\n",
+    "unclosed fence swallows everything after it":
+        f"{BT}\nsample\n\n{PREFIX} {APPROVE}\n",
+}
+
+MARKER_LINE_ATTACKS: dict[str, str] = {
+    "an opener's info string carries an adverse verdict":
+        f"{BT} {PREFIX} CHANGES REQUIRED\ncode\n{BT}\n{PREFIX} {APPROVE}\n",
+    "a closing-shaped marker line carries an adverse verdict":
+        f"{BT}\ncode\n{BT} {PREFIX} CHANGES REQUIRED\n{PREFIX} {APPROVE}\n",
+    "an indented marker line carries an adverse verdict":
+        f"  {TL} {PREFIX} CHANGES REQUIRED\n{TL}\n{PREFIX} {APPROVE}\n",
+}
+
+DELTA_BLOCKING_ONE_ATTACKS: dict[str, str] = {
+    **OPENER_ATTACKS,
+    **CLOSER_ATTACKS,
+    **MARKER_LINE_ATTACKS,
+}
+
+#: Legitimate CommonMark that MUST keep working. The correction may only tighten what is
+#: invalid; it may never refuse a fence the specification accepts.
+COMMONMARK_POSITIVE_CONTROLS: dict[str, str] = {
+    "unfenced approval": f"{PREFIX} {APPROVE}\n",
+    "closed fence, then the approval": f"{BT}\ncode\n{BT}\n{PREFIX} {APPROVE}\n",
+    "zero-space opener and closer": f"{BT}\ncode\n{BT}\n{PREFIX} {APPROVE}\n",
+    "one-space indented opener and closer": f" {BT}\ncode\n {BT}\n{PREFIX} {APPROVE}\n",
+    "two-space indented opener and closer": f"  {BT}\ncode\n  {BT}\n{PREFIX} {APPROVE}\n",
+    "three-space indented opener and closer": f"   {BT}\ncode\n   {BT}\n{PREFIX} {APPROVE}\n",
+    "closer with trailing spaces": f"{BT}\ncode\n{BT}   \n{PREFIX} {APPROVE}\n",
+    "closer with trailing tabs": f"{BT}\ncode\n{BT}\t\t\n{PREFIX} {APPROVE}\n",
+    "closer with mixed trailing spaces and tabs": f"{BT}\ncode\n{BT} \t \n{PREFIX} {APPROVE}\n",
+    "closer longer than the opener": f"{BT}\ncode\n{'`' * 6}\n{PREFIX} {APPROVE}\n",
+    "legal backtick info string": f"{BT}python\ncode\n{BT}\n{PREFIX} {APPROVE}\n",
+    "tilde info string MAY contain a backtick": f"{TL}bad`\n{TL}\n{PREFIX} {APPROVE}\n",
+    "tilde fence, closed": f"{TL}\ncode\n{TL}\n{PREFIX} {APPROVE}\n",
+    "CRLF line endings": f"{BT}\r\ncode\r\n{BT}\r\n{PREFIX} {APPROVE}\r\n",
+    "bare-CR line endings": f"{BT}\rcode\r{BT}\r{PREFIX} {APPROVE}\r",
+    "a two-character run is not a fence marker": f"``\n{PREFIX} {APPROVE}\n",
+}
+
+
+class TestDeltaBlockingOneFenceRecognition:
+    """Every invalid opener and closer must fail closed, and must have authenticated before."""
+
+    @pytest.mark.parametrize("name", sorted(DELTA_BLOCKING_ONE_ATTACKS))
+    def test_the_attack_now_fails_closed(self, name):
+        assert P(DELTA_BLOCKING_ONE_ATTACKS[name]) is MALFORMED
+
+    @pytest.mark.parametrize("name", sorted(DELTA_BLOCKING_ONE_ATTACKS))
+    def test_the_attack_never_yields_the_approval(self, name):
+        assert P(DELTA_BLOCKING_ONE_ATTACKS[name]) != APPROVE
+
+    @pytest.mark.parametrize("name", sorted(DELTA_BLOCKING_ONE_ATTACKS))
+    def test_the_attack_is_malformed_not_absent(self, name):
+        assert P(DELTA_BLOCKING_ONE_ATTACKS[name]) is not None
+
+    def test_the_named_review_bodies_are_reproduced_verbatim(self):
+        """The three bodies review 5019911766 quotes, character for character."""
+        assert DELTA_BLOCKING_ONE_ATTACKS[
+            "four-space pseudo-opener, then the real opener"
+        ] == "    ```\n```\nFORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE\n"
+        assert DELTA_BLOCKING_ONE_ATTACKS[
+            "backtick-in-info pseudo-opener, then the real opener"
+        ] == "```bad`\n```\nFORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE\n"
+        assert DELTA_BLOCKING_ONE_ATTACKS[
+            "NBSP-prefixed pseudo-closer inside a real fence"
+        ] == (
+            "```\n\u00a0```\nFORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+            "\n```\n"
+        )
+
+
+class TestDeltaBlockingOneNonVacuity:
+    """Measured against the reviewed head by EXECUTING it, never by matching its text."""
+
+    @staticmethod
+    def _delta_reviewed_parse(body: str):
+        name = "_delta_head_" + DELTA_REVIEWED_HEAD_SHA[:12]
+        module = sys.modules.get(name)
+        if module is None:
+            module = types.ModuleType(name)
+            module.__file__ = str(ROOT / MODULE_RELPATH)
+            sys.modules[name] = module
+            source = _git("show", f"{DELTA_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+            exec(compile(source, module.__file__, "exec"), module.__dict__)
+        return module.parse_formal_disposition(body)
+
+    def test_every_attack_authenticated_at_the_reviewed_head(self):
+        """Measured, not asserted: which shapes really did authenticate at 30a5cf0c."""
+        authenticated = {
+            name
+            for name, body in DELTA_BLOCKING_ONE_ATTACKS.items()
+            if self._delta_reviewed_parse(body) == APPROVE
+        }
+        # every OPENER attack is new ground this DELTA opened
+        for name in OPENER_ATTACKS:
+            assert name in authenticated, name
+        assert len(authenticated) >= len(OPENER_ATTACKS)
+
+    def test_the_three_named_bodies_authenticated_at_the_reviewed_head(self):
+        for name in (
+            "four-space pseudo-opener, then the real opener",
+            "backtick-in-info pseudo-opener, then the real opener",
+            "NBSP-prefixed pseudo-closer inside a real fence",
+        ):
+            assert self._delta_reviewed_parse(DELTA_BLOCKING_ONE_ATTACKS[name]) == APPROVE
+
+    @pytest.mark.parametrize("name", sorted(COMMONMARK_POSITIVE_CONTROLS))
+    def test_the_correction_only_tightened(self, name):
+        """A control that worked at the reviewed head must still work now."""
+        body = COMMONMARK_POSITIVE_CONTROLS[name]
+        if self._delta_reviewed_parse(body) == APPROVE:
+            assert P(body) == APPROVE, name
+
+
+class TestCommonMarkPositiveControls:
+    """Legitimate fences the specification accepts must keep parsing."""
+
+    @pytest.mark.parametrize("name", sorted(COMMONMARK_POSITIVE_CONTROLS))
+    def test_the_control_still_authenticates(self, name):
+        assert P(COMMONMARK_POSITIVE_CONTROLS[name]) == APPROVE
+
+    def test_a_genuinely_fenced_approval_is_still_refused(self):
+        assert P(f"{BT}\n{PREFIX} {APPROVE}\n{BT}\n") is MALFORMED
+
+    def test_indentation_is_counted_in_ascii_spaces_only(self):
+        """Three spaces open; four do not. The boundary is exact."""
+        assert P(f"   {BT}\ncode\n   {BT}\n{PREFIX} {APPROVE}\n") == APPROVE
+        assert P(f"    {BT}\n{BT}\n{PREFIX} {APPROVE}\n") is MALFORMED
+
+
+class TestDeltaBlockingOneAtTheThreeConsumerSeams:
+    """The same attacks, driven through every real production consumer."""
+
+    @pytest.mark.parametrize("name", sorted(DELTA_BLOCKING_ONE_ATTACKS))
+    @pytest.mark.parametrize("state", ["COMMENTED", "APPROVED"])
+    def test_consumer_one_stops_at_the_parser_gate(self, name, state, monkeypatch):
+        recorder = _run_consumer_one(
+            DELTA_BLOCKING_ONE_ATTACKS[name], monkeypatch, state=state
+        )
+        assert not any(c.startswith("reviews:") for c in recorder.calls), recorder.calls
+
+    @pytest.mark.parametrize("name", sorted(DELTA_BLOCKING_ONE_ATTACKS))
+    @pytest.mark.parametrize("state", ["COMMENTED", "APPROVED"])
+    def test_consumer_two_reports_the_malformed_error(self, name, state):
+        errors = _run_consumer_two(DELTA_BLOCKING_ONE_ATTACKS[name], state=state)
+        assert any("is not in an accepted form" in e for e in errors), errors
+        assert not any("carries no parseable" in e for e in errors), errors
+
+    @pytest.mark.parametrize("name", sorted(DELTA_BLOCKING_ONE_ATTACKS))
+    def test_consumer_three_fails_finality_despite_a_native_approved_state(self, name):
+        errors = _run_consumer_three(DELTA_BLOCKING_ONE_ATTACKS[name], "APPROVED")
+        assert errors
+        assert any("not in an accepted form" in e for e in errors), errors
+
+    def test_consumer_three_still_preserves_the_genuinely_absent_policy(self):
+        assert _run_consumer_three("Looks fine, shipping it.", "APPROVED") == []
+
+    @pytest.mark.parametrize("name", sorted(COMMONMARK_POSITIVE_CONTROLS))
+    def test_a_legitimate_control_still_reaches_the_consumers(self, name, monkeypatch):
+        recorder = _run_consumer_one(COMMONMARK_POSITIVE_CONTROLS[name], monkeypatch)
+        assert any(c.startswith("reviews:") for c in recorder.calls), name
+
+
+class TestDeltaBlockingOneCorrectionShape:
+    """The repair stayed inside the parser and used no broad Unicode-whitespace operation."""
+
+    def test_only_the_parser_changed_since_the_delta_reviewed_head(self):
+        reviewed = _toplevel(_git("show", f"{DELTA_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}"))
+        live = _toplevel(_live_source())
+        changed = {n for n in live if reviewed.get(n) != live[n]}
+        assert changed == {"parse_formal_disposition"}, sorted(changed)
+
+    def test_the_repair_added_no_module_level_name(self):
+        def names(source: str) -> set[str]:
+            found = set()
+            for node in ast.parse(source).body:
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    found.add(node.name)
+                elif isinstance(node, ast.Assign):
+                    found.update(t.id for t in node.targets if isinstance(t, ast.Name))
+                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                    found.add(node.target.id)
+            return found
+
+        assert names(_live_source()) == names(
+            _git("show", f"{DELTA_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+        )
+
+    def test_the_repair_added_no_call_site(self):
+        assert len(_call_sites(_live_source())) == 3
+
+    def test_fence_decisions_use_no_broad_unicode_whitespace_operation(self):
+        """The specific defect: strip()/lstrip() treated NBSP and friends as indentation."""
+        parser = _toplevel(_live_source())["parse_formal_disposition"]
+        start = parser.index("indent = 0")
+        end = parser.index("if FORMAL_DISPOSITION_PREFIX not in stripped.upper()")
+        fence_block = parser[start:end]
+        for banned in (".strip()", ".lstrip()", ".rstrip()", "isspace()"):
+            assert banned not in fence_block, banned
+        assert 'line[indent] == " "' in fence_block  # ASCII spaces only
+
+    def test_the_opener_rule_names_all_of_its_conditions(self):
+        parser = _toplevel(_live_source())["parse_formal_disposition"]
+        assert "run >= 3 and indent <= 3" in parser
+        assert 'marker == "`" and "`" in rest' in parser
+
+    def test_the_closer_rule_names_all_of_its_conditions(self):
+        parser = _toplevel(_live_source())["parse_formal_disposition"]
+        assert "marker == fence_char" in parser
+        assert "run >= fence_len" in parser
+        assert r'character in " \t"' in parser
+
+    def test_lines_are_split_the_way_commonmark_defines_them(self):
+        """``splitlines()`` breaks on U+000B/U+2028/U+0085; Markdown does not."""
+        parser = _toplevel(_live_source())["parse_formal_disposition"]
+        calls = [
+            node
+            for node in ast.walk(ast.parse(parser))
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "splitlines"
+        ]
+        assert calls == [], "splitlines() must not decide line boundaries"
+        assert 'replace("\\r\\n", "\\n")' in parser
+        assert 'replace("\\r", "\\n")' in parser
+        assert '.split("\\n")' in parser
+
+    def test_every_real_review_body_is_unchanged_by_this_correction(self):
+        """Blast radius of the DELTA repair, measured: ZERO real reviews change."""
+        reviewed = TestDeltaBlockingOneNonVacuity._delta_reviewed_parse
+        for body in list(REAL_REVIEW_BODIES.values()) + [REVIEW_5000581301_LINE]:
+            before, after = reviewed(body), P(body)
+            classify = lambda v: (  # noqa: E731
+                "MALFORMED" if not isinstance(v, str) and v is not None
+                else "ABSENT" if v is None else v
+            )
+            assert classify(before) == classify(after)
 
 
 # =====================================================================================
@@ -1626,8 +1927,14 @@ class TestTheZeroWriteRehearsal:
 # =====================================================================================
 
 
-def _measured_repository_wide_assertions() -> int:
-    """Re-derive the repository-wide assertion total exactly as the records' figure was made."""
+def _measured_changed_file_assertions() -> int:
+    """Assertions across the CHANGED test files, re-derived as the records' figure was made.
+
+    Named for what it actually measures. DELTA review 5019911766 MINOR 1: the paths come from
+    ``git diff --name-only BASE_SHA -- test_*.py``, so this is the total across the changed
+    test files only -- never a repository-wide total. It is not renamed to widen the
+    mechanism; the mechanism is correct for the category the records now name.
+    """
     changed = _git("diff", "--name-only", BASE_SHA, "--", "test_*.py").split()
     added = {
         line.split("\t")[1]
@@ -1711,6 +2018,36 @@ class TestTheGovernanceRecord:
         assert reviewed in flat
         assert reviewed != hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
 
+    def test_the_delta_reviewed_module_identity_is_also_retained(self):
+        """DELTA review 5019911766's BLOCKING 1 supersedes a THIRD recorded identity.
+
+        The reviewed head 30a5cf0c carried the first corrected parser, whose opener rule the
+        DELTA review rejected. Retaining it as a negative pin means a silent revert to the
+        reviewed-and-rejected opener fails rather than quietly reinstating it.
+        """
+        delta = hashlib.sha256(
+            _git("show", f"{DELTA_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
+        ).hexdigest()
+        flat = WORKSTREAMS.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
+        assert delta in flat
+        assert delta != hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+
+    def test_the_decision_records_all_four_module_identities(self):
+        """The decision's §H table carries the bound, both superseded and the current value."""
+        flat = DECISION.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
+        live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+        for pin in (
+            BASE_MODULE_SHA256,
+            hashlib.sha256(
+                _git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
+            ).hexdigest(),
+            hashlib.sha256(
+                _git("show", f"{DELTA_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
+            ).hexdigest(),
+            live,
+        ):
+            assert pin in flat, pin
+
     def test_the_register_no_longer_claims_the_pull_request_number_is_unbound(self):
         """MINOR 2 of review 5015482594: structured pr and prose must agree."""
         text = WORKSTREAMS.read_text(encoding="utf-8")
@@ -1732,9 +2069,12 @@ class TestTheGovernanceRecord:
         flat = " ".join(self._gate_text().split())
         assert "and the bound-merge value BOTH supersede" not in flat
         assert " -- is RETAINED " not in flat
-        assert "TWO superseded values are RETAINED" in flat
-        # the pins themselves survive the rewording
+        assert "THREE superseded values are RETAINED" in flat
+        assert "TWO superseded values are RETAINED" not in flat
+        # the pins themselves survive the rewording -- the DELTA correction ADDED one
         for pin in (
+            "aa34c5c7264653b8edc7e35253ada87323c6f3c3b114a786e3ada15f46950d99",
+            "2c2e6748739ab95937231ab40b27a72738bb5e63",
             "55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c",
             "07d62cabca24b278b9b458b015f0dee7f85ca24f",
             BASE_MODULE_SHA256,
@@ -1803,9 +2143,19 @@ class TestTheGovernanceRecord:
     # The defect these close is specific: D1-D4 added tests, and every figure describing
     # this suite silently went stale because each was a literal typed into prose. Pinning
     # the literals again would only move the staleness one commit further out. These
-    # assertions instead re-derive each number through the SAME mechanism that produced
-    # it and compare it to what the records claim, so adding a test either updates the
-    # records or fails here.
+    # assertions below therefore split the figures HONESTLY into two classes, which
+    # DELTA review 5019911766 MINOR 2 found the earlier wording conflated:
+    #
+    #   INDEPENDENTLY RE-DERIVED here -- suite assertions (AST), the suite's test count
+    #   (pytest's own collection), the changed-file assertion total (base-to-head diff),
+    #   and the non-vacuity DENOMINATOR (which is that same test count).
+    #
+    #   EXTERNALLY MEASURED, cross-checked only -- the non-vacuity NUMERATOR and the
+    #   mutation-probe tally. Deriving either in-suite would mean building a base
+    #   checkout and re-running the whole suite, or committing the probe harness, which
+    #   is a large new mechanism for a phrase. These two are therefore stated as external
+    #   evidence and pinned by requiring the decision and the register to agree, never by
+    #   claiming self-verification they do not have.
     # ---------------------------------------------------------------------------------
 
     @staticmethod
@@ -1843,14 +2193,14 @@ class TestTheGovernanceRecord:
         assert decision == measured, (decision, measured)
         assert register == measured, (register, measured)
 
-    def test_the_stated_repository_wide_assertion_total_equals_the_measured_one(self):
-        measured = _measured_repository_wide_assertions()
+    def test_the_stated_changed_file_assertion_total_equals_the_measured_one(self):
+        measured = _measured_changed_file_assertions()
         decision = self._stated(
-            r"Repository-wide assertion total \| 4 237 → \*\*([\d ,]+)\*\*",
+            r"Assertions across the 17 changed test files \| 4 237 → \*\*([\d ,]+)\*\*",
             DECISION.read_text(encoding="utf-8"),
         )
         register = self._stated(
-            r"repository-wide total moves 4237 to ([\d]+)",
+            r"total across the 17 changed test files moves 4237 to ([\d]+)",
             " ".join(self._gate_text().split()),
         )
         assert decision == measured, (decision, measured)
@@ -1868,8 +2218,15 @@ class TestTheGovernanceRecord:
         assert decision == measured, (decision, measured)
         assert register == measured, (register, measured)
 
-    def test_the_non_vacuity_denominator_is_the_real_test_count(self):
-        """The exact staleness class D5 was: the denominator drifted as tests were added."""
+    def test_the_non_vacuity_denominator_is_derived_and_the_numerator_cross_checked(self):
+        """Denominator: independently re-derived. Numerator: EXTERNALLY MEASURED.
+
+        DELTA review 5019911766 MINOR 2, stated plainly: this test re-derives only the
+        denominator, which is the suite's real test count and the exact figure D5 saw go
+        stale. The numerator is external evidence -- it comes from running this suite against
+        a pristine base checkout -- so it is cross-checked between the two records and
+        range-bounded, and is NOT claimed to be self-verifying.
+        """
         measured = self._collected_test_count()
         text = DECISION.read_text(encoding="utf-8")
         flat = " ".join(self._gate_text().split())
@@ -1883,7 +2240,11 @@ class TestTheGovernanceRecord:
         assert 0 < dec_num <= measured, (dec_num, measured)
 
     def test_the_two_records_agree_on_the_mutation_probe_count(self):
-        """The probe harness is scratchpad tooling, so the records pin each other."""
+        """EXTERNALLY MEASURED, cross-checked only -- never independently re-derived.
+
+        The probe harness is scratchpad tooling and is not committed, so no lawful in-suite
+        mechanism can recount it. The records pin each other; that is the whole claim.
+        """
         text = DECISION.read_text(encoding="utf-8")
         flat = " ".join(self._gate_text().split())
         dec = self._stated(r"Mutation probes \| \*\*([\d]+) / [\d]+ caught", text)
@@ -1893,6 +2254,48 @@ class TestTheGovernanceRecord:
         assert dec == dec_total, (dec, dec_total)
         assert reg == reg_total, (reg, reg_total)
         assert dec == reg, (dec, reg)
+
+    #: The two figures no committed mechanism re-derives. Named once, asserted everywhere.
+    EXTERNALLY_MEASURED = ("non-vacuity numerator", "mutation-probe tally")
+
+    def test_the_records_classify_the_two_external_figures_honestly(self):
+        """DELTA review 5019911766 MINOR 2: no surface may claim all five are re-derived."""
+        for surface in (DECISION.read_text(encoding="utf-8"), self._gate_text()):
+            flat = " ".join(surface.split())
+            assert "externally measured" in flat.lower(), flat[:200]
+            for overclaim in (
+                "five new assertions re-derive each",
+                "all five figures are independently re-derived",
+                "all five values are self-verifying",
+                "five assertions re-derive each figure",
+            ):
+                assert overclaim.lower() not in flat.lower(), overclaim
+
+    def test_the_suite_really_derives_exactly_the_figures_it_claims_to(self):
+        """The classification is checked against the code, not merely asserted in prose.
+
+        A test that only reads the two records and compares them is a cross-check. One that
+        calls a measurement helper is a derivation. This pins which is which, so the prose
+        cannot drift back into claiming more than the code does.
+        """
+        source = Path(__file__).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        bodies = {
+            node.name: ast.get_source_segment(source, node)
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef) and node.name.startswith("test_")
+        }
+        derivers = ("_collected_test_count", "_measured_changed_file_assertions", "ast.walk")
+        for name in (
+            "test_the_stated_suite_assertion_count_equals_the_measured_one",
+            "test_the_stated_test_count_equals_the_collected_one",
+            "test_the_stated_changed_file_assertion_total_equals_the_measured_one",
+            "test_the_non_vacuity_denominator_is_derived_and_the_numerator_cross_checked",
+        ):
+            assert any(d in bodies[name] for d in derivers), name
+        # the probe tally has NO derivation available and must not pretend otherwise
+        probe = bodies["test_the_two_records_agree_on_the_mutation_probe_count"]
+        assert not any(d in probe for d in derivers), probe
 
     def test_the_register_states_one_measured_test_change_account(self):
         """MINOR 3 of review 5015482594: one measurement, categories named precisely."""
