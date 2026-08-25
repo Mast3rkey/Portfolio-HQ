@@ -1030,6 +1030,18 @@ class TestEveryRealReviewParsesIdenticallyExceptTheDefectiveOne:
 #: never by matching its text.
 REVIEWED_HEAD_SHA = "e5732620606628051c93c5fbccdbc74037405c2e"
 
+#: The exact files this bounded correction touches, and the only ones its line-length
+#: claim is made about.
+NEW_SUITE_RELPATH = "test_level1_stage1_formal_disposition_parser_correction.py"
+D1_TO_D4_FILES: frozenset[str] = frozenset(
+    {
+        "operations/WORKSTREAMS.yaml",
+        NEW_SUITE_RELPATH,
+        "governance/decisions/"
+        "XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+    }
+)
+
 BT = "`" * 3
 BT4 = "`" * 4
 TL = "~" * 3
@@ -1041,7 +1053,8 @@ FENCE_ESCAPE_ATTACKS: dict[str, str] = {
     "info-string marker inside a backtick fence": f"{BT}\n{BT}python\n{PREFIX} {APPROVE}\n{BT}\n",
     "shorter same-character marker cannot close": f"{BT4}\n{BT}\n{PREFIX} {APPROVE}\n{BT4}\n",
     "mismatched backtick marker inside a tilde fence": f"{TL}\n{BT}\n{PREFIX} {APPROVE}\n{TL}\n",
-    "a closer carrying an info string is not a closer": f"{BT}\n{BT}tail\n{PREFIX} {APPROVE}\n{BT}\n",
+    "a closer carrying an info string is not a closer":
+        f"{BT}\n{BT}tail\n{PREFIX} {APPROVE}\n{BT}\n",
     "an over-indented marker cannot close": f"{BT}\n    {BT}\n{PREFIX} {APPROVE}\n{BT}\n",
     "a tab-indented marker cannot close": f"{BT}\n\t{BT}\n{PREFIX} {APPROVE}\n{BT}\n",
     "a nested opener does not close the active fence": f"{BT}\n{BT}\n{BT}\n{PREFIX} {APPROVE}\n",
@@ -1613,6 +1626,12 @@ class TestTheZeroWriteRehearsal:
 
 
 class TestTheGovernanceRecord:
+    @staticmethod
+    def _gate_text() -> str:
+        text = WORKSTREAMS.read_text(encoding="utf-8")
+        gate = text.split("gate: xasset0056-formal-disposition-parser-correction", 1)[1]
+        return gate.split("      - gate:", 1)[0]
+
     def test_the_decision_file_exists(self):
         assert DECISION.exists()
 
@@ -1682,6 +1701,82 @@ class TestTheGovernanceRecord:
         assert "pr: 357" in gate
         assert "status: in_progress" in gate
         assert "BOUND pull request #357" in gate
+
+    def test_the_register_digest_paragraph_is_well_formed(self):
+        """D1: the digest paragraph named two superseded values with a broken sentence.
+
+        The defect was a plural subject ("the reviewed-head value ... and the bound-merge
+        value") governed by a singular verb ("is RETAINED"), with a dangling "BOTH supersede"
+        clause between them. Both superseded identities must still be present -- the negative
+        pins are the point -- but they must be stated as a list, not as a broken sentence.
+        """
+        flat = " ".join(self._gate_text().split())
+        assert "and the bound-merge value BOTH supersede" not in flat
+        assert " -- is RETAINED " not in flat
+        assert "TWO superseded values are RETAINED" in flat
+        # the pins themselves survive the rewording
+        for pin in (
+            "55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c",
+            "07d62cabca24b278b9b458b015f0dee7f85ca24f",
+            BASE_MODULE_SHA256,
+            BASE_MODULE_BLOB,
+        ):
+            assert pin in flat, pin
+
+    def test_the_register_never_lists_two_suites_as_if_they_were_all(self):
+        """D2: a colon introduced a two-item list immediately after stating sixteen suites.
+
+        That is a fresh instance of exactly the inconsistency class review 5015482594 MINOR 3
+        identified, so it is pinned rather than left to prose discipline.
+        """
+        flat = " ".join(self._gate_text().split())
+        assert "16 are PRE-EXISTING suites" in flat
+        assert "occupies: XASSET-0053's suite at" not in flat
+        assert "Two of the sixteen, by way of illustration and not as a complete list" in flat
+
+    @staticmethod
+    def _over_long_added(since: str, relpath: str) -> list[str]:
+        """Lines longer than 100 columns that ``since..worktree`` ADDS to ``relpath``.
+
+        A Markdown table row cannot wrap, so it is excluded by shape rather than by
+        exception-listing individual lines.
+        """
+        diff = _git("diff", since, "--", relpath).splitlines()
+        added = [ln[1:] for ln in diff if ln.startswith("+") and not ln.startswith("+++")]
+        return [ln for ln in added if len(ln) > 100 and not ln.lstrip().startswith("|")]
+
+    @pytest.mark.parametrize("relpath", sorted(D1_TO_D4_FILES))
+    def test_the_bounded_correction_adds_no_over_long_line(self, relpath):
+        """D3/D4, measured over the CORRECTION range only.
+
+        Scoped deliberately. Earlier commits on this pull request added long lines of their
+        own -- among them a ``related_decisions:`` flow list and a repository-path constant
+        that cannot be wrapped at all -- and reflowing those would widen this bounded
+        correction past the four defects it is authorized to fix. What is pinned here is the
+        claim actually made: the correction commit itself adds none.
+        """
+        offenders = self._over_long_added(REVIEWED_HEAD_SHA, relpath)
+        assert offenders == [], [(len(o), o[:70]) for o in offenders]
+
+    @staticmethod
+    def _over_long_in(text: str) -> list[str]:
+        return [
+            ln for ln in text.splitlines()
+            if len(ln) > 100 and not ln.lstrip().startswith("|")
+        ]
+
+    @pytest.mark.parametrize("relpath", sorted(D1_TO_D4_FILES))
+    def test_the_bounded_correction_does_not_worsen_the_file(self, relpath):
+        """The complementary half: the file's own long-line count may not GROW.
+
+        Together with the test above this bounds the correction from both sides -- it adds no
+        long line of its own, and it does not push a previously-acceptable line over the limit.
+        Measured worktree-versus-reviewed-head, so pre-existing long lines neither hide a
+        regression nor become this unit's to reflow.
+        """
+        was = self._over_long_in(_git("show", f"{REVIEWED_HEAD_SHA}:{relpath}"))
+        now = self._over_long_in((ROOT / relpath).read_text(encoding="utf-8"))
+        assert len(now) <= len(was), (len(was), len(now))
 
     def test_the_register_states_one_measured_test_change_account(self):
         """MINOR 3 of review 5015482594: one measurement, categories named precisely."""

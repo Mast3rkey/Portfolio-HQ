@@ -309,8 +309,8 @@ whose `head_sha` is the exact merge SHA; and final post-CI verification and life
 self-reviewed, is not principal-accepted, and is not merged in the session that authored it.
 
 **K.1 — bounded correction, review `5015482594`.** The independent FULL exact-head review of
-`29e4969…..e573262…` returned **1 BLOCKING / 0 MAJOR / 2 MINOR / 0 NOTE**. All three findings are
-resolved in one linear fast-forward correction commit, with nothing amended and nothing
+`29e4969…..e573262…` returned **1 BLOCKING / 0 MAJOR / 2 MINOR / 0 NOTE**. All three findings
+are resolved in one linear fast-forward correction commit, with nothing amended and nothing
 force-pushed:
 
 | Finding | Resolution |

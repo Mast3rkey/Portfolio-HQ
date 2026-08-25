@@ -17112,13 +17112,15 @@ workstreams:
           diff, is 59. Pre-existing suites' own assertion totals moved 4237 to 4301, a net
           increase of 64; the new suite contributes 244 assertions of its own on top, so the
           repository-wide total moves 4237 to 4545, a net increase of 308. Each re-anchored
-          assertion was moved onto an IMMUTABLE CLOSED lifecycle fact -- its own unit's merge SHA -- rather than against a
-          live working tree that a lawful successor now also occupies: XASSET-0053's suite at
-          683c324629544a84d2cf75ebca37325e3375c479, and XASSET-0055's suite at
-          29e4969885970d942a5acecc1424fb2e2b080d60, its _changed_paths now measuring its own
-          closed base-to-merge range, which contains exactly the 15 files that pull request
-          reported. The defect-reproduction assertions were NOT relaxed to text matches: the
-          historical module is imported and its parser EXECUTED. EVERY superseded value is
+          assertion was moved onto an IMMUTABLE CLOSED lifecycle fact -- its own unit's merge
+          SHA -- rather than against a live working tree that a lawful successor now also
+          occupies. Two of the sixteen, by way of illustration and not as a complete list:
+          XASSET-0053's suite anchors at 683c324629544a84d2cf75ebca37325e3375c479; and
+          XASSET-0055's suite anchors at 29e4969885970d942a5acecc1424fb2e2b080d60, its
+          _changed_paths now measuring its own closed base-to-merge range, which contains
+          exactly the 15 files that pull request reported. The defect-reproduction assertions
+          were NOT relaxed to text matches: the historical module is imported and its parser
+          EXECUTED. EVERY superseded value is
           retained as a NEGATIVE PIN, so each field is bound at both ends and a silent revert of
           the authorized correction still fails. Nothing was deleted, skipped, xfailed, weakened
           or replaced by a looser presence check; every re-anchored suite's assertion count only
@@ -17129,12 +17131,12 @@ workstreams:
           level1_stage1_execution_authorization.py is LOAD_BEARING_RELPATHS index 0. Its CURRENT
           identity, after the BLOCKING 1 bounded correction below, is SHA-256
           aa34c5c7264653b8edc7e35253ada87323c6f3c3b114a786e3ada15f46950d99, blob
-          2c2e6748739ab95937231ab40b27a72738bb5e63. The reviewed-head value it supersedes --
-          SHA-256 55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c, blob
-          07d62cabca24b278b9b458b015f0dee7f85ca24f -- and the bound-merge value BOTH supersede --
-          SHA-256 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541, blob
-          f71b08b4ebe95f161c57cdbb2a924748f13af02d -- is RETAINED above and elsewhere in this
-          register as a negative pin, never overwritten. _verify_git_anchored_identity is
+          2c2e6748739ab95937231ab40b27a72738bb5e63. TWO superseded values are RETAINED above
+          and elsewhere in this register as NEGATIVE PINS, never overwritten: the reviewed-head
+          value, SHA-256 55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c, blob
+          07d62cabca24b278b9b458b015f0dee7f85ca24f; and the bound-merge value, SHA-256
+          4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541, blob
+          f71b08b4ebe95f161c57cdbb2a924748f13af02d. _verify_git_anchored_identity is
           byte-identical to the base and still raises enforcement drift. NO REBINDING AND NO
           RE-PINNING WERE PERFORMED: AUTHORIZING_DECISION remains XASSET-0049,
           AUTHORIZING_PULL_REQUEST remains 349, and REVIEWED_BASE_SHA remains
