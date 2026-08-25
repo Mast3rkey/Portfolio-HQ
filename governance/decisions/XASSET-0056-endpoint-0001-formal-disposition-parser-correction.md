@@ -225,8 +225,8 @@ MINOR 3 identified, where prose said "twelve suites", a table said 17, and the r
 | Pre-existing suites in which assertions were **re-anchored** | **16** (none additive-only) |
 | Individual assertion **lines** re-anchored (replaced `assert` lines, base→head diff) | **59** |
 | Pre-existing suites' own assertion totals | 4 237 → 4 301 (**+64**) |
-| New suite's own assertions | **244** |
-| Repository-wide assertion total | 4 237 → **4 545** (**+308**) |
+| New suite's own assertions | **269** |
+| Repository-wide assertion total | 4 237 → **4 570** (**+333**) |
 
 The new suite is a **new** file, not a predecessor, and is counted in **no** "existing changed
 suites" figure. Each re-anchored assertion was moved onto an **immutable closed lifecycle fact** —
@@ -274,9 +274,9 @@ here.
 
 | Check | Result |
 |---|---|
-| New adversarial suite | **465 tests**, all passing |
-| Non-vacuity against the exact base | **336 of 465 fail** at the unchanged base `29e4969…` |
-| Mutation probes | **36 / 36 caught, 0 missed** — including 9 covering every clause of the BLOCKING 1 fence rule; every probed file restored byte-identically and SHA-256-verified |
+| New adversarial suite | **478 tests**, all passing |
+| Non-vacuity against the exact base | **349 of 478 fail** at the unchanged base `29e4969…`, measured by running this suite against a pristine base checkout whose module digest was verified as `4ff28941…` first — never extrapolated |
+| Mutation probes | **51 / 51 caught, 0 missed** — 9 covering every clause of the BLOCKING 1 fence rule, 6 covering D1–D4, and 9 covering D5 (including one that adds a test without updating the records); every probed file restored byte-identically and SHA-256-verified |
 | Real-review blast radius | 6 real bodies parsed base→head: **exactly one** changes; parsed reviewed-head→corrected-head: **zero** change |
 | Zero-write rehearsal | all three consumer paths exercised; no lane record, no `AUTHORIZATION_ROOT`, no attestation, no claim, no results file; both predicates still `False` |
 | Re-anchored predecessor suites | assertion counts only grew; no deletion, skip, `xfail` or relaxation |

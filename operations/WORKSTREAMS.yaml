@@ -17110,8 +17110,8 @@ workstreams:
           of those pre-existing suites -- none was additive-only. The number of INDIVIDUAL
           assertion LINES re-anchored, counted as replaced assert lines in the base-to-head
           diff, is 59. Pre-existing suites' own assertion totals moved 4237 to 4301, a net
-          increase of 64; the new suite contributes 244 assertions of its own on top, so the
-          repository-wide total moves 4237 to 4545, a net increase of 308. Each re-anchored
+          increase of 64; the new suite contributes 269 assertions of its own on top, so the
+          repository-wide total moves 4237 to 4570, a net increase of 333. Each re-anchored
           assertion was moved onto an IMMUTABLE CLOSED lifecycle fact -- its own unit's merge
           SHA -- rather than against a live working tree that a lawful successor now also
           occupies. Two of the sixteen, by way of illustration and not as a complete list:
@@ -17144,8 +17144,11 @@ workstreams:
           later, separately authorized step-8-equivalent rebinding unit, and is applied by
           nothing here.
 
-          VALIDATION. New adversarial suite 465 tests; non-vacuity 336 of 465 fail at the
-          unchanged base; mutation probes 36 of 36 caught with 0 missed, every probed file
+          VALIDATION. New adversarial suite 478 tests; non-vacuity 349 of 478 fail at the
+          unchanged base, measured by running the suite against a pristine base checkout whose
+          module digest was verified as 4ff28941 first, never extrapolated; mutation probes
+          51 of 51 caught with 0 missed -- 9 for the BLOCKING 1 fence rule, 6 for D1-D4 and 9
+          for D5, one of which adds a test without updating the records -- every probed file
           restored byte-identically and SHA-256-verified; zero-write rehearsal through all three
           real consumer paths writing no lane record, no AUTHORIZATION_ROOT, no attestation, no
           claim and no results file, with both predicates still False afterwards.

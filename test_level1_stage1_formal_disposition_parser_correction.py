@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import re
 import subprocess
 import sys
 import types
@@ -1625,6 +1626,24 @@ class TestTheZeroWriteRehearsal:
 # =====================================================================================
 
 
+def _measured_repository_wide_assertions() -> int:
+    """Re-derive the repository-wide assertion total exactly as the records' figure was made."""
+    changed = _git("diff", "--name-only", BASE_SHA, "--", "test_*.py").split()
+    added = {
+        line.split("\t")[1]
+        for line in _git("diff", "--name-status", BASE_SHA, "--", "test_*.py").splitlines()
+        if line.startswith("A\t")
+    }
+    assert added, "the new suite must appear as an ADDED file in this range"
+    return sum(
+        sum(
+            1 for node in ast.walk(ast.parse((ROOT / relpath).read_text(encoding="utf-8")))
+            if isinstance(node, ast.Assert)
+        )
+        for relpath in changed
+    )
+
+
 class TestTheGovernanceRecord:
     @staticmethod
     def _gate_text() -> str:
@@ -1777,6 +1796,103 @@ class TestTheGovernanceRecord:
         was = self._over_long_in(_git("show", f"{REVIEWED_HEAD_SHA}:{relpath}"))
         now = self._over_long_in((ROOT / relpath).read_text(encoding="utf-8"))
         assert len(now) <= len(was), (len(was), len(now))
+
+    # ---------------------------------------------------------------------------------
+    # D5: the stated counts must EQUAL the measured counts.
+    #
+    # The defect these close is specific: D1-D4 added tests, and every figure describing
+    # this suite silently went stale because each was a literal typed into prose. Pinning
+    # the literals again would only move the staleness one commit further out. These
+    # assertions instead re-derive each number through the SAME mechanism that produced
+    # it and compare it to what the records claim, so adding a test either updates the
+    # records or fails here.
+    # ---------------------------------------------------------------------------------
+
+    @staticmethod
+    def _stated(pattern: str, text: str) -> int:
+        found = re.search(pattern, text)
+        assert found is not None, pattern
+        return int(found.group(1).replace(" ", "").replace(",", ""))
+
+    @staticmethod
+    def _collected_test_count() -> int:
+        """The suite's own collected test count, from pytest itself.
+
+        Collection does not execute test bodies, so this cannot recurse.
+        """
+        out = subprocess.run(
+            [sys.executable, "-m", "pytest", str(Path(__file__).name), "-q", "--collect-only"],
+            cwd=ROOT, capture_output=True, text=True, check=False,
+        ).stdout
+        found = re.search(r"(\d+) tests? collected", out)
+        assert found is not None, out[-400:]
+        return int(found.group(1))
+
+    def test_the_stated_suite_assertion_count_equals_the_measured_one(self):
+        measured = sum(
+            1 for node in ast.walk(ast.parse(Path(__file__).read_text(encoding="utf-8")))
+            if isinstance(node, ast.Assert)
+        )
+        decision = self._stated(
+            r"New suite's own assertions \| \*\*([\d ,]+)\*\*", DECISION.read_text(encoding="utf-8")
+        )
+        register = self._stated(
+            r"the new suite contributes ([\d]+) assertions of its own",
+            " ".join(self._gate_text().split()),
+        )
+        assert decision == measured, (decision, measured)
+        assert register == measured, (register, measured)
+
+    def test_the_stated_repository_wide_assertion_total_equals_the_measured_one(self):
+        measured = _measured_repository_wide_assertions()
+        decision = self._stated(
+            r"Repository-wide assertion total \| 4 237 → \*\*([\d ,]+)\*\*",
+            DECISION.read_text(encoding="utf-8"),
+        )
+        register = self._stated(
+            r"repository-wide total moves 4237 to ([\d]+)",
+            " ".join(self._gate_text().split()),
+        )
+        assert decision == measured, (decision, measured)
+        assert register == measured, (register, measured)
+
+    def test_the_stated_test_count_equals_the_collected_one(self):
+        measured = self._collected_test_count()
+        decision = self._stated(
+            r"New adversarial suite \| \*\*([\d ,]+) tests\*\*",
+            DECISION.read_text(encoding="utf-8"),
+        )
+        register = self._stated(
+            r"New adversarial suite ([\d]+) tests", " ".join(self._gate_text().split())
+        )
+        assert decision == measured, (decision, measured)
+        assert register == measured, (register, measured)
+
+    def test_the_non_vacuity_denominator_is_the_real_test_count(self):
+        """The exact staleness class D5 was: the denominator drifted as tests were added."""
+        measured = self._collected_test_count()
+        text = DECISION.read_text(encoding="utf-8")
+        flat = " ".join(self._gate_text().split())
+        dec_num = self._stated(r"\*\*([\d]+) of [\d]+ fail\*\*", text)
+        dec_den = self._stated(r"\*\*[\d]+ of ([\d]+) fail\*\*", text)
+        reg_num = self._stated(r"non-vacuity ([\d]+) of [\d]+ fail", flat)
+        reg_den = self._stated(r"non-vacuity [\d]+ of ([\d]+) fail", flat)
+        assert dec_den == measured, (dec_den, measured)
+        assert reg_den == measured, (reg_den, measured)
+        assert dec_num == reg_num, (dec_num, reg_num)
+        assert 0 < dec_num <= measured, (dec_num, measured)
+
+    def test_the_two_records_agree_on_the_mutation_probe_count(self):
+        """The probe harness is scratchpad tooling, so the records pin each other."""
+        text = DECISION.read_text(encoding="utf-8")
+        flat = " ".join(self._gate_text().split())
+        dec = self._stated(r"Mutation probes \| \*\*([\d]+) / [\d]+ caught", text)
+        dec_total = self._stated(r"Mutation probes \| \*\*[\d]+ / ([\d]+) caught", text)
+        reg = self._stated(r"mutation probes ([\d]+) of [\d]+ caught", flat)
+        reg_total = self._stated(r"mutation probes [\d]+ of ([\d]+) caught", flat)
+        assert dec == dec_total, (dec, dec_total)
+        assert reg == reg_total, (reg, reg_total)
+        assert dec == reg, (dec, reg)
 
     def test_the_register_states_one_measured_test_change_account(self):
         """MINOR 3 of review 5015482594: one measurement, categories named precisely."""
