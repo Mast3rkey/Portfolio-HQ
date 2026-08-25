@@ -17098,8 +17098,8 @@ workstreams:
           THE LOAD-BEARING DIGEST IS NOW STALE, BY DESIGN, AND IS NOT REPAIRED HERE.
           level1_stage1_execution_authorization.py is LOAD_BEARING_RELPATHS index 0. Its CURRENT
           identity is SHA-256
-          88ada2e2ffaa0131a155e22019ee96b70bc9a0670550e4ca4a22726b9b54bcd9, blob
-          c207aa911ed689eed122c28a4b0619ed57a22a4b. The bound-merge value it supersedes --
+          55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c, blob
+          07d62cabca24b278b9b458b015f0dee7f85ca24f. The bound-merge value it supersedes --
           SHA-256 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541, blob
           f71b08b4ebe95f161c57cdbb2a924748f13af02d -- is RETAINED above and elsewhere in this
           register as a negative pin, never overwritten. _verify_git_anchored_identity is
@@ -17110,8 +17110,8 @@ workstreams:
           later, separately authorized step-8-equivalent rebinding unit, and is applied by
           nothing here.
 
-          VALIDATION. New adversarial suite 207 tests; non-vacuity 88 of 207 fail at the
-          unchanged base; mutation probes 19 of 19 caught with 0 missed, every probed file
+          VALIDATION. New adversarial suite 317 tests; non-vacuity 189 of 317 fail at the
+          unchanged base; mutation probes 28 of 28 caught with 0 missed, every probed file
           restored byte-identically and SHA-256-verified; zero-write rehearsal through all three
           real consumer paths writing no lane record, no AUTHORIZATION_ROOT, no attestation, no
           claim and no results file, with both predicates still False afterwards.

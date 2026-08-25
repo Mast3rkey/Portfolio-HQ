@@ -1697,11 +1697,19 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
             return region  # §C.1: the ENTIRE region is the verdict, verbatim
 
         verdict = region[: earliest[0]].strip()
-        suffix = region[earliest[0] + len(earliest[1]):].strip()
+        suffix = region[earliest[0] + len(earliest[1]):].strip(" ")
         # §E.1/§E.2: a recognized separator suffix is finding-count metadata and is VALIDATED,
         # never discarded unread. Grammar: count ( "/" count )*, count := digits SPACE CATEGORY.
+        #
+        # Every clause below is strict on purpose. ``.strip(" ")`` trims ORDINARY SPACES ONLY --
+        # bare ``.strip()`` would silently swallow a tab around a count and accept it. The
+        # category is compared UNSTRIPPED, so ``0<space><space>BLOCKING`` fails on the leading
+        # space that ``partition`` leaves attached rather than being quietly normalized away.
+        # ``isascii() and isdigit()`` together reject a signed or decimal count and every
+        # non-ASCII digit form. An empty element -- from a leading, doubled or trailing "/" --
+        # has no space and fails too.
         for element in suffix.split("/"):
-            digits, spacer, category = element.strip().partition(" ")
+            digits, spacer, category = element.strip(" ").partition(" ")
             if (
                 not spacer
                 or not digits.isascii()

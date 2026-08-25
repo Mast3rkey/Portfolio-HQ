@@ -166,41 +166,159 @@ class TestEveryRecognizedSeparator:
 
 
 class TestTheFindingCountSuffixGrammar:
-    @pytest.mark.parametrize(
-        "suffix",
-        [
-            "0 BLOCKING",
-            "1 MAJOR",
-            "12 MINOR",
-            "0 NOTE",
-            "0 BLOCKING / 0 MAJOR",
-            "0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE",
-            "1 BLOCKING / 2 MAJOR / 3 MINOR / 4 NOTE",
-        ],
-    )
-    def test_valid_counts_are_accepted(self, suffix):
-        assert P(f"{PREFIX} {APPROVE} — {suffix}") == APPROVE
+    """The count grammar is STRICT: ASCII digits, exactly ONE ordinary space, one CATEGORY.
+
+    PR #355's ``partition(" ")`` plus ``category.strip()`` silently accepted multiple spaces.
+    That behaviour is not reused. Only the independently governed requirement -- §E.1's grammar
+    -- is carried forward, and it is enforced literally.
+    """
+
+    VALID = [
+        "0 BLOCKING",
+        "1 MAJOR",
+        "12 MINOR",
+        "0 NOTE",
+        "0 BLOCKING / 0 MAJOR",
+        "0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE",
+        "1 BLOCKING / 2 MAJOR / 3 MINOR / 4 NOTE",
+        "007 BLOCKING",
+    ]
+
+    #: Every one of these must be MALFORMED. Grouped by the trap each one closes.
+    INVALID = [
+        # -- exactly one space, never more -------------------------------------------------
+        ("two spaces", "0  BLOCKING"),
+        ("three spaces", "0   BLOCKING"),
+        ("space before the digits and two after", " 0  BLOCKING"),
+        # -- tabs, wherever they survive the line strip ------------------------------------
+        ("tab between digits and category", "0\tBLOCKING"),
+        ("space then tab", "0 \tBLOCKING"),
+        ("tab before the digits", "\t0 BLOCKING"),
+        ("tab before a slash", "0 BLOCKING\t/ 1 MAJOR"),
+        ("tab after a slash", "0 BLOCKING /\t1 MAJOR"),
+        ("tab then further text", "0 BLOCKING\tmore"),
+        # -- missing separator space -------------------------------------------------------
+        ("no space at all", "0BLOCKING"),
+        ("underscore instead of space", "0_BLOCKING"),
+        # -- signed and decimal counts -----------------------------------------------------
+        ("leading plus", "+0 BLOCKING"),
+        ("leading minus", "-1 BLOCKING"),
+        ("decimal point", "0.5 BLOCKING"),
+        ("comma group", "1,000 BLOCKING"),
+        # -- non-ASCII digit forms ---------------------------------------------------------
+        ("Arabic-Indic digit", "\u0663 BLOCKING"),
+        ("fullwidth digit", "\uff10 BLOCKING"),
+        ("Devanagari digit", "\u0969 BLOCKING"),
+        ("superscript digit", "\u00b2 BLOCKING"),
+        # -- missing or empty slash components ---------------------------------------------
+        ("doubled slash", "0 BLOCKING // 1 MAJOR"),
+        ("trailing slash", "0 BLOCKING /"),
+        ("leading slash", "/ 0 BLOCKING"),
+        ("only a slash", "/"),
+        ("slash with only spaces", "0 BLOCKING /   "),
+        # -- arbitrary trailing suffix text ------------------------------------------------
+        ("prose after a valid count", "0 BLOCKING and more"),
+        ("a second verdict after a valid count", "0 BLOCKING CHANGES REQUIRED"),
+        ("bare prose", "and please rewrite it"),
+        # -- category vocabulary is exact --------------------------------------------------
+        ("lower-case category", "0 blocking"),
+        ("mixed-case category", "0 Blocking"),
+        ("unknown category", "0 BANANAS"),
+        ("category with no count", "BLOCKING"),
+        ("count with no category", "0"),
+        # -- nothing at all ----------------------------------------------------------------
+        ("empty suffix", ""),
+    ]
+
+    @pytest.mark.parametrize("suffix", VALID)
+    def test_a_valid_count_list_is_accepted(self, suffix):
+        assert P(f"{PREFIX} {APPROVE} \u2014 {suffix}") == APPROVE
+
+    @pytest.mark.parametrize("suffix", VALID)
+    def test_a_valid_count_list_is_accepted_in_the_bold_form_too(self, suffix):
+        assert P(f"**{PREFIX} {APPROVE} \u2014 {suffix}**") == APPROVE
+
+    @pytest.mark.parametrize("label,suffix", INVALID, ids=[l for l, _ in INVALID])
+    def test_an_invalid_count_list_is_malformed(self, label, suffix):
+        body = f"{PREFIX} {APPROVE} \u2014 {suffix}"
+        assert P(body) is MALFORMED, label
+
+    @pytest.mark.parametrize("label,suffix", INVALID, ids=[l for l, _ in INVALID])
+    def test_an_invalid_count_list_never_authenticates(self, label, suffix):
+        assert P(f"{PREFIX} {APPROVE} \u2014 {suffix}") != APPROVE, label
 
     @pytest.mark.parametrize(
-        "suffix",
-        [
-            "",                       # a separator with nothing after it
-            "0 BANANAS",              # unknown category
-            "BLOCKING",               # no count
-            "0",                      # no category
-            "0  BLOCKING",            # two spaces: not "digits SPACE CATEGORY"
-            "0 blocking",             # lower-case category is not the governed grammar
-            "zero BLOCKING",          # non-numeric count
-            "0 BLOCKING / junk",      # one bad element poisons the list
-            "0 BLOCKING /",           # trailing empty element
-            "and please rewrite it",  # ordinary prose
-            "٣ BLOCKING",        # non-ASCII digit
-        ],
+        "label,suffix",
+        [(l, s) for l, s in INVALID if s.strip()],
+        ids=[l for l, s in INVALID if s.strip()],
     )
-    def test_invalid_suffixes_are_malformed(self, suffix):
-        body = f"{PREFIX} {APPROVE} — {suffix}"
-        assert P(body) is MALFORMED
-        assert P(body) != APPROVE
+    def test_an_invalid_count_list_is_malformed_for_every_separator(self, label, suffix):
+        for separator in SEPARATORS:
+            body = f"{PREFIX} {APPROVE} {separator} {suffix}"
+            assert P(body) is MALFORMED, (label, separator)
+
+    def test_an_empty_suffix_is_separator_dependent_and_never_authenticates(self):
+        """The one honestly separator-dependent case, stated rather than papered over.
+
+        With nothing after the separator, the pre-existing whole-line ``line.strip()`` removes
+        the trailing space. For ``"\u2014"``, ``"--"`` and ``"|"`` the separator still survives, so
+        the empty suffix is MALFORMED. For ``" - "`` it does NOT survive -- the token needs a
+        trailing space -- so no recognized separator is present and §C.1 correctly returns the
+        whole region verbatim. Both outcomes refuse; only the diagnostic differs, exactly the
+        cost §C states. What holds for ALL FOUR is that none of them authenticates.
+        """
+        for separator in ("\u2014", "--", "|"):
+            assert P(f"{PREFIX} {APPROVE} {separator} ") is MALFORMED, separator
+        dashed = P(f"{PREFIX} {APPROVE}  -  ")
+        assert dashed is not MALFORMED
+        assert isinstance(dashed, str)
+        for separator in SEPARATORS:
+            assert P(f"{PREFIX} {APPROVE} {separator} ") != APPROVE, separator
+
+    def test_the_category_is_compared_unstripped(self):
+        """PR #355 stripped the category, which silently accepted multiple spaces.
+
+        The correction compares what ``partition`` actually returns, so a second space stays
+        attached to the category and fails the vocabulary check.
+        """
+        assert P(f"{PREFIX} {APPROVE} \u2014 0  BLOCKING") is MALFORMED
+        source = _toplevel(_live_source())["parse_formal_disposition"]
+        assert "category.strip()" not in source
+        assert "category.strip(" not in source
+
+    def test_only_ordinary_spaces_are_trimmed_in_the_suffix_path(self):
+        """``.strip(" ")``, never bare ``.strip()`` -- bare strip swallows tabs silently.
+
+        Scoped to the two lines that actually trim the SUFFIX. The verdict's own ``.strip()``
+        is untouched base behaviour and is deliberately not caught by this scan.
+        """
+        parser = _toplevel(_live_source())["parse_formal_disposition"]
+        suffix_lines = [
+            line for line in parser.splitlines()
+            if ("suffix = region[" in line) or ("for element in suffix" in line)
+            or ("element.strip" in line)
+        ]
+        assert suffix_lines
+        joined = "\n".join(suffix_lines)
+        assert joined.count('strip(" ")') == 2, joined
+        assert ".strip()" not in joined, joined
+
+    def test_every_tab_surviving_the_line_strip_is_rejected(self):
+        for suffix in ("0\tBLOCKING", "\t0 BLOCKING", "0 BLOCKING\t/ 1 MAJOR", "0 BLOCKING\tmore"):
+            assert P(f"{PREFIX} {APPROVE} \u2014 {suffix}") is MALFORMED, suffix
+
+    def test_a_trailing_tab_at_end_of_line_is_base_behaviour_not_this_corrections_scope(self):
+        """Disclosed precisely rather than overclaimed.
+
+        A tab at the very END of the line is removed by the pre-existing whole-line
+        ``line.strip()`` before any grammar runs. That strip is byte-identical to the base and
+        is not this correction's to change, so the outcome here is IDENTICAL to the base. Every
+        tab that survives that strip is rejected, which is the test immediately above.
+        """
+        body = f"{PREFIX} {APPROVE} \u2014 0 BLOCKING\t"
+        assert P(body) == APPROVE
+        assert "stripped = line.strip()" in _base_source()
+        assert "stripped = line.strip()" in _live_source()
 
     def test_a_suffix_is_never_discarded_unread(self):
         """§E.1: the pre-correction parser split and threw the suffix away."""
@@ -926,6 +1044,62 @@ class TestTheScopeBoundaryHolds:
     def test_the_only_addition_is_the_single_sentinel_type(self):
         base, live = _toplevel(_base_source()), _toplevel(_live_source())
         assert sorted(set(live) - set(base)) == ["_MalformedFormalDisposition"]
+
+    @staticmethod
+    def _module_level_assignments(source: str) -> set[str]:
+        names = set()
+        for node in ast.parse(source).body:
+            if isinstance(node, ast.Assign):
+                names.update(t.id for t in node.targets if isinstance(t, ast.Name))
+            elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                names.add(node.target.id)
+        return names
+
+    def test_no_standalone_production_constant_was_introduced(self):
+        """§C's permitted set is EXHAUSTIVE -- a module-level constant would be a FIFTH surface.
+
+        ``_toplevel`` above only sees defs and classes, so a smuggled ``_SEPARATORS = (...)``
+        would slip past it entirely. Module-level ASSIGNMENTS are therefore compared directly.
+        The separator tuple and the category vocabulary both live INLINE inside the parser,
+        which is an already-permitted surface.
+        """
+        new = self._module_level_assignments(_live_source()) - self._module_level_assignments(
+            _base_source()
+        )
+        assert new == {"MALFORMED_FORMAL_DISPOSITION"}, sorted(new)
+
+    @pytest.mark.parametrize(
+        "banned",
+        [
+            "_FORMAL_DISPOSITION_SEPARATORS",
+            "_FINDING_COUNT_CATEGORIES",
+            "_SEPARATORS",
+            "_CATEGORIES",
+            "_FINDING_COUNT_RE",
+            "_COUNT_PATTERN",
+        ],
+    )
+    def test_no_named_extraction_of_the_grammar_exists(self, banned):
+        assert banned not in self._module_level_assignments(_live_source())
+        assert banned not in _live_source()
+
+    def test_the_grammar_literals_live_inside_the_parser(self):
+        parser = _toplevel(_live_source())["parse_formal_disposition"]
+        assert '"BLOCKING", "MAJOR", "MINOR", "NOTE"' in parser
+        assert 'for separator in ("\u2014", "--", " - ", "|"):' in parser
+
+    def test_call_sites_are_counted_by_ast_not_by_substring(self):
+        """The audit's point, proved rather than asserted.
+
+        The module names ``parse_formal_disposition`` in its own ``def`` line and in comments,
+        so a substring count over-reports. Only an AST walk counts actual CALLS, and the two
+        genuinely disagree -- which is why every call-site assertion here uses the AST.
+        """
+        live = _live_source()
+        substring = live.count("parse_formal_disposition")
+        ast_calls = len(_call_sites(live))
+        assert ast_calls == 3
+        assert substring > ast_calls, (substring, ast_calls)
 
     def test_there_are_exactly_three_call_sites_and_no_fourth(self):
         assert len(_call_sites(_base_source())) == 3

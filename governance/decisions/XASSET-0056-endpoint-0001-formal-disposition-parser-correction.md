@@ -140,6 +140,39 @@ silently into "the correction", because it fixes a shape the demonstrated defect
 exhibit. A fenced sample **below** an operative first line is unaffected, which is the real shape
 of review `5004478133`.
 
+### E-bis. The count grammar is strict, and the permitted set stays exhaustive
+
+Two traps a read-only audit of both rejected PR #355 heads identified are closed explicitly.
+
+**No fifth production surface.** §C's permitted set is exhaustive, so the separator tuple and
+the finding-count category vocabulary are **inline literals inside `parse_formal_disposition()`**
+— an already-permitted surface. No standalone constant (`_FORMAL_DISPOSITION_SEPARATORS`,
+`_FINDING_COUNT_CATEGORIES`, a compiled pattern, or anything equivalent) is introduced, and no
+second helper. Verified by comparing module-level **assignments** against the base, not merely
+module-level defs: a smuggled constant is an `ast.Assign`, which a def-only scan would miss
+entirely. The only new module-level assignment is `MALFORMED_FORMAL_DISPOSITION` itself.
+
+**The count grammar is enforced literally.** Each count is ASCII digits, exactly **one ordinary
+space**, then exactly one of `BLOCKING`, `MAJOR`, `MINOR`, `NOTE`. PR #355's `partition(" ")`
+plus `category.strip()` silently accepted multiple spaces; that behaviour is **not** reused.
+The category is compared **unstripped**, so a second space stays attached and fails. Trimming
+uses `.strip(" ")` — ordinary spaces only — because bare `.strip()` silently swallows a tab
+around a count; that laxity was found by testing rather than assumed absent, and corrected.
+`isascii()` and `isdigit()` together reject signed, decimal and every non-ASCII digit form, and
+an empty element from a leading, doubled or trailing `/` has no space and fails too.
+
+**One boundary is disclosed rather than overclaimed.** A tab at the very **end of the line** is
+removed by the pre-existing whole-line `line.strip()` before any grammar runs. That strip is
+byte-identical to the base and is not this correction's to change, so the outcome is identical
+to the base. Every tab that **survives** that strip is rejected. Likewise, an empty suffix is
+MALFORMED after `—`, `--` and `|`, but after `" - "` the separator itself does not survive the
+line strip, so §C.1 returns the region verbatim and inequality refuses it. Both outcomes refuse;
+only the diagnostic differs — exactly the cost §C states.
+
+**Call sites are counted by AST, never by substring.** The module names the parser in its own
+`def` line and in comments, so a substring count over-reports. A test asserts the two genuinely
+disagree, which is why every call-site assertion here walks the AST.
+
 ### F. Blast radius, measured rather than asserted
 
 Every real lifecycle review body was parsed under both the base module and the corrected module.
@@ -178,7 +211,7 @@ it, so its bound digest is stale:
 | | |
 |---|---|
 | At the bound merge | SHA-256 `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541`, blob `f71b08b4ebe95f161c57cdbb2a924748f13af02d` |
-| Derived here | SHA-256 `88ada2e2ffaa0131a155e22019ee96b70bc9a0670550e4ca4a22726b9b54bcd9`, blob `c207aa911ed689eed122c28a4b0619ed57a22a4b` |
+| Derived here | SHA-256 `55cdd7f4a59d8eac352d0888989b90347f48e18bf66319d02f701f4da9117f9c`, blob `07d62cabca24b278b9b458b015f0dee7f85ca24f` |
 
 That divergence is the **fail-closed hand-off** `XASSET-0055` §J describes. `_verify_git_anchored_identity()`
 is byte-identical to the base and still raises `enforcement drift`. Both authorization predicates
@@ -194,9 +227,9 @@ here.
 
 | Check | Result |
 |---|---|
-| New adversarial suite | **207 tests**, all passing |
-| Non-vacuity against the exact base | **88 of 207 fail** at the unchanged base `29e4969…` |
-| Mutation probes | **19 / 19 caught, 0 missed** — every probed file restored byte-identically and SHA-256-verified |
+| New adversarial suite | **317 tests**, all passing |
+| Non-vacuity against the exact base | **189 of 317 fail** at the unchanged base `29e4969…` |
+| Mutation probes | **28 / 28 caught, 0 missed** — every probed file restored byte-identically and SHA-256-verified |
 | Real-review blast radius | 6 real bodies parsed under both modules; **exactly one** changes |
 | Zero-write rehearsal | all three consumer paths exercised; no lane record, no `AUTHORIZATION_ROOT`, no attestation, no claim, no results file; both predicates still `False` |
 | Re-anchored predecessor suites | assertion counts only grew; no deletion, skip, `xfail` or relaxation |
