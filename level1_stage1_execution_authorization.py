@@ -1594,27 +1594,121 @@ def live_load_bearing_hashes() -> dict[str, str]:
 # ======================================================================================
 
 
-def parse_formal_disposition(body: str) -> str | None:
+#: XASSET-0055 §C / XASSET-0053 §C item 2 -- THE minimal result representation, and the only one.
+#: ``parse_formal_disposition`` must separate two outcomes the previous ``str | None`` channel
+#: collapsed into a single ``None``:
+#:
+#:   * **ABSENT** -- the body carries no formal-looking disposition at all. Still ``None``, so every
+#:     consumer's existing ABSENT policy is preserved literally rather than re-derived.
+#:   * **MALFORMED / UNSUPPORTED** -- the body carries a formal-looking disposition line that is not
+#:     in one of the two accepted wrapper forms. This value, and never ``None``.
+#:
+#: One sentinel is the smallest of the three routes §C item 2 permits (one added value, one small
+#: typed result, or one sentinel), so no helper is introduced and none is needed. This is a
+#: sentinel, not a parsing framework: it carries no behaviour and parses nothing.
+class _MalformedFormalDisposition:
+    """The single MALFORMED / UNSUPPORTED sentinel type."""
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:  # pragma: no cover - trivial, but keeps error text readable
+        return "MALFORMED_FORMAL_DISPOSITION"
+
+
+MALFORMED_FORMAL_DISPOSITION = _MalformedFormalDisposition()
+
+
+def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposition":
     """Return the review's FORMAL DISPOSITION verdict, parsed exactly from the first formal line.
 
     MAJOR 1 (review 4946464366): the previous check was ``APPROVING_REVIEW_DISPOSITION in body``,
     so a review whose formal line read ``CHANGES REQUIRED`` still passed if any later explanatory
     sentence quoted the approval phrase. Reproduced before correcting.
 
-    Only the FIRST ``FORMAL DISPOSITION:`` line counts, and only the verdict up to the first
-    finding-count separator, so trailing counts such as ``— 0 BLOCKING / 0 MAJOR`` do not change
-    the verdict while a different verdict always does.
+    Only the FIRST formal-looking line counts (XASSET-0053 §D.4). It is never skipped: a
+    formal-looking line that is not in an accepted form STOPS the parse and yields no verdict
+    (§D.17), so a later, better-formed line can never win past it.
+
+    Exactly two wrapper forms are accepted, and no others (§D.2, §D.16): the plain canonical line,
+    and a precisely balanced WHOLE-LINE Markdown-bold pair whose enclosed text is itself a plain
+    canonical line and carries no further ``*``. Headings, blockquotes, bullets, code fences,
+    leading or trailing prose, and unbalanced, partial, nested or repeated emphasis are all
+    MALFORMED.
+
+    Returns:
+        * ``str`` -- the verdict, verbatim. Never normalized, truncated, case-folded,
+          fuzzy-matched, canonicalized or coerced (§D.3), and never restricted to a closed
+          vocabulary. A mixed-case or lower-case canonical verdict returns exactly as written;
+          XASSET-0055 §D removes and PROHIBITS the lower-case heuristic that regressed this, and
+          forbids any equivalent case-, length- or word-count-based verdict rule.
+        * ``None`` -- ABSENT.
+        * ``MALFORMED_FORMAL_DISPOSITION`` -- MALFORMED / UNSUPPORTED.
+
+    XASSET-0055 §C -- the verdict boundary. After any recognized separator suffix has been
+    VALIDATED as finding-count metadata (§E.1), the ENTIRE remaining post-prefix region is the
+    verdict. Exact equality applies to that whole region, so appended text can never authenticate
+    as approval -- a property of exact equality, not of a heuristic. Where no delimiter marks a
+    boundary the parser does not pretend it can find one: it returns the region verbatim and lets
+    inequality reject it, rather than falsely classifying it MALFORMED (§C.4).
     """
     if not isinstance(body, str):
         return None
+    inside_code_fence = False
     for line in body.splitlines():
         stripped = line.strip()
-        if not stripped.upper().startswith(FORMAL_DISPOSITION_PREFIX):
+        # §D.17 names code-fenced lines among the shapes that must fail closed. A fence is the
+        # one unsupported shape not visible in the line itself, so it needs this single boolean
+        # of context and nothing more. An unclosed fence leaves the flag set, which fails closed.
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            inside_code_fence = not inside_code_fence
             continue
-        verdict = stripped[len(FORMAL_DISPOSITION_PREFIX):].strip()
+        if FORMAL_DISPOSITION_PREFIX not in stripped.upper():
+            continue  # not formal-looking: still ABSENT so far, keep scanning
+        if inside_code_fence:
+            return MALFORMED_FORMAL_DISPOSITION
+
+        # --- the two accepted wrapper forms, and nothing else (§D.2, §D.16) ---------------
+        revealed = stripped
+        if not revealed.upper().startswith(FORMAL_DISPOSITION_PREFIX):
+            if not (
+                len(revealed) >= 4
+                and revealed.startswith("**")
+                and revealed.endswith("**")
+            ):
+                return MALFORMED_FORMAL_DISPOSITION
+            inner = revealed[2:-2]
+            # A further ``*`` means nested, doubled, partial or ambiguous emphasis (§D.10); and
+            # the enclosed text must itself be a plain canonical line, never prose (§D.9).
+            if "*" in inner or not inner.upper().startswith(FORMAL_DISPOSITION_PREFIX):
+                return MALFORMED_FORMAL_DISPOSITION
+            revealed = inner
+
+        region = revealed[len(FORMAL_DISPOSITION_PREFIX):].strip()
+
+        # --- §E.3: the EARLIEST recognized separator governs, never tuple order ------------
+        # Splitting on each separator in tuple order let ``<approval> | <adverse> — 0 BLOCKING``
+        # authenticate: the em dash is split first and erases the adverse ``|`` text.
+        earliest: tuple[int, str] | None = None
         for separator in ("—", "--", " - ", "|"):
-            if separator in verdict:
-                verdict = verdict.split(separator, 1)[0].strip()
+            index = region.find(separator)
+            if index != -1 and (earliest is None or index < earliest[0]):
+                earliest = (index, separator)
+        if earliest is None:
+            return region  # §C.1: the ENTIRE region is the verdict, verbatim
+
+        verdict = region[: earliest[0]].strip()
+        suffix = region[earliest[0] + len(earliest[1]):].strip()
+        # §E.1/§E.2: a recognized separator suffix is finding-count metadata and is VALIDATED,
+        # never discarded unread. Grammar: count ( "/" count )*, count := digits SPACE CATEGORY.
+        for element in suffix.split("/"):
+            digits, spacer, category = element.strip().partition(" ")
+            if (
+                not spacer
+                or not digits.isascii()
+                or not digits.isdigit()
+                or category not in ("BLOCKING", "MAJOR", "MINOR", "NOTE")
+            ):
+                return MALFORMED_FORMAL_DISPOSITION
         return verdict
     return None
 
@@ -1961,7 +2055,12 @@ def _derive_pr337_actor_ratification(
     # still carries the approving formal line.
     if str(rat_review.get("state") or "").upper() in NATIVE_ADVERSE_REVIEW_STATES:
         return _NO_PR337_ACTOR_RATIFICATION
-    if parse_formal_disposition(rat_review.get("body") or "") != APPROVING_REVIEW_DISPOSITION:
+    # XASSET-0053 §D.19: MALFORMED / UNSUPPORTED is refused explicitly, never merely as an
+    # incidental consequence of inequality, and a native APPROVED state never rescues it.
+    rat_verdict = parse_formal_disposition(rat_review.get("body") or "")
+    if rat_verdict is MALFORMED_FORMAL_DISPOSITION:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if rat_verdict != APPROVING_REVIEW_DISPOSITION:
         return _NO_PR337_ACTOR_RATIFICATION
     if not _belongs_to_pull_request(rat_review, RATIFICATION_PULL_REQUEST):
         return _NO_PR337_ACTOR_RATIFICATION
@@ -2186,7 +2285,16 @@ def verify_lifecycle_against_truth(
                 f"{review.get('commit_id')!r}, not the authorization head {head!r}"
             )
         verdict = parse_formal_disposition(review.get("body") or "")
-        if verdict is None:
+        # XASSET-0053 §D.19: MALFORMED / UNSUPPORTED is reported separately from ABSENT; one
+        # value may not stand for both. The ABSENT branch below is preserved verbatim.
+        if verdict is MALFORMED_FORMAL_DISPOSITION:
+            errors.append(
+                f"governance truth: review {review_id} carries a "
+                f"'{FORMAL_DISPOSITION_PREFIX}' line that is not in an accepted form, so its "
+                "verdict cannot be authenticated; an unsupported formal line fails closed and "
+                "is never treated as absent"
+            )
+        elif verdict is None:
             errors.append(
                 f"governance truth: review {review_id} carries no parseable "
                 f"'{FORMAL_DISPOSITION_PREFIX}' line, so its verdict cannot be authenticated"
@@ -3439,6 +3547,18 @@ def _verify_selected_review_is_final(
                 f"later non-dismissed {state} review submitted after the certified review "
                 f"{selected_review_id}; principal certification of an earlier clean pass does "
                 "not erase a later exact-head finding"
+            )
+            continue
+        # XASSET-0053 §D.19 / §D.20.2: an unsupported formal-looking line fails closed HERE,
+        # before any native-state branch, so a native APPROVED can never rescue it. The
+        # genuinely-ABSENT policy immediately below is deliberately PRESERVED (§D.20.1).
+        if verdict is MALFORMED_FORMAL_DISPOSITION:
+            errors.append(
+                f"governance truth: review {entry.get('id')} on the exact accepted head, "
+                f"submitted after the certified review {selected_review_id}, carries a "
+                f"'{FORMAL_DISPOSITION_PREFIX}' line that is not in an accepted form; an "
+                f"unsupported formal line fails closed and its native state "
+                f"({state or 'unset'!r}) never rescues it"
             )
             continue
         if verdict == APPROVING_REVIEW_DISPOSITION:

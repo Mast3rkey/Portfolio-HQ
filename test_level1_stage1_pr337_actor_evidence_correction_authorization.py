@@ -735,10 +735,21 @@ class TestCatalogAndRegisterSynchronisation:
         # never became `main` state. Each stays an exact value, and XASSET-0053's own superseded
         # values join the negative pins below rather than being deleted, so the field stays
         # bound at BOTH ends.
+        # ADVANCED AGAIN BY XASSET-0056, on exactly the same terms: PR #356 has since merged
+        # at `29e49698`, so these shared fields advance once more, to the single replacement
+        # parser-correction implementation that is now live. Each stays an exact value, and
+        # every superseded value is retained below as a negative pin, so the field is bound at
+        # BOTH ends rather than only at one.
         assert ws0014["active_branch"] == (
-            "claude/xasset-0055-parser-contract-conflict-w4kp2n"
+            "claude/xasset-0055-parser-correction-c3ro29"
         )
         assert ws0014["last_verified_main_sha"] == (
+            "29e4969885970d942a5acecc1424fb2e2b080d60"
+        )
+        assert ws0014["active_branch"] != (
+            "claude/xasset-0055-parser-contract-conflict-w4kp2n"
+        )
+        assert ws0014["last_verified_main_sha"] != (
             "683c324629544a84d2cf75ebca37325e3375c479"
         )
         assert ws0014["active_branch"] != (
@@ -782,7 +793,8 @@ class TestCatalogAndRegisterSynchronisation:
             "bb95ed26964b1bc7a2e230c76060fec82752efa1"
         )
         # ADVANCED BY XASSET-0053, with the shared fields above. Bound at BOTH ends.
-        assert str(ws0014["last_verified_date"]) == "2026-08-24"
+        assert str(ws0014["last_verified_date"]) == "2026-08-25"
+        assert str(ws0014["last_verified_date"]) != "2026-08-24"
         assert str(ws0014["last_verified_date"]) != "2026-08-23"
         # PR #343's, #344's, #345's and #346's own closed records survive in the register as
         # history, not as live state.

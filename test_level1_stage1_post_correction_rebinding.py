@@ -203,6 +203,18 @@ XASSET0055_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
 XASSET0055_ACTIVE_PR = 356
 
+#: RE-ANCHORED BY XASSET-0056, the single replacement parser-correction implementation
+#: XASSET-0055 §H authorized. `active_branch`, `active_pr` and `last_verified_main_sha` are
+#: WS-0014's SINGLE SHARED live self-reference fields under OPS-0001's Active-GitHub-fields
+#: rule, so they lawfully advance to whichever unit is live. The XASSET-0055 generation is
+#: RETAINED below as a negative pin rather than deleted, so every field stays bound at BOTH
+#: ends and a silent revert to ANY finished unit's state still fails here.
+XASSET0056_MAIN_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
+#: An IMPOSSIBLE sentinel until GitHub issues the real number, which is then bound in a
+#: fast-forward follow-up commit. Never predicted.
+XASSET0056_ACTIVE_PR = -56
+
+
 #: A real, immutable historical commit pair across which a protected path GENUINELY changed --
 #: PR #342's base and merge -- so the base->head comparison can never pass vacuously.
 PROTECTED_CHANGE_CONTROL_BEFORE = "9c8647f9dddacdf63825f569097214ba65299fe8"
@@ -925,8 +937,18 @@ class TestPinsAreCurrentAndSuccessionIsRefused:
         successor = (ROOT / XASSET_0047_DECISION_RELPATH).read_text(encoding="utf-8")
         assert _sole_token(successor) == XASSET_0047_FINAL_MODULE_SHA256
         assert _sole_token(successor) != live
+        # ADVANCED AGAIN BY XASSET-0056, on exactly the terms this test already applies to
+        # every earlier generation: a declaration is accepted merged history describing the
+        # module AS THAT UNIT LEFT IT. The single replacement parser-correction implementation
+        # XASSET-0055 §H authorized lawfully changed that byte, so XASSET-0049's declaration
+        # must now ALSO no longer match the live module -- and asserting that inequality is
+        # precisely what proves the correction really landed rather than a stale pin agreeing
+        # by accident. The declaration is NOT re-pinned here: this filing performs no
+        # rebinding, and the value it still declares is asserted EXACTLY, not merely as
+        # "different", so nothing is relaxed.
         latest = (ROOT / XASSET_0049_DECISION_RELPATH).read_text(encoding="utf-8")
-        assert _sole_token(latest) == live
+        assert _sole_token(latest) == "4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541"
+        assert _sole_token(latest) != live
         # THIS decision's own declaration is unchanged history and no longer describes the module.
         assert _sole_token(decision_text) != live
         # Every generation's declaration is distinct: none was copied forward.
@@ -1327,7 +1349,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049. This is WS-0014's SINGLE SHARED live self-reference and moves
         # with every unit; each generation's own value is retained as a NEGATIVE pin so a silent
         # revert to any finished unit's state still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0055_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0056_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0055_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0053_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0052_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0051_MAIN_SHA

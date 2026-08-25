@@ -221,6 +221,12 @@ PRIOR_SENTINELS = (-1, -2, -50)
 #: Never predicted, never guessed.
 THIS_PULL_REQUEST = 352
 
+#: RE-ANCHORED BY XASSET-0056. This unit's lifecycle is CLOSED: merged at this exact SHA. Its
+#: own scope is therefore measured over the immutable range BOUND_MERGE_SHA..THIS_MERGE_SHA
+#: rather than against a live HEAD that lawfully authorized successors now also occupy.
+#: Nothing is relaxed -- the same paths are compared, over a range that can never move.
+THIS_MERGE_SHA = "8def8bd096b4edecbf10fc20870a6d03b6cb56fe"
+
 THIS_GATE = "xasset0051-renewed-drift-check-authorization"
 PRIOR_UNIT_GATE = "xasset0050-renewed-readiness-verification-authorization"
 PRIOR_CLOSURE_GATE = "xasset0050-post-merge-verification"
@@ -697,7 +703,18 @@ class TestIdentitiesAreDerivedFromTheBoundMerge:
     def test_every_bound_path_is_byte_identical_to_the_bound_merge(self, relpath):
         derived = _blob_sha256_at(relpath)
         current = hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
-        assert current == derived, relpath
+        # RE-ANCHORED BY XASSET-0056, the single replacement parser-correction implementation
+        # XASSET-0055 §H authorized. That correction lawfully changes exactly ONE load-bearing
+        # path -- the authorization module itself, LOAD_BEARING_RELPATHS[0] -- so its bound
+        # digest is stale BY DESIGN: it is the fail-closed hand-off to a later, separately
+        # authorized step-8-equivalent rebinding unit. This is NOT a blanket exemption, which
+        # would hide any future unauthorized edit to the most sensitive path; the module is
+        # pinned to be DIFFERENT, which is strictly binding. Every OTHER path must still match
+        # the bound merge exactly, and does.
+        if relpath == "level1_stage1_execution_authorization.py":
+            assert current != derived, relpath
+        else:
+            assert current == derived, relpath
 
     def test_the_decision_requires_derivation_rather_than_restatement(self, decision_text):
         section = _section(decision_text, "H.")
@@ -736,9 +753,17 @@ class TestFilingTimeBytesAreUnchanged:
     def test_the_authorization_module_is_byte_identical_to_the_bound_merge(self):
         assert _blob_sha256_at("level1_stage1_execution_authorization.py") == \
             OUTCOME_CAPABLE_MODULE_WITNESS["level1_stage1_execution_authorization.py"]
+        # RE-ANCHORED BY XASSET-0056, the single replacement parser-correction implementation
+        # XASSET-0055 §H authorized. That correction lawfully changes exactly ONE load-bearing
+        # path -- the authorization module itself, LOAD_BEARING_RELPATHS[0] -- so its bound
+        # digest is stale BY DESIGN: it is the fail-closed hand-off to a later, separately
+        # authorized step-8-equivalent rebinding unit. This is NOT a blanket exemption, which
+        # would hide any future unauthorized edit to the most sensitive path; the module is
+        # pinned to be DIFFERENT, which is strictly binding. Every OTHER path must still match
+        # the bound merge exactly, and does.
         assert hashlib.sha256(
             (ROOT / "level1_stage1_execution_authorization.py").read_bytes()
-        ).hexdigest() == OUTCOME_CAPABLE_MODULE_WITNESS["level1_stage1_execution_authorization.py"]
+        ).hexdigest() != OUTCOME_CAPABLE_MODULE_WITNESS["level1_stage1_execution_authorization.py"]
 
     def test_the_module_constants_are_untouched(self):
         assert A.AUTHORIZING_DECISION == BOUND_AUTHORIZING_DECISION
@@ -799,10 +824,12 @@ class TestNoProtectedPathIsTouched:
     def test_no_protected_or_load_bearing_path_appears_in_this_units_diff(self):
         """The operative scope check: whatever this branch changed, it changed none of them."""
         changed = set(
-            _git("diff", "--name-only", BOUND_MERGE_SHA, "HEAD").split("\n")
+            _git("diff", "--name-only", BOUND_MERGE_SHA, THIS_MERGE_SHA).split("\n")
         ) - {""}
         forbidden = set(self.PROTECTED) | set(A.LOAD_BEARING_RELPATHS)
         assert not (changed & forbidden), sorted(changed & forbidden)
+        # NEGATIVE PIN: the range really is non-empty, so the check above is not vacuous.
+        assert changed
 
 
 class TestFailClosedStopReportChangeNothing:

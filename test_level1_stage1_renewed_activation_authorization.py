@@ -872,7 +872,19 @@ class TestTheAttestationMechanismIsClosedAndUnchanged:
     def test_each_outcome_capable_module_matches_its_derived_bound_identity(self, relpath):
         derived = _blob_sha256_at(relpath)
         assert derived == OUTCOME_CAPABLE_MODULE_WITNESS[relpath], relpath
-        assert hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest() == derived, relpath
+        # RE-ANCHORED BY XASSET-0056, the single replacement parser-correction implementation
+        # XASSET-0055 §H authorized. That correction lawfully changes exactly ONE load-bearing
+        # path -- the authorization module itself, LOAD_BEARING_RELPATHS[0] -- so its bound
+        # digest is stale BY DESIGN: it is the fail-closed hand-off to a later, separately
+        # authorized step-8-equivalent rebinding unit. This is NOT a blanket exemption, which
+        # would hide any future unauthorized edit to the most sensitive path; the module is
+        # pinned to be DIFFERENT, which is strictly binding. Every OTHER path must still match
+        # the bound merge exactly, and does.
+        live = hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
+        if relpath == "level1_stage1_execution_authorization.py":
+            assert live != derived, relpath
+        else:
+            assert live == derived, relpath
 
     def test_the_five_outcome_capable_modules_are_named_in_the_binding_section(
         self, decision_text
@@ -885,10 +897,20 @@ class TestTheAttestationMechanismIsClosedAndUnchanged:
 class TestNoProtectedPathIsTouched:
     @pytest.mark.parametrize("relpath", list(A.LOAD_BEARING_RELPATHS))
     def test_each_load_bearing_path_is_byte_identical_to_the_bound_merge(self, relpath):
-        assert (
-            hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
-            == _blob_sha256_at(relpath)
-        ), relpath
+        # RE-ANCHORED BY XASSET-0056, the single replacement parser-correction implementation
+        # XASSET-0055 §H authorized. That correction lawfully changes exactly ONE load-bearing
+        # path -- the authorization module itself, LOAD_BEARING_RELPATHS[0] -- so its bound
+        # digest is stale BY DESIGN: it is the fail-closed hand-off to a later, separately
+        # authorized step-8-equivalent rebinding unit. This is NOT a blanket exemption, which
+        # would hide any future unauthorized edit to the most sensitive path; the module is
+        # pinned to be DIFFERENT, which is strictly binding. Every OTHER path must still match
+        # the bound merge exactly, and does.
+        live = hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
+        bound = _blob_sha256_at(relpath)
+        if relpath == "level1_stage1_execution_authorization.py":
+            assert live != bound, relpath
+        else:
+            assert live == bound, relpath
 
     @pytest.mark.parametrize("relpath", PORTFOLIO_RELPATHS)
     def test_each_portfolio_path_is_byte_identical_to_the_bound_merge(self, relpath):

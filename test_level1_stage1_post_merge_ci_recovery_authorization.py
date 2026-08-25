@@ -258,6 +258,18 @@ XASSET0055_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
 #: issued in a fast-forward follow-up commit. Never predicted. Distinct from every prior sentinel.
 XASSET0055_ACTIVE_PR = 356
 
+#: RE-ANCHORED BY XASSET-0056, the single replacement parser-correction implementation
+#: XASSET-0055 §H authorized. `active_branch`, `active_pr` and `last_verified_main_sha` are
+#: WS-0014's SINGLE SHARED live self-reference fields under OPS-0001's Active-GitHub-fields
+#: rule, so they lawfully advance to whichever unit is live. The XASSET-0055 generation is
+#: RETAINED below as a negative pin rather than deleted, so every field stays bound at BOTH
+#: ends and a silent revert to ANY finished unit's state still fails here.
+XASSET0056_MAIN_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
+#: An IMPOSSIBLE sentinel until GitHub issues the real number, which is then bound in a
+#: fast-forward follow-up commit. Never predicted.
+XASSET0056_ACTIVE_PR = -56
+
+
 #: XASSET-0045's OWN failed merge-commit CI run and job, at PR345_MERGE_SHA. Immutable adverse
 #: history, on exactly the footing PR #344's own failed run occupies: never re-run, relabelled,
 #: waived, or represented as successful.
@@ -1267,7 +1279,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
         # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
         # pin, so a silent revert to finished work still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0055_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0056_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0055_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0053_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0052_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0051_MAIN_SHA
@@ -1282,7 +1295,8 @@ class TestCatalogAndRegisterSynchronisation:
         # register's shared live self-reference moved onto this successor unit. Every
         # prior generation is retained as a NEGATIVE pin, so the field stays bound at
         # BOTH ends and a silent revert to finished work still fails.
-        assert str(ws0014["last_verified_date"]) == "2026-08-24"
+        assert str(ws0014["last_verified_date"]) == "2026-08-25"
+        assert str(ws0014["last_verified_date"]) != "2026-08-24"
         assert str(ws0014["last_verified_date"]) != "2026-08-23"
         assert str(ws0014["last_verified_date"]) != "2026-08-22"
         assert ws0014["active_branch"] != "claude/xasset-0043-rebinding-7ywmdx"

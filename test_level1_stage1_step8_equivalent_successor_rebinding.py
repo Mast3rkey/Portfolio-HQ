@@ -1358,7 +1358,15 @@ class TestTheDecisionsOperativeClaims:
             if len(token) == 64 and all(c in "0123456789abcdef" for c in token)
         ]
         assert len(tokens) == 1, tokens
-        assert tokens[0] == hashlib.sha256(
+        # ADVANCED BY XASSET-0056: this declaration is accepted merged history describing the
+        # module AS THIS UNIT LEFT IT. The single replacement parser-correction implementation
+        # XASSET-0055 §H authorized lawfully changed that byte, so the declaration must now no
+        # longer match the LIVE module, and asserting that inequality is what proves the
+        # correction really landed. The declaration is NOT re-pinned -- this filing performs no
+        # rebinding -- and the value it still declares is asserted EXACTLY, so nothing is
+        # relaxed to a mere "differs".
+        assert tokens[0] == "4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541"
+        assert tokens[0] != hashlib.sha256(
             (ROOT / AUTH_MODULE_RELPATH).read_bytes()
         ).hexdigest()
 
