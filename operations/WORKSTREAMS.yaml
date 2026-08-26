@@ -17598,8 +17598,11 @@ workstreams:
 
           MEASURED, NOT ASSERTED. The rule closes 85 of 85 cells in each of the three governed
           presentations - plain, bold-wrapped and indented, 255 of 255 - while regressing NOTHING.
-          Zero ABSENT-to-MALFORMED transitions across 409 tracked Markdown files and 131,143
-          lines, and zero across 317 real review and comment bodies and 19,741 lines on PRs
+          Zero ABSENT-to-MALFORMED transitions across the tracked Markdown corpus - 409 files
+          and 131,143 lines at this filing's base, the corpus the boundary was selected
+          against, and 410 files and 131,685 lines at its own head once this decision file
+          itself joins that corpus, zero either way - and zero across 317 real review and
+          comment bodies and 19,741 lines on PRs
           320-358, where all 27 authenticating bodies still authenticate and all 54 carrying
           another verdict still carry it. A second rule was fully specified and measured - bounded
           leading windows against the colon-inclusive prefix - and REJECTED because it produced a

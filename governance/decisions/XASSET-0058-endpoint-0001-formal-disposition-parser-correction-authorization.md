@@ -226,7 +226,7 @@ every line falls in exactly one of the two classes, and no input is undefined.
 
 | Corpus | Size | Lines that are **ABSENT today** and would become **MALFORMED** |
 |---|---|---|
-| Every line of every tracked repository Markdown file | 409 files, **131 143 lines** | **0** |
+| Every line of every tracked repository Markdown file — *409 files / **131 143 lines** at this filing's base, the corpus the boundary was selected against; **410 files / 131 685 lines** at this filing's own head, which additionally includes this decision file itself. **Zero** either way — the supporting artifact measures the live corpus, so it proves the self-inclusive figure* | 409→410 files, **131 143→131 685 lines** | **0** |
 | Every line of every real review and comment body on PRs 320–358 — *measured live in this filing session; network-dependent and therefore not re-derivable offline, so the supporting artifact proves the Markdown corpus above plus every real review-body line committed in this repository's own fixtures* | 317 bodies, **19 741 lines** | **0** |
 
 On the real historical corpus the **whole-body** verdict is unchanged for **317 / 317** bodies: all
