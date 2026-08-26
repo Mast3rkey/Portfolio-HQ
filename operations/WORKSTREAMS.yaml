@@ -17577,45 +17577,96 @@ workstreams:
           live merged bytes before any boundary was chosen. The swept region is DERIVED, not
           assumed - the canonical prefix minus its colon, the 18-character label FORMAL
           DISPOSITION, which has exactly 17 non-space positions and exactly 17 distinct-character
-          adjacent pairs. Across five families - single-character deletion, ASCII substitution,
-          ASCII insertion, adjacent transposition and Unicode/confusable substitution - 84 of 85
-          cells allow a later canonical approval to win, at the parser AND at all three real
-          consumer seams, including under a native APPROVED state. The single non-bypassing cell
+          adjacent pairs. The FIXED-REPRESENTATIVE reproduction, retained because XASSET-0057
+          SS-F.0.1 measured it, substitutes and inserts one handpicked character and finds 84 of
+          85 cells allowing a later canonical approval to win, at the parser AND at all three real
+          consumer seams, including under a native APPROVED state; the single non-bypassing cell
           is insertion at position 0, which leaves the canonical prefix intact as a substring and
           therefore FAILS CLOSED as the MALFORMED sentinel OBJECT, pinned by identity rather than
-          by a literal. These measurements reproduce XASSET-0057 SS-F.0.1 exactly.
+          by a literal. That reproduces SS-F.0.1 exactly, but a single handpicked character CANNOT
+          establish a claim about the ASCII families, so under review 5034171910 the families were
+          RE-MEASURED EXHAUSTIVELY over the whole printable-ASCII alphabet - 95 characters, every
+          one of the 17 positions, 3,264 cells - and the live defect proved an ORDER OF MAGNITUDE
+          LARGER: 3,150 of 3,264 cells bypass the live parser in EACH of the three governed
+          presentations, 9,450 open cells in total. Exactly 34 cells mutate the label USING THE
+          CLASSIFIER'S OWN DELIMITER, the ASCII colon - 17 substitutions and 17 insertions - and
+          33 of those 34 bypass today. The remaining live outcomes are safe and named: 96
+          position-0 insertions already FAIL CLOSED as MALFORMED, 17 substitutions replace an
+          ASCII letter with its own lowercase form which the accepted grammar deliberately treats
+          as ACCEPTED so the ADVERSE VERDICT WINS, and one plain-form insertion is a leading ASCII
+          space the parser's existing handling absorbs.
 
           THE BOUNDARY THIS FILING DECIDES. ACCEPTANCE IS UNCHANGED - the exact accepted grammar,
           the two governed wrapper forms, ASCII case compatibility, the open verdict vocabulary
           and whole-verdict exact equality are all preserved, and FUZZY MATCHING IS FORBIDDEN IN
           ACCEPTANCE. A separate CANDIDATE rule, evaluated only on the branch an accepted form
-          cannot take, classifies a line as formal-looking when the label before its first ASCII
-          colon - searched only within a CLOSED 20-character window, so the rule is O(1) in line
-          length - lies within a RESTRICTED DAMERAU / OPTIMAL-STRING-ALIGNMENT distance of ONE of
-          the canonical label under the same ASCII-only fold acceptance already uses. Every such
-          candidate becomes MALFORMED and STOPS THE PARSE. The edit budget of 1 is recorded as a
-          NUM-0001 CLASS 5 PROVISIONAL GOVERNANCE GUARDRAIL, not an empirically calibrated value.
+          cannot take, classifies a line as formal-looking by PROBING THE THREE ADMISSIBLE COLON
+          INDICES DIRECTLY - 17, 18 and 19, DERIVED from the 18-character label and the edit
+          budget rather than written as literals, since a label within one edit of canonical has
+          length 17, 18 or 19 - and treating the line as a candidate when the text before ANY
+          admissible colon lies within a RESTRICTED DAMERAU / OPTIMAL-STRING-ALIGNMENT distance of
+          ONE of the canonical label, under the same ASCII-only fold acceptance already uses. At
+          most three index probes and three capped comparisons run per projection, so the rule is
+          O(1) in line length. Every such candidate becomes MALFORMED and STOPS THE PARSE. The
+          edit budget of 1 is recorded as a NUM-0001 CLASS 5 PROVISIONAL GOVERNANCE GUARDRAIL, not
+          an empirically calibrated value; a budget of 0 leaves ALL 9,450 open cells open and a
+          budget of 1 leaves ZERO, while budgets of 2 and 3 also regress nothing - the
+          disconfirming measurement is RECORDED rather than omitted, so the budget rests on
+          sufficiency and restraint and not on a false false-positive-ceiling claim.
 
-          MEASURED, NOT ASSERTED. The rule closes 85 of 85 cells in each of the three governed
-          presentations - plain, bold-wrapped and indented, 255 of 255 - while regressing NOTHING.
-          Zero ABSENT-to-MALFORMED transitions across the tracked Markdown corpus - 409 files
-          and 131,143 lines at this filing's base, the corpus the boundary was selected
-          against, and 410 files and 131,685 lines at its own head once this decision file
-          itself joins that corpus, zero either way - and zero across 317 real review and
-          comment bodies and 19,741 lines on PRs
-          320-358, where all 27 authenticating bodies still authenticate and all 54 carrying
-          another verdict still carry it. A second rule was fully specified and measured - bounded
-          leading windows against the colon-inclusive prefix - and REJECTED because it produced a
-          genuine prose regression, which SS-F.0.2 item 4 forbids. The rejection is recorded
-          rather than omitted.
+          THE SUPERSEDED RULE, RECORDED RATHER THAN DELETED. This filing's first draft searched for
+          the FIRST ASCII colon in a closed 20-character window and tested only the text before it.
+          Independent FULL review 5034171910 found that rule FAIL-OPEN, and the finding REPRODUCED
+          EXACTLY through every real mechanism: an ASCII colon substituted or inserted INTO the
+          label - FORM:L DISPOSITION: CHANGES REQUIRED and FORM:AL DISPOSITION: CHANGES REQUIRED,
+          each followed by a canonical APPROVED - makes the first colon land at an index whose
+          prefix is far more than one edit from canonical, so the REAL terminating colon at index
+          18 or 19 was NEVER EXAMINED, the adverse line was skipped, the live parser returned
+          APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, and ALL THREE real consumer seams accepted
+          it INCLUDING seam 3 under native APPROVED. Probing the admissible indices directly
+          removes the dependency on WHICH colon comes first: an attacker-supplied colon can neither
+          hide the real one nor cause the adverse line to be skipped, because the real one's index
+          is still probed.
 
-          THE RESIDUAL, DISPOSITIONED RATHER THAN OMITTED. Mutation OF THE TERMINATING COLON
-          itself is DECIDED AS ABSENT. The colon is what makes a line present as a labelled record
+          MEASURED EXHAUSTIVELY, NOT ASSERTED. Over the 3,264-cell exhaustive matrix, driven
+          through the REAL parser with the candidate hook at its real branch, the corrected rule
+          yields ZERO BYPASS cells in EVERY governed presentation - plain 0 BYPASS / 3,246
+          MALFORMED / 18 ADVERSE, bold and indented 0 / 3,247 / 17 each - so across all three
+          presentations 9,792 cells are evaluated, 9,450 are open today, and 0 are open after. All
+          34 colon cells close. The operative claim is stated as a PROPERTY, not a count: NO CELL
+          OF THE EXHAUSTIVE MATRIX, IN ANY GOVERNED PRESENTATION, LETS A LATER APPROVAL WIN. The
+          first draft's 17-of-17-per-family and 85-of-85 figures are NOT PRESERVED as claims about
+          the families - they were true only of the fixed-representative matrix and are retained
+          solely as the SS-F.0.1 reproduction. Both corpora were RE-MEASURED under the corrected
+          rule rather than carried over, and both still regress NOTHING: zero ABSENT-to-MALFORMED
+          transitions across the tracked Markdown corpus measured LIVE and SELF-INCLUSIVELY at this
+          filing's own head - 410 files and 131,293 lines, 8 lines flagged of which 2 are already
+          MALFORMED and 6 already yield a verdict - and zero across 317 real review and comment
+          bodies and 19,741 lines on PRs 320-358, 96 lines flagged of which 9 are already MALFORMED
+          and 87 already yield a verdict, where all 27 authenticating bodies still authenticate and
+          all 54 carrying another verdict still carry it, and the whole-body verdict is unchanged
+          for 317 of 317. A second rule was fully specified and measured - bounded leading windows
+          against the colon-inclusive prefix - and REJECTED because it produced a genuine prose
+          regression, which SS-F.0.2 item 4 forbids. The rejection is recorded rather than omitted,
+          and the indexed-colon correction does not disturb it: the correction changed WHICH COLON
+          the adopted rule examines, not WHETHER it requires one.
+
+          THE RESIDUAL, DISPOSITIONED RATHER THAN OMITTED, AND PRESERVED BY THE CORRECTION.
+          Mutation OF THE TERMINATING COLON itself is DECIDED AS ABSENT, and the bounded correction
+          PRESERVES that decision EXACTLY - re-verified directly against the corrected rule, all
+          three probes remain non-candidates and remain ABSENT today. IT IS A DIFFERENT CASE FROM
+          THE ONE THE CORRECTION CLOSED and the two must not be conflated: the INTERNAL-colon case
+          still CARRIES a real colon at an admissible index and is now MALFORMED, while the
+          TERMINATING-colon case carries NO colon at ANY admissible index and stays ABSENT. The
+          correction did not weaken the colon requirement; it stopped an attacker-supplied colon
+          from HIDING the real one. The colon is what makes a line present as a labelled record
           rather than a sentence beginning with two ordinary English words; the behaviour is
-          UNCHANGED from today rather than a new hole; it lies outside the family SS-F.0.1
-          measured; and the case-based discriminator that would separate it from prose is REMOVED
-          AND PROHIBITED by XASSET-0055 SS-D. Whether it should be closed, and how, stays open,
-          unresolved and outside this grant.
+          UNCHANGED from today rather than a new hole; it lies outside BOTH the family SS-F.0.1
+          measured AND the exhaustive matrix, which sweep the label and hold the terminating colon
+          fixed; and the case-based discriminator that would separate it from prose is REMOVED AND
+          PROHIBITED by XASSET-0055 SS-D. No accepted authority reached in this session permits
+          changing it. Whether it should be closed, and how, stays open, unresolved and outside
+          this grant.
 
           WHAT IS GRANTED, AND ONLY THIS. Effective only on this decision's own complete Lifecycle
           A closure, exactly ONE future, separate, bounded PR may correct
@@ -17649,6 +17700,43 @@ workstreams:
           predicates remain False, the lane remains ABSENT, AUTHORIZATION_ROOT remains absent,
           ATTEMPT_1 remains intact, unclaimed and unconsumed, and STAGE 1 REMAINS UNARMED AND NOT
           EXECUTABLE.
+
+          BOUNDED CORRECTION - REVIEW 5034171910, 2 BLOCKING, BOTH RESOLVED. Independent FULL
+          exact-head review 5034171910, anchored to 48a6ea09355b442eb015a19b75fbcc75e748d9e6,
+          returned 2 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE. Both are resolved on the SAME branch and
+          the SAME pull request, by FAST-FORWARD - nothing amended, rebased or force-pushed, and no
+          prior text silently rewritten, since the superseded rule and the superseded claims are
+          RECORDED rather than deleted. BLOCKING 1, the internal-colon fail-open and the
+          single-handpicked-character ASCII evidence, was REPRODUCED FIRST through the proposed
+          model, the real parser, all three real consumer seams and native-APPROVED rescue, then
+          corrected by indexed-colon probing and re-proved over the exhaustive printable-ASCII
+          matrix, with the colon cells exercised and named independently, FOUR ISOLATING mutation
+          probes added - reverting to the first-colon rule, probing only one admissible index,
+          dropping the colon requirement entirely, and shrinking the exhaustive alphabet back to one
+          handpicked character, each of which must fail and must fail FOR ITS INTENDED REASON - and
+          every count, total, positive control, regression figure and mutation figure RE-DERIVED
+          MECHANICALLY from the iterated matrix and the live corpora rather than carried over. The
+          alphabet probe was INITIALLY MISSED, since nothing prevented the alphabet silently
+          collapsing back to a single representative - precisely the defect the review found - and
+          the gap was CLOSED rather than reported as caught; the proof stands at 19 OF 19 CAUGHT, 0
+          MISSED. The review's own finding is PINNED AS A PERMANENT REGRESSION TEST: the superseded
+          rule is retained as a NEGATIVE reference model, both named bodies are asserted fail-open
+          under it and fail-closed under the corrected rule, the reviewer's own 16-OF-17 figure is
+          reproduced exactly for both ASCII families, and the two models are proved to DIFFER ON
+          EXACTLY THE 32 COLON CELLS while AGREEING ON EVERY LINE OF THE WHOLE MARKDOWN CORPUS - so
+          the correction widened the rule at the colon boundary and NOWHERE ELSE. A vacuity
+          introduced by this correction's own first pass was also found and removed: keeping the
+          seam tests' early return on MALFORMED would have made them assert NOTHING for 3,246 of
+          3,264 cells and 34 of 34 colon cells, so the seam claim is now proved as a TWO-PART
+          COMPOSITION with non-emptiness guards on both halves and a control proving a broken
+          refusal detector cannot make it look green. Acceptance was NOT broadened
+          and the verdict is NOT fuzzy-matched. BLOCKING
+          2, no exact-head Actions run at the reviewed head, is discharged against the CORRECTED
+          head at a run and job whose head_sha BOTH equal it; no intermediate-head run,
+          startup_failure, cancelled run, local-only result, empty trigger commit or close/reopen
+          workaround is substituted, and the earlier three-second startup_failure on an intermediate
+          head remains disclosed as infrastructure history that VALIDATES NOTHING, because no job
+          started and no test body ran.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

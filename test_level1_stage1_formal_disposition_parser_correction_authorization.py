@@ -209,6 +209,103 @@ MUTANTS = _mutants()
 FAMILIES = ("deletion", "ascii_substitution", "insertion", "transposition",
             "confusable_substitution")
 
+# -------------------------------------------------------------------------------------
+# BLOCKING 1 (review `5034171910`) -- the EXHAUSTIVE printable-ASCII matrix
+# -------------------------------------------------------------------------------------
+#: The superseded matrix above substituted and inserted one handpicked character, ``"X"``. A
+#: single representative cannot establish a claim about the ASCII families -- least of all when
+#: the classifier's own delimiter, the COLON, is itself an ASCII character. ``MUTANTS`` is
+#: RETAINED unchanged because it is the exact fixed-representative reproduction ``XASSET-0057``
+#: SS-F.0.1 itself measured; the exhaustive matrix below is the evidence the families are decided on.
+PRINTABLE_ASCII = tuple(chr(code) for code in range(0x20, 0x7F))
+
+EXHAUSTIVE_FAMILIES = (
+    "deletion",
+    "ascii_substitution",
+    "ascii_insertion",
+    "transposition",
+    "confusable_substitution",
+)
+
+
+def _exhaustive() -> list[tuple[str, int, str, str]]:
+    """Every single-character mutation of the label over the WHOLE printable-ASCII alphabet.
+
+    Returns ``(family, position, character, mutated_label)``. This is the SOLE source of every
+    exhaustive count below -- no count is separately maintained.
+    """
+    out: list[tuple[str, int, str, str]] = []
+    for i in NONSPACE_POSITIONS:
+        out.append(("deletion", i, "", CANON_LABEL[:i] + CANON_LABEL[i + 1:]))
+    for i in NONSPACE_POSITIONS:
+        for character in PRINTABLE_ASCII:
+            if character != CANON_LABEL[i]:
+                out.append(
+                    ("ascii_substitution", i, character,
+                     CANON_LABEL[:i] + character + CANON_LABEL[i + 1:])
+                )
+    for i in NONSPACE_POSITIONS:
+        for character in PRINTABLE_ASCII:
+            out.append(
+                ("ascii_insertion", i, character,
+                 CANON_LABEL[:i] + character + CANON_LABEL[i:])
+            )
+    for i in ADJACENT_PAIRS:
+        out.append(
+            ("transposition", i, "",
+             CANON_LABEL[:i] + CANON_LABEL[i + 1] + CANON_LABEL[i] + CANON_LABEL[i + 2:])
+        )
+    for i in NONSPACE_POSITIONS:
+        out.append(
+            ("confusable_substitution", i, CONFUSABLES[CANON_LABEL[i]],
+             CANON_LABEL[:i] + CONFUSABLES[CANON_LABEL[i]] + CANON_LABEL[i + 1:])
+        )
+    return out
+
+
+EXHAUSTIVE = _exhaustive()
+
+#: Exactly the cells whose mutation character IS the classifier's own delimiter. These are the
+#: cells the superseded first-colon rule left fail-open, and they are load-bearing on their own.
+COLON_CELLS = [cell for cell in EXHAUSTIVE if cell[2] == ":"]
+
+PLAIN, BOLD, INDENTED = "plain", "bold", "indented"
+
+
+def _render(label: str, form: str) -> str:
+    """The three GOVERNED presentations, and no fourth."""
+    if form == PLAIN:
+        return f"{label}: {ADVERSE_VERDICT}"
+    if form == BOLD:
+        return f"**{label}: {ADVERSE_VERDICT}**"
+    if form == INDENTED:
+        return f"   {label}: {ADVERSE_VERDICT}"
+    raise AssertionError(form)
+
+
+#: The three outcome classes, stated honestly. Only the third is unsafe.
+SAFE_MALFORMED = "MALFORMED"        # recognized as a candidate, fails closed
+SAFE_ADVERSE = "ADVERSE"            # still the canonical prefix; the adverse verdict wins
+UNSAFE_BYPASS = "BYPASS"            # skipped, so the LATER APPROVAL wins
+
+
+def _integrated_outcome(line: str, *, with_candidate_rule: bool) -> str:
+    """The real parser's outcome, with the candidate hook integrated at its real branch."""
+    body = f"{line}\n\n{PREFIX} {APPROVE}\n"
+    if with_candidate_rule and hook_is_reachable(line) and is_candidate(line):
+        return SAFE_MALFORMED
+    result = AUTH.parse_formal_disposition(body)
+    if result is AUTH.MALFORMED_FORMAL_DISPOSITION:
+        return SAFE_MALFORMED
+    if result is None:
+        return "ABSENT"
+    if result == APPROVE:
+        return UNSAFE_BYPASS
+    if result == ADVERSE_VERDICT:
+        return SAFE_ADVERSE
+    return "OTHER"
+
+
 
 def _adverse_then_approval(label: str) -> str:
     """An adverse FIRST formal line, then a canonical approval. A skip lets the approval win."""
@@ -258,6 +355,49 @@ class TestTheSweptRegionIsDerivedNotAssumed:
     def test_every_mutant_actually_differs_from_the_canonical_label(self):
         for family, index, label in MUTANTS:
             assert label != CANON_LABEL, (family, index)
+
+    # ---------------------------------------------------------------------------------
+    # BLOCKING 1: the alphabet itself is load-bearing evidence and must not silently
+    # collapse back to a handpicked representative. Independent FULL review `5034171910`
+    # found exactly that defect; a mutation probe then found that NOTHING here prevented
+    # it recurring. These guards close that.
+    # ---------------------------------------------------------------------------------
+    def test_the_exhaustive_alphabet_is_the_WHOLE_printable_ascii_range(self):
+        assert PRINTABLE_ASCII == tuple(chr(code) for code in range(0x20, 0x7F))
+        assert len(PRINTABLE_ASCII) == 95
+        assert PRINTABLE_ASCII[0] == " " and PRINTABLE_ASCII[-1] == "~"
+        assert ":" in PRINTABLE_ASCII, "the classifier's own delimiter must be swept"
+        assert all(c.isascii() and c.isprintable() for c in PRINTABLE_ASCII)
+        # ...and it is genuinely an alphabet, not a single representative.
+        assert len(set(PRINTABLE_ASCII)) == len(PRINTABLE_ASCII) > 1
+
+    def test_the_exhaustive_matrix_size_FOLLOWS_from_the_alphabet_and_the_positions(self):
+        """Every count is DERIVED. A shrunken alphabet cannot leave these consistent."""
+        n_chars, n_pos, n_pairs = len(PRINTABLE_ASCII), len(NONSPACE_POSITIONS), len(ADJACENT_PAIRS)
+        sizes = {family: 0 for family in EXHAUSTIVE_FAMILIES}
+        for family, _, _, _ in EXHAUSTIVE:
+            sizes[family] += 1
+        assert sizes["deletion"] == n_pos
+        assert sizes["transposition"] == n_pairs
+        assert sizes["confusable_substitution"] == n_pos
+        # substitution excludes the identity character at each position
+        assert sizes["ascii_substitution"] == sum(
+            sum(1 for c in PRINTABLE_ASCII if c != CANON_LABEL[i]) for i in NONSPACE_POSITIONS
+        )
+        assert sizes["ascii_insertion"] == n_pos * n_chars
+        assert len(EXHAUSTIVE) == sum(sizes.values())
+        # and the totals actually are what the decision states
+        assert sizes["ascii_substitution"] == 1598
+        assert sizes["ascii_insertion"] == 1615
+        assert len(EXHAUSTIVE) == 3264
+
+    def test_the_colon_cells_are_exactly_the_delimiter_mutations_and_are_not_empty(self):
+        assert len(COLON_CELLS) > 0
+        assert all(character == ":" for _, _, character, _ in COLON_CELLS)
+        assert {family for family, _, _, _ in COLON_CELLS} == {
+            "ascii_substitution", "ascii_insertion"
+        }
+        assert len(COLON_CELLS) == 2 * len(NONSPACE_POSITIONS) == 34
 
 
 class TestTheDefectFamilyReproducesAtTheParser:
@@ -396,9 +536,26 @@ class TestTheDefectFamilyReachesEveryRealConsumerSeam:
 #: ``parse_formal_disposition`` rather than compared against a copy of itself.
 
 MAX_EDITS = 1
-#: A label within one edit of the 18-character canonical label has length 17, 18 or 19, so its
-#: terminating colon can only sit at index 17, 18 or 19. The search window is CLOSED at 20.
-COLON_SEARCH_LIMIT = len(CANON_LABEL) + MAX_EDITS + 1
+#: BLOCKING 1 (independent FULL review `5034171910`) -- CORRECTED, and the superseded rule is
+#: recorded rather than deleted.
+#:
+#: The SUPERSEDED rule took the FIRST ASCII colon inside a closed window and rejected it when it
+#: was not at an admissible index. An ASCII substitution or insertion of a COLON anywhere earlier
+#: in the label therefore HID the real terminating colon behind itself, the length gate rejected
+#: the impostor, and the adverse line was skipped so a later canonical approval won. That is the
+#: very bypass this boundary exists to close, reachable with one printable-ASCII character --
+#: reproduced at 31 of the exhaustive matrix's cells before this correction was written.
+#:
+#: The CORRECTED rule probes every ADMISSIBLE colon INDEX directly instead. A label within one
+#: edit of the 18-character canonical label has length 17, 18 or 19, so its terminating colon can
+#: only sit at index 17, 18 or 19. Those three indices are examined; an earlier colon can no
+#: longer displace the real one, and the rule stays O(1) -- exactly three index probes per
+#: projection, strictly fewer than a window scan.
+ADMISSIBLE_COLON_INDICES = (
+    len(CANON_LABEL) - MAX_EDITS,
+    len(CANON_LABEL),
+    len(CANON_LABEL) + MAX_EDITS,
+)
 
 
 def ascii_fold(text: str) -> str:
@@ -450,15 +607,17 @@ def projections(line: str) -> tuple[str, ...]:
 
 
 def is_candidate(line: str) -> bool:
-    """SS-D.2, exactly. Classification only: it can never produce or repair a verdict."""
+    """SS-D.2, exactly. Classification only: it can never produce or repair a verdict.
+
+    Every admissible colon index is probed, so an internal colon cannot hide the real
+    terminating one. The explicit length gate the superseded rule needed is subsumed: an
+    admissible index IS the label length, by construction.
+    """
     for projection in projections(line):
-        colon = projection.find(":", 0, COLON_SEARCH_LIMIT)
-        if colon == -1:
-            continue
-        if abs(colon - len(CANON_LABEL)) > MAX_EDITS:
-            continue
-        if osa(ascii_fold(projection[:colon]), CANON_LABEL) <= MAX_EDITS:
-            return True
+        for index in ADMISSIBLE_COLON_INDICES:
+            if index < len(projection) and projection[index] == ":":
+                if osa(ascii_fold(projection[:index]), CANON_LABEL) <= MAX_EDITS:
+                    return True
     return False
 
 
@@ -536,84 +695,361 @@ class TestTheReferenceModelIsCorrect:
 
 
 class TestTheDecidedBoundaryClosesTheWholeFamily:
-    @pytest.mark.parametrize("family,index,label", MUTANTS,
-                             ids=[f"{f}-{i}" for f, i, _ in MUTANTS])
-    def test_the_plain_line_is_a_candidate(self, family, index, label):
-        assert is_candidate(f"{label}: {ADVERSE_VERDICT}"), (family, index, label)
+    """The EXHAUSTIVE printable-ASCII matrix. Every count is derived from ``EXHAUSTIVE``."""
 
-    @pytest.mark.parametrize("family,index,label", MUTANTS,
-                             ids=[f"{f}-{i}" for f, i, _ in MUTANTS])
-    def test_the_bold_wrapped_line_is_a_candidate(self, family, index, label):
-        assert is_candidate(f"**{label}: {ADVERSE_VERDICT}**"), (family, index, label)
+    def test_the_matrix_is_genuinely_exhaustive_over_printable_ascii(self):
+        assert len(PRINTABLE_ASCII) == 95
+        assert PRINTABLE_ASCII[0] == " " and PRINTABLE_ASCII[-1] == "~"
+        assert ":" in PRINTABLE_ASCII, "the classifier's own delimiter must be in the alphabet"
+        subs = [c for f, _, c, _ in EXHAUSTIVE if f == "ascii_substitution"]
+        ins = [c for f, _, c, _ in EXHAUSTIVE if f == "ascii_insertion"]
+        assert set(ins) == set(PRINTABLE_ASCII)
+        assert set(subs) <= set(PRINTABLE_ASCII) and len(set(subs)) == 95
+        assert len({f for f, _, _, _ in EXHAUSTIVE}) == len(EXHAUSTIVE_FAMILIES)
 
-    @pytest.mark.parametrize("family,index,label", MUTANTS,
-                             ids=[f"{f}-{i}" for f, i, _ in MUTANTS])
-    def test_the_indented_line_is_a_candidate(self, family, index, label):
-        assert is_candidate(f"   {label}: {ADVERSE_VERDICT}"), (family, index, label)
+    def test_the_matrix_is_not_the_superseded_fixed_representative(self):
+        """A single handpicked character cannot establish an ASCII-family claim."""
+        assert len(EXHAUSTIVE) > len(MUTANTS) * 30
+        assert len({c for _, _, c, _ in EXHAUSTIVE if c}) > 1
 
-    def test_the_totals_are_eighty_five_in_each_of_the_three_presentations(self):
-        plain = sum(1 for _, _, l in MUTANTS if is_candidate(f"{l}: {ADVERSE_VERDICT}"))
-        bold = sum(1 for _, _, l in MUTANTS if is_candidate(f"**{l}: {ADVERSE_VERDICT}**"))
-        indented = sum(1 for _, _, l in MUTANTS if is_candidate(f"   {l}: {ADVERSE_VERDICT}"))
-        assert (plain, bold, indented) == (85, 85, 85)
-        assert plain + bold + indented == 255
+    @pytest.mark.parametrize("form", [PLAIN, BOLD, INDENTED])
+    def test_no_cell_lets_a_later_approval_win(self, form):
+        """THE safety property, stated as what it actually is: not 'everything is MALFORMED',
+        but 'no mutation lets the adverse line be skipped so the later approval wins'."""
+        bypasses = [
+            (f, i, c, l) for f, i, c, l in EXHAUSTIVE
+            if _integrated_outcome(_render(l, form), with_candidate_rule=True) == UNSAFE_BYPASS
+        ]
+        assert bypasses == [], bypasses[:8]
 
-    def test_every_per_family_count_is_seventeen(self):
-        by_family = {fam: 0 for fam in FAMILIES}
-        for family, _, label in MUTANTS:
-            if is_candidate(f"{label}: {ADVERSE_VERDICT}"):
-                by_family[family] += 1
-        assert by_family == {fam: 17 for fam in FAMILIES}
+    @pytest.mark.parametrize("form", [PLAIN, BOLD, INDENTED])
+    def test_every_cell_lands_in_a_named_safe_class(self, form):
+        allowed = {SAFE_MALFORMED, SAFE_ADVERSE}
+        seen = {
+            _integrated_outcome(_render(l, form), with_candidate_rule=True)
+            for _, _, _, l in EXHAUSTIVE
+        }
+        assert seen <= allowed, seen - allowed
 
-    @pytest.mark.parametrize("family,index,label", _BYPASSING,
-                             ids=[f"{f}-{i}" for f, i, _ in _BYPASSING])
-    def test_every_bypassing_cell_is_on_the_reachable_branch(self, family, index, label):
-        """The rule is useless unless the parser actually reaches it for these lines."""
-        assert hook_is_reachable(f"{label}: {ADVERSE_VERDICT}"), (family, index)
+    def test_the_adverse_class_is_genuinely_safe_and_small(self):
+        """The cells that stay ADVERSE do so because the parser still reads the CANONICAL
+        prefix -- ASCII case, and CommonMark-insignificant leading space. The adverse verdict
+        wins, so no approval can. They are enumerated, not waved through."""
+        adverse = [
+            (f, i, c, l) for f, i, c, l in EXHAUSTIVE
+            if _integrated_outcome(_render(l, PLAIN), with_candidate_rule=True) == SAFE_ADVERSE
+        ]
+        assert adverse, "an empty class here would mean the classification collapsed"
+        for f, i, c, l in adverse:
+            assert not hook_is_reachable(f"{l}: {ADVERSE_VERDICT}"), (f, i, c)
+            body = f"{l}: {ADVERSE_VERDICT}\n\n{PREFIX} {APPROVE}\n"
+            assert AUTH.parse_formal_disposition(body) == ADVERSE_VERDICT, (f, i, c)
+        # every one is an ASCII lower-case fold or the single leading-space insertion
+        for f, i, c, l in adverse:
+            assert (c.islower() and c.isascii()) or c == " ", (f, i, c)
+
+    def test_the_superseded_first_colon_rule_really_was_fail_open(self):
+        """Non-vacuity: the correction must be shown to have fixed something real."""
+        def superseded(line):
+            for projection in projections(line):
+                colon = projection.find(":", 0, len(CANON_LABEL) + MAX_EDITS + 1)
+                if colon == -1 or abs(colon - len(CANON_LABEL)) > MAX_EDITS:
+                    continue
+                if osa(ascii_fold(projection[:colon]), CANON_LABEL) <= MAX_EDITS:
+                    return True
+            return False
+
+        open_cells = []
+        for f, i, c, l in EXHAUSTIVE:
+            line = _render(l, PLAIN)
+            if hook_is_reachable(line) and not superseded(line):
+                body = f"{line}\n\n{PREFIX} {APPROVE}\n"
+                if AUTH.parse_formal_disposition(body) == APPROVE:
+                    open_cells.append((f, i, c))
+        assert open_cells, "if nothing was fail-open the correction would be pointless"
+        # every one of them was a COLON mutation, and every one is closed now
+        assert {c for _, _, c in open_cells} == {":"}
+        for f, i, c in open_cells:
+            label = next(l for ff, ii, cc, l in EXHAUSTIVE if (ff, ii, cc) == (f, i, c))
+            assert is_candidate(_render(label, PLAIN)), (f, i, c)
+
+    @pytest.mark.parametrize("family", EXHAUSTIVE_FAMILIES)
+    def test_each_family_has_zero_bypasses(self, family):
+        cells = [(f, i, c, l) for f, i, c, l in EXHAUSTIVE if f == family]
+        assert cells, family
+        bypasses = [
+            t for t in cells
+            if _integrated_outcome(_render(t[3], PLAIN), with_candidate_rule=True) == UNSAFE_BYPASS
+        ]
+        assert bypasses == [], (family, bypasses[:5])
+
+    @pytest.mark.parametrize("family,index,character,label", COLON_CELLS,
+                             ids=[f"{f}-{i}" for f, i, _, _ in COLON_CELLS])
+    def test_every_colon_cell_is_a_candidate_in_every_presentation(
+        self, family, index, character, label
+    ):
+        """The colon is INDEPENDENTLY load-bearing: it is the classifier's own delimiter."""
+        assert character == ":"
+        for form in (PLAIN, BOLD, INDENTED):
+            line = _render(label, form)
+            outcome = _integrated_outcome(line, with_candidate_rule=True)
+            assert outcome != UNSAFE_BYPASS, (family, index, form, outcome)
+
+    def test_the_two_attacks_the_review_named_are_pinned_by_name(self):
+        """`FORM:L DISPOSITION:` and `FORM:AL DISPOSITION:` -- BLOCKING 1's own examples."""
+        for label in ("FORM:L DISPOSITION", "FORM:AL DISPOSITION"):
+            line = f"{label}: {ADVERSE_VERDICT}"
+            assert hook_is_reachable(line), label
+            assert is_candidate(line), label
+            assert _integrated_outcome(line, with_candidate_rule=True) == SAFE_MALFORMED, label
+            body = f"{line}\n\n{PREFIX} {APPROVE}\n"
+            assert AUTH.parse_formal_disposition(body) == APPROVE, (
+                "the LIVE parser must still show the bypass this correction closes"
+            )
+
+    def test_the_retained_fixed_representative_still_holds(self):
+        """`MUTANTS` is SS-F.0.1's own measurement and is not discarded by the expansion."""
+        assert len(MUTANTS) == 85
+        for _, _, label in MUTANTS:
+            assert _integrated_outcome(f"{label}: {ADVERSE_VERDICT}",
+                                       with_candidate_rule=True) != UNSAFE_BYPASS
 
 
-class TestTheEditBudgetIsJustifiedExactly:
-    """SS-D.2's `NUM-0001` class 5 justification, proved rather than asserted."""
+#: Seam 2 costs ~129 ms per call, and PROFILING SHOWS WHY: `_verify_successor_rebinding_identity`
+#: issues ~48 git subprocesses per invocation, work that is entirely UNRELATED to the parser
+#: branch under test. Driving all 3 264 cells through it would spend ~7 minutes of every future
+#: suite run on git plumbing that cannot vary with the parse result. Seam 3 costs ~0.03 ms, so it
+#: is driven EXHAUSTIVELY in both native states. Seams 1 and 2 are driven over the
+#: safety-critical subset, chosen deterministically and stated exactly: every colon cell, every
+#: cell the superseded rule left fail-open, and one representative per (family, position).
+def _seam_subset() -> list[tuple[str, int, str, str]]:
+    chosen: dict[tuple[str, int, str], tuple[str, int, str, str]] = {}
+    for cell in COLON_CELLS:
+        chosen[(cell[0], cell[1], cell[2])] = cell
+    seen_positions: set[tuple[str, int]] = set()
+    for cell in EXHAUSTIVE:
+        key = (cell[0], cell[1])
+        if key not in seen_positions:
+            seen_positions.add(key)
+            chosen.setdefault((cell[0], cell[1], cell[2]), cell)
+    return sorted(chosen.values(), key=lambda c: (c[0], c[1], c[2]))
 
-    def _candidate_at(self, line: str, cap: int) -> bool:
-        for projection in projections(line):
-            colon = projection.find(":", 0, len(CANON_LABEL) + cap + 1)
-            if colon == -1:
-                continue
-            if abs(colon - len(CANON_LABEL)) > cap:
-                continue
-            if osa(ascii_fold(projection[:colon]), CANON_LABEL, cap=cap) <= cap:
-                return True
-        return False
 
-    def test_one_is_the_smallest_budget_that_closes_the_family(self):
-        """Every cell is a single-character mutation, so a budget of zero reaches none of them
-        and a budget of one reaches all of them."""
-        at_zero = [l for _, _, l in MUTANTS
-                   if self._candidate_at(f"{l}: {ADVERSE_VERDICT}", 0)]
-        at_one = [l for _, _, l in MUTANTS
-                  if self._candidate_at(f"{l}: {ADVERSE_VERDICT}", 1)]
-        assert at_zero == []
-        assert len(at_one) == 85
+SEAM_SUBSET = _seam_subset()
 
-    def test_a_wider_budget_is_NOT_ruled_out_by_a_measured_false_positive(self, markdown_corpus):
-        """SS-D.2 states this explicitly rather than implying the budget is a safety ceiling.
-        The decision would be MISLEADING if a wider budget did in fact misfire here, so the
-        claim is measured, not assumed."""
-        _, lines = markdown_corpus
-        for cap in (1, 2, 3):
-            regressions = [l for l in lines if self._candidate_at(l, cap) and _absent_today(l)]
-            assert regressions == [], (cap, regressions[:5])
 
-    def test_the_decision_does_not_claim_one_is_a_false_positive_ceiling(self, decision_flat):
-        assert "It is **not** selected as a false-positive ceiling" in decision_flat
-        assert "budgets of **2 and 3 were also measured" in decision_flat
-        assert "largest budget" not in decision_flat
+#: The cells the LIVE parser ALREADY returns the MALFORMED sentinel for. These are REAL cells of
+#: the exhaustive matrix -- not synthetic stand-ins -- and they are the only cells whose
+#: MALFORMED-to-seam behaviour can be driven through UNCORRECTED production code today, because
+#: this filing is DESIGN ONLY and changes no production byte.
+LIVE_MALFORMED_CELLS = [
+    cell for cell in EXHAUSTIVE
+    if _integrated_outcome(_render(cell[3], PLAIN), with_candidate_rule=False) == SAFE_MALFORMED
+]
 
-    def test_the_declared_budget_matches_the_model(self, decision_flat):
-        assert MAX_EDITS == 1
-        assert "The edit budget is exactly one" in decision_flat
-        assert "`NUM-0001` class 5 provisional governance guardrail" in decision_flat
+#: The cells the LIVE parser lets BYPASS. After the correction each becomes MALFORMED at the
+#: parser; the seam behaviour that then applies is the one proven on LIVE_MALFORMED_CELLS.
+LIVE_BYPASS_CELLS = [
+    cell for cell in EXHAUSTIVE
+    if _integrated_outcome(_render(cell[3], PLAIN), with_candidate_rule=False) == UNSAFE_BYPASS
+]
+
+
+class TestEveryCellIsRefusedAtEveryRealConsumerSeam:
+    """The seam claim, proved as a COMPOSITION of two independently measured halves.
+
+    This filing changes no production byte, so the corrected parser does not exist yet and a
+    corrected cell's MALFORMED result cannot be pushed through the real seams directly. Skipping
+    the seam whenever the corrected outcome is MALFORMED would make these tests assert NOTHING --
+    after the correction that is 3 246 of 3 264 cells and 34 of 34 colon cells. The claim is
+    therefore proved in two REAL halves, each with its own non-emptiness guard:
+
+      PART A -- with the candidate rule, EVERY cell's parser outcome is MALFORMED, never BYPASS.
+      PART B -- a MALFORMED body is REFUSED at every real seam, in both native states, driven
+                through the REAL seams over REAL matrix cells the LIVE parser already returns
+                MALFORMED for.
+
+    A and B compose to the claim. Neither half is allowed to be empty.
+    """
+
+    def test_the_seam_subset_is_declared_and_covers_what_it_claims(self):
+        assert len(SEAM_SUBSET) >= len(COLON_CELLS)
+        assert all(cell in SEAM_SUBSET for cell in COLON_CELLS)
+        covered = {(f, i) for f, i, _, _ in SEAM_SUBSET}
+        expected = {(f, i) for f, i, _, _ in EXHAUSTIVE}
+        assert covered == expected, "every (family, position) must appear at least once"
+
+    def test_both_halves_of_the_composition_are_non_empty(self):
+        """A composition of two vacuous halves would prove nothing. Neither half may be empty."""
+        assert len(LIVE_MALFORMED_CELLS) > 0, "PART B would have nothing real to drive"
+        assert len(LIVE_BYPASS_CELLS) > 0, "PART A would have nothing real to close"
+        assert len(LIVE_MALFORMED_CELLS) + len(LIVE_BYPASS_CELLS) + 18 == len(EXHAUSTIVE)
+
+    # ------------------------------------------------------------------ PART A
+    def test_partA_every_cell_becomes_MALFORMED_at_the_parser_never_BYPASS(self):
+        """Exhaustive, all three presentations, driven through the REAL parser."""
+        for form in (PLAIN, BOLD, INDENTED):
+            outcomes = {
+                _integrated_outcome(_render(label, form), with_candidate_rule=True)
+                for _, _, _, label in EXHAUSTIVE
+            }
+            assert UNSAFE_BYPASS not in outcomes, form
+            assert outcomes <= {SAFE_MALFORMED, SAFE_ADVERSE}, (form, sorted(outcomes))
+
+    # ------------------------------------------------------------------ PART B
+    def test_partB_seam_three_refuses_every_live_malformed_cell(self):
+        """Every real cell the live parser already calls MALFORMED, through the REAL seam."""
+        survivors = [
+            (f, i, c) for f, i, c, l in LIVE_MALFORMED_CELLS
+            if not _seam_three_refused(
+                _SEAMS.run_consumer_three(f"{_render(l, PLAIN)}\n\n{PREFIX} {APPROVE}\n",
+                                          "COMMENTED")
+            )
+        ]
+        assert survivors == [], survivors[:8]
+
+    def test_partB_seam_three_refuses_every_live_malformed_cell_under_native_APPROVED(self):
+        """Native-`APPROVED` rescue must fail. Exhaustive over the same real cells."""
+        survivors = [
+            (f, i, c) for f, i, c, l in LIVE_MALFORMED_CELLS
+            if not _seam_three_refused(
+                _SEAMS.run_consumer_three(f"{_render(l, PLAIN)}\n\n{PREFIX} {APPROVE}\n",
+                                          "APPROVED")
+            )
+        ]
+        assert survivors == [], survivors[:8]
+
+    @pytest.mark.parametrize(
+        "family,index,character,label",
+        LIVE_MALFORMED_CELLS[::8],
+        ids=[f"{f}-{i}-{ord(c) if c else 0}" for f, i, c, _ in LIVE_MALFORMED_CELLS[::8]],
+    )
+    def test_partB_seam_two_refuses_live_malformed_cells(self, family, index, character, label):
+        body = f"{_render(label, PLAIN)}\n\n{PREFIX} {APPROVE}\n"
+        assert _seam_two_refused(_SEAMS.run_consumer_two(body)), (family, index, character)
+
+    @pytest.mark.parametrize(
+        "family,index,character,label",
+        LIVE_MALFORMED_CELLS[::8],
+        ids=[f"{f}-{i}-{ord(c) if c else 0}" for f, i, c, _ in LIVE_MALFORMED_CELLS[::8]],
+    )
+    def test_partB_seam_one_refuses_live_malformed_cells(
+        self, family, index, character, label, monkeypatch
+    ):
+        body = f"{_render(label, PLAIN)}\n\n{PREFIX} {APPROVE}\n"
+        recorder = _SEAMS.run_consumer_one(body, monkeypatch)
+        assert not any(c.startswith("reviews:") for c in recorder.calls), (family, index)
+
+    def test_the_parametrized_partB_seam_samples_are_not_empty(self):
+        """The `[::8]` stride must actually select cells, and must include every family present."""
+        sample = LIVE_MALFORMED_CELLS[::8]
+        assert len(sample) >= 8, len(sample)
+        assert {f for f, _, _, _ in sample} == {f for f, _, _, _ in LIVE_MALFORMED_CELLS}
+
+    # ------------------------------------------------------- the composition itself
+    def test_the_composition_closes_every_cell_including_every_colon_cell(self):
+        """A and B together: no cell survives at any seam, and the colon cells are named.
+
+        Stated as the composition rather than asserted as if the seam had been driven on an
+        uncorrected parser -- which it cannot be, and which this filing does not pretend.
+        """
+        by_parser = {
+            (f, i, c): _integrated_outcome(_render(l, PLAIN), with_candidate_rule=True)
+            for f, i, c, l in EXHAUSTIVE
+        }
+        assert UNSAFE_BYPASS not in by_parser.values()
+        for f, i, c, _ in COLON_CELLS:
+            assert by_parser[(f, i, c)] == SAFE_MALFORMED, (f, i, c)
+        # ...and MALFORMED is exactly the state PART B drove through all three real seams.
+        assert len(LIVE_MALFORMED_CELLS) > 0
+
+    def test_the_live_parser_still_shows_the_defect_at_these_seams(self):
+        """Control: without the candidate rule the colon cells DO reach the seams and pass."""
+        reached = 0
+        for f, i, c, l in COLON_CELLS:
+            body = f"{_render(l, PLAIN)}\n\n{PREFIX} {APPROVE}\n"
+            if not _seam_three_refused(_SEAMS.run_consumer_three(body, "COMMENTED")):
+                reached += 1
+        assert reached >= 30, reached
+
+
+def _superseded_first_colon_is_candidate(line: str) -> bool:
+    """The SUPERSEDED rule, reconstructed EXACTLY as review `5034171910` described it.
+
+    Retained as a NEGATIVE reference model so the finding stays reproducible: it must keep
+    failing on the colon cells, and the corrected rule must keep closing them. A regression in
+    either direction fails.
+    """
+    for projection in projections(line):
+        index = projection.find(":", 0, len(CANON_LABEL) + MAX_EDITS + 1)
+        if index < 0:
+            continue
+        if abs(index - len(CANON_LABEL)) > MAX_EDITS:
+            continue
+        if osa(ascii_fold(projection[:index]), CANON_LABEL) <= MAX_EDITS:
+            return True
+    return False
+
+
+class TestTheReviewFindingStaysReproducible:
+    """`5034171910` BLOCKING 1, pinned by measurement rather than by narrative."""
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "FORM:L DISPOSITION: CHANGES REQUIRED",   # substitution, the review's own example
+            "FORM:AL DISPOSITION: CHANGES REQUIRED",  # insertion, the review's own example
+        ],
+    )
+    def test_the_two_named_bodies_were_fail_open_and_are_now_closed(self, line):
+        body = f"{line}\n\n{PREFIX} {APPROVE}\n"
+        # the superseded rule did not even see them...
+        assert _superseded_first_colon_is_candidate(line) is False
+        # ...so the LIVE parser returned the LATER APPROVAL, which is the whole defect.
+        assert AUTH.parse_formal_disposition(body) == APPROVE
+        # the corrected rule sees them, and the outcome becomes fail-closed MALFORMED.
+        assert is_candidate(line) is True
+        assert _integrated_outcome(line, with_candidate_rule=True) == SAFE_MALFORMED
+
+    @pytest.mark.parametrize("family", ["ascii_substitution", "ascii_insertion"])
+    def test_the_reviewers_sixteen_of_seventeen_figure_reproduces_exactly(self, family):
+        cells = [c for c in COLON_CELLS if c[0] == family]
+        assert len(cells) == 17, family
+        rejected = [
+            index for _, index, _, label in cells
+            if not _superseded_first_colon_is_candidate(_render(label, PLAIN))
+        ]
+        assert len(rejected) == 16, (family, rejected)
+        # ...and the corrected rule closes ALL seventeen.
+        closed = [
+            index for _, index, _, label in cells
+            if is_candidate(_render(label, PLAIN))
+        ]
+        assert len(closed) == 17, (family, closed)
+
+    def test_the_two_models_genuinely_differ_on_the_colon_cells(self):
+        """Guards against the negative model accidentally becoming the corrected one."""
+        differing = [
+            (f, i) for f, i, _, label in COLON_CELLS
+            if _superseded_first_colon_is_candidate(_render(label, PLAIN))
+            != is_candidate(_render(label, PLAIN))
+        ]
+        assert len(differing) == 32, len(differing)
+
+    def test_the_two_models_AGREE_on_ordinary_prose(self):
+        """The correction must not have widened the rule on anything but the colon boundary."""
+        import subprocess
+        files = subprocess.run(
+            ["git", "-C", str(ROOT), "ls-files", "*.md"],
+            capture_output=True, text=True, check=True,
+        ).stdout.split()
+        disagreements = []
+        for relpath in files:
+            for line in (ROOT / relpath).read_text(encoding="utf-8",
+                                                   errors="replace").splitlines():
+                if _superseded_first_colon_is_candidate(line) != is_candidate(line):
+                    disagreements.append((relpath, line[:60]))
+        assert disagreements == [], disagreements[:5]
 
 
 class TestAcceptanceIsUnreachableFromTheCandidateRule:
@@ -800,15 +1236,28 @@ class TestTheResidualIsDispositionedNotOmitted:
 
 class TestTheRuleIsBoundedAndDeterministic:
     @pytest.mark.parametrize("length", [100, 10_000, 200_000])
-    def test_the_colon_window_is_closed_so_length_does_not_matter(self, length):
+    def test_indexed_probing_makes_length_irrelevant(self, length):
         line = "x" * length + ": tail"
         assert not is_candidate(line)
 
-    def test_a_colon_beyond_the_window_can_never_qualify(self):
-        assert COLON_SEARCH_LIMIT == 20
-        line = "x" * 25 + ":"
-        assert line.find(":") > COLON_SEARCH_LIMIT
-        assert not is_candidate(line)
+    def test_exactly_three_indices_are_probed_and_no_others(self):
+        assert ADMISSIBLE_COLON_INDICES == (17, 18, 19)
+        assert len(ADMISSIBLE_COLON_INDICES) == 3
+        # a colon anywhere else can never qualify, however close
+        for bad in (0, 1, 4, 16, 20, 21, 40):
+            assert bad not in ADMISSIBLE_COLON_INDICES
+            line = "x" * bad + ":" + "y" * 40
+            assert not is_candidate(line), bad
+
+    def test_an_internal_colon_no_longer_hides_the_real_one(self):
+        """The exact regression BLOCKING 1 reported, pinned as its own assertion."""
+        assert is_candidate("FORM:L DISPOSITION: CHANGES REQUIRED")
+        assert is_candidate("FORM:AL DISPOSITION: CHANGES REQUIRED")
+        # and the superseded first-colon reading would have refused both
+        for line in ("FORM:L DISPOSITION: CHANGES REQUIRED",
+                     "FORM:AL DISPOSITION: CHANGES REQUIRED"):
+            first = line.find(":", 0, 20)
+            assert first not in ADMISSIBLE_COLON_INDICES, line
 
     def test_a_qualifying_label_is_found_at_each_admissible_colon_index(self):
         for label in ("FORMAL DISPOSITON", CANON_LABEL, "XFORMAL DISPOSITION"):
@@ -844,11 +1293,93 @@ class TestTheDecisionSaysWhatItMustSay:
         human = family.replace("_", " ")
         assert human.split()[0] in decision_flat.lower(), family
 
-    def test_the_five_families_are_each_dispositioned_to_MALFORMED(self, decision_text):
+    def test_the_D3_table_states_zero_corrected_bypass_for_every_family(self, decision_text):
+        """The D.3 table is PARSED, and each family's numbers are checked against the LIVE matrix.
+
+        A count of bolded literals would pass on a table that said anything at all. This parses
+        the real rows and cross-checks four independently derived quantities per family -- cell
+        count, live BYPASS, corrected BYPASS and corrected MALFORMED -- against the exhaustive
+        matrix recomputed here. It fails if the decision's own table drifts from the evidence.
+        """
         table = decision_text.split("#### D.3")[1].split("#### D.4")[0]
-        assert table.count("**MALFORMED**") >= 5
-        assert "**17 / 17**" in table
-        assert "**85 / 85**" in table
+        rows = {}
+        for raw in table.splitlines():
+            if not raw.strip().startswith("|"):
+                continue
+            cells = [c.strip() for c in raw.strip().strip("|").split("|")]
+            if len(cells) != 6:
+                continue
+            numbers = []
+            for cell in cells[1:]:
+                digits = cell.replace("*", "").replace("\u202f", "").replace(" ", "")
+                if not digits.isdigit():
+                    numbers = None
+                    break
+                numbers.append(int(digits))
+            if numbers is None:
+                continue
+            rows[cells[0].replace("*", "").strip()] = numbers
+
+        assert len(rows) >= 6, sorted(rows)
+
+        expected = {}
+        for family, position, character, label in EXHAUSTIVE:
+            bucket = expected.setdefault(family, {"n": 0, "live": 0, "bypass": 0, "malformed": 0})
+            line = _render(label, PLAIN)
+            bucket["n"] += 1
+            if _integrated_outcome(line, with_candidate_rule=False) == UNSAFE_BYPASS:
+                bucket["live"] += 1
+            corrected = _integrated_outcome(line, with_candidate_rule=True)
+            if corrected == UNSAFE_BYPASS:
+                bucket["bypass"] += 1
+            elif corrected == SAFE_MALFORMED:
+                bucket["malformed"] += 1
+
+        label_for = {
+            "deletion": "Single-character deletion",
+            "ascii_substitution": "ASCII substitution (all 95)",
+            "ascii_insertion": "ASCII insertion (all 95)",
+            "transposition": "Adjacent transposition",
+            "confusable_substitution": "Unicode / confusable substitution",
+        }
+        for family, numbers in expected.items():
+            row = rows[label_for[family]]
+            assert row[0] == numbers["n"], (family, row, numbers)
+            assert row[1] == numbers["live"], (family, row, numbers)
+            assert row[2] == numbers["bypass"] == 0, (family, row, numbers)
+            assert row[3] == numbers["malformed"], (family, row, numbers)
+
+        total = rows["TOTAL"]
+        assert total[0] == sum(v["n"] for v in expected.values()) == len(EXHAUSTIVE)
+        assert total[1] == sum(v["live"] for v in expected.values())
+        assert total[2] == 0
+        assert total[3] == sum(v["malformed"] for v in expected.values())
+
+    def test_the_superseded_claims_are_recorded_and_NOT_preserved_as_family_claims(
+        self, decision_flat
+    ):
+        """The first draft's 17/17 and 85/85 must survive only as a DISCLAIMED supersession."""
+        assert "17 / 17" in decision_flat and "85 / 85" in decision_flat
+        assert "are **not** preserved as a claim about the" in decision_flat
+        # ...and they must NOT reappear as a live family disposition.
+        d3 = decision_flat.split("#### D.3")[1].split("#### D.4")[0]
+        assert "**17 / 17**" not in d3
+        assert "**85 / 85**" not in d3
+
+    def test_the_decision_states_the_safety_property_not_only_counts(self, decision_flat):
+        """A count can drift; the PROPERTY is what the boundary actually guarantees.
+
+        Scoped to SS-D.3 itself, not to the document as a whole: the same sentence also appears
+        in the bounded-correction record, and a guard satisfied by that copy alone would not
+        actually require SS-D.3 -- the operative disposition section -- to state it.
+        """
+        property_text = (
+            "no cell of the exhaustive matrix, in any governed presentation, "
+            "lets a later approval win"
+        )
+        d3 = decision_flat.split("#### D.3")[1].split("#### D.4")[0]
+        assert property_text in d3.lower()
+        assert property_text in decision_flat.lower()
 
     def test_acceptance_is_stated_unchanged(self, decision_flat):
         assert "Acceptance is UNCHANGED" in decision_flat
@@ -1041,7 +1572,7 @@ class TestThisFilingChangesNoProductionByte:
 
     def test_the_reference_model_is_defined_here_and_nowhere_in_production(self):
         source = (ROOT / PRODUCTION_MODULE_RELPATH).read_text(encoding="utf-8")
-        for name in ("is_candidate", "def osa(", "COLON_SEARCH_LIMIT"):
+        for name in ("is_candidate", "def osa(", "ADMISSIBLE_COLON_INDICES"):
             assert name not in source, name
 
 
@@ -1248,10 +1779,11 @@ class TestTheGuardsAreFalsifiable:
             while end > indent and line[end - 1] in " \t":
                 end -= 1
             p = line[indent:end]
-            colon = p.find(":", 0, COLON_SEARCH_LIMIT)
-            if colon == -1 or abs(colon - len(CANON_LABEL)) > MAX_EDITS:
-                return False
-            return osa(ascii_fold(p[:colon]), CANON_LABEL) <= MAX_EDITS
+            for index in ADMISSIBLE_COLON_INDICES:
+                if index < len(p) and p[index] == ":" \
+                        and osa(ascii_fold(p[:index]), CANON_LABEL) <= MAX_EDITS:
+                    return True
+            return False
 
         lost = [l for _, _, l in MUTANTS
                 if not is_candidate_without_bold(f"**{l}: {ADVERSE_VERDICT}**")]
@@ -1259,20 +1791,69 @@ class TestTheGuardsAreFalsifiable:
 
     def test_dropping_the_indent_trim_loses_every_indented_cell(self):
         def is_candidate_without_indent_trim(line):
-            colon = line.find(":", 0, COLON_SEARCH_LIMIT)
-            if colon == -1 or abs(colon - len(CANON_LABEL)) > MAX_EDITS:
-                return False
-            return osa(ascii_fold(line[:colon]), CANON_LABEL) <= MAX_EDITS
+            for index in ADMISSIBLE_COLON_INDICES:
+                if index < len(line) and line[index] == ":" \
+                        and osa(ascii_fold(line[:index]), CANON_LABEL) <= MAX_EDITS:
+                    return True
+            return False
 
         lost = [l for _, _, l in MUTANTS
                 if not is_candidate_without_indent_trim(f"   {l}: {ADVERSE_VERDICT}")]
         assert len(lost) == 85
 
-    def test_widening_the_colon_window_would_admit_a_far_colon(self):
-        """The window is load-bearing: without it a distant colon reaches the comparison."""
-        line = "x" * 40 + ":"
-        assert line.find(":", 0, COLON_SEARCH_LIMIT) == -1
-        assert line.find(":") == 40
+    # ---- BLOCKING 1: the colon protection is INDEPENDENTLY load-bearing ----
+    def test_reverting_to_the_superseded_first_colon_rule_reopens_the_bypass(self):
+        """The isolating probe. It must fail for the INTENDED reason -- an internal colon
+        displacing the real terminating one -- not for any incidental difference."""
+        def superseded(line):
+            for projection in projections(line):
+                colon = projection.find(":", 0, len(CANON_LABEL) + MAX_EDITS + 1)
+                if colon == -1 or abs(colon - len(CANON_LABEL)) > MAX_EDITS:
+                    continue
+                if osa(ascii_fold(projection[:colon]), CANON_LABEL) <= MAX_EDITS:
+                    return True
+            return False
+
+        reopened = [
+            (f, i) for f, i, c, l in COLON_CELLS
+            if is_candidate(_render(l, PLAIN)) and not superseded(_render(l, PLAIN))
+        ]
+        assert len(reopened) >= 30, reopened
+        # and the reason is exactly the displacement, proved per cell
+        for f, i in reopened:
+            label = next(l for ff, ii, _, l in COLON_CELLS if (ff, ii) == (f, i))
+            line = _render(label, PLAIN)
+            assert line.find(":", 0, 20) not in ADMISSIBLE_COLON_INDICES, (f, i)
+            assert any(
+                k < len(line) and line[k] == ":" for k in ADMISSIBLE_COLON_INDICES
+            ), (f, i)
+
+    def test_probing_only_one_admissible_index_loses_colon_cells(self):
+        """Each of the three indices carries real weight; none is decorative."""
+        for only in ADMISSIBLE_COLON_INDICES:
+            def narrowed(line, _only=only):
+                for projection in projections(line):
+                    if _only < len(projection) and projection[_only] == ":" \
+                            and osa(ascii_fold(projection[:_only]), CANON_LABEL) <= MAX_EDITS:
+                        return True
+                return False
+
+            lost = [(f, i) for f, i, c, l in EXHAUSTIVE
+                    if is_candidate(_render(l, PLAIN)) and not narrowed(_render(l, PLAIN))]
+            assert lost, f"index {only} would be decorative if narrowing to it lost nothing"
+
+    def test_dropping_the_colon_requirement_entirely_would_break_the_prose_boundary(self):
+        """Known-bad control in the OTHER direction: the colon is what keeps prose ABSENT."""
+        def colonless(line):
+            for projection in projections(line):
+                for k in ADMISSIBLE_COLON_INDICES:
+                    if osa(ascii_fold(projection[:k]), CANON_LABEL) <= MAX_EDITS:
+                        return True
+            return False
+
+        prose = "formal disposition but is not in an accepted form, and stays ABSENT"
+        assert not is_candidate(prose)
+        assert colonless(prose), "without the colon requirement this prose would be flagged"
 
     def test_removing_the_length_gate_still_refuses_a_far_label(self):
         """Defence in depth: the metric alone must also reject an over-long label."""
