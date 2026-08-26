@@ -55,7 +55,9 @@ MERGE_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 
 #: ADDED BY XASSET-0057. Decisions catalogued AFTER this one, named exactly so "last" stays an
 #: EXACT index rather than being relaxed to "present".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0057",)
+#: ADVANCED BY XASSET-0058, appended after XASSET-0057 and named exactly, so "last" stays
+#: an EXACT index rather than being relaxed to "present".
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0057", "XASSET-0058")
 
 #: The module's identity AT THE BASE -- the value the bound merge still carries, and which this
 #: correction lawfully and deliberately makes stale.

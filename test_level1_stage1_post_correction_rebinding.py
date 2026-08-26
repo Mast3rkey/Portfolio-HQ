@@ -215,12 +215,24 @@ XASSET0056_MAIN_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
 #: with every generation; XASSET-0056's own value is retained above as a NEGATIVE pin, so
 #: a silent revert to that finished unit's state still fails here.
 XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
+#: RETAINED above as a negative pin rather than deleted, so every field stays bound at BOTH
+#: ends and a silent revert to ANY finished unit's state still fails here.
+#: ADVANCED BY XASSET-0058. WS-0014's SINGLE SHARED live self-reference field advances with
+#: every generation; XASSET-0057's own value is retained above as a NEGATIVE pin, so a silent
+#: revert to that finished unit's state still fails here.
+XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 #: Read back from the live pull request AFTER GitHub issued it, never predicted. The
 #: branch's first commit carried the impossible sentinel -56 (negative, so structurally
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
 #: follow-up commit, with no amend and no force-push.
 XASSET0056_ACTIVE_PR = 357
 XASSET0057_ACTIVE_PR = 358
+#: ADVANCED BY XASSET-0058. WS-0014's single shared `active_pr`. It carries the IMPOSSIBLE
+#: SENTINEL -58 (negative, so structurally cannot be a real pull-request number) until GitHub
+#: issued this filing's number. GitHub issued 359, and it replaced the sentinel in a
+#: fast-forward follow-up commit -- read back from the live API, never predicted, with no
+#: amend and no force-push.
+XASSET0058_ACTIVE_PR = 359
 
 
 #: A real, immutable historical commit pair across which a protected path GENUINELY changed --
@@ -1357,7 +1369,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049. This is WS-0014's SINGLE SHARED live self-reference and moves
         # with every unit; each generation's own value is retained as a NEGATIVE pin so a silent
         # revert to any finished unit's state still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0057_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0058_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0056_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0055_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0053_MAIN_SHA

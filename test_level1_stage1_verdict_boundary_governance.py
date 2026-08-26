@@ -92,12 +92,17 @@ THIS_PULL_REQUEST = 356
 #: and its own GATE -- which does not move and still carries the real number GitHub issued --
 #: becomes the durable anchor for the assertions that were really about this unit.
 SUCCESSOR_DECISION = "XASSET-0056"
-SUCCESSOR_BRANCH = "claude/xasset-successor-authorization-3b0btg"
-SUCCESSOR_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
+#: ADVANCED BY XASSET-0058, on exactly the terms this block already states: the shared
+#: live fields moved once more, and XASSET-0057's own values are RETAINED below as
+#: negative pins rather than deleted, so every field stays bound at BOTH ends.
+SUCCESSOR_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
+SUCCESSOR_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+XASSET0057_BRANCH = "claude/xasset-successor-authorization-3b0btg"
+XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 THIS_GATE = "xasset0055-verdict-boundary-governance"
 #: Every decision appended to the catalog AFTER this one. Stated EXACTLY by name rather than
 #: relaxed to "present somewhere in the list".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0056", "XASSET-0057")
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0056", "XASSET-0057", "XASSET-0058")
 
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
 
@@ -780,6 +785,8 @@ class TestCatalogAndRegisterSynchronisation:
         live = _ws0014()
         assert live["active_branch"] == SUCCESSOR_BRANCH
         assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
+        assert live["active_branch"] != XASSET0057_BRANCH
+        assert live["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert live["active_branch"] != BRANCH
         assert live["last_verified_main_sha"] != BASE_SHA
         assert live["active_branch"] != "claude/xasset-0054-parser-contract-correction-h3nq7p"
@@ -925,8 +932,13 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             # chain stays bound at EVERY end rather than only the two most recent.
             assert f'XASSET0056_MAIN_SHA = "{MERGE_SHA}"' in live, name
             assert "!= XASSET0056_MAIN_SHA" in live, name
-            assert f'XASSET0057_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
-            assert "== XASSET0057_MAIN_SHA" in live, name
+            # ADVANCED BY XASSET-0058, on exactly the terms this docstring already states.
+            # XASSET-0057's own constant is now itself a NEGATIVE pin -- retained with its exact
+            # value, never deleted -- and the newly named successor is the positive pin.
+            assert f'XASSET0057_MAIN_SHA = "{XASSET0057_MAIN_SHA}"' in live, name
+            assert "!= XASSET0057_MAIN_SHA" in live, name
+            assert f'XASSET0058_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            assert "== XASSET0058_MAIN_SHA" in live, name
             # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
             # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
             # itself in the third person -- so the constant is asserted exactly where it is

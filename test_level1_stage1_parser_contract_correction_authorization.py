@@ -262,8 +262,18 @@ XASSET0056_MAIN_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
 #: with every generation; XASSET-0056's own value is retained above as a NEGATIVE pin, so
 #: a silent revert to that finished unit's state still fails here.
 XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
-SUCCESSOR_MAIN_SHA = XASSET0057_MAIN_SHA
-SUCCESSOR_BRANCH = "claude/xasset-successor-authorization-3b0btg"
+#: RETAINED above as a negative pin rather than deleted, so every field stays bound at BOTH
+#: ends and a silent revert to ANY finished unit's state still fails here.
+#: ADVANCED BY XASSET-0058. WS-0014's SINGLE SHARED live self-reference field advances with
+#: every generation; XASSET-0057's own value is retained above as a NEGATIVE pin, so a silent
+#: revert to that finished unit's state still fails here.
+XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+#: ADVANCED BY XASSET-0058. The shared live fields moved once more onto the successor;
+#: XASSET-0057's own values are RETAINED as negative pins rather than deleted, so every
+#: field stays bound at BOTH ends.
+SUCCESSOR_MAIN_SHA = XASSET0058_MAIN_SHA
+SUCCESSOR_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
+XASSET0057_BRANCH = "claude/xasset-successor-authorization-3b0btg"
 #: The generation this one superseded, retained as a negative pin.
 XASSET0055_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
 XASSET0055_BRANCH = "claude/xasset-0055-parser-contract-conflict-w4kp2n"
@@ -271,7 +281,7 @@ XASSET0055_BRANCH = "claude/xasset-0055-parser-contract-conflict-w4kp2n"
 CLOSED_UNMERGED_BRANCH = "claude/xasset-0054-parser-contract-correction-h3nq7p"
 #: Every decision appended to the catalog AFTER this one. The catalog assertions below stay
 #: EXACT by naming this set explicitly rather than being relaxed to "somewhere in the list".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0055", "XASSET-0056", "XASSET-0057")
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0055", "XASSET-0056", "XASSET-0057", "XASSET-0058")
 
 
 # =============================================================================================
@@ -1779,6 +1789,7 @@ class TestRegisterSynchronisation:
         onto the successor; this unit's own branch survives in the register as history, which
         is what this assertion was really protecting. Bound at BOTH ends."""
         assert ws0014["active_branch"] == SUCCESSOR_BRANCH
+        assert ws0014["active_branch"] != XASSET0057_BRANCH
         assert ws0014["active_branch"] != BRANCH
         assert ws0014["active_branch"] != CLOSED_UNMERGED_BRANCH
         assert ws0014["active_branch"] != XASSET0055_BRANCH
@@ -1792,7 +1803,8 @@ class TestRegisterSynchronisation:
         """RE-ANCHORED BY XASSET-0055 -- see `SUCCESSOR_MAIN_SHA`. This unit's own base joins
         the negative pins rather than being deleted, so the field stays bound at BOTH ends."""
         assert ws0014["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
-        assert ws0014["last_verified_main_sha"] == XASSET0057_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0058_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0056_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0055_MAIN_SHA
         for finished in (

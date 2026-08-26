@@ -2293,11 +2293,25 @@ class TestTheRegisterIsSynchronized:
             assert f"active_pr: {sentinel}" not in raw, sentinel
             assert f"pr: {sentinel}" not in raw, sentinel
 
+    #: ADVANCED BY XASSET-0058. `active_branch` and `last_verified_main_sha` are WS-0014's
+    #: SINGLE SHARED live self-reference fields under OPS-0001's Active-GitHub-fields rule, so
+    #: they lawfully name whichever unit is live. This unit's own values are RETAINED below as
+    #: NEGATIVE pins rather than deleted, so the fields stay bound at BOTH ends, and this unit's
+    #: own GATE -- which does not move -- remains the durable anchor for what this assertion was
+    #: really protecting.
+    SUCCESSOR_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
+    SUCCESSOR_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+
     def test_the_shared_live_fields_name_this_unit(self, register):
-        assert register["active_branch"] == BRANCH
-        assert register["last_verified_main_sha"] == THIS_UNIT_BASE_SHA
+        assert register["active_branch"] == self.SUCCESSOR_BRANCH
+        assert register["last_verified_main_sha"] == self.SUCCESSOR_MAIN_SHA
+        assert register["active_branch"] != BRANCH
+        assert register["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
         assert register["active_branch"] != "claude/xasset-0055-parser-correction-c3ro29"
         assert register["last_verified_main_sha"] != XASSET_0056_MERGE_PARENT_1
+        # This unit's OWN record in the register is its GATE, which does not move.
+        gate = next(g for g in register["milestones"] if g["gate"] == THIS_GATE)
+        assert gate["pr"] == 358
 
     def test_this_units_gate_carries_a_real_or_pending_number(self, register):
         gate = next(g for g in register["milestones"] if g["gate"] == THIS_GATE)
