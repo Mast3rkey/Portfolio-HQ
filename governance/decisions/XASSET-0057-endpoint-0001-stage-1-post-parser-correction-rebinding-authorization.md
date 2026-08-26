@@ -142,52 +142,120 @@ satisfaction of the **conjunctive parser-correction prerequisite in §F.0** — 
 Each is a condition on the authorized unit. **None is satisfied by this filing**, and none may be
 waived by the unit that performs it.
 
-**F.0 — The §M parser defect must be corrected, under separate authority, BEFORE any rebinding.**
+**F.0 — The parser defect must be corrected, under separate authority, BEFORE any rebinding.**
 This condition is **conjunctive with every other condition in §F**, not an alternative to any of
 them, and it is not satisfied by disclosure.
 
 §M records a defect that is **live in the exact bytes this grant would otherwise bind**: at module
-identity `12eab05e…604a5` an adverse first formal line whose prefix carries a non-ASCII lookalike is
-**skipped**, so a later canonical approval wins. Rebinding those bytes would install a
+identity `12eab05e…604a5` an adverse first formal line whose prefix is *near-canonical but not
+canonical* is **skipped**, so a later canonical approval wins. Rebinding those bytes would install a
 known-fail-open parser as the **accepted enforcement anchor**. That is refused here in terms.
 
 **The current vulnerable module may never be rebound.** `12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5`
-is recorded as a **permanent negative pin**: no rebinding under this grant may bind it, at any time,
-under any reading, however unchanged `main` may be.
+is recorded as a **permanent negative pin**: no rebinding under this grant may bind it as any bound
+end, at any time, under any reading, however unchanged `main` may be.
 
-Before the authorized rebinding may begin, **all** of the following must be complete, in order, for a
-**separately authorized** parser correction — a unit this decision neither performs nor authorizes:
+**F.0.1 — The defect is a FAMILY, not three code points.**
 
-1. its own accepted governance authorization, filed and merged;
-2. its own implementation correcting the §M defect in
-   `level1_stage1_execution_authorization.py`;
-3. independent **FULL** exact-head review under `OPS-0007` §1, plus any bounded correction and
-   exact-head re-review, so the review holds at its **final** accepted head;
-4. explicit principal exact-head acceptance at that final head;
-5. normal merge;
-6. immediate post-merge verification;
-7. **successful merge-commit CI whose `head_sha` is that unit's exact merge SHA**;
-8. final post-CI verification and lifecycle closure.
+§M's three homoglyphs are **reproduced examples of one root family**, never its definition. A
+read-only audit executed the **unchanged** parser at `12eab05e…604a5` against an adverse first line
+followed by a canonical approval, sweeping single-character mutations across the **17 non-space
+positions** of the `FORMAL DISPOSITION` prefix. Measured, not asserted:
 
-**None is individually sufficient; only complete closure of all eight is.** A correction that is
-merged but whose merge-commit CI has not succeeded at its exact merge SHA does **not** satisfy this
-condition, and neither does one whose closure has not been recorded.
-
-**The corrected module is bound through an exact closed identity transition** under §F.3:
-
-| End | Identity |
+| Mutation family across the prefix | Result at the unchanged parser |
 |---|---|
-| **Old — the defective bytes, retained as a PERMANENT negative pin, never bound** | SHA-256 `12eab05e…604a5`, blob `b5622f9e…920a` |
-| **New — the corrected bytes** | **derived** from the completed parser-correction lifecycle at that unit's own merge; **never predicted here** |
+| Single-character **deletion** | **17 / 17** allowed the later approval to win |
+| ASCII **substitution** | **17 / 17** |
+| ASCII **insertion** | **16 / 17** |
+| **Adjacent transposition** | **17 / 17** (17 distinct-character adjacent pairs) |
+| **Unicode / confusable substitution** | **17 / 17** |
 
-The new end is deliberately **not** stated as a literal digest: the correction has not been written,
-so any value named here would be a guess. The authorized unit must **derive it from the git object
-store** at the parser correction's own merge and prove it, exactly as §F.1 requires of every other
-identity. A rebinding whose bound module identity equals the old end above **fails this condition
-outright**.
+The single non-bypassing insertion is position 0 — inserting before the `F` yields
+`XFORMAL DISPOSITION:`, in which the canonical prefix **survives intact as a substring**, so the
+line is read as a genuine adverse record rather than skipped. That is correct behaviour, and it is
+recorded here as a measured exception rather than rounded away.
+
+**Consequence, and the point of this subsection: a future correction that merely patches the three
+§M code points does NOT satisfy §F.0.** The three are one cell of a much larger matrix, and every
+other cell is open.
+
+**F.0.2 — What the separately authorized parser-correction decision must do.**
+
+That decision — which this filing neither writes nor authorizes — must:
+
+1. define a **total, mechanically testable boundary** for what counts as a formal-disposition
+   candidate, or a "formal-looking" line, with no residual undefined region;
+2. **explicitly disposition** deletion, ASCII substitution, insertion, transposition, and
+   non-ASCII/confusable substitution **across the prefix** — each named and decided, never silently
+   omitted;
+3. guarantee that **every** candidate outside the exact accepted grammar becomes **MALFORMED** and
+   **cannot be skipped** such that a later approval wins;
+4. preserve **ordinary prose as ABSENT** under a governed, testable rule, so the boundary does not
+   collapse into treating all text as formal;
+5. prove the rule through the **parser and all three consumer seams**, including **native-`APPROVED`
+   rescue** cases;
+6. use a **family-by-position adversarial matrix and mutation proof**, not only handpicked literals;
+7. retain **exact positive controls** for every accepted form; and
+8. complete **both** its own authorization lifecycle **and** its own implementation lifecycle
+   (§F.0.3) before any rebinding.
+
+**This filing does not decide that recognition boundary.** Fixing it here would be designing the
+correction inside an authorization that expressly withholds it. The boundary is therefore **reserved
+to that future decision, which must decide it and prove it** — and **XASSET-0057's rebinding remains
+unavailable until that decision's complete lifecycle closes.**
+
+**F.0.3 — TWO lifecycles must close, not one. Merged is not effective.**
+
+This repository's own history is decisive: **`XASSET-0044` and `XASSET-0045` each merged and neither
+became effective**, because the exact-merge-CI condition failed (see §F.10, which records both as
+**not effective**). "Accepted and merged" therefore does **not** mean effective, and an authorization
+that merged with failed merge-CI, or without recorded closure, or on a stale-head review, confers
+**nothing**.
+
+Two separate lifecycles must each close **completely and in order**:
+
+**Lifecycle A — the parser-correction AUTHORIZATION decision must itself become EFFECTIVE:**
+
+* A1. independent **FULL** exact-head review under `OPS-0007` §1;
+* A2. any bounded correction and **exact-head re-review**, so A1 holds at its **final** accepted
+  head — a review anchored to a superseded head does **not** satisfy A1;
+* A3. explicit principal exact-head acceptance at that final head;
+* A4. normal merge;
+* A5. immediate post-merge verification;
+* A6. **successful merge-commit CI whose `head_sha` is that authorization's exact merge SHA**;
+* A7. final post-CI verification and lifecycle closure.
+
+**Lifecycle B — the parser-correction IMPLEMENTATION, which may not begin until Lifecycle A has
+closed in full:**
+
+* B1. the implementation itself, correcting the defect family per §F.0.1–§F.0.2 in
+  `level1_stage1_execution_authorization.py`;
+* B2. independent **FULL** exact-head review under `OPS-0007` §1;
+* B3. any bounded correction and **exact-head re-review**, so B2 holds at its **final** accepted
+  head;
+* B4. explicit principal exact-head acceptance at that final head;
+* B5. normal merge;
+* B6. immediate post-merge verification;
+* B7. **successful merge-commit CI whose `head_sha` is that implementation's exact merge SHA**;
+* B8. final post-CI verification and lifecycle closure.
+
+**None of A1–A7 or B1–B8 is individually sufficient; only complete closure of both lifecycles is.**
+Specifically and without exception, **each** of the following fails §F.0: an authorization merged
+with **failed** merge-commit CI; an authorization merged with **no recorded closure**; an
+authorization whose review anchors to a **stale head**; an authorization whose lifecycle is
+otherwise **incomplete**; an implementation begun **before** Lifecycle A closed; and an
+implementation whose own B1–B8 has not closed.
+
+**F.0.4 — Where the corrected module's identity lives.**
+
+The corrected module enters the **single ordered identity chain in §F.3 as role 3**. §F.0 states
+**no** competing transition table of its own: §F.3's four-role chain is the sole operative statement
+of module identity. Role 3's value is **derived** at the parser correction's own merge, never
+predicted, exactly as §F.1 requires of every other identity. A rebinding whose bound module identity
+equals role 2 — the vulnerable intermediate — **fails this condition outright**.
 
 **This decision does not perform, design, schedule or authorize that parser correction.** It states
-only that no rebinding may occur until one exists and is effective.
+only that no rebinding may occur until one exists, is effective, and has closed both lifecycles.
 
 **F.1 — Bind only stabilized, independently reviewed exact bytes.** The rebinding binds exact
 git-object identities at its own accepted head and its own merge — never a value asserted in prose,
@@ -218,12 +286,17 @@ Ancestry remains **necessary history and explicitly insufficient authority**: th
 descend from this decision's own merge, which must itself be an ancestor of the parser-correction
 merge — but descent alone never qualifies a base.
 
-**No unadmitted intervening drift.** If `main` carries **any** commit between the parser-correction
-merge and the authorized unit's base, that unit **may not proceed on the strength of this
-authorization**. It must stop and obtain new authority, unless **every** such commit is itself
-separately authorized **and** admitted into the rebinding through an **explicit closed identity
-transition** under §F.3 — named, bound at both ends, and reviewed. **Intervening bytes are never
-absorbed merely because the base descends from an approved commit.**
+**Any later `main` commit invalidates this grant for that base — with no admission path.** If `main`
+carries **any** commit between the parser-correction merge and the authorized unit's base, that unit
+**may not proceed on the strength of this authorization**, full stop. There is **no** clause by which
+such a commit may be admitted, absorbed, or cured inside `XASSET-0057` — not by separate
+authorization, not by a closed identity transition, not by review. The **only** lawful route is a
+**new, superseding rebinding authorization** filed and closed on its own.
+
+This is deliberate, and it is the reviewer's own point: an `unless` admission path would reinstate
+exactly the absolute-plus-exception structure this section withdrew. Once any intervening commit
+exists the base **cannot** equal the parser-correction merge, so an admission clause could only ever
+contradict the equality rule or be inoperative. It is therefore **removed**, not narrowed.
 
 The ordering this rule fixes is therefore exactly: this decision's merge → the parser correction's
 own complete lifecycle and merge → the authorized rebinding's base. A rebinding based on this
@@ -239,17 +312,32 @@ value and the new value, both explicit, both independently proven from the git o
 old value **preserved rather than overwritten** in the record. A value that moves without both ends
 bound is drift wearing a rebinding's label.
 
-For the load-bearing module specifically, the transition's two ends are already known and are stated
-here so the rebinding cannot silently substitute either:
+For the load-bearing module specifically, the earlier "two ends, already known" table is
+**withdrawn and replaced**. It named `12eab05e…604a5` as the transition's **New** end while §F.0
+simultaneously forbids that identity from ever being bound — a direct contradiction. There are not
+two ends; there are **four roles in one ordered chain**, and only the last is ever bound.
 
-| End | SHA-256 | blob |
-|---|---|---|
-| **Old — retained, never discarded** | `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541` | `f71b08b4ebe95f161c57cdbb2a924748f13af02d` |
-| **New — the merged `XASSET-0056` bytes** | `12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5` | `b5622f9e412afd604a11cde04317b79c5e57920a` |
+**The module identity chain — ordered, closed, and the single operative statement:**
 
-If the rebinding's own authorized edits change that module further, the **new** end moves to the
-value the stabilized bytes actually carry (§F.9) — but the **old** end above is fixed, and it is
-retained as a negative pin rather than replaced.
+| # | Role | Identity | Status |
+|---|---|---|---|
+| 1 | **Previously bound** | SHA-256 `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541`, blob `f71b08b4ebe95f161c57cdbb2a924748f13af02d` | The register's current bound end. **Retained, never discarded.** |
+| 2 | **Vulnerable intermediate** | SHA-256 `12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5`, blob `b5622f9e412afd604a11cde04317b79c5e57920a` | **Permanent negative / adverse history. NEVER a new bound end**, at any point in the chain, under any reading. |
+| 3 | **Parser-corrected** | **Derived** at the parser correction's own merge, only after **both** its lifecycles close (§F.0.3). **Never predicted here.** | Intermediate. Never bound directly; it reaches the register only through role 4's own derivation and proof. |
+| 4 | **Final stabilized post-rebinding** | **Derived** after every authorized edit of the rebinding has stabilized (§F.9). **Never predicted here.** | **The one and only new bound end.** |
+
+**Every adjacent transition must be proved**, each end bound and independently derived from the git
+object store: **1 → 2**, **2 → 3**, and **3 → 4**. Transition **1 → 2** is proved as *history*, not
+as an adoption: role 2 is recorded as the state that existed and was refused, never as a value the
+register moves to.
+
+**The final register transition that the rebinding actually performs is `4ff28941…` → role 4**, and
+it must be proved as a single closed transition with both ends explicit, the old value **preserved
+rather than overwritten**.
+
+**The final bound identity can never be `12eab05e…604a5`.** A rebinding whose bound module identity
+equals role 2 **fails outright**, and so does one that binds role 3 without proving role 4, or that
+predicts either derived value instead of deriving it.
 
 The lifecycle anchor's three members transition from their present, independently verified values:
 
@@ -509,7 +597,12 @@ Three consequences, stated rather than left implicit:
    production change to a load-bearing path, and it needs its own authorization, its own review and
    its own lifecycle — the same route `XASSET-0053` §C and `XASSET-0055` §H established. **§F.0
    makes that correction a mandatory conjunctive prerequisite to any rebinding under this grant**,
-   and pins these defective bytes as a permanent negative pin that may never be bound.
+   and §F.3 pins these defective bytes as **role 2** — permanent adverse history that may never
+   be a bound end. **These three homoglyphs are reproduced EXAMPLES, not the defect's
+   definition**: §F.0.1 records a measured sweep showing that deletion, ASCII substitution,
+   insertion, transposition and confusable substitution across the prefix nearly all produce
+   the same skip, so §F.0.2 requires the future correction to decide and prove a **total
+   recognition boundary** rather than patch three code points.
 2. **It does not make Stage 1 executable, and does not weaken any conclusion above.** The digest is
    stale, both predicates are `False`, the lane is `ABSENT`, and `ATTEMPT_1` is unconsumed.
 3. **It is not disposed of by being disclosed, and disclosure is not a safety precondition.**

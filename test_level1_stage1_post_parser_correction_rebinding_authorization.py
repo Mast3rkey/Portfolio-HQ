@@ -330,9 +330,12 @@ class TestTheRequiredPropertiesAreConditions:
         """RE-ANCHORED (DELTA 5026362328 BLOCKING 1): drift is now measured from the
         PARSER-CORRECTION merge, which is the only lawful base."""
         f = _flat(_section(decision_text, "F"))
-        assert "No unadmitted intervening drift" in f
-        assert "may not proceed on the strength of this authorization" in f
-        assert "never absorbed merely because the base descends" in f
+        # RE-ANCHORED (DELTA 5026856868 BLOCKING 1A): the admission path was REMOVED, so the
+        # rule is now absolute rather than "unadmitted drift is a stop".
+        assert "Any later `main` commit invalidates this grant for that base" in f
+        assert "may not proceed on the strength of this\nauthorization**, full stop" in _section(
+            decision_text, "F"
+        ) or "full stop" in f
         assert "between the parser-correction merge and the authorized unit's base" in f
 
     def test_the_base_must_be_derived_not_predicted(self, decision_text):
@@ -638,7 +641,18 @@ class TestTheDisclosedFindingIsReproducedAndBounded:
         assert line[index] == homoglyph, "the lookalike must sit at that exact position"
         assert line[index] != ascii_char
         assert ord(homoglyph) > 127, "the replacement must be non-ASCII"
-        assert homoglyph.upper() == homoglyph or homoglyph.upper() != homoglyph
+        # DELTA review 5026856868 MINOR 1: the superseded assertion here was
+        # `homoglyph.upper() == homoglyph or homoglyph.upper() != homoglyph`, an exhaustive
+        # `x == y or x != y` that is true of EVERY comparable value and proved nothing. The
+        # documented mechanism is that UPPERCASING the lookalike does not turn it into the ASCII
+        # character it resembles -- which is exactly why the wide resemblance view deletes it
+        # rather than recognising it. That is the property now asserted.
+        upper = homoglyph.upper()
+        assert all(ord(c) > 127 for c in upper), (
+            f"{homoglyph!r}.upper() = {upper!r} must stay non-ASCII"
+        )
+        assert upper != ascii_char, f"{homoglyph!r}.upper() must not become {ascii_char!r}"
+        assert upper.upper() == upper, "uppercasing must be idempotent"
         # nothing else moved
         assert line[:index] == _CANONICAL_ADVERSE[:index]
         assert line[index + 1 :] == _CANONICAL_ADVERSE[index + 1 :]
@@ -822,28 +836,34 @@ class TestTheParserCorrectionIsAConjunctivePrerequisite:
 
     def test_all_eight_prerequisite_conditions_are_enumerated(self, decision_text):
         f = _flat(_section(decision_text, "F"))
+        # RE-ANCHORED (DELTA 5026856868 MAJOR 1): the single eight-step list is superseded by
+        # TWO lifecycles -- A1-A7 for the AUTHORIZATION, B1-B8 for the IMPLEMENTATION.
         for required in (
-            "own accepted governance authorization",
-            "own implementation correcting",
             "independent **FULL** exact-head review",
             "principal exact-head acceptance",
             "normal merge",
             "immediate post-merge verification",
             "successful merge-commit CI",
             "final post-CI verification and lifecycle closure",
+            "the implementation itself, correcting the defect family",
         ):
             assert required in f, required
-        assert "None is individually sufficient; only complete closure of all eight is" in f
+        assert "None of A1–A7 or B1–B8 is individually sufficient" in f
+        assert "only complete closure of both lifecycles is" in f
 
     def test_the_corrected_identity_is_derived_never_predicted(self, decision_text):
         f = _flat(_section(decision_text, "F"))
-        assert "derived** from the completed parser-correction lifecycle" in f
-        assert "never predicted here" in f
-        assert "derive it from the git object store" in f
+        # RE-ANCHORED (DELTA 5026856868 BLOCKING 1B): F.0 no longer carries its own table; the
+        # derived identities live in F.3's single four-role chain.
+        assert "single ordered identity chain in §F.3 as role 3" in f
+        assert "**no** competing transition table of its own" in f
+        assert "never\npredicted" in _section(decision_text, "F")
 
     def test_a_rebinding_of_the_old_end_fails_outright(self, decision_text):
         f = _flat(_section(decision_text, "F"))
-        assert "equals the old end above **fails this condition" in f
+        # RE-ANCHORED (DELTA 5026856868 BLOCKING 1B): "the old end" is now role 2 by name.
+        assert "equals role 2 — the vulnerable intermediate —" in f
+        assert "fails this condition outright" in f
 
     def test_the_grant_itself_is_gated_on_the_prerequisite(self, decision_text):
         e = _flat(_section(decision_text, "E"))
@@ -962,6 +982,404 @@ class TestTheLoadBearingDecisionBoundaryIsClosed:
         e = _flat(_section(decision_text, "E"))
         assert "every** decision file that makes the newly" in e
         assert "parser-governing chain §F.7 enumerates" in e
+
+
+# =====================================================================================
+# 9d. DELTA 5026856868 — singular base rule, four-role chain, two lifecycles, no tautology
+# =====================================================================================
+
+
+class TestTheBaseRuleIsGenuinelySingular:
+    """BLOCKING 1A: the `unless` admission path must be REMOVED, not narrowed."""
+
+    def test_no_operative_admission_path_survives(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        # the superseded clause, in the exact shape the reviewer quoted
+        assert "admitted into the rebinding through" not in f
+        assert "It must stop and obtain new authority, unless" not in f
+
+    def test_the_only_remaining_unless_is_self_describing_prose(self, decision_text):
+        """Non-vacuity: `unless` may survive ONLY inside the sentence explaining its removal."""
+        f = _section(decision_text, "F")
+        for m in re.finditer(r"\bunless\b", f):
+            window = _flat(f[max(0, m.start() - 160) : m.start() + 160])
+            assert "would reinstate" in window or "admission path" in window, window
+
+    def test_the_replacement_rule_is_absolute(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "with no admission path" in f
+        assert "There is **no** clause by which" in f
+        assert "new, superseding rebinding authorization" in f
+        assert "It is therefore **removed**, not narrowed" in f
+
+    def test_the_equality_rule_still_stands_alone(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "must EQUAL the exact normal-merge commit that closes the required" in f
+        assert "there is no other, and no exception clause qualifies it" in f
+
+
+class TestTheModuleIdentityChainIsOrderedAndClosed:
+    """BLOCKING 1B: one four-role chain, replacing the contradictory two-end tables."""
+
+    def test_the_competing_tables_are_gone(self, decision_flat):
+        assert "New — the merged `XASSET-0056` bytes" not in decision_flat
+        assert "two ends are already known" not in decision_flat
+
+    @pytest.mark.parametrize(
+        "role", ["Previously bound", "Vulnerable intermediate", "Parser-corrected",
+                 "Final stabilized post-rebinding"]
+    )
+    def test_each_of_the_four_roles_is_present(self, decision_flat, role):
+        assert role in decision_flat
+
+    def test_the_roles_appear_in_order(self, decision_text):
+        f = _section(decision_text, "F")
+        idx = [f.index(r) for r in ("Previously bound", "Vulnerable intermediate",
+                                    "Parser-corrected", "Final stabilized post-rebinding")]
+        assert idx == sorted(idx), idx
+
+    def test_role_two_is_never_a_bound_end(self, decision_flat):
+        assert "NEVER a new bound end" in decision_flat
+        assert "The final bound identity can never be `12eab05e…604a5`" in decision_flat
+
+    def test_role_two_is_the_actually_defective_identity(self):
+        """Non-vacuity: role 2's digest is the live module that really fails open."""
+        assert hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest() == (
+            MERGED_MODULE_SHA256
+        )
+        body = _adverse_then_approval(_attack_first_line("O", 11, "\u039f"))
+        assert AUTH.parse_formal_disposition(body) == (
+            "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+        )
+
+    def test_roles_three_and_four_are_derived_never_predicted(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "**Derived** at the parser correction's own merge" in f
+        assert "**Derived** after every authorized edit of the rebinding has stabilized" in f
+        assert f.count("Never predicted here") >= 2
+
+    def test_no_digest_is_invented_for_roles_three_or_four(self, decision_text):
+        """Structural: only the two REAL digests may appear as 64-hex literals."""
+        found = set(re.findall(r"\b[0-9a-f]{64}\b", decision_text))
+        assert found <= {BOUND_MODULE_SHA256, MERGED_MODULE_SHA256, CONSTRUCTION_UNIVERSE_SHA256}, (
+            found - {BOUND_MODULE_SHA256, MERGED_MODULE_SHA256, CONSTRUCTION_UNIVERSE_SHA256}
+        )
+
+    def test_every_adjacent_transition_must_be_proved(self, decision_flat):
+        assert "Every adjacent transition must be proved" in decision_flat
+        for pair in ("**1 → 2**", "**2 → 3**", "**3 → 4**"):
+            assert pair in decision_flat, pair
+
+    def test_the_final_register_transition_is_named(self, decision_flat):
+        assert "The final register transition that the rebinding actually performs is" in decision_flat
+        assert "preserved rather than overwritten" in decision_flat
+
+
+class TestBothLifecyclesMustClose:
+    """MAJOR 1: merged is not effective. Two lifecycles, A then B."""
+
+    def test_the_authorization_lifecycle_is_its_own(self, decision_flat):
+        assert "Lifecycle A — the parser-correction AUTHORIZATION decision must itself become" in decision_flat
+        assert "Lifecycle B — the parser-correction IMPLEMENTATION" in decision_flat
+        assert "may not begin until Lifecycle A has" in decision_flat
+
+    def test_the_superseded_merely_merged_wording_is_gone(self, decision_flat):
+        assert "its own accepted governance authorization, filed and merged" not in decision_flat
+
+    #: Each authorization step must be present AND carry its own defining content. Probe
+    #: "authorization lifecycle collapses back to merged" MISSED an earlier form of this test
+    #: that asserted only `f"* {step}." in decision_flat`, so gutting A6 to "a merge of some
+    #: kind" still passed. Content is now pinned per step.
+    AUTH_STEPS = [
+        ("A1", "independent **FULL** exact-head review"),
+        ("A2", "exact-head re-review"),
+        ("A3", "principal exact-head acceptance"),
+        ("A4", "normal merge"),
+        ("A5", "post-merge verification"),
+        ("A6", "successful merge-commit CI whose `head_sha` is that authorization's exact merge SHA"),
+        ("A7", "final post-CI verification and lifecycle closure"),
+    ]
+
+    @pytest.mark.parametrize("step,content", AUTH_STEPS)
+    def test_every_authorization_step_is_enumerated_with_its_content(
+        self, decision_text, step, content
+    ):
+        f = _section(decision_text, "F")
+        assert f"* {step}." in f, step
+        body = f[f.index(f"* {step}.") : ]
+        body = body[: body.index("\n*")] if "\n*" in body else body
+        assert _flat(content) in _flat(body), (step, _flat(body)[:200])
+
+    def test_the_stale_head_bar_is_operative_not_decorative(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "a review anchored to a superseded head does **not** satisfy A1" in f
+
+    @pytest.mark.parametrize("step", ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"])
+    def test_every_implementation_step_is_enumerated(self, decision_flat, step):
+        assert f"* {step}." in decision_flat, step
+
+    @pytest.mark.parametrize(
+        "negative",
+        [
+            "merged with **failed** merge-commit CI",
+            "merged with **no recorded closure**",
+            "review anchors to a **stale head**",
+            "lifecycle is otherwise **incomplete**",
+            "implementation begun **before** Lifecycle A closed",
+        ],
+    )
+    def test_each_disqualifying_case_is_named(self, decision_text, negative):
+        assert _flat(negative) in _flat(_section(decision_text, "F")), negative
+
+    def test_the_adverse_precedent_is_cited(self, decision_flat):
+        assert "each merged and neither" in decision_flat
+        assert "XASSET-0044" in decision_flat and "XASSET-0045" in decision_flat
+
+    def test_the_precedent_is_real_in_this_document(self, decision_flat):
+        """Non-vacuity: the decision itself already records both as not effective."""
+        assert "remain **not effective**" in decision_flat
+
+    def test_neither_lifecycle_is_individually_sufficient(self, decision_flat):
+        assert "only complete closure of both lifecycles is" in decision_flat
+
+
+class TestTheDefectIsTreatedAsAFamily:
+    """Proactive audit: three homoglyphs are examples, not the definition."""
+
+    def test_the_family_subsection_exists(self, decision_flat):
+        assert "F.0.1 — The defect is a FAMILY, not three code points" in decision_flat
+
+    #: (matrix row label, measured result). Probe "family matrix drops transposition" MISSED an
+    #: earlier form that only looked for the family NAME anywhere in SS-F -- and SS-F.0.2 item 2
+    #: names every family in prose, so deleting a matrix row left it satisfied. The MEASURED
+    #: ROW is now pinned, not the word.
+    FAMILY_ROWS = [
+        ("Single-character **deletion**", "**17 / 17**"),
+        ("ASCII **substitution**", "**17 / 17**"),
+        ("ASCII **insertion**", "**16 / 17**"),
+        ("**Adjacent transposition**", "**17 / 17**"),
+        ("**Unicode / confusable substitution**", "**17 / 17**"),
+    ]
+
+    @pytest.mark.parametrize("row,result", FAMILY_ROWS)
+    def test_each_mutation_family_row_is_present_with_its_result(self, decision_text, row, result):
+        f = _section(decision_text, "F")
+        assert f"| {row} |" in f, row
+        line = next(l for l in f.split("\n") if l.startswith(f"| {row} |"))
+        assert result in line, (row, line)
+
+    @pytest.mark.parametrize(
+        "family",
+        ["deletion", "substitution", "insertion", "transposition", "confusable"],
+    )
+    def test_each_mutation_family_is_also_dispositioned_in_prose(self, decision_text, family):
+        """The SS-F.0.2 item-2 requirement, separate from the matrix row above."""
+        f = _flat(_section(decision_text, "F"))
+        req = f[f.index("**explicitly disposition**") :][:400]
+        assert family in req.lower(), family
+
+    def test_patching_three_code_points_is_explicitly_insufficient(self, decision_flat):
+        assert "merely patches the three" in decision_flat
+        assert "does NOT satisfy §F.0" in decision_flat
+
+    @pytest.mark.parametrize(
+        "requirement",
+        [
+            "total, mechanically testable boundary",
+            "explicitly disposition",
+            "cannot be skipped",
+            "ordinary prose as ABSENT",
+            "all three consumer seams",
+            "native-`APPROVED` rescue",
+            "family-by-position adversarial matrix",
+            "exact positive controls",
+        ],
+    )
+    def test_each_future_requirement_is_stated(self, decision_text, requirement):
+        assert _flat(requirement) in _flat(_section(decision_text, "F")), requirement
+
+    def test_the_boundary_is_reserved_not_decided_here(self, decision_flat):
+        assert "This filing does not decide that recognition boundary" in decision_flat
+        assert "reserved" in decision_flat
+        assert "unavailable until that decision's complete lifecycle closes" in decision_flat
+
+    # ---- the family is REAL: executed against the unchanged parser ----
+
+    @staticmethod
+    def _bypasses(first_line: str) -> bool:
+        return AUTH.parse_formal_disposition(
+            _adverse_then_approval(first_line)
+        ) == "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+
+    #: The 17 non-space positions of the `FORMAL DISPOSITION` prefix.
+    PREFIX_POSITIONS = tuple(
+        i for i, c in enumerate("FORMAL DISPOSITION") if c != " "
+    )
+
+    def test_the_prefix_has_seventeen_non_space_positions(self):
+        assert len(self.PREFIX_POSITIONS) == 17
+
+    def test_single_character_deletion_bypasses_at_every_position(self):
+        hits = [
+            i for i in self.PREFIX_POSITIONS
+            if self._bypasses(_CANONICAL_ADVERSE[:i] + _CANONICAL_ADVERSE[i + 1 :])
+        ]
+        assert len(hits) == 17, hits
+
+    def test_ascii_substitution_bypasses_at_every_position(self):
+        hits = []
+        for i in self.PREFIX_POSITIONS:
+            r = "X" if _CANONICAL_ADVERSE[i] != "X" else "Y"
+            if self._bypasses(_replace_at(_CANONICAL_ADVERSE, i, r)):
+                hits.append(i)
+        assert len(hits) == 17, hits
+
+    def test_ascii_insertion_bypasses_at_sixteen_of_seventeen(self):
+        """Position 0 is the measured exception: inserting before the `F` leaves the canonical
+        prefix intact as a substring, so the line is correctly read as adverse, not skipped."""
+        hits = [
+            i for i in self.PREFIX_POSITIONS
+            if self._bypasses(_CANONICAL_ADVERSE[:i] + "X" + _CANONICAL_ADVERSE[i:])
+        ]
+        assert len(hits) == 16, hits
+        assert 0 not in hits
+        assert AUTH.parse_formal_disposition(
+            _adverse_then_approval("X" + _CANONICAL_ADVERSE)
+        ) is AUTH.MALFORMED_FORMAL_DISPOSITION
+
+    def test_adjacent_transposition_bypasses_at_every_distinct_pair(self):
+        prefix = "FORMAL DISPOSITION"
+        pairs = [i for i in range(len(prefix) - 1) if prefix[i] != prefix[i + 1]]
+        hits = [
+            i for i in pairs
+            if self._bypasses(
+                _CANONICAL_ADVERSE[:i]
+                + _CANONICAL_ADVERSE[i + 1]
+                + _CANONICAL_ADVERSE[i]
+                + _CANONICAL_ADVERSE[i + 2 :]
+            )
+        ]
+        assert len(pairs) == 17 and len(hits) == 17, (pairs, hits)
+
+    def test_confusable_substitution_bypasses_at_every_position(self):
+        confusables = {
+            "F": "\uff26", "O": "\u039f", "R": "\u0280", "M": "\u039c", "A": "\u0410",
+            "L": "\u029f", "D": "\u13a0", "I": "\u0130", "S": "\u0405", "P": "\u0420",
+            "T": "\u0422", "N": "\u0274",
+        }
+        covered = [i for i in self.PREFIX_POSITIONS if _CANONICAL_ADVERSE[i] in confusables]
+        hits = [
+            i for i in covered
+            if self._bypasses(
+                _replace_at(_CANONICAL_ADVERSE, i, confusables[_CANONICAL_ADVERSE[i]])
+            )
+        ]
+        assert len(covered) == 17 and len(hits) == 17, (covered, hits)
+
+    def test_ordinary_prose_is_not_treated_as_a_formal_record(self):
+        """The boundary's other side: prose must not become a formal candidate."""
+        assert AUTH.parse_formal_disposition("just some ordinary prose\n") is None
+
+
+class TestNoTautologicalAssertionsSurvive:
+    """MINOR 1: the `x == y or x != y` shape must be gone AND barred from returning."""
+
+    def test_the_real_property_is_asserted(self):
+        source = Path(__file__).read_text(encoding="utf-8")
+        assert "must stay non-ASCII" in source
+        assert "must not become" in source
+
+    @pytest.mark.parametrize(
+        "homoglyph,ascii_char", [("\u039f", "O"), ("\u0410", "A"), ("\u0130", "I")]
+    )
+    def test_the_property_holds_for_each_real_lookalike(self, homoglyph, ascii_char):
+        upper = homoglyph.upper()
+        assert all(ord(c) > 127 for c in upper)
+        assert upper != ascii_char
+
+    @pytest.mark.parametrize("known_bad", ["o", "a", "i", "O", "A", "I"])
+    def test_the_property_REJECTS_a_plain_ascii_lookalike(self, known_bad):
+        """Known-bad control: an ASCII character must fail the property the assertion pins.
+
+        This is what makes the assertion falsifiable -- the superseded tautology accepted these.
+        """
+        upper = known_bad.upper()
+        assert not all(ord(c) > 127 for c in upper), known_bad
+
+    def test_no_exhaustive_comparison_tautology_exists_anywhere(self):
+        """AST/hygiene guard: reject `x == y or x != y` over the same operands, in any order.
+
+        Asserted structurally rather than by substring, because the explanatory comment above
+        necessarily quotes the superseded expression.
+        """
+        import ast
+
+        tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or)):
+                continue
+            cmps = [v for v in node.values if isinstance(v, ast.Compare) and len(v.ops) == 1]
+            for i, a in enumerate(cmps):
+                for b in cmps[i + 1 :]:
+                    ops = {type(a.ops[0]).__name__, type(b.ops[0]).__name__}
+                    if ops != {"Eq", "NotEq"}:
+                        continue
+                    same = (
+                        ast.dump(a.left) == ast.dump(b.left)
+                        and ast.dump(a.comparators[0]) == ast.dump(b.comparators[0])
+                    )
+                    assert not same, f"exhaustive tautology at line {node.lineno}"
+
+    def test_no_assertion_is_neutered_by_a_constant_disjunct(self):
+        """AST guard: reject `assert <constant-truthy> or ...`, which short-circuits the real check.
+
+        Probe "non-ASCII property dropped" MISSED an earlier state of this suite by rewriting a
+        real assertion to `assert True or all(...)`. That is vacuous in exactly the way an
+        exhaustive tautology is, so it is barred by the same class of guard.
+        """
+        import ast
+
+        tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Assert):
+                continue
+            test = node.test
+            if isinstance(test, ast.BoolOp) and isinstance(test.op, ast.Or):
+                for v in test.values:
+                    const = isinstance(v, ast.Constant) and bool(v.value)
+                    assert not const, (
+                        f"assertion neutered by a constant-truthy disjunct at line {node.lineno}"
+                    )
+            assert not (
+                isinstance(test, ast.Constant) and bool(test.value)
+            ), f"constant-truthy assertion at line {node.lineno}"
+
+    def test_the_constant_disjunct_guard_actually_catches_one(self):
+        """Non-vacuity for the guard above."""
+        import ast
+
+        tree = ast.parse("assert True or all(ord(c) > 127 for c in upper)\n")
+        hit = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assert) and isinstance(node.test, ast.BoolOp):
+                for v in node.test.values:
+                    if isinstance(v, ast.Constant) and bool(v.value):
+                        hit = True
+        assert hit, "the guard's own detector failed to fire"
+
+    def test_the_tautology_guard_actually_catches_one(self):
+        """Non-vacuity for the guard above: it must reject a real tautology."""
+        import ast
+
+        tree = ast.parse("assert x.upper() == x or x.upper() != x\n")
+        found = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or):
+                cmps = [v for v in node.values if isinstance(v, ast.Compare)]
+                ops = {type(c.ops[0]).__name__ for c in cmps}
+                if ops == {"Eq", "NotEq"} and ast.dump(cmps[0].left) == ast.dump(cmps[1].left):
+                    found = True
+        assert found, "the guard's own detector failed to fire on a known tautology"
 
 
 # =====================================================================================
