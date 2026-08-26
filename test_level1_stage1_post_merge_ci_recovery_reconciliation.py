@@ -182,7 +182,7 @@ XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
 #: follow-up commit, with no amend and no force-push.
 XASSET0056_ACTIVE_PR = 357
-XASSET0057_ACTIVE_PR = -57
+XASSET0057_ACTIVE_PR = 358
 
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 

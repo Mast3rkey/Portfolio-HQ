@@ -275,7 +275,7 @@ XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
 #: follow-up commit, with no amend and no force-push.
 XASSET0056_ACTIVE_PR = 357
-XASSET0057_ACTIVE_PR = -57
+XASSET0057_ACTIVE_PR = 358
 
 
 #: XASSET-0045's OWN failed merge-commit CI run and job, at PR345_MERGE_SHA. Immutable adverse

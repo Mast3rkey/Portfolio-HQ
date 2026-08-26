@@ -17232,15 +17232,16 @@ workstreams:
           remained UNARMED and NOT EXECUTABLE throughout, and remains so.
       - gate: xasset0057-post-parser-correction-rebinding-authorization
         status: in_progress
-        pr: -57
+        pr: 358
         description: >-
           DESIGN-ONLY LANE G GOVERNANCE AUTHORIZATION under OPS-0009, filed as XASSET-0057. It
           authorizes EXACTLY ONE future, separate, bounded step-8-equivalent rebinding unit, the
           successor XASSET-0056 needed and expressly withheld, and PERFORMS NO REBINDING ITSELF.
-          The gate is in_progress and carries the IMPOSSIBLE SENTINEL -57 because GitHub has not
-          yet issued this filing's pull-request number; the sentinel is replaced in a fast-forward
-          follow-up once the live number can be read back, and this filing does not mark its own
-          unmerged work complete.
+          The gate first carried the IMPOSSIBLE SENTINEL -57 because GitHub had not yet issued this
+          filing's pull-request number; GitHub has since ISSUED and this filing has BOUND pull
+          request #358, read back live from the API rather than guessed, in the fast-forward
+          follow-up the convention requires. The gate remains in_progress because PR #358 is
+          still UNMERGED -- this filing does not mark its own unmerged work complete.
 
           WHY THE AUTHORITY WAS NEEDED. XASSET-0048 SS-E granted exactly one rebinding unit and
           that grant is SPENT, since XASSET-0049 exercised it and XASSET-0049 is the value
@@ -19012,7 +19013,7 @@ workstreams:
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
     active_branch: claude/xasset-successor-authorization-3b0btg
-    active_pr: -57
+    active_pr: 358
     last_verified_main_sha: 583022a5f2106d61f82d270edadd3520d8b0c55d
     last_verified_date: "2026-08-26"
     authorized_by: >

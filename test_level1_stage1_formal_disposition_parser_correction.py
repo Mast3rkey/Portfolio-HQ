@@ -2613,10 +2613,17 @@ def _measured_changed_file_assertions() -> int:
     test files only -- never a repository-wide total. It is not renamed to widen the
     mechanism; the mechanism is correct for the category the records now name.
     """
-    changed = _git("diff", "--name-only", BASE_SHA, "--", "test_*.py").split()
+    # RE-ANCHORED BY XASSET-0057: the path list is derived from the SAME immutable range as the
+    # content below (BASE_SHA -> this unit's own MERGE_SHA), not from the live working tree.
+    # Deriving paths live while reading content at the merge was inconsistent -- a successor's
+    # NEW test file appears in the live diff but does not exist at the merge. Both halves are
+    # now immutable, so this historical figure is permanently reproducible.
+    changed = _git("diff", "--name-only", BASE_SHA, MERGE_SHA, "--", "test_*.py").split()
     added = {
         line.split("\t")[1]
-        for line in _git("diff", "--name-status", BASE_SHA, "--", "test_*.py").splitlines()
+        for line in _git(
+            "diff", "--name-status", BASE_SHA, MERGE_SHA, "--", "test_*.py"
+        ).splitlines()
         if line.startswith("A\t")
     }
     assert added, "the new suite must appear as an ADDED file in this range"
