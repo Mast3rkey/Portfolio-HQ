@@ -17550,6 +17550,101 @@ workstreams:
           superseded wording as a NEGATIVE pin; no test or validator is weakened, deleted, skipped
           or bypassed. Production authorization module NOT edited and byte-identical to base. No
           parser correction is performed. Stage 1 remains UNARMED and NOT EXECUTABLE.
+      - gate: xasset0058-formal-disposition-parser-correction-authorization
+        status: in_progress
+        pr: -58
+        description: >-
+          DESIGN-ONLY LANE G GOVERNANCE AUTHORIZATION under OPS-0009, filed as XASSET-0058. It is
+          the LIFECYCLE A authorization XASSET-0057 SS-F.0.3 requires, it DECIDES the
+          formal-disposition recognition boundary XASSET-0057 SS-F.0.2 expressly reserved to it,
+          and it PERFORMS NO PARSER CORRECTION. The gate first carries the IMPOSSIBLE SENTINEL -58
+          because GitHub has not yet issued this filing's pull-request number; the number is read
+          back live from the API and bound in a fast-forward follow-up, never guessed, reserved or
+          predicted. The gate remains in_progress because this filing's own PR is UNMERGED -- it
+          does not mark its own unmerged work complete.
+
+          WHY THE AUTHORITY WAS NEEDED. XASSET-0057 SS-F.0 makes a separately authorized,
+          independently reviewed, principal-accepted, merged, exact-merge-CI-green and
+          lifecycle-closed parser correction a MANDATORY CONJUNCTIVE prerequisite to any
+          step-8-equivalent rebinding, and states in terms that the condition is NOT SATISFIED BY
+          DISCLOSURE. It then expressly declined to write, design or authorize that correction,
+          reserving the recognition boundary to a later decision which must decide it and prove
+          it. No such decision existed. This filing is it, and it claims no authority beyond
+          XASSET-0057 SS-F.0.
+
+          THE DEFECT, RE-MEASURED RATHER THAN QUOTED. The whole family was executed against the
+          live merged bytes before any boundary was chosen. The swept region is DERIVED, not
+          assumed - the canonical prefix minus its colon, the 18-character label FORMAL
+          DISPOSITION, which has exactly 17 non-space positions and exactly 17 distinct-character
+          adjacent pairs. Across five families - single-character deletion, ASCII substitution,
+          ASCII insertion, adjacent transposition and Unicode/confusable substitution - 84 of 85
+          cells allow a later canonical approval to win, at the parser AND at all three real
+          consumer seams, including under a native APPROVED state. The single non-bypassing cell
+          is insertion at position 0, which leaves the canonical prefix intact as a substring and
+          therefore FAILS CLOSED as the MALFORMED sentinel OBJECT, pinned by identity rather than
+          by a literal. These measurements reproduce XASSET-0057 SS-F.0.1 exactly.
+
+          THE BOUNDARY THIS FILING DECIDES. ACCEPTANCE IS UNCHANGED - the exact accepted grammar,
+          the two governed wrapper forms, ASCII case compatibility, the open verdict vocabulary
+          and whole-verdict exact equality are all preserved, and FUZZY MATCHING IS FORBIDDEN IN
+          ACCEPTANCE. A separate CANDIDATE rule, evaluated only on the branch an accepted form
+          cannot take, classifies a line as formal-looking when the label before its first ASCII
+          colon - searched only within a CLOSED 20-character window, so the rule is O(1) in line
+          length - lies within a RESTRICTED DAMERAU / OPTIMAL-STRING-ALIGNMENT distance of ONE of
+          the canonical label under the same ASCII-only fold acceptance already uses. Every such
+          candidate becomes MALFORMED and STOPS THE PARSE. The edit budget of 1 is recorded as a
+          NUM-0001 CLASS 5 PROVISIONAL GOVERNANCE GUARDRAIL, not an empirically calibrated value.
+
+          MEASURED, NOT ASSERTED. The rule closes 85 of 85 cells in each of the three governed
+          presentations - plain, bold-wrapped and indented, 255 of 255 - while regressing NOTHING.
+          Zero ABSENT-to-MALFORMED transitions across 409 tracked Markdown files and 131,143
+          lines, and zero across 317 real review and comment bodies and 19,741 lines on PRs
+          320-358, where all 27 authenticating bodies still authenticate and all 54 carrying
+          another verdict still carry it. A second rule was fully specified and measured - bounded
+          leading windows against the colon-inclusive prefix - and REJECTED because it produced a
+          genuine prose regression, which SS-F.0.2 item 4 forbids. The rejection is recorded
+          rather than omitted.
+
+          THE RESIDUAL, DISPOSITIONED RATHER THAN OMITTED. Mutation OF THE TERMINATING COLON
+          itself is DECIDED AS ABSENT. The colon is what makes a line present as a labelled record
+          rather than a sentence beginning with two ordinary English words; the behaviour is
+          UNCHANGED from today rather than a new hole; it lies outside the family SS-F.0.1
+          measured; and the case-based discriminator that would separate it from prose is REMOVED
+          AND PROHIBITED by XASSET-0055 SS-D. Whether it should be closed, and how, stays open,
+          unresolved and outside this grant.
+
+          WHAT IS GRANTED, AND ONLY THIS. Effective only on this decision's own complete Lifecycle
+          A closure, exactly ONE future, separate, bounded PR may correct
+          parse_formal_disposition to implement the decided boundary, add at most one narrowly
+          devoted candidate helper only if proven smaller and clearer than inline logic, add its
+          own supporting tests and update the coupled parser suites WITHOUT WEAKENING ANY OF THEM,
+          and synchronize the catalog and this register. THE THREE CONSUMER SEAMS ARE OUT OF SCOPE
+          - they already enforce the MALFORMED/ABSENT distinction, tests must drive all three
+          WITHOUT EDITING THEM, and a unit that believes a consumer change is necessary must STOP
+          AND DISCLOSE.
+
+          TWO LIFECYCLES, NOT ONE. MERGED IS NOT EFFECTIVE. This authorization must itself close
+          A1-A7 - independent FULL exact-head review; any bounded correction and exact-head
+          re-review; principal exact-head acceptance at the final head; normal merge; immediate
+          post-merge verification; successful merge-commit CI whose head_sha is the exact merge
+          SHA; final post-CI closure - before the implementation may BEGIN, and the implementation
+          must then close its own B1-B8. The B5 implementation merge is the SHA tested by B7 and
+          named by B8, and it is the SOLE qualifying base for XASSET-0057's later rebinding under
+          SS-F.2. XASSET-0044 and XASSET-0045 each merged and neither became effective.
+
+          WHAT NEITHER THIS FILING NOR THE UNIT IT AUTHORIZES MAY DO. No rebinding, no re-pinning,
+          no extension of LOAD_BEARING_RELPATHS which is 18 at this base and unchanged, no repair
+          of the deliberate register/module digest mismatch, no canonical-artifact amendment, no
+          change to acceptance or the verdict boundary, no closing of the SS-D.8 residual, no
+          fourth parse_formal_disposition call site, no general parsing framework, no readiness or
+          drift verification, no attestation, no arming, no lane creation, no claim of ATTEMPT_1,
+          no execution, no results work, no data acquisition, no allocation, no trading, and no
+          protected RISK access. The vulnerable module identity
+          12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5 is REAFFIRMED as
+          XASSET-0057's PERMANENT NEGATIVE PIN and may never be bound. All three authorization
+          predicates remain False, the lane remains ABSENT, AUTHORIZATION_ROOT remains absent,
+          ATTEMPT_1 remains intact, unclaimed and unconsumed, and STAGE 1 REMAINS UNARMED AND NOT
+          EXECUTABLE.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -19241,10 +19336,10 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/xasset-successor-authorization-3b0btg
-    active_pr: 358
-    last_verified_main_sha: 583022a5f2106d61f82d270edadd3520d8b0c55d
-    last_verified_date: "2026-08-26"
+    active_branch: claude/parser-correction-xasset-auth-w91gse
+    active_pr: -58
+    last_verified_main_sha: 556a43cf91679d3e8ca95703c8d49e672b662b73
+    last_verified_date: 2026-08-26
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively

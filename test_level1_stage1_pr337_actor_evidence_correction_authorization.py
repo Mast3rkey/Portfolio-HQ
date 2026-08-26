@@ -743,13 +743,22 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0057: WS-0014's SINGLE SHARED live field names whichever unit
         # is live. Bound at BOTH ends -- the exact current value, and the predecessor's
         # own value retained as a NEGATIVE pin so a silent revert still fails here.
+        # ADVANCED BY XASSET-0058, on exactly the same terms: WS-0014's SINGLE SHARED live
+        # field names whichever unit is live, and XASSET-0057's own superseded values join the
+        # negative pins below rather than being deleted, so the field stays bound at BOTH ends.
         assert ws0014["active_branch"] == (
+            "claude/parser-correction-xasset-auth-w91gse"
+        )
+        assert ws0014["active_branch"] != (
             "claude/xasset-successor-authorization-3b0btg"
         )
         assert ws0014["active_branch"] != (
             "claude/xasset-0055-parser-correction-c3ro29"
         )
         assert ws0014["last_verified_main_sha"] == (
+            "556a43cf91679d3e8ca95703c8d49e672b662b73"
+        )
+        assert ws0014["last_verified_main_sha"] != (
             "583022a5f2106d61f82d270edadd3520d8b0c55d"
         )
         assert ws0014["last_verified_main_sha"] != (
