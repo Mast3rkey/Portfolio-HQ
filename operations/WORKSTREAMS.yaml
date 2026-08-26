@@ -17321,6 +17321,70 @@ workstreams:
           INDIVIDUALLY SUFFICIENT. Merging this decision performs no rebinding and arms nothing.
           Stage 1 remains UNARMED and NOT EXECUTABLE, the lane is ABSENT, and ATTEMPT_1 is intact,
           unclaimed and unconsumed.
+
+          BOUNDED CORRECTION, independent FULL exact-head review 5026362328 at reviewed head
+          a7f490904d42c23a6c30cd491fb84928887d1397 -- 1 BLOCKING / 1 MAJOR / 1 MINOR / 0 NOTE. All
+          three were REPRODUCED through their real mechanisms before anything was edited.
+
+          BLOCKING 1 RESOLVED -- the grant permitted rebinding the very bytes SS-M proves
+          defective. The prior drift rule was ASYMMETRIC: it stopped the SAFER case (a parser fix
+          landing first) while permitting the MORE DANGEROUS one (no fix, therefore no intervening
+          commit, therefore nothing fires, and the known-fail-open parser becomes the ACCEPTED
+          ENFORCEMENT ANCHOR). Reproduced live: at the exact bytes 12eab05e... a position-correct
+          adverse first line returns the approving verdict, and a scan of the whole decision found
+          ZERO occurrences of prerequisite / before-the-rebinding / must-be-corrected /
+          conjunctive. New SS-F.0 makes a SEPARATELY AUTHORIZED parser correction a CONJUNCTIVE
+          PREREQUISITE through all EIGHT of its own conditions (own authorization; own
+          implementation; independent FULL exact-head review plus any correction and re-review;
+          principal exact-head acceptance; normal merge; post-merge verification; merge-commit CI
+          at the exact merge SHA; final post-CI closure), pins 12eab05e... as a PERMANENT NEGATIVE
+          PIN that may NEVER be rebound, and binds the corrected module through an EXACT CLOSED
+          TRANSITION whose new end is DERIVED from that completed lifecycle and explicitly NOT
+          predicted here. SS-F.2 was RECONCILED rather than patched: because a mandatory parser
+          correction MUST advance main, an absolute equal-this-decision's-merge rule and the
+          required intervening merge cannot both hold, so the absolute-plus-generic-exception
+          formulation is WITHDRAWN AND REPLACED by ONE unambiguous rule -- the rebinding base must
+          EQUAL the exact merge commit closing the parser-correction lifecycle, with NO unadmitted
+          intervening drift. A rebinding based on THIS decision's own merge now FAILS SS-F.2.
+
+          MAJOR 1 RESOLVED -- SS-F.7 left the decisions governing the parser bytes outside the
+          byte-identity boundary. Reproduced live: LOAD_BEARING_RELPATHS is 18 and binds ELEVEN
+          governance decisions, but XASSET-0053, XASSET-0055, XASSET-0056 and XASSET-0057 are ALL
+          ABSENT, while the prior SS-E item 4 limited expansion to "this decision and the unit's
+          own". SS-F.7 now requires DIRECT MEMBERSHIP for XASSET-0053, XASSET-0055, XASSET-0056,
+          XASSET-0057, the future rebinding decision's own file, and EVERY future accepted
+          decision authorizing or implementing the prerequisite parser correction. XASSET-0054
+          REMAINS EXCLUDED -- identifier consumed, PR closed unmerged, no decision file on main --
+          admissible only on independent evidence that it is operative. CITATION IS NOT MEMBERSHIP:
+          related_decisions, quotation, derivation, equivalence, inheritance and narrative
+          reference are all explicitly insufficient. NO final count is guessed; the future unit
+          must DERIVE the exact final count and the exact closed membership transition from the
+          ACTUAL COMPLETED CHAIN. The XASSET-0041->XASSET-0044 precedent is cited and independently
+          verified to have bound all four of its own chain members.
+
+          MINOR 1 RESOLVED -- the committed SS-M reproduction did not build the attacks it claimed.
+          Reproduced exactly: _ADVERSE_TAIL[1:] DROPPED the leading S, so the Omicron case built
+          FORMAL DISP{U+039F}ITION rather than the reported FORMAL DISP{U+039F}SITION, and all
+          three code points were INSERTED AT THE O POSITION (index 11) instead of replacing their
+          own ASCII counterparts. Replaced with position-correct bodies built by single in-place
+          substitution against the canonical adverse line: U+039F for the ASCII O of DISPOSITION
+          (index 11), U+0410 for the ASCII A of FORMAL (index 4), U+0130 for the ASCII I of
+          DISPOSITION (index 8). Each is asserted to sit at a REAL occurrence of the character it
+          replaces, to differ in EXACTLY ONE code point, and to preserve length; each body is
+          driven through the REAL parser and ALL THREE real consumer seams
+          (_derive_pr337_actor_ratification, verify_lifecycle_against_truth,
+          _verify_selected_review_is_final) with an adverse first line followed by a canonical
+          approval, each with its own untampered CONTROL. The superseded construction is barred by
+          an AST-level guard rather than a substring scan, because the explanatory comment
+          necessarily names it.
+
+          SCOPE OF THE CORRECTION. Decision file, its supporting suite, this register entry, and
+          the strictly coupled tests those changes require. The production authorization module is
+          NOT edited -- asserted mechanically -- no parser correction is performed, and no
+          rebinding, readiness verification, drift verification, attestation, arming, lane
+          creation, claim, execution, results work, allocation, trading or protected RISK access
+          occurs. No test or validator is weakened, deleted, skipped or bypassed. Stage 1 remains
+          UNARMED and NOT EXECUTABLE.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

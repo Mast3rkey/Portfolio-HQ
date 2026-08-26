@@ -28,6 +28,22 @@ import yaml
 
 import level1_stage1_execution_authorization as AUTH
 
+#: The three REAL consumer seams, reused from the XASSET-0056 suite that already drives them
+#: against the live module rather than re-implementing a second, divergent harness here. These are
+#: the actual production call sites of ``parse_formal_disposition``:
+#:   1. ``_derive_pr337_actor_ratification``
+#:   2. ``verify_lifecycle_against_truth``
+#:   3. ``_verify_selected_review_is_final``
+import test_level1_stage1_formal_disposition_parser_correction as _SEAMS_MODULE
+
+
+class _SEAMS:
+    """Thin, explicit binding to the real seam runners. No behaviour of its own."""
+
+    run_consumer_one = staticmethod(_SEAMS_MODULE._run_consumer_one)
+    run_consumer_two = staticmethod(_SEAMS_MODULE._run_consumer_two)
+    run_consumer_three = staticmethod(_SEAMS_MODULE._run_consumer_three)
+
 ROOT = Path(__file__).resolve().parent
 
 # =====================================================================================
@@ -295,9 +311,15 @@ class TestTheRequiredPropertiesAreConditions:
         assert "none may be waived by the unit that performs it" in f
 
     def test_the_base_rule_is_equality_not_descent(self, decision_text):
+        """RE-ANCHORED (DELTA 5026362328 BLOCKING 1): the base rule is now equality to the
+        PARSER-CORRECTION merge, stated once, with no absolute-plus-exception formulation."""
         f = _flat(_section(decision_text, "F"))
-        assert "The operative rule is equality, not descent" in f
-        assert "must **equal** the exact normal-merge commit" in f
+        assert "Equality, not descent" in f
+        assert "must EQUAL the exact normal-merge commit that closes the required" in f
+        assert "parser-correction lifecycle" in f
+        # the superseded formulation must be gone, not merely supplemented
+        assert "at *this* authorization's own merge" not in f
+        assert "single, unambiguous" in f
 
     def test_ancestry_is_stated_necessary_but_explicitly_insufficient(self, decision_text):
         f = _flat(_section(decision_text, "F"))
@@ -305,10 +327,13 @@ class TestTheRequiredPropertiesAreConditions:
         assert "descent alone never qualifies a base" in f
 
     def test_any_intervening_main_commit_is_drift_and_a_stop(self, decision_text):
+        """RE-ANCHORED (DELTA 5026362328 BLOCKING 1): drift is now measured from the
+        PARSER-CORRECTION merge, which is the only lawful base."""
         f = _flat(_section(decision_text, "F"))
-        assert "Any intervening `main` commit is drift, and drift is a stop" in f
+        assert "No unadmitted intervening drift" in f
         assert "may not proceed on the strength of this authorization" in f
         assert "never absorbed merely because the base descends" in f
+        assert "between the parser-correction merge and the authorized unit's base" in f
 
     def test_the_base_must_be_derived_not_predicted(self, decision_text):
         f = _flat(_section(decision_text, "F"))
@@ -548,7 +573,49 @@ class TestStage1RemainsFailClosed:
 # =====================================================================================
 
 _APPROVAL = "FORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
-_ADVERSE_TAIL = "SITION: CHANGES REQUIRED"
+
+#: The canonical adverse first line, untampered. Every attack below is this exact string with
+#: EXACTLY ONE ASCII character replaced in place by a visual lookalike -- never an insertion, never
+#: a deletion, and never a character replaced at some other character's position.
+_CANONICAL_ADVERSE = "FORMAL DISPOSITION: CHANGES REQUIRED"
+
+
+def _replace_at(text: str, index: int, replacement: str) -> str:
+    """Replace exactly one code point at ``index``. Length in code points is preserved."""
+    return text[:index] + replacement + text[index + 1 :]
+
+
+#: Each entry is (label, ascii_char, index, homoglyph). ``index`` is the position of a REAL
+#: occurrence of ``ascii_char`` inside ``_CANONICAL_ADVERSE``, so each lookalike genuinely
+#: substitutes for the character it resembles:
+#:
+#:   * U+039F GREEK CAPITAL OMICRON replaces the ASCII ``O`` of DISP-O-SITION (index 11)
+#:   * U+0410 CYRILLIC CAPITAL A    replaces the ASCII ``A`` of FORM-A-L      (index 4)
+#:   * U+0130 LATIN CAPITAL I WITH DOT ABOVE replaces the ASCII ``I`` of D-I-SPOSITION (index 8)
+#:
+#: DELTA review 5026362328 MINOR 1: the superseded construction was
+#: ``"FORMAL DISP" + homoglyph + _ADVERSE_TAIL[1:]`` with ``_ADVERSE_TAIL = "SITION: ..."``. The
+#: ``[1:]`` slice DROPPED the ``S``, so the Omicron case built ``FORMAL DISPΟITION:`` rather than
+#: the reported ``FORMAL DISPΟSITION:``, and all three code points were inserted at the ``O``
+#: position instead of replacing their own ASCII counterparts. The finding was real; the artifact
+#: did not pin the exact forms it claimed. These are the position-correct forms.
+_HOMOGLYPH_ATTACKS = (
+    ("U+039F GREEK CAPITAL OMICRON for ASCII O", "O", 11, "\u039f"),
+    ("U+0410 CYRILLIC CAPITAL A for ASCII A", "A", 4, "\u0410"),
+    ("U+0130 LATIN CAPITAL I WITH DOT for ASCII I", "I", 8, "\u0130"),
+)
+
+
+def _attack_first_line(ascii_char: str, index: int, homoglyph: str) -> str:
+    """Build one position-correct tampered adverse first line, asserting its own correctness."""
+    assert _CANONICAL_ADVERSE[index] == ascii_char, (index, _CANONICAL_ADVERSE[index], ascii_char)
+    line = _replace_at(_CANONICAL_ADVERSE, index, homoglyph)
+    # Non-vacuity: the intended code point really is at the intended position, exactly one
+    # character differs, and the length is unchanged.
+    assert line[index] == homoglyph
+    assert len(line) == len(_CANONICAL_ADVERSE)
+    assert sum(1 for a, b in zip(line, _CANONICAL_ADVERSE) if a != b) == 1
+    return line
 
 
 def _adverse_then_approval(prefix_body: str) -> str:
@@ -556,39 +623,99 @@ def _adverse_then_approval(prefix_body: str) -> str:
 
 
 class TestTheDisclosedFindingIsReproducedAndBounded:
-    """``SS-M`` claims the bot finding reproduces and is bounded. Both halves are executed here."""
+    """``SS-M`` claims the bot finding reproduces and is bounded. Both halves are executed here,
+    against position-correct attack bodies driven through the parser and all three real consumer
+    seams."""
 
-    @pytest.mark.parametrize(
-        "homoglyph",
-        [
-            "Ο",  # GREEK CAPITAL LETTER OMICRON — the reported case
-            "А",  # CYRILLIC CAPITAL LETTER A
-            "İ",  # LATIN CAPITAL LETTER I WITH DOT ABOVE
-        ],
-    )
-    def test_the_reported_skip_family_reproduces(self, homoglyph):
+    # ---- structural non-vacuity: the bodies really are what they claim to be ----
+
+    @pytest.mark.parametrize("label,ascii_char,index,homoglyph", _HOMOGLYPH_ATTACKS)
+    def test_each_attack_replaces_its_own_ascii_character_in_place(
+        self, label, ascii_char, index, homoglyph
+    ):
+        line = _attack_first_line(ascii_char, index, homoglyph)
+        assert _CANONICAL_ADVERSE[index] == ascii_char, "the index must name a REAL occurrence"
+        assert line[index] == homoglyph, "the lookalike must sit at that exact position"
+        assert line[index] != ascii_char
+        assert ord(homoglyph) > 127, "the replacement must be non-ASCII"
+        assert homoglyph.upper() == homoglyph or homoglyph.upper() != homoglyph
+        # nothing else moved
+        assert line[:index] == _CANONICAL_ADVERSE[:index]
+        assert line[index + 1 :] == _CANONICAL_ADVERSE[index + 1 :]
+
+    def test_the_superseded_construction_is_gone(self):
+        """The `[1:]`-slice construction that dropped the S must not survive in what EXECUTES.
+
+        Asserted on the parsed AST rather than on the file text, because the comment above
+        necessarily NAMES the superseded construction in order to explain what was removed. A
+        substring scan would false-positive on that prose; a structural scan cannot.
+        """
+        import ast
+
+        tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
+        names = {
+            n.id for n in ast.walk(tree) if isinstance(n, ast.Name)
+        } | {
+            t.id
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            for t in node.targets
+            if isinstance(t, ast.Name)
+        }
+        assert "_ADVERSE_TAIL" not in names, "the superseded constant is still live code"
+
+        # And no surviving slice-of-a-tail construction anywhere in the module.
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name):
+                assert not node.value.id.endswith("_TAIL"), ast.dump(node)
+
+    def test_the_omicron_body_is_exactly_the_reported_string(self):
+        """The exact form the external finding named, character for character."""
+        line = _attack_first_line("O", 11, "\u039f")
+        assert line == "FORMAL DISP\u039fSITION: CHANGES REQUIRED"
+        assert "SITION" in line, "the S must NOT be dropped"
+        assert line.count("S") == _CANONICAL_ADVERSE.count("S")
+
+    @pytest.mark.parametrize("label,ascii_char,index,homoglyph", _HOMOGLYPH_ATTACKS)
+    def test_the_body_is_adverse_first_then_approving(self, label, ascii_char, index, homoglyph):
+        body = _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
+        lines = [ln for ln in body.split("\n") if ln.strip()]
+        assert len(lines) == 2, lines
+        assert "CHANGES REQUIRED" in lines[0], "line 1 must be the ADVERSE record"
+        assert lines[1] == _APPROVAL, "line 2 must be the canonical approval"
+
+    # ---- the parser itself ----
+
+    @pytest.mark.parametrize("label,ascii_char,index,homoglyph", _HOMOGLYPH_ATTACKS)
+    def test_the_reported_skip_family_reproduces_in_the_parser(
+        self, label, ascii_char, index, homoglyph
+    ):
         """A prefix-interior homoglyph makes the adverse line skip and a later approval win."""
-        body = _adverse_then_approval("FORMAL DISP" + homoglyph + _ADVERSE_TAIL[1:])
+        body = _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
         assert AUTH.parse_formal_disposition(body) == (
             "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
-        )
+        ), label
 
     def test_the_canonical_adverse_line_still_wins(self):
         """The control: an untampered adverse first line is not skipped."""
-        body = _adverse_then_approval("FORMAL DISPOSITION: CHANGES REQUIRED")
-        assert AUTH.parse_formal_disposition(body) == "CHANGES REQUIRED"
+        assert AUTH.parse_formal_disposition(
+            _adverse_then_approval(_CANONICAL_ADVERSE)
+        ) == "CHANGES REQUIRED"
 
     def test_a_tampered_prefix_alone_never_authenticates(self):
         """The bound: the finding is a skip, never a direct authentication."""
-        tampered = "FORMAL DISPΟSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE\n"
+        tampered = _replace_at(_APPROVAL, 11, "\u039f") + "\n"
+        assert tampered[11] == "\u039f"
         assert AUTH.parse_formal_disposition(tampered) != (
             "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
         )
 
     def test_a_homoglyph_in_the_verdict_does_not_bypass(self):
-        """The bound: only the prefix is affected."""
-        body = _adverse_then_approval("FORMAL DISPOSITION: CHANGЕS REQUIRED")
-        assert body and AUTH.parse_formal_disposition(body) != (
+        """The bound: only the PREFIX is affected. U+0415 replaces the E of CHANGES."""
+        e_index = _CANONICAL_ADVERSE.index("CHANGES") + 5
+        assert _CANONICAL_ADVERSE[e_index] == "E"
+        line = _replace_at(_CANONICAL_ADVERSE, e_index, "\u0415")
+        assert AUTH.parse_formal_disposition(_adverse_then_approval(line)) != (
             "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
         )
 
@@ -596,6 +723,52 @@ class TestTheDisclosedFindingIsReproducedAndBounded:
         assert AUTH.parse_formal_disposition(_APPROVAL + "\n") == (
             "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
         )
+
+    # ---- every real consumer seam ----
+
+    @pytest.mark.parametrize("label,ascii_char,index,homoglyph", _HOMOGLYPH_ATTACKS)
+    def test_the_bypass_reaches_consumer_one(self, label, ascii_char, index, homoglyph, monkeypatch):
+        """Seam 1 -- `_derive_pr337_actor_ratification`: the tampered body passes the parser gate
+        exactly as a clean approval does, so execution proceeds past it."""
+        body = _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
+        recorder = _SEAMS.run_consumer_one(body, monkeypatch)
+        assert any(c.startswith("reviews:") for c in recorder.calls), (label, recorder.calls)
+
+    def test_consumer_one_stops_on_the_untampered_adverse_body(self, monkeypatch):
+        """Seam 1 control: the canonical adverse first line does NOT pass the gate."""
+        body = _adverse_then_approval(_CANONICAL_ADVERSE)
+        recorder = _SEAMS.run_consumer_one(body, monkeypatch)
+        assert not any(c.startswith("reviews:") for c in recorder.calls), recorder.calls
+
+    @pytest.mark.parametrize("label,ascii_char,index,homoglyph", _HOMOGLYPH_ATTACKS)
+    def test_the_bypass_reaches_consumer_two(self, label, ascii_char, index, homoglyph):
+        """Seam 2 -- `verify_lifecycle_against_truth`: the tampered body is treated as approving,
+        so it raises none of the adverse/malformed/absent disposition errors."""
+        body = _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
+        errors = _SEAMS.run_consumer_two(body)
+        joined = " ".join(errors)
+        assert "carries no parseable" not in joined, (label, errors)
+        assert "CHANGES REQUIRED" not in joined, (label, errors)
+
+    def test_consumer_two_reports_the_untampered_adverse_body(self):
+        """Seam 2 control: the canonical adverse line is still seen as adverse."""
+        errors = _SEAMS.run_consumer_two(_adverse_then_approval(_CANONICAL_ADVERSE))
+        assert any("CHANGES REQUIRED" in e for e in errors), errors
+
+    @pytest.mark.parametrize("label,ascii_char,index,homoglyph", _HOMOGLYPH_ATTACKS)
+    def test_the_bypass_reaches_consumer_three(self, label, ascii_char, index, homoglyph):
+        """Seam 3 -- `_verify_selected_review_is_final`: a later tampered record is not treated as
+        an adverse successor, so it does not unseat the selected review."""
+        body = _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
+        errors = _SEAMS.run_consumer_three(body, "COMMENTED")
+        assert not any("CHANGES REQUIRED" in e for e in errors), (label, errors)
+
+    def test_consumer_three_reports_the_untampered_adverse_body(self):
+        """Seam 3 control: the canonical adverse successor IS caught."""
+        errors = _SEAMS.run_consumer_three(_adverse_then_approval(_CANONICAL_ADVERSE), "COMMENTED")
+        assert any("CHANGES REQUIRED" in e for e in errors), errors
+
+    # ---- the decision's own SS-M text ----
 
     def test_the_disclosure_records_the_bot_review_and_its_timing(self, decision_flat):
         assert POST_MERGE_BOT_REVIEW in decision_flat
@@ -606,11 +779,189 @@ class TestTheDisclosedFindingIsReproducedAndBounded:
         m = _flat(_section(decision_text, "M"))
         assert "does not repair it, and is not authorized to" in m
         assert "does not make Stage 1 executable" in m
-        assert "bears directly on" in m and "drift rule applies" in m
+        assert "disclosure is not a safety precondition" in m.lower()
 
     def test_the_disclosure_does_not_rule_on_the_fix(self, decision_text):
         m = _flat(_section(decision_text, "M"))
         assert "open, unresolved, and outside this grant" in m
+
+
+# =====================================================================================
+# 9b. BLOCKING 1 — the parser correction is a conjunctive PREREQUISITE, not a contingency
+# =====================================================================================
+
+
+class TestTheParserCorrectionIsAConjunctivePrerequisite:
+    """DELTA review 5026362328 BLOCKING 1.
+
+    The superseded text let the rebinding proceed against the known-defective bytes whenever no
+    parser fix happened to land first: no intervening commit meant no drift, so nothing fired.
+    These assertions pin the corrected posture at its mechanism, not at its prose.
+    """
+
+    def test_section_f0_exists_and_is_conjunctive(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "F.0 —" in f
+        assert "conjunctive with every other condition" in f
+        assert "not an alternative to any of them" in f
+        assert "not satisfied by disclosure" in f
+
+    def test_the_defective_identity_is_a_permanent_negative_pin(self, decision_flat):
+        assert "The current vulnerable module may never be rebound" in decision_flat
+        assert MERGED_MODULE_SHA256 in decision_flat
+        assert "permanent negative pin" in decision_flat
+
+    def test_the_defective_identity_pinned_is_the_one_that_is_actually_defective(self):
+        """Non-vacuity: the digest named as the negative pin is the live, reproducing module."""
+        live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+        assert live == MERGED_MODULE_SHA256
+        body = _adverse_then_approval(_attack_first_line("O", 11, "\u039f"))
+        assert AUTH.parse_formal_disposition(body) == (
+            "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+        ), "the pinned identity must be the one that actually fails open"
+
+    def test_all_eight_prerequisite_conditions_are_enumerated(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        for required in (
+            "own accepted governance authorization",
+            "own implementation correcting",
+            "independent **FULL** exact-head review",
+            "principal exact-head acceptance",
+            "normal merge",
+            "immediate post-merge verification",
+            "successful merge-commit CI",
+            "final post-CI verification and lifecycle closure",
+        ):
+            assert required in f, required
+        assert "None is individually sufficient; only complete closure of all eight is" in f
+
+    def test_the_corrected_identity_is_derived_never_predicted(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "derived** from the completed parser-correction lifecycle" in f
+        assert "never predicted here" in f
+        assert "derive it from the git object store" in f
+
+    def test_a_rebinding_of_the_old_end_fails_outright(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "equals the old end above **fails this condition" in f
+
+    def test_the_grant_itself_is_gated_on_the_prerequisite(self, decision_text):
+        e = _flat(_section(decision_text, "E"))
+        assert "conjunctive parser-correction prerequisite in §F.0" in e
+        assert "both, not either" in e
+
+    def test_the_determination_records_the_grant_as_conditional(self, decision_text):
+        a = _flat(_section(decision_text, "A"))
+        assert "conditional, not standing" in a
+
+    def test_this_filing_still_performs_no_parser_correction(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "does not perform, design, schedule or authorize that parser correction" in f
+
+    def test_the_module_is_untouched_by_this_correction(self):
+        """Structural: the absolute boundary held through the correction too."""
+        assert _blob_at(THIS_UNIT_BASE_SHA, MODULE_RELPATH) == MERGED_MODULE_BLOB
+        live = _git("hash-object", str(ROOT / MODULE_RELPATH))
+        assert live == MERGED_MODULE_BLOB
+
+    def test_the_single_base_rule_has_no_competing_absolute(self, decision_text):
+        """The reviewer's specific objection: no absolute rule followed by a generic exception."""
+        f = _flat(_section(decision_text, "F"))
+        assert "the earlier formulation" in f and "withdrawn and replaced" in f
+        assert "there is no other, and no exception clause qualifies it" in f
+        # the superseded absolute must not survive anywhere in the document
+        assert "at *this* authorization's own merge" not in _flat(decision_text)
+
+    def test_the_ordering_is_stated_explicitly(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "this decision's merge → the parser correction's" in f
+        assert "A rebinding based on this decision's own merge" in f
+        assert "fails this condition" in f
+
+
+# =====================================================================================
+# 9c. MAJOR 1 — the load-bearing decision boundary is closed
+# =====================================================================================
+
+
+class TestTheLoadBearingDecisionBoundaryIsClosed:
+    """DELTA review 5026362328 MAJOR 1."""
+
+    #: Every decision that governs the parser bytes and must gain DIRECT membership.
+    REQUIRED = ("XASSET-0053", "XASSET-0055", "XASSET-0056", "XASSET-0057")
+
+    def test_the_gap_this_correction_closes_is_real(self):
+        """Non-vacuity: these decisions really are absent from the live boundary today."""
+        for d in self.REQUIRED:
+            assert not [p for p in AUTH.LOAD_BEARING_RELPATHS if d in p], d
+        assert len(AUTH.LOAD_BEARING_RELPATHS) == LOAD_BEARING_COUNT
+
+    @pytest.mark.parametrize("decision", REQUIRED)
+    def test_each_governing_decision_is_required_by_name(self, decision_text, decision):
+        """Each name must appear as a REQUIRED-MEMBERSHIP path bullet, not merely be mentioned.
+
+        Mutation probe "F.7 drops XASSET-0053" MISSED an earlier form of this assertion: it only
+        checked that the name occurred somewhere in SS-F, and SS-F.7's own prose already names
+        every one of them when reporting that they are currently ABSENT. Deleting the membership
+        bullet therefore left the assertion satisfied. It now pins the bullet itself.
+        """
+        f = _flat(_section(decision_text, "F"))
+        bullet = f"`governance/decisions/{decision}-…`"
+        assert bullet in f, f"{decision} is not required as a direct-membership path"
+        # and it must sit inside the required-membership list, not the absent-today report
+        required_list = f[f.index("**Direct membership is therefore required**") :]
+        required_list = required_list[: required_list.index("`XASSET-0054` remains excluded")]
+        assert bullet in required_list, f"{decision} is named but not REQUIRED"
+
+    def test_the_future_rebinding_decision_and_the_chain_are_required(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "the future **rebinding** decision's own file" in f
+        assert "every** future accepted decision that authorizes or implements" in f
+
+    def test_direct_membership_is_required_not_citation(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "Citation is not membership" in f
+        for substitute in ("related_decisions", "quoting it", "equivalence", "inheriting"):
+            assert substitute in f, substitute
+        assert "Only a path present in that tuple is" in f
+
+    def test_xasset_0054_stays_excluded_absent_independent_evidence(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "`XASSET-0054` remains excluded" in f
+        assert "independent evidence that it is operative" in f
+
+    def test_xasset_0054_really_is_absent_from_main(self):
+        """Non-vacuity for the exclusion: no XASSET-0054 decision file exists at this base."""
+        listing = _git("ls-tree", "--name-only", f"{THIS_UNIT_BASE_SHA}", "governance/decisions/")
+        assert not [p for p in listing.split("\n") if "XASSET-0054" in p]
+        assert not [p for p in AUTH.LOAD_BEARING_RELPATHS if "XASSET-0054" in p]
+
+    def test_the_final_count_is_derived_never_guessed(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "The final count is derived, never guessed" in f
+        assert "derive the exact final count and the exact" in f
+        assert "closed membership transition from the actual completed chain" in f
+
+    def test_no_predicted_final_count_is_stated(self, decision_text):
+        """Structural: the decision must not name a guessed post-expansion membership figure."""
+        f = _section(decision_text, "F")
+        for guessed in ("**22**", "**23**", "**24**", "**25**", "22 paths", "23 paths"):
+            assert guessed not in f, guessed
+        assert "no** predicted final membership figure" in _flat(f)
+
+    def test_the_precedent_is_cited_accurately(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "XASSET-0041`→`XASSET-0044" in f
+
+    def test_that_precedent_really_bound_its_own_chain(self):
+        """Non-vacuity: the cited precedent genuinely has all four decisions bound today."""
+        for d in ("XASSET-0041", "XASSET-0042", "XASSET-0043", "XASSET-0044"):
+            assert [p for p in AUTH.LOAD_BEARING_RELPATHS if d in p], d
+
+    def test_the_grant_item_four_was_widened(self, decision_text):
+        e = _flat(_section(decision_text, "E"))
+        assert "every** decision file that makes the newly" in e
+        assert "parser-governing chain §F.7 enumerates" in e
 
 
 # =====================================================================================

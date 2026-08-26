@@ -75,6 +75,10 @@ that reconciles the load-bearing register with the merged `XASSET-0056` bytes.
 This determination is **design-only**. It arms nothing, executes nothing, and moves no byte of any
 production module. **Merging this decision performs no rebinding.**
 
+The grant is **conditional, not standing**: §F.0 makes a separately authorized, independently
+reviewed, principal-accepted, merged, exact-merge-CI-green and lifecycle-closed **parser correction**
+a mandatory conjunctive prerequisite, and the present vulnerable module may **never** be rebound.
+
 ### B. The authority gap, reproduced from accepted text before anything was authorized
 
 Each line below is quoted from an accepted, merged record, not inferred:
@@ -112,8 +116,9 @@ authorization PR.
 
 ### E. Authority granted — exactly one future, separate rebinding unit
 
-Effective only on this decision's own complete lifecycle closure (§J), **exactly one** future,
-separate, bounded pull request may:
+Effective only on this decision's own complete lifecycle closure (§J) **and** on complete
+satisfaction of the **conjunctive parser-correction prerequisite in §F.0** — both, not either —
+**exactly one** future, separate, bounded pull request may:
 
 1. file its **own** rebinding decision record, under the next `XASSET-####` identifier **verified
    unused against live repository state at the time it is filed** — never predicted, reserved, or
@@ -123,8 +128,9 @@ separate, bounded pull request may:
    verified base (§F.1, §F.2, §F.3);
 3. edit `level1_stage1_execution_authorization.py` **only** to the extent that unit's own
    configuration, identity constants, evidence, refusals and validation require (§F.6);
-4. extend `LOAD_BEARING_RELPATHS` **additively** with the decision files that make the newly bound
-   bytes lawful — this decision and the unit's own — removing nothing (§F.7);
+4. extend `LOAD_BEARING_RELPATHS` **additively** with **every** decision file that makes the newly
+   bound bytes lawful — including, at minimum, the parser-governing chain §F.7 enumerates —
+   removing nothing (§F.7);
 5. amend the canonical artifacts **only** in authorization language, in lockstep, and only to the
    extent the rebinding's own authorization identity requires (§F.8);
 6. recompute stale identities and pins **once**, after every authorized byte has stabilized (§F.9);
@@ -136,35 +142,93 @@ separate, bounded pull request may:
 Each is a condition on the authorized unit. **None is satisfied by this filing**, and none may be
 waived by the unit that performs it.
 
+**F.0 — The §M parser defect must be corrected, under separate authority, BEFORE any rebinding.**
+This condition is **conjunctive with every other condition in §F**, not an alternative to any of
+them, and it is not satisfied by disclosure.
+
+§M records a defect that is **live in the exact bytes this grant would otherwise bind**: at module
+identity `12eab05e…604a5` an adverse first formal line whose prefix carries a non-ASCII lookalike is
+**skipped**, so a later canonical approval wins. Rebinding those bytes would install a
+known-fail-open parser as the **accepted enforcement anchor**. That is refused here in terms.
+
+**The current vulnerable module may never be rebound.** `12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5`
+is recorded as a **permanent negative pin**: no rebinding under this grant may bind it, at any time,
+under any reading, however unchanged `main` may be.
+
+Before the authorized rebinding may begin, **all** of the following must be complete, in order, for a
+**separately authorized** parser correction — a unit this decision neither performs nor authorizes:
+
+1. its own accepted governance authorization, filed and merged;
+2. its own implementation correcting the §M defect in
+   `level1_stage1_execution_authorization.py`;
+3. independent **FULL** exact-head review under `OPS-0007` §1, plus any bounded correction and
+   exact-head re-review, so the review holds at its **final** accepted head;
+4. explicit principal exact-head acceptance at that final head;
+5. normal merge;
+6. immediate post-merge verification;
+7. **successful merge-commit CI whose `head_sha` is that unit's exact merge SHA**;
+8. final post-CI verification and lifecycle closure.
+
+**None is individually sufficient; only complete closure of all eight is.** A correction that is
+merged but whose merge-commit CI has not succeeded at its exact merge SHA does **not** satisfy this
+condition, and neither does one whose closure has not been recorded.
+
+**The corrected module is bound through an exact closed identity transition** under §F.3:
+
+| End | Identity |
+|---|---|
+| **Old — the defective bytes, retained as a PERMANENT negative pin, never bound** | SHA-256 `12eab05e…604a5`, blob `b5622f9e…920a` |
+| **New — the corrected bytes** | **derived** from the completed parser-correction lifecycle at that unit's own merge; **never predicted here** |
+
+The new end is deliberately **not** stated as a literal digest: the correction has not been written,
+so any value named here would be a guess. The authorized unit must **derive it from the git object
+store** at the parser correction's own merge and prove it, exactly as §F.1 requires of every other
+identity. A rebinding whose bound module identity equals the old end above **fails this condition
+outright**.
+
+**This decision does not perform, design, schedule or authorize that parser correction.** It states
+only that no rebinding may occur until one exists and is effective.
+
 **F.1 — Bind only stabilized, independently reviewed exact bytes.** The rebinding binds exact
 git-object identities at its own accepted head and its own merge — never a value asserted in prose,
 never a value computed before the bytes stabilized, and never a working-tree value no independent
 review saw.
 
-**F.2 — Bind against the exact merged package, at *this* authorization's own merge.**
+**F.2 — One base rule: equality to the parser-correction merge.**
 
-**The operative rule is equality, not descent.** The authorized unit's base must **equal** the exact
-normal-merge commit that closes this decision's own §J lifecycle — the merge whose first parent is
-`583022a5f2106d61f82d270edadd3520d8b0c55d`, whose second parent is this decision's independently
-reviewed and principal-accepted head, whose merge tree is byte-identical to that accepted head's own
-tree, whose merge-commit CI succeeded at that exact merge SHA, and whose final post-CI closure was
-recorded. That identity is **not stated here as a literal SHA and must never be predicted**: this
-decision has not merged, so the authorized unit must **derive it from this decision's completed
-lifecycle and prove the equality from the git object store**, exactly as every other identity in §F.1
-is derived rather than asserted.
+This condition was reconciled against §F.0. §F.0 makes a separately authorized parser correction a
+**mandatory** prerequisite, and any such correction **must** advance `main`. An absolute
+"equal this decision's own merge" rule and a mandatory intervening merge cannot both hold, so the
+earlier formulation — an absolute equality followed by a generic exception — is **withdrawn and
+replaced**. What follows is the **single, unambiguous** future-base rule; there is no other, and no
+exception clause qualifies it.
 
-**Ancestry is necessary history and explicitly insufficient authority.** The base must still descend
-from `583022a5f2106d61f82d270edadd3520d8b0c55d`, this filing's own verified `main` — but descent
-alone never qualifies a base. *Descends from* proves ancestry; it does not prove scope identity, and
-under a descent-only rule any later commit on `main` would satisfy the requirement while carrying
-bytes no review of this grant ever saw.
+**The authorized unit's base must EQUAL the exact normal-merge commit that closes the required
+parser-correction lifecycle** (§F.0 conditions 1–8) — the merge whose merge-commit CI succeeded at
+that exact merge SHA and whose final post-CI closure was recorded.
 
-**Any intervening `main` commit is drift, and drift is a stop.** If `main` has advanced past this
-decision's own merge when the authorized unit begins, that unit **may not proceed on the strength of
-this authorization**. It must stop and obtain new authority, unless **every** intervening change is
-itself separately authorized **and** admitted into the rebinding through an **explicit closed
-identity transition** under §F.3 — named, bound at both ends, and reviewed. **Intervening bytes are
-never absorbed merely because the base descends from `583022a5…`.**
+That identity is **not stated here as a literal SHA and must never be predicted**: the parser
+correction has not been written, let alone merged. The authorized unit must **derive it from that
+completed lifecycle and prove the equality from the git object store**, exactly as §F.1 requires of
+every other identity.
+
+**Equality, not descent.** *Descends from* proves ancestry; it does not prove scope identity. Under a
+descent-only rule any later commit on `main` would qualify while carrying bytes no review ever saw.
+Ancestry remains **necessary history and explicitly insufficient authority**: the base must still
+descend from this decision's own merge, which must itself be an ancestor of the parser-correction
+merge — but descent alone never qualifies a base.
+
+**No unadmitted intervening drift.** If `main` carries **any** commit between the parser-correction
+merge and the authorized unit's base, that unit **may not proceed on the strength of this
+authorization**. It must stop and obtain new authority, unless **every** such commit is itself
+separately authorized **and** admitted into the rebinding through an **explicit closed identity
+transition** under §F.3 — named, bound at both ends, and reviewed. **Intervening bytes are never
+absorbed merely because the base descends from an approved commit.**
+
+The ordering this rule fixes is therefore exactly: this decision's merge → the parser correction's
+own complete lifecycle and merge → the authorized rebinding's base. A rebinding based on this
+decision's own merge — the state in which the §M defect is still live — **fails this condition**,
+and that is precisely the case the earlier formulation wrongly permitted.
 
 A base asserted from a task brief, a summary, or a moving reference is not a verified base.
 
@@ -219,10 +283,44 @@ rebinding binds bytes; **it does not get to move meaning.** Any change to any of
 
 Coverage must be proved by **exact byte identity**, never asserted by naming.
 
-**F.7 — The trust boundary grows; nothing is removed.** `LOAD_BEARING_RELPATHS` may only be extended,
-and only by the decision files that make the newly bound bytes lawful. Its present membership is
-**18**, independently enumerated at this filing's own base. No existing member may be removed,
-swapped or traded away, and the count must be shown to increase by exactly the additions claimed.
+**F.7 — The trust boundary grows to cover the decisions governing the bound bytes; nothing is
+removed.** `LOAD_BEARING_RELPATHS` may only be extended. Its present membership is **18**,
+independently enumerated at this filing's own base, and it currently binds **eleven** governance
+decisions — but **none** of the decisions that authorized and defined the parser semantics. Directly
+verified at this base: `XASSET-0053`, `XASSET-0055`, `XASSET-0056` and `XASSET-0057` are all
+**absent**. Binding the parser-corrected implementation bytes while leaving their governing decisions
+outside the byte-identity boundary would protect the code and not the authority that defines what the
+code must do — inconsistent with the direct-membership protection §F.6 asserts, and with the
+`XASSET-0041`→`XASSET-0044` precedent, which added the jointly operative correction, implementation,
+authorization and rebinding decisions together.
+
+**Direct membership is therefore required**, at minimum, for every one of:
+
+* `governance/decisions/XASSET-0053-…` — the accepted authorization for the parser correction;
+* `governance/decisions/XASSET-0055-…` — the accepted verdict-boundary governance;
+* `governance/decisions/XASSET-0056-…` — the accepted parser correction as implemented;
+* `governance/decisions/XASSET-0057-…` — **this** decision;
+* the future **rebinding** decision's own file; and
+* **every** future accepted decision that authorizes or implements the §F.0 prerequisite parser
+  correction — however many that turns out to be, including any bounded-correction filing in that
+  chain.
+
+**`XASSET-0054` remains excluded.** Its identifier is **consumed** and its pull request closed
+unmerged, and no decision file for it exists on `main`. It may be admitted **only** if the authorized
+unit produces **independent evidence that it is operative** — never on the strength of appearing in a
+narrative, a related-decisions list, or this enumeration.
+
+**Citation is not membership.** Naming a decision in `related_decisions`, quoting it, deriving from
+it, asserting equivalence with it, inheriting from it, or referring to it in prose is **not** a
+substitute for direct membership in `LOAD_BEARING_RELPATHS`. Only a path present in that tuple is
+inside the byte-identity boundary.
+
+**The final count is derived, never guessed.** This decision deliberately states **no** predicted
+final membership figure: the parser-correction chain's own length is not yet known, so any number
+named here would be invented. The authorized unit must **derive the exact final count and the exact
+closed membership transition from the actual completed chain** — old membership and new membership
+both explicit, both proven from the git object store, per §F.3 — and show that the count increased by
+exactly the additions claimed. No existing member may be removed, swapped or traded away.
 
 **F.8 — Canonical amendment in authorization language only.** The canonical artifacts may be amended
 only to carry the rebinding's own authorization identity, only in lockstep with each other, and only
@@ -279,7 +377,9 @@ The grant in §E **does not extend to**, and the authorized unit **must not** pe
 - changing `targets.yaml`, `holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`, the allocator,
   margin state, charts, ladders, trades or orders;
 - reading, listing, opening or substantively reusing any `risk_lane_boundary` protected `RISK` result;
-- correcting the parser, or making any other non-rebinding change to the merged bytes (§M);
+- correcting the parser itself, or making any other non-rebinding change to the merged bytes —
+  that correction is a **separate** unit, and §F.0 makes its completed lifecycle a mandatory
+  **prerequisite** to the rebinding rather than part of it (§F.0, §M);
 - reopening, re-deriving or re-arguing B1, B2 or B3, or `XASSET-0031`'s `G3`;
 - resolving `XASSET-0024` §K.1, or amending `XASSET-0020` §E.1;
 - consuming any part of `XASSET-0027` §P.1's reserved results PR.
@@ -407,15 +507,20 @@ Three consequences, stated rather than left implicit:
 
 1. **This filing does not repair it, and is not authorized to.** Correcting the parser is a
    production change to a load-bearing path, and it needs its own authorization, its own review and
-   its own lifecycle — the same route `XASSET-0053` §C and `XASSET-0055` §H established.
+   its own lifecycle — the same route `XASSET-0053` §C and `XASSET-0055` §H established. **§F.0
+   makes that correction a mandatory conjunctive prerequisite to any rebinding under this grant**,
+   and pins these defective bytes as a permanent negative pin that may never be bound.
 2. **It does not make Stage 1 executable, and does not weaken any conclusion above.** The digest is
    stale, both predicates are `False`, the lane is `ABSENT`, and `ATTEMPT_1` is unconsumed.
-3. **It bears directly on §F.2, and is not disposed of by being disclosed.** If a separately
-   authorized parser correction lands on `main` before the authorized rebinding begins, that is an
-   **intervening `main` commit**, and §F.2's drift rule applies **without exception**: the rebinding
-   **stops**, and may proceed only under new authority or through an explicit closed identity
-   transition that names the intervening change and binds it at both ends. The rebinding may **not**
-   absorb a parser correction merely because its base descends from this decision's merge.
+3. **It is not disposed of by being disclosed, and disclosure is not a safety precondition.**
+   The earlier text treated a parser correction as a *contingency* — something that, **if** it
+   landed, would trip the drift rule. That was backwards, and it left the more dangerous case open:
+   with **no** correction there is **no** intervening commit, so nothing fired, and the rebinding
+   would have proceeded against the known-defective bytes. **§F.0 now makes the correction
+   mandatory and §F.2 anchors the rebinding base to that correction's own merge.** A rebinding based
+   on this decision's own merge — the state in which this defect is still live — **fails §F.2**.
+   Any commit landing between the parser-correction merge and the rebinding base remains
+   unadmitted drift and a **stop** unless separately authorized and bound at both ends under §F.3.
 
 Nothing here rules on whether the reported behaviour should be corrected, or how. That question is
 **open, unresolved, and outside this grant.**
@@ -451,6 +556,11 @@ uncertain is to stop and disclose, not to resolve it in the direction of more ch
 | Treat `XASSET-0048` §E as still live | It granted **exactly one** unit and `XASSET-0049` consumed it. Reusing a spent grant is the failure mode `XASSET-0043`'s spend record exists to prevent. |
 | Repair the stale digest in this filing | That **is** the rebinding. Performing it here would make this decision its own authority — the regress `XASSET-0029` §E forbids. |
 | Fold the §M parser finding into this grant | It is a production correction to a load-bearing path, not a rebinding. Bundling it would widen a minimal authorization into an unreviewed parser change. |
+| Leave the §M correction as a *contingency* (the original text) | The drift rule fired only in the **safer** case — a fix landing first — and stayed silent in the **more dangerous** one, where no fix lands, nothing drifts, and the known-defective bytes become the accepted enforcement anchor. Disclosure is not a safety precondition. |
+| Withdraw the rebinding grant entirely until a parser correction is effective | Equivalent in safety to §F.0's conjunctive prerequisite, but it discards the authority derivation, the closed-transition discipline and the boundary work, forcing them to be re-derived later from scratch. The prerequisite achieves the same refusal while keeping the analysis intact. |
+| Keep an absolute "equal this decision's merge" rule plus a generic exception | A mandatory parser-correction merge **must** advance `main`, so the absolute rule and the required intervening merge cannot both hold. An absolute-plus-exception formulation reads as two rules and invites a successor to satisfy the wrong one. §F.2 states exactly one. |
+| Predict the corrected module digest or the final `LOAD_BEARING_RELPATHS` count now | Neither exists. The correction is unwritten and the chain's length unknown, so any value stated here would be a guess wearing a pin's clothing — the exact failure §F.1 exists to prevent. Both are required to be **derived** from completed lifecycles. |
+| Admit the parser-governing decisions by citation or equivalence rather than membership | Only a path inside `LOAD_BEARING_RELPATHS` is inside the byte-identity boundary. Citation protects nothing. |
 | Say nothing about the §M finding | It reproduces in the bytes this grant would have bound, and §F.2 turns on whether a correction lands first. Silence would leave the authorized unit unable to recognise the drift condition. |
 | Allow the base to merely descend from this merge | Descent admits arbitrary unreviewed bytes; §F.2's equality rule is the whole point. |
 | Split the future decision and its rebinding across two PRs | Produces a decision whose bound bytes do not exist and a rebinding whose governing text sits outside the identity it binds. |
@@ -458,8 +568,9 @@ uncertain is to stop and disclose, not to resolve it in the direction of more ch
 ## Consequences
 
 One future, separate, bounded pull request may perform the step-8-equivalent rebinding, under §F's
-conditions and §G's withholdings, and **only after** this decision's own seven-condition lifecycle
-closes in full.
+conditions and §G's withholdings, and **only after both**: this decision's own seven-condition
+lifecycle closes in full, **and** the §F.0 parser-correction prerequisite is complete through all
+eight of its own conditions. The grant is conditional, not standing.
 
 Until then the load-bearing digest stays stale **by design**, `_verify_git_anchored_identity()` keeps
 raising `enforcement drift`, both authorization predicates stay `False`, the lane stays `ABSENT`,
@@ -468,4 +579,7 @@ unconsumed, the universe stays **680 / 48 / `73c0965e…5224`**, and **Stage 1 r
 EXECUTABLE**.
 
 The §M finding remains open and unresolved. It is disclosed, reproduced and bounded here; it is
-neither repaired nor authorized to be repaired by this decision.
+neither repaired nor authorized to be repaired by this decision. What **has** changed is its
+standing: it is no longer merely disclosed but is a **hard blocking prerequisite** — the defective
+identity `12eab05e…604a5` is a permanent negative pin that no rebinding under this grant may ever
+bind, and the rebinding's own base is anchored to the correction's merge rather than to this one's.
