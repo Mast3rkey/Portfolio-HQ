@@ -1,0 +1,471 @@
+---
+decision_id: XASSET-0057
+date: 2026-08-26
+status: Proposed
+category: cross_asset_allocation_architecture
+related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0027, XASSET-0029, XASSET-0030, XASSET-0036, XASSET-0037, XASSET-0040, XASSET-0041, XASSET-0042, XASSET-0043, XASSET-0044, XASSET-0045, XASSET-0046, XASSET-0047, XASSET-0048, XASSET-0049, XASSET-0050, XASSET-0051, XASSET-0052, XASSET-0053, XASSET-0055, XASSET-0056, LEVEL2-0001, RISK-0001]
+supporting_artifact: test_level1_stage1_post_parser_correction_rebinding_authorization.py
+---
+
+## Context
+
+`XASSET-0056` merged. Its parser correction is now the merged state of
+`level1_stage1_execution_authorization.py`, and that module's identity therefore no longer matches
+the digest the load-bearing register binds. The mismatch is **deliberate**, it is **fail-closed**,
+and `XASSET-0056` expressly refused to repair it.
+
+This is a **design-only Lane G governance authorization** under `OPS-0009`. It grants authority for
+exactly one future, separate step-8-equivalent rebinding unit. **It performs no rebinding.**
+
+### Live preflight
+
+Every anchor was independently re-resolved from live git and live GitHub before anything was
+edited. Nothing was taken on the authorizing task's word, and no identity below is quoted from a
+brief.
+
+| Fact | Verified |
+|---|---|
+| Base | `583022a5f2106d61f82d270edadd3520d8b0c55d` — GitHub `main`, `origin/main`, the local checkout and this branch's base all equal it |
+| PR #357 | **merged**, `state: closed`, `merged_by: Mast3rkey`, `merged_at 2026-08-25T22:47:15Z` |
+| Merge shape | GitHub's **normal merge**: exactly two parents, parent 1 `29e4969885970d942a5acecc1424fb2e2b080d60`, parent 2 `f1bf3fd0f1f878ccf9db88f15c48059e5e4637e2` — **in that order** |
+| Zero drift at merge | merge tree `8df4624eac7477a7b898e92178bc46be3ff1056b` is **byte-identical** to the accepted head's own tree |
+| Clean review | `5024576065` @ `f1bf3fd…`, by `Mast3rkey`, `OWNER` — approving verdict, **0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE** |
+| Principal acceptance | `issuecomment-5417902549` — `2026-08-25T22:46:38Z`, strictly after the review and strictly before the merge |
+| Post-merge verification | `issuecomment-5417925363` — `2026-08-25T22:48:42Z`, strictly after the merge |
+| Merge-commit CI | run `32907801650`, job `97995562890`, `event: push`, `run_attempt: 1`, `completed`/`success`, **both `head_sha` equal to the exact merge SHA**, 10 of 10 steps `success`, **13 284 passed** |
+| Final closure | `issuecomment-5418040301` — `2026-08-25T22:59:49Z`, strictly after both the post-merge verification and the CI job's completion at `22:58:06Z` |
+| Open pull requests | **zero** |
+| Worktree | clean, single worktree, synchronized with `origin/main` |
+
+**`XASSET-0056` is therefore effective**, by complete closure of all seven conditions, in order.
+
+### The fail-closed condition this unit exists to authorize repairing — later, not here
+
+| | SHA-256 | blob |
+|---|---|---|
+| **Bound** in the load-bearing register | `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541` | `f71b08b4ebe95f161c57cdbb2a924748f13af02d` |
+| **Current merged** module | `12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5` | `b5622f9e412afd604a11cde04317b79c5e57920a` |
+
+`_verify_git_anchored_identity()` is byte-identical to its base and still raises `enforcement
+drift`. Both authorization predicates return `False`. Stage 1 is **NOT EXECUTABLE**.
+
+**This filing does not repair the mismatch, and must not.** The stale digest is the safety property
+holding Stage 1 closed; removing it is precisely the act that requires its own authority, its own
+review and its own lifecycle.
+
+### The question this unit answers
+
+`XASSET-0056` §H recorded the newly derived identity **for** a later rebinding and stated it "is not
+applied by anything here." §J forbade it from performing "a step-8-equivalent rebinding" or
+authorizing "link 5, or any successor unit of any kind." Its closure record repeated the point:
+"**The successor rebinding is a separate, separately authorized work item** — closing this lifecycle
+neither performs it nor authorizes it."
+
+So the successor is **needed and unauthorized**. `XASSET-0048`'s own grant is **spent** — it
+authorized *exactly one* rebinding unit, and `XASSET-0049` consumed it. No live authority exists for
+another. **This decision supplies it, and nothing else.**
+
+## Decision
+
+### A. Determination — `STEP_8_EQUIVALENT_REBINDING_AUTHORIZED`
+
+Exactly **one** future, separate, bounded pull request may perform the step-8-equivalent rebinding
+that reconciles the load-bearing register with the merged `XASSET-0056` bytes.
+
+This determination is **design-only**. It arms nothing, executes nothing, and moves no byte of any
+production module. **Merging this decision performs no rebinding.**
+
+### B. The authority gap, reproduced from accepted text before anything was authorized
+
+Each line below is quoted from an accepted, merged record, not inferred:
+
+1. `XASSET-0048` §E granted "**exactly one** future, separate, bounded pull request" the rebinding
+   authority. That grant is **spent**: `XASSET-0049` is the unit that exercised it, and it is the
+   value `AUTHORIZING_DECISION` still carries.
+2. `XASSET-0056` §H: the derived identity "is **recorded for** a later, separately authorized
+   step-8-equivalent rebinding unit, and is **not applied by anything here**."
+3. `XASSET-0056` §J: this decision and implementation must not "**perform a step-8-equivalent
+   rebinding**, or re-pin any load-bearing or canonical digest," nor "authorize or perform link 5,
+   **or any successor unit of any kind**."
+4. `XASSET-0056`'s closure record: "**The successor rebinding is a separate, separately authorized
+   work item** — closing this lifecycle neither performs it nor authorizes it."
+
+**Conclusion: no live authority existed.** `XASSET-0056` becoming effective did not create one, and
+this filing does not claim that it did. Reading §H's *recording* of an identity as a *grant* to apply
+it is exactly the inference §H's own final clause forecloses, and it is refused here in terms.
+
+### C. Relation to `XASSET-0027` §P.1 — separate, reserved, unconsumed
+
+`XASSET-0027` §P.1's exactly-one **evaluation/results** pull request is **not consumed, replaced, or
+counted against** by this decision or by the unit it authorizes. It remains reserved and unspent, on
+the same three independent grounds `XASSET-0036` recorded: §P.1's own text forbids its PR from making
+any production configuration change, while a rebinding is nothing but such a change; the deliverables
+differ (outputs versus implementation); and the two sit on **opposite sides of arming**.
+
+### D. Relation to `XASSET-0029` §E — not an activation PR, zero activation authorizations
+
+`XASSET-0029` §E's no-infinite-authorization-regress rule stays **intact and unweakened**. This is
+**not** an activation PR: it generates no attestation, arms nothing, and adds **zero** activation
+authorizations. `stage_1_executability.executable` stays permanently `false`. Final activation
+remains the external one-shot runtime attestation and the operator's act — **never** another merged
+authorization PR.
+
+### E. Authority granted — exactly one future, separate rebinding unit
+
+Effective only on this decision's own complete lifecycle closure (§J), **exactly one** future,
+separate, bounded pull request may:
+
+1. file its **own** rebinding decision record, under the next `XASSET-####` identifier **verified
+   unused against live repository state at the time it is filed** — never predicted, reserved, or
+   named here;
+2. rebind the effective structural authorization source to that decision, and rebind
+   `AUTHORIZING_PULL_REQUEST` and `REVIEWED_BASE_SHA` to that unit's own verified pull request and
+   verified base (§F.1, §F.2, §F.3);
+3. edit `level1_stage1_execution_authorization.py` **only** to the extent that unit's own
+   configuration, identity constants, evidence, refusals and validation require (§F.6);
+4. extend `LOAD_BEARING_RELPATHS` **additively** with the decision files that make the newly bound
+   bytes lawful — this decision and the unit's own — removing nothing (§F.7);
+5. amend the canonical artifacts **only** in authorization language, in lockstep, and only to the
+   extent the rebinding's own authorization identity requires (§F.8);
+6. recompute stale identities and pins **once**, after every authorized byte has stabilized (§F.9);
+7. synchronize `governance/decisions.yaml` and the `WS-0014` register, and update the tests that pin
+   the values it lawfully changes, **without weakening any of them**.
+
+### F. The required properties of the authorized rebinding
+
+Each is a condition on the authorized unit. **None is satisfied by this filing**, and none may be
+waived by the unit that performs it.
+
+**F.1 — Bind only stabilized, independently reviewed exact bytes.** The rebinding binds exact
+git-object identities at its own accepted head and its own merge — never a value asserted in prose,
+never a value computed before the bytes stabilized, and never a working-tree value no independent
+review saw.
+
+**F.2 — Bind against the exact merged package, at *this* authorization's own merge.**
+
+**The operative rule is equality, not descent.** The authorized unit's base must **equal** the exact
+normal-merge commit that closes this decision's own §J lifecycle — the merge whose first parent is
+`583022a5f2106d61f82d270edadd3520d8b0c55d`, whose second parent is this decision's independently
+reviewed and principal-accepted head, whose merge tree is byte-identical to that accepted head's own
+tree, whose merge-commit CI succeeded at that exact merge SHA, and whose final post-CI closure was
+recorded. That identity is **not stated here as a literal SHA and must never be predicted**: this
+decision has not merged, so the authorized unit must **derive it from this decision's completed
+lifecycle and prove the equality from the git object store**, exactly as every other identity in §F.1
+is derived rather than asserted.
+
+**Ancestry is necessary history and explicitly insufficient authority.** The base must still descend
+from `583022a5f2106d61f82d270edadd3520d8b0c55d`, this filing's own verified `main` — but descent
+alone never qualifies a base. *Descends from* proves ancestry; it does not prove scope identity, and
+under a descent-only rule any later commit on `main` would satisfy the requirement while carrying
+bytes no review of this grant ever saw.
+
+**Any intervening `main` commit is drift, and drift is a stop.** If `main` has advanced past this
+decision's own merge when the authorized unit begins, that unit **may not proceed on the strength of
+this authorization**. It must stop and obtain new authority, unless **every** intervening change is
+itself separately authorized **and** admitted into the rebinding through an **explicit closed
+identity transition** under §F.3 — named, bound at both ends, and reviewed. **Intervening bytes are
+never absorbed merely because the base descends from `583022a5…`.**
+
+A base asserted from a task brief, a summary, or a moving reference is not a verified base.
+
+**F.3 — Exact closed transitions, bound at both ends.** Every value the rebinding moves — each
+rebound constant, each hash pin, each identity family member, each `LOAD_BEARING_RELPATHS` membership
+change, and the lifecycle anchor itself — must be recorded as an **exact closed transition**: the old
+value and the new value, both explicit, both independently proven from the git object store, with the
+old value **preserved rather than overwritten** in the record. A value that moves without both ends
+bound is drift wearing a rebinding's label.
+
+For the load-bearing module specifically, the transition's two ends are already known and are stated
+here so the rebinding cannot silently substitute either:
+
+| End | SHA-256 | blob |
+|---|---|---|
+| **Old — retained, never discarded** | `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541` | `f71b08b4ebe95f161c57cdbb2a924748f13af02d` |
+| **New — the merged `XASSET-0056` bytes** | `12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5` | `b5622f9e412afd604a11cde04317b79c5e57920a` |
+
+If the rebinding's own authorized edits change that module further, the **new** end moves to the
+value the stabilized bytes actually carry (§F.9) — but the **old** end above is fixed, and it is
+retained as a negative pin rather than replaced.
+
+The lifecycle anchor's three members transition from their present, independently verified values:
+
+| Constant | Old — retained | New |
+|---|---|---|
+| `AUTHORIZING_DECISION` | `XASSET-0049` | the authorized unit's own decision identifier |
+| `AUTHORIZING_PULL_REQUEST` | `349` | that unit's own GitHub-issued number, read back live |
+| `REVIEWED_BASE_SHA` | `f052efad38e3d57e3e5615799ac3bcbebe83ff5f` | that unit's own verified base (§F.2) |
+
+**F.4 — The smallest strictly necessary rebinding.** The authorized unit performs the **minimum**
+change that reconciles the register with the merged bytes and makes its own newly bound identity
+lawful. Convenience edits, opportunistic refactors, cleanups, adjacent improvements and
+"while we are here" changes are **outside this grant**. If the unit finds a change it believes
+necessary but which is not strictly required by the rebinding, it **stops and discloses**, and does
+not decide the question silently.
+
+**F.5 — Preserve the outcome surface's semantics.** The deterministic runner, the result
+writer/serializer, the result validator, the universe closure validator, the deterministic derivation
+surface, the canonical construction inputs, the frozen construction identities, their **ordering**,
+the cardinality **680 / 48**, the aggregate universe hash `73c0965e…5224`, `comparison_subject_kind`,
+`unordered_pair_id`, every gate, every disposition rule, the accepted B1 / B2 / B3 semantics, and
+every protected portfolio and `risk_lane_boundary` `RISK` path are **preserved unchanged**. The
+rebinding binds bytes; **it does not get to move meaning.** Any change to any of them requires its
+**own separate, express** authorization and is outside this grant.
+
+**F.6 — Bind canonical, enforcement, and *all* outcome-producing executable bytes.** This is
+`XASSET-0030` §G.B's governing invariant, restated unchanged and not narrowed:
+
+> **No outcome-producing executable code may be created, changed, or left outside the bound execution
+> identity after the final rebinding and before `ATTEMPT_1`.**
+
+Coverage must be proved by **exact byte identity**, never asserted by naming.
+
+**F.7 — The trust boundary grows; nothing is removed.** `LOAD_BEARING_RELPATHS` may only be extended,
+and only by the decision files that make the newly bound bytes lawful. Its present membership is
+**18**, independently enumerated at this filing's own base. No existing member may be removed,
+swapped or traded away, and the count must be shown to increase by exactly the additions claimed.
+
+**F.8 — Canonical amendment in authorization language only.** The canonical artifacts may be amended
+only to carry the rebinding's own authorization identity, only in lockstep with each other, and only
+to the extent the rebinding requires. No gate, threshold, disposition rule, universe value or
+evidence rule may move under cover of a canonical amendment. `stage_1_executability.executable`
+stays `false`.
+
+**F.9 — Recompute identities and pins once, and last.** Stale module identities and canonical pins
+are recomputed exactly once, strictly after every authorized byte has stabilized, so no pin carried
+forward from a superseded head survives into the merged unit.
+
+**F.10 — Preserve all adverse history and every predecessor identity.** `XASSET-0044` and
+`XASSET-0045` remain **not effective**; `XASSET-0043` remains **spent**; `XASSET-0040` remains spent
+as `STOPPED_BEFORE_ATTESTATION`; `XASSET-0054` remains **consumed and never reused**. Every retained
+negative pin — including the five superseded module identities `XASSET-0056` §H carried forward — is
+preserved. Both failed merge-commit CI runs and both auditable stop records remain **immutable
+adverse history**, and none may be re-run in place, relabelled successful, deleted, suppressed,
+waived, or described as passing.
+
+**F.11 — Validation the authorized unit must complete before it is offered for review.** Full
+repository suite green; its own focused suite green; **adversarial mutation proofs** demonstrating
+its own assertions are non-vacuous, with every probed path restored byte-identically and
+SHA-256-verified independently of the probe harness; **exact-head CI** green; a **simulated
+normal-merge verification** proving the merge tree is byte-identical to the accepted head's tree with
+two ordered parents and zero conflicts; a **working-tree residue check** proving no probe, rehearsal
+or scratch artifact survives; and an explicit **zero-write rehearsal** proving both authorization
+predicates remain `False`, the lane remains `ABSENT`, `AUTHORIZATION_ROOT` is absent, no results
+artifact exists, and `ATTEMPT_1` is intact, unclaimed and unconsumed.
+
+**F.12 — One unit, one pull request, full lifecycle.** The rebinding decision and the rebinding
+itself belong in the same coherent pull request, exactly as `XASSET-0037`, `XASSET-0044` and
+`XASSET-0049` each were — splitting them produces a decision whose bound bytes do not yet exist, and
+a rebinding whose governing text is not yet inside the identity it binds. That pull request must
+complete the full seven-condition lifecycle in §J. A future session finding a concrete technical
+reason to package this differently must **stop and disclose**, never decide it silently.
+
+### G. Authority withheld — absolute
+
+The grant in §E **does not extend to**, and the authorized unit **must not** perform:
+
+- renewed readiness verification (`XASSET-0030` §G.B step 9 / `XASSET-0041` §I link 3);
+- renewed drift verification (§G.B step 10 / link 4);
+- **Step 11** in any part (§G.B step 11 / link 5) — `XASSET-0040` stays spent as a stop;
+- generating, pre-staging or validating any **attestation**;
+- creating `READY`, `CLAIMED` or `COMPLETED` lane state, writing `AUTHORIZATION_ROOT`, or writing the
+  lane ledger;
+- **arming** Stage 1, or setting `stage_1_executability.executable` to anything but `false`;
+- **claiming** or consuming any part of `ATTEMPT_1`;
+- evaluating any gate for any registered construction;
+- executing Stage 1, or performing any results work;
+- producing a `stage1_results.yaml`, a per-construction disposition, a cell outcome or a roll-up;
+- acquiring market, fundamental, economic or Stage-2 data, or any Stage 2 work;
+- creating any endpoint, bound, point, range, **percentage**, weight, rank, target or allocation;
+- changing `targets.yaml`, `holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`, the allocator,
+  margin state, charts, ladders, trades or orders;
+- reading, listing, opening or substantively reusing any `risk_lane_boundary` protected `RISK` result;
+- correcting the parser, or making any other non-rebinding change to the merged bytes (§M);
+- reopening, re-deriving or re-arguing B1, B2 or B3, or `XASSET-0031`'s `G3`;
+- resolving `XASSET-0024` §K.1, or amending `XASSET-0020` §E.1;
+- consuming any part of `XASSET-0027` §P.1's reserved results PR.
+
+**Links 3, 4 and 5 each require their own separate authority and their own complete lifecycle.**
+Completing the rebinding authorizes the next link no more than a clean step-10 result authorized
+step 11 — the inference `XASSET-0039` §K already foreclosed and `XASSET-0041` §I restated.
+
+### H. Packaging — one authorization, one rebinding unit
+
+This decision grants authority and performs no production mutation. The rebinding is a separate unit,
+in a separate pull request, with its own decision record, its own review and its own lifecycle.
+
+Its scope here is deliberately minimal: this decision file, its mechanism-based supporting test
+module, the decision catalog row, and the factual `WS-0014` synchronization the register's own live
+fields require. Advancing the register's shared `active_branch` / `active_pr` /
+`last_verified_main_sha` fields necessarily re-anchors the coupled predecessor suite that pins them
+onto this unit as the named successor, retaining the predecessor's own values as negative pins so the
+fields stay bound at **both** ends; that is disclosed as consequential, not silent, and **no pinned
+value is weakened or removed**.
+
+### I. Fail-closed
+
+Every unobtainable fact is an **error**, never silent agreement. Ambiguity, drift, a competing
+worktree, a dirty tree, an unexpected open pull request, or any condition that would require
+expanding this authority is a **stop**, not a judgement call. This applies to the authorized unit
+exactly as it applied to this filing.
+
+### J. Effectivity — the rebinding may not begin before this lifecycle closes
+
+This authorization becomes effective **only** after **all** of the following are complete for this
+decision's final accepted head and the resulting merge:
+
+1. independent **FULL** exact-head review under `OPS-0007` §1;
+2. any required bounded correction and exact-head re-review, so condition 1 holds at the **final**
+   accepted head;
+3. explicit principal exact-head acceptance at that final head;
+4. normal merge;
+5. immediate post-merge verification;
+6. **successful merge-commit CI whose `head_sha` is the exact merge SHA** — not the PR head's own
+   run, and not a run against any other commit;
+7. final post-CI verification and lifecycle closure.
+
+**None is individually sufficient.** Opening this pull request authorizes nothing; a green PR-head CI
+run does not; principal acceptance does not; merge does not; and post-merge verification without a
+successful exact merge-commit CI run does not. **Only complete closure of all seven does.**
+
+These seven mirror the repository's own committed definition —
+`level1_stage1_execution_authorization.REQUIRED_LIFECYCLE_GATES`, a **six-element tuple**. The tuple
+is not itself a repository path; the **module that contains it**,
+`level1_stage1_execution_authorization.py`, is one of the eighteen load-bearing paths. **That module
+is cited only and is byte-unchanged by this filing.** Conditions 5–7 are that tuple's last three
+members; condition 2 is the exact-head discipline `OPS-0009` §6 applies to condition 1.
+`XASSET-0035`'s own lifecycle omission — an enumeration naming four of six gates — is not repeated.
+
+**Merging this decision performs no rebinding and arms nothing.**
+
+### K. This filing can attain both green PR-head and green merge-commit CI
+
+The condition both `XASSET-0044` and `XASSET-0045` permanently failed is condition 6, so this filing
+states its attainability rather than assuming it. This unit adds one decision file, one test module,
+one catalog row, and factual register and coupled-suite synchronization. It changes **no** production
+module, **no** canonical artifact, **no** validator, **no** runner and **no** universe value. Its
+supporting artifact proves its historical claims over **immutable commit ranges only**, and the full
+repository suite is additionally run at a **simulated merged-`main` state where `HEAD` equals
+`origin/main`** — the exact ref position that broke PR #345's assertions — before this filing is
+offered for review.
+
+No statement anywhere in this decision disclaims the ability to obtain successful merge-commit CI at
+its own exact merge SHA. Such a statement would make §J.6 unreachable by construction, which is the
+deadlock `XASSET-0045` shipped at its first reviewed head, and it is refused here in terms.
+
+### L. Absolute non-authorization
+
+This decision generates no `XASSET-0029` attestation and creates no `READY`, `CLAIMED` or `COMPLETED`
+lane state; creates no `AUTHORIZATION_ROOT`; arms and executes no Stage 1; creates no Stage-1 runner,
+result writer, serializer, result validator or `stage1_results.yaml`; consumes nothing of
+`ATTEMPT_1`; **evaluates no gate for any construction and asserts no per-construction outcome**;
+closes no gate on satisfaction and changes no gate's class, index, question, controlling authority or
+failure disposition; **performs no rebinding**, corrects no parser, corrects no validator, extends no
+`LOAD_BEARING_RELPATHS`, edits `level1_stage1_execution_authorization.py` **not at all**, and moves no
+lifecycle anchor; **amends no canonical file and changes no hash pin, universe, cardinality,
+`comparison_subject_kind`, `unordered_pair_id` or construction identity**; performs no part of
+`XASSET-0030` §G.B steps 9, 10 or 11 and enters none of them; treats neither `XASSET-0044` nor
+`XASSET-0045` as effective and revives neither `XASSET-0040` nor either stopped lifecycle; reuses
+neither `XASSET-0054` nor any consumed identifier; consumes no part of `XASSET-0027` §P.1's reserved
+results PR; acquires no market, fundamental, economic or Stage-2 data; resolves `XASSET-0024` §K.1
+neither way and leaves `XASSET-0020` §E.1 unamended; reopens neither B1, B2 nor B3, and leaves
+`XASSET-0031`'s `G3` untouched; grants no Stage 2 and no application authority; selects no sleeve and
+creates no endpoint, bound, point, range, **percentage**, weight, rank, target or allocation; weakens
+no validator and no test; **reads, lists, opens or references no `risk_lane_boundary` protected result
+path** and reuses no `RISK` scenario, value, parameter, window or result; changes no `targets.yaml`,
+`holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`, allocator, tier, cluster, cap or margin
+state; authorizes no chart, ladder, deployment, trade, order or brokerage action; and rewrites no
+accepted history.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE. The lane is ABSENT. `ATTEMPT_1` is intact, unclaimed
+and unconsumed.**
+
+### M. Disclosed — a reproduced, unresolved finding in the bytes this grant would have bound
+
+A **post-merge** automated review, `5025021718`, was submitted by `chatgpt-codex-connector[bot]`
+(`author_association: NONE`) at `2026-08-25T22:49:47Z` — **after** the merge at `22:47:15Z` and after
+the post-merge verification at `22:48:42Z`, and **before** the final closure at `22:59:49Z`. It is
+therefore **not** part of the accepted `XASSET-0056` lifecycle, and it did not participate in the
+independent review chain that produced verdict `5024576065`.
+
+It reports a residual prefix-tampering bypass. Under this repository's own standing guardrail —
+*verify before acting on external review* — the claim was **executed against the merged bytes rather
+than believed or dismissed**, read-only, through the pure parsing function alone:
+
+| Probe | Result at merged `12eab05e…` |
+|---|---|
+| `FORMAL DISP` + U+039F + `SITION:` adverse first line, then a canonical approval | adverse line **skipped**; the later approval wins |
+| U+0410 CYRILLIC CAPITAL A in the prefix, same shape | adverse line **skipped**; the later approval wins |
+| U+0130 LATIN CAPITAL I WITH DOT in the prefix, same shape | adverse line **skipped**; the later approval wins |
+| A homoglyph in the **verdict** rather than the prefix | correctly adverse — **no** bypass |
+| A homoglyph prefix **alone**, with no later approval | returns no verdict — **no** direct authentication |
+
+**The finding reproduces, and it is bounded.** The failure family is a *first-formal-line skip* when a
+prefix-interior homoglyph's uppercase form remains non-ASCII, so the wide resemblance view deletes it
+instead of recognising it. A tampered prefix still **cannot** directly authenticate.
+
+Three consequences, stated rather than left implicit:
+
+1. **This filing does not repair it, and is not authorized to.** Correcting the parser is a
+   production change to a load-bearing path, and it needs its own authorization, its own review and
+   its own lifecycle — the same route `XASSET-0053` §C and `XASSET-0055` §H established.
+2. **It does not make Stage 1 executable, and does not weaken any conclusion above.** The digest is
+   stale, both predicates are `False`, the lane is `ABSENT`, and `ATTEMPT_1` is unconsumed.
+3. **It bears directly on §F.2, and is not disposed of by being disclosed.** If a separately
+   authorized parser correction lands on `main` before the authorized rebinding begins, that is an
+   **intervening `main` commit**, and §F.2's drift rule applies **without exception**: the rebinding
+   **stops**, and may proceed only under new authority or through an explicit closed identity
+   transition that names the intervening change and binds it at both ends. The rebinding may **not**
+   absorb a parser correction merely because its base descends from this decision's merge.
+
+Nothing here rules on whether the reported behaviour should be corrected, or how. That question is
+**open, unresolved, and outside this grant.**
+
+## Rationale
+
+The programme is in the state that most reliably produces an unauthorized action: a **known
+defect**, a **known fix**, an **obvious next step**, and **no live authority for it**. `XASSET-0048`'s
+grant is spent. `XASSET-0056` refused the successor three separate times — in §H, in §J, and in its
+closure record — and each refusal was written by the unit best positioned to grant it. Treating any
+of those as an implicit grant would convert a deliberate withholding into its opposite.
+
+The base rule is stated as **equality** rather than descent for the reason `XASSET-0048` first gave
+and this filing does not dilute: descent proves ancestry, not scope. Under a descent-only rule, any
+future commit on `main` would qualify, and the rebinding would silently bind bytes no review of this
+grant ever examined. The homoglyph finding in §M makes that risk concrete rather than theoretical —
+a parser correction is a genuinely plausible next commit on `main`, and it is precisely the kind of
+change a descent-only rule would let a rebinding absorb without review.
+
+Closed transitions bound at both ends exist because a rebinding that overwrites a predecessor
+identity destroys the evidence needed to detect a substitution. Preserving the old value costs one
+line and converts an unfalsifiable claim into a checkable one.
+
+Minimality (§F.4) is stated as an operative condition rather than a preference because a rebinding
+touches the one module the whole fail-closed boundary rests on. The safe posture when scope is
+uncertain is to stop and disclose, not to resolve it in the direction of more change.
+
+## Alternatives considered
+
+| Alternative | Rejected because |
+|---|---|
+| Treat `XASSET-0056` §H's recorded identity as the grant | §H's own final clause says it "is **not applied by anything here**," and §J forbids the successor outright. This is the exact inference the text forecloses. |
+| Treat `XASSET-0048` §E as still live | It granted **exactly one** unit and `XASSET-0049` consumed it. Reusing a spent grant is the failure mode `XASSET-0043`'s spend record exists to prevent. |
+| Repair the stale digest in this filing | That **is** the rebinding. Performing it here would make this decision its own authority — the regress `XASSET-0029` §E forbids. |
+| Fold the §M parser finding into this grant | It is a production correction to a load-bearing path, not a rebinding. Bundling it would widen a minimal authorization into an unreviewed parser change. |
+| Say nothing about the §M finding | It reproduces in the bytes this grant would have bound, and §F.2 turns on whether a correction lands first. Silence would leave the authorized unit unable to recognise the drift condition. |
+| Allow the base to merely descend from this merge | Descent admits arbitrary unreviewed bytes; §F.2's equality rule is the whole point. |
+| Split the future decision and its rebinding across two PRs | Produces a decision whose bound bytes do not exist and a rebinding whose governing text sits outside the identity it binds. |
+
+## Consequences
+
+One future, separate, bounded pull request may perform the step-8-equivalent rebinding, under §F's
+conditions and §G's withholdings, and **only after** this decision's own seven-condition lifecycle
+closes in full.
+
+Until then the load-bearing digest stays stale **by design**, `_verify_git_anchored_identity()` keeps
+raising `enforcement drift`, both authorization predicates stay `False`, the lane stays `ABSENT`,
+`AUTHORIZATION_ROOT` stays absent, no results artifact exists, `ATTEMPT_1` stays intact and
+unconsumed, the universe stays **680 / 48 / `73c0965e…5224`**, and **Stage 1 remains UNARMED and NOT
+EXECUTABLE**.
+
+The §M finding remains open and unresolved. It is disclosed, reproduced and bounded here; it is
+neither repaired nor authorized to be repaired by this decision.

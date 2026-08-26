@@ -740,10 +740,19 @@ class TestCatalogAndRegisterSynchronisation:
         # parser-correction implementation that is now live. Each stays an exact value, and
         # every superseded value is retained below as a negative pin, so the field is bound at
         # BOTH ends rather than only at one.
+        # ADVANCED BY XASSET-0057: WS-0014's SINGLE SHARED live field names whichever unit
+        # is live. Bound at BOTH ends -- the exact current value, and the predecessor's
+        # own value retained as a NEGATIVE pin so a silent revert still fails here.
         assert ws0014["active_branch"] == (
+            "claude/xasset-successor-authorization-3b0btg"
+        )
+        assert ws0014["active_branch"] != (
             "claude/xasset-0055-parser-correction-c3ro29"
         )
         assert ws0014["last_verified_main_sha"] == (
+            "583022a5f2106d61f82d270edadd3520d8b0c55d"
+        )
+        assert ws0014["last_verified_main_sha"] != (
             "29e4969885970d942a5acecc1424fb2e2b080d60"
         )
         assert ws0014["active_branch"] != (
@@ -793,7 +802,8 @@ class TestCatalogAndRegisterSynchronisation:
             "bb95ed26964b1bc7a2e230c76060fec82752efa1"
         )
         # ADVANCED BY XASSET-0053, with the shared fields above. Bound at BOTH ends.
-        assert str(ws0014["last_verified_date"]) == "2026-08-25"
+        assert str(ws0014["last_verified_date"]) == "2026-08-26"
+        assert str(ws0014["last_verified_date"]) != "2026-08-25"
         assert str(ws0014["last_verified_date"]) != "2026-08-24"
         assert str(ws0014["last_verified_date"]) != "2026-08-23"
         # PR #343's, #344's, #345's and #346's own closed records survive in the register as

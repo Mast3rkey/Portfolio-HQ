@@ -92,12 +92,12 @@ THIS_PULL_REQUEST = 356
 #: and its own GATE -- which does not move and still carries the real number GitHub issued --
 #: becomes the durable anchor for the assertions that were really about this unit.
 SUCCESSOR_DECISION = "XASSET-0056"
-SUCCESSOR_BRANCH = "claude/xasset-0055-parser-correction-c3ro29"
-SUCCESSOR_MAIN_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
+SUCCESSOR_BRANCH = "claude/xasset-successor-authorization-3b0btg"
+SUCCESSOR_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 THIS_GATE = "xasset0055-verdict-boundary-governance"
 #: Every decision appended to the catalog AFTER this one. Stated EXACTLY by name rather than
 #: relaxed to "present somewhere in the list".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0056",)
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0056", "XASSET-0057")
 
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
 
@@ -919,8 +919,14 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             # now a NEGATIVE pin: a silent revert to this finished unit's state must fail
             assert "!= XASSET0055_MAIN_SHA" in live, name
             # and the successor is the positive pin, named exactly
-            assert f'XASSET0056_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
-            assert "== XASSET0056_MAIN_SHA" in live, name
+            # ADVANCED BY XASSET-0057, on exactly the terms this docstring already states.
+            # XASSET-0056's own constant is now itself a NEGATIVE pin -- retained with its exact
+            # value, never deleted -- and the newly named successor is the positive pin, so the
+            # chain stays bound at EVERY end rather than only the two most recent.
+            assert f'XASSET0056_MAIN_SHA = "{MERGE_SHA}"' in live, name
+            assert "!= XASSET0056_MAIN_SHA" in live, name
+            assert f'XASSET0057_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            assert "== XASSET0057_MAIN_SHA" in live, name
             # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
             # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
             # itself in the third person -- so the constant is asserted exactly where it is

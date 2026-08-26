@@ -47,6 +47,16 @@ WORKSTREAMS = ROOT / "operations/WORKSTREAMS.yaml"
 #: This unit's base: the merge that made XASSET-0055 EFFECTIVE.
 BASE_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
 
+#: ADDED BY XASSET-0057. This unit's own NORMAL MERGE -- exactly two parents, parent 1 the
+#: BASE_SHA above, parent 2 the accepted head, merge tree byte-identical to that head's own
+#: tree. It is IMMUTABLE, so historical claims anchored to it stay permanently true no matter
+#: what a successor later does to the working tree.
+MERGE_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
+
+#: ADDED BY XASSET-0057. Decisions catalogued AFTER this one, named exactly so "last" stays an
+#: EXACT index rather than being relaxed to "present".
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0057",)
+
 #: The module's identity AT THE BASE -- the value the bound merge still carries, and which this
 #: correction lawfully and deliberately makes stale.
 BASE_MODULE_SHA256 = "4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541"
@@ -2610,9 +2620,14 @@ def _measured_changed_file_assertions() -> int:
         if line.startswith("A\t")
     }
     assert added, "the new suite must appear as an ADDED file in this range"
+    # RE-ANCHORED BY XASSET-0057: read each changed file AT THIS UNIT'S OWN MERGE rather than
+    # from the live working tree. The paths already come from an immutable diff range, so
+    # reading live content made a historical figure drift whenever any successor edited one of
+    # those same files. Anchoring both halves to immutable objects makes the claim permanently
+    # true -- strictly stronger than before, and relaxed in no respect.
     return sum(
         sum(
-            1 for node in ast.walk(ast.parse((ROOT / relpath).read_text(encoding="utf-8")))
+            1 for node in ast.walk(ast.parse(_git("show", f"{MERGE_SHA}:{relpath}")))
             if isinstance(node, ast.Assert)
         )
         for relpath in changed
@@ -2636,12 +2651,15 @@ class TestTheGovernanceRecord:
 
     def test_the_decision_is_catalogued_last(self):
         ids = self._catalog_ids()
-        assert ids[-1] == DECISION_ID
+        # RE-ANCHORED BY XASSET-0057: successors append after this decision, so "last" is stated
+        # EXACTLY against the named successor set rather than relaxed to "present".
+        assert ids[len(ids) - 1 - len(SUCCESSORS_APPENDED_SINCE)] == DECISION_ID
+        assert tuple(ids[ids.index(DECISION_ID) + 1:]) == SUCCESSORS_APPENDED_SINCE
         assert ids.count(DECISION_ID) == 1
 
     def test_the_catalogued_file_path_resolves(self):
         data = yaml.safe_load(CATALOG.read_text(encoding="utf-8"))
-        entry = data["decisions"][-1]
+        entry = data["decisions"][-1 - len(SUCCESSORS_APPENDED_SINCE)]
         assert entry["decision_id"] == DECISION_ID
         assert (ROOT / entry["file"]).exists()
         assert entry["supporting_artifact"] == Path(__file__).name
@@ -2886,8 +2904,12 @@ class TestTheGovernanceRecord:
         return int(found.group(1))
 
     def test_the_stated_suite_assertion_count_equals_the_measured_one(self):
+        # RE-ANCHORED BY XASSET-0057: measure THIS SUITE AT THIS UNIT'S OWN MERGE rather than in
+        # the live working tree. The recorded figure is a historical claim about what this unit
+        # shipped, so reading live content made it drift the moment a successor lawfully
+        # re-anchored a constant here. Anchored to an immutable object it is permanently true.
         measured = sum(
-            1 for node in ast.walk(ast.parse(Path(__file__).read_text(encoding="utf-8")))
+            1 for node in ast.walk(ast.parse(_git("show", f"{MERGE_SHA}:{Path(__file__).name}")))
             if isinstance(node, ast.Assert)
         )
         decision = self._stated(
