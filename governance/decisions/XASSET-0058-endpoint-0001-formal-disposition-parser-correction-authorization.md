@@ -192,10 +192,22 @@ For a raw line `L`:
 5. `L` is a candidate iff **any** of its projections is.
 
 **The edit budget is exactly one.** `1` is a **`NUM-0001` class 5 provisional governance
-guardrail**, not an empirically calibrated value: it is the smallest budget that closes the entire
-measured family (§C), and it is the largest budget for which the measured false-positive count over
-both corpora is zero (§D.5). It is reviewed if a future measured mutation family requires two or
-more edits, or if a measured prose regression appears at one.
+guardrail**, not an empirically calibrated value, and its justification is stated precisely because
+an imprecise one would be exactly the unsupported-parameter defect `NUM-0001` exists to catch.
+
+It is **the smallest budget that closes the entire measured family** (§C) — every one of the 85
+cells is a single-character mutation by construction, so nothing smaller can reach them and nothing
+larger is needed to.
+
+It is **not** selected as a false-positive ceiling, and this filing does not claim it is: budgets of
+**2 and 3 were also measured, and each likewise produces zero** ABSENT→MALFORMED regressions over
+both corpora. The measurement is recorded rather than omitted, because it shows the budget was
+chosen on *sufficiency and restraint* — a rule whose only effect is to add fail-closed refusals
+should be no wider than the evidence requires — and **not** because a wider budget was observed to
+misfire. Widening it later is therefore an evidence question, not a safety one.
+
+It is reviewed if a future measured mutation family requires two or more edits to reach, or if a
+measured prose regression ever appears at one.
 
 #### D.3 — What every mutation family becomes. Each named and decided.
 
@@ -227,7 +239,7 @@ every line falls in exactly one of the two classes, and no input is undefined.
 | Corpus | Size | Lines that are **ABSENT today** and would become **MALFORMED** |
 |---|---|---|
 | Every line of every tracked repository Markdown file — *409 files / **131 143 lines** at this filing's base, the corpus the boundary was selected against; **410 files / 131 685 lines** at this filing's own head, which additionally includes this decision file itself. **Zero** either way — the supporting artifact measures the live corpus, so it proves the self-inclusive figure* | 409→410 files, **131 143→131 685 lines** | **0** |
-| Every line of every real review and comment body on PRs 320–358 — *measured live in this filing session; network-dependent and therefore not re-derivable offline, so the supporting artifact proves the Markdown corpus above plus every real review-body line committed in this repository's own fixtures* | 317 bodies, **19 741 lines** | **0** |
+| Every line of every real review and comment body on PRs 320–358 — *measured live in this filing session; network-dependent and therefore **not re-derivable offline**, so the supporting artifact cannot re-prove this row and does not pretend to. What it proves offline is the Markdown corpus above, plus the **one** real historical review line this repository actually commits as a fixture (`REVIEW_5000581301_LINE`) — one, not a corpus, stated exactly rather than implied* | 317 bodies, **19 741 lines** | **0** |
 
 On the real historical corpus the **whole-body** verdict is unchanged for **317 / 317** bodies: all
 **27** bodies that authenticate today still authenticate, and all **54** bodies carrying an adverse

@@ -572,6 +572,50 @@ class TestTheDecidedBoundaryClosesTheWholeFamily:
         assert hook_is_reachable(f"{label}: {ADVERSE_VERDICT}"), (family, index)
 
 
+class TestTheEditBudgetIsJustifiedExactly:
+    """SS-D.2's `NUM-0001` class 5 justification, proved rather than asserted."""
+
+    def _candidate_at(self, line: str, cap: int) -> bool:
+        for projection in projections(line):
+            colon = projection.find(":", 0, len(CANON_LABEL) + cap + 1)
+            if colon == -1:
+                continue
+            if abs(colon - len(CANON_LABEL)) > cap:
+                continue
+            if osa(ascii_fold(projection[:colon]), CANON_LABEL, cap=cap) <= cap:
+                return True
+        return False
+
+    def test_one_is_the_smallest_budget_that_closes_the_family(self):
+        """Every cell is a single-character mutation, so a budget of zero reaches none of them
+        and a budget of one reaches all of them."""
+        at_zero = [l for _, _, l in MUTANTS
+                   if self._candidate_at(f"{l}: {ADVERSE_VERDICT}", 0)]
+        at_one = [l for _, _, l in MUTANTS
+                  if self._candidate_at(f"{l}: {ADVERSE_VERDICT}", 1)]
+        assert at_zero == []
+        assert len(at_one) == 85
+
+    def test_a_wider_budget_is_NOT_ruled_out_by_a_measured_false_positive(self, markdown_corpus):
+        """SS-D.2 states this explicitly rather than implying the budget is a safety ceiling.
+        The decision would be MISLEADING if a wider budget did in fact misfire here, so the
+        claim is measured, not assumed."""
+        _, lines = markdown_corpus
+        for cap in (1, 2, 3):
+            regressions = [l for l in lines if self._candidate_at(l, cap) and _absent_today(l)]
+            assert regressions == [], (cap, regressions[:5])
+
+    def test_the_decision_does_not_claim_one_is_a_false_positive_ceiling(self, decision_flat):
+        assert "It is **not** selected as a false-positive ceiling" in decision_flat
+        assert "budgets of **2 and 3 were also measured" in decision_flat
+        assert "largest budget" not in decision_flat
+
+    def test_the_declared_budget_matches_the_model(self, decision_flat):
+        assert MAX_EDITS == 1
+        assert "The edit budget is exactly one" in decision_flat
+        assert "`NUM-0001` class 5 provisional governance guardrail" in decision_flat
+
+
 class TestAcceptanceIsUnreachableFromTheCandidateRule:
     ACCEPTED_FORMS = (
         f"{PREFIX} {APPROVE}",
