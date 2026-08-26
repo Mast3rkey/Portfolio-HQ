@@ -213,9 +213,10 @@ XASSET0056_ACTIVE_PR = 357
 XASSET0057_ACTIVE_PR = 358
 #: ADVANCED BY XASSET-0058. WS-0014's single shared `active_pr`. It carries the IMPOSSIBLE
 #: SENTINEL -58 (negative, so structurally cannot be a real pull-request number) until GitHub
-#: issues this filing's number, which then replaces it in a fast-forward follow-up commit --
-#: read back from the live API, never predicted, with no amend and no force-push.
-XASSET0058_ACTIVE_PR = -58
+#: issued this filing's number. GitHub issued 359, and it replaced the sentinel in a
+#: fast-forward follow-up commit -- read back from the live API, never predicted, with no
+#: amend and no force-push.
+XASSET0058_ACTIVE_PR = 359
 
 
 #: A real, immutable, historical commit pair in which a protected path GENUINELY changed --

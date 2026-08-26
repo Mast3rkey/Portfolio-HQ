@@ -17552,16 +17552,17 @@ workstreams:
           parser correction is performed. Stage 1 remains UNARMED and NOT EXECUTABLE.
       - gate: xasset0058-formal-disposition-parser-correction-authorization
         status: in_progress
-        pr: -58
+        pr: 359
         description: >-
           DESIGN-ONLY LANE G GOVERNANCE AUTHORIZATION under OPS-0009, filed as XASSET-0058. It is
           the LIFECYCLE A authorization XASSET-0057 SS-F.0.3 requires, it DECIDES the
           formal-disposition recognition boundary XASSET-0057 SS-F.0.2 expressly reserved to it,
           and it PERFORMS NO PARSER CORRECTION. The gate first carries the IMPOSSIBLE SENTINEL -58
-          because GitHub has not yet issued this filing's pull-request number; the number is read
-          back live from the API and bound in a fast-forward follow-up, never guessed, reserved or
-          predicted. The gate remains in_progress because this filing's own PR is UNMERGED -- it
-          does not mark its own unmerged work complete.
+          because GitHub had not yet issued this filing's pull-request number; GitHub has since
+          ISSUED and this filing has BOUND pull request #359, read back live from the API rather
+          than guessed, in the fast-forward follow-up the convention requires. The gate remains
+          in_progress because this filing's own PR is UNMERGED -- it does not mark its own
+          unmerged work complete.
 
           WHY THE AUTHORITY WAS NEEDED. XASSET-0057 SS-F.0 makes a separately authorized,
           independently reviewed, principal-accepted, merged, exact-merge-CI-green and
@@ -19337,7 +19338,7 @@ workstreams:
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
     active_branch: claude/parser-correction-xasset-auth-w91gse
-    active_pr: -58
+    active_pr: 359
     last_verified_main_sha: 556a43cf91679d3e8ca95703c8d49e672b662b73
     last_verified_date: 2026-08-26
     authorized_by: >
