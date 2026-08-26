@@ -18,6 +18,7 @@ The suite deliberately proves four different kinds of thing:
 
 from __future__ import annotations
 
+import datetime
 import hashlib
 import re
 import subprocess
@@ -1468,57 +1469,226 @@ class LifecycleRecord(dict):
     """A candidate lifecycle, as a plain mapping. Test-only; no production coupling."""
 
 
-def _complete_authorization_record() -> LifecycleRecord:
-    """One complete, correctly ordered, exact-head / exact-merge Lifecycle A."""
+# -------------------------------------------------------------------------------------
+# Instants. Chronology is DERIVED from recorded evidence instants, never asserted by a
+# self-attesting boolean (DELTA 5027496489 MAJOR 1C).
+# -------------------------------------------------------------------------------------
+
+_INSTANT_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+
+
+def parse_instant(value):
+    """Return a comparable key for an ISO-8601 ``...Z`` instant, or ``None`` if the value
+    is missing or malformed. ``None`` is never ordered -- it is refused."""
+    if not isinstance(value, str) or not _INSTANT_RE.match(value):
+        return None
+    try:
+        return datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:            # e.g. 2026-13-45T99:99:99Z matches the shape but is not a date
+        return None
+
+
+def _strictly_before(rec, earlier_key, later_key, label, bad):
+    """Require ``earlier < later`` STRICTLY, refusing missing, malformed, equal or reversed."""
+    a = parse_instant(rec.get(earlier_key))
+    b = parse_instant(rec.get(later_key))
+    if a is None:
+        bad.append(f"{label}: {earlier_key} is missing or malformed")
+        return
+    if b is None:
+        bad.append(f"{label}: {later_key} is missing or malformed")
+        return
+    if a == b:
+        bad.append(f"{label}: {earlier_key} equals {later_key}; strict order is required")
+    elif a > b:
+        bad.append(f"{label}: {earlier_key} is AFTER {later_key}; chronology is reversed")
+
+
+def _chain_is_continuous(chain, from_head, to_head, prefix, bad):
+    """A bounded correction chain is a sequence of ``(commit, parent)`` fast-forward links.
+
+    It must start at the ORIGINAL reviewed head, link parent-to-commit with no gaps, and
+    end EXACTLY at the final accepted head.
+    """
+    if not isinstance(chain, tuple) or not chain:
+        bad.append(f"{prefix}: correction chain is missing or empty")
+        return
+    previous = from_head
+    for i, link in enumerate(chain):
+        if not (isinstance(link, tuple) and len(link) == 2):
+            bad.append(f"{prefix}: correction link {i} is malformed")
+            return
+        commit, parent = link
+        if parent != previous:
+            bad.append(
+                f"{prefix}: correction chain is DISCONTINUOUS at link {i} -- "
+                f"parent {parent!r} does not follow {previous!r}"
+            )
+            return
+        previous = commit
+    if previous != to_head:
+        bad.append(
+            f"{prefix}: correction chain ends at {previous!r}, not at the final accepted head"
+        )
+
+
+def _evaluate_review_path(rec, kind, bad):
+    """Model BOTH lawful review paths for one lifecycle (DELTA 5027496489 MAJOR 1A/1B).
+
+    ``kind`` is ``"A"`` or ``"B"``. The two paths are:
+
+    * **clean**     -- one FULL exact-head review at the unchanged final accepted head,
+                       with NO correction and NO re-review; and
+    * **corrected** -- a FULL review at the ORIGINAL reviewed head, a continuous bounded
+                       fast-forward correction chain, and an exact-head DELTA re-review at
+                       the FINAL accepted head.
+
+    The original FULL-reviewed head is PRESERVED separately from the final DELTA-reviewed
+    head; neither is rewritten to the other.
+    """
+    full, rere = (("A1", "A2") if kind == "A" else ("B2", "B3"))
+    accepted = rec.get("accepted_head")
+    chain = rec.get(f"{kind}_correction_chain", ())
+    corrected = bool(chain)
+
+    if not rec.get(f"{full}_review_present"):
+        bad.append(f"{full}: no independent FULL exact-head review")
+
+    if corrected:
+        # --- corrected path -----------------------------------------------------------
+        if rec.get(f"{full}_reviewed_head") == accepted:
+            bad.append(
+                f"{full}: a correction chain exists, so the FULL review cannot already "
+                f"anchor to the final accepted head"
+            )
+        _chain_is_continuous(
+            chain, rec.get(f"{full}_reviewed_head"), accepted, f"{rere}", bad
+        )
+        if not rec.get(f"{rere}_rereview_present"):
+            bad.append(f"{rere}: correction occurred but no exact-head DELTA re-review")
+        elif rec.get(f"{rere}_rereview_head") != accepted:
+            bad.append(f"{rere}: DELTA re-review does not hold at the final accepted head")
+    else:
+        # --- clean path ---------------------------------------------------------------
+        if rec.get(f"{full}_reviewed_head") != accepted:
+            bad.append(
+                f"{full}: no correction chain, so the FULL review must anchor to the "
+                f"final accepted head; it is stale"
+            )
+        if rec.get(f"{rere}_rereview_present"):
+            bad.append(
+                f"{rere}: a re-review is recorded but no correction occurred -- "
+                f"a re-review presupposes a bounded correction"
+            )
+    return corrected
+
+
+def _clean_authorization_record() -> LifecycleRecord:
+    """Lifecycle A, CLEAN path: one FULL review at the unchanged final head."""
     return LifecycleRecord(
         accepted_head="a" * 40,
         A1_review_present=True,
-        A1_reviewed_head="a" * 40,          # anchored to the FINAL accepted head
-        A2_recorrection_reviewed_head="a" * 40,
+        A1_reviewed_head="a" * 40,
+        A1_review_at="2026-01-01T00:00:00Z",
+        A_correction_chain=(),
+        A2_rereview_present=False,
+        A2_rereview_head=None,
+        A2_rereview_at=None,
         A3_acceptance_present=True,
         A3_accepted_head="a" * 40,
+        A3_acceptance_at="2026-01-02T00:00:00Z",
         A4_merge_sha="m" * 40,
-        A4_merge_parents=("p" * 40, "a" * 40),   # second parent is the accepted head
+        A4_merge_parents=("p" * 40, "a" * 40),
+        A4_merge_at="2026-01-03T00:00:00Z",
         A5_verification_present=True,
+        A5_verification_at="2026-01-04T00:00:00Z",
         A6_ci_present=True,
         A6_ci_conclusion="success",
-        A6_ci_head_sha="m" * 40,            # equals the merge SHA
+        A6_ci_head_sha="m" * 40,
+        A6_ci_completed_at="2026-01-05T00:00:00Z",
         A7_closure_present=True,
         A7_closure_names_merge_sha="m" * 40,
+        A7_closure_at="2026-01-06T00:00:00Z",
     )
 
 
-def _complete_implementation_record() -> LifecycleRecord:
-    """One complete, correctly ordered Lifecycle B, begun after A closed."""
+def _corrected_authorization_record() -> LifecycleRecord:
+    """Lifecycle A, CORRECTED path: FULL review at an ORIGINAL head, then a continuous
+    two-link fast-forward correction chain, then a DELTA re-review at the final head."""
+    rec = _clean_authorization_record()
+    original = "0" * 40
+    mid = "1" * 40
+    rec.update(
+        A1_reviewed_head=original,
+        A_correction_chain=((mid, original), ("a" * 40, mid)),
+        A2_rereview_present=True,
+        A2_rereview_head="a" * 40,
+        A2_rereview_at="2026-01-01T12:00:00Z",
+    )
+    return rec
+
+
+def _clean_implementation_record() -> LifecycleRecord:
+    """Lifecycle B, CLEAN path. B1 starts strictly after Lifecycle A's A7 closure."""
     return LifecycleRecord(
         accepted_head="b" * 40,
         B1_implementation_present=True,
-        B1_started_after_a_closure=True,
+        B1_started_at="2026-02-01T00:00:00Z",
         B2_review_present=True,
         B2_reviewed_head="b" * 40,
-        B3_recorrection_reviewed_head="b" * 40,
+        B2_review_at="2026-02-02T00:00:00Z",
+        B_correction_chain=(),
+        B3_rereview_present=False,
+        B3_rereview_head=None,
+        B3_rereview_at=None,
         B4_acceptance_present=True,
         B4_accepted_head="b" * 40,
+        B4_acceptance_at="2026-02-03T00:00:00Z",
         B5_merge_sha="n" * 40,
         B5_merge_parents=("q" * 40, "b" * 40),
+        B5_merge_at="2026-02-04T00:00:00Z",
         B6_verification_present=True,
+        B6_verification_at="2026-02-05T00:00:00Z",
         B7_ci_present=True,
         B7_ci_conclusion="success",
-        B7_ci_head_sha="n" * 40,            # equals the B5 merge SHA
+        B7_ci_head_sha="n" * 40,
+        B7_ci_completed_at="2026-02-06T00:00:00Z",
         B8_closure_present=True,
         B8_closure_names_merge_sha="n" * 40,
+        B8_closure_at="2026-02-07T00:00:00Z",
     )
+
+
+def _corrected_implementation_record() -> LifecycleRecord:
+    """Lifecycle B, CORRECTED path."""
+    rec = _clean_implementation_record()
+    original = "3" * 40
+    mid = "4" * 40
+    rec.update(
+        B2_reviewed_head=original,
+        B_correction_chain=((mid, original), ("b" * 40, mid)),
+        B3_rereview_present=True,
+        B3_rereview_head="b" * 40,
+        B3_rereview_at="2026-02-02T12:00:00Z",
+    )
+    return rec
+
+
+#: Back-compatible default fixtures. The CORRECTED path is the default because it is the
+#: path this repository has actually used on every unit of this chain.
+def _complete_authorization_record() -> LifecycleRecord:
+    return _corrected_authorization_record()
+
+
+def _complete_implementation_record() -> LifecycleRecord:
+    return _corrected_implementation_record()
 
 
 def evaluate_lifecycle_a(rec) -> tuple[bool, tuple[str, ...]]:
     """Evaluate A1-A7 CONJUNCTIVELY. Returns (qualifies, refusal reasons)."""
-    bad = []
-    if not rec.get("A1_review_present"):
-        bad.append("A1: no independent FULL exact-head review")
-    if rec.get("A1_reviewed_head") != rec.get("accepted_head"):
-        bad.append("A1: review anchored to a stale or wrong head")
-    if rec.get("A2_recorrection_reviewed_head") != rec.get("accepted_head"):
-        bad.append("A2: re-review does not hold at the final accepted head")
+    bad: list[str] = []
+    corrected = _evaluate_review_path(rec, "A", bad)
+
     if not rec.get("A3_acceptance_present"):
         bad.append("A3: no principal exact-head acceptance")
     if rec.get("A3_accepted_head") != rec.get("accepted_head"):
@@ -1540,24 +1710,36 @@ def evaluate_lifecycle_a(rec) -> tuple[bool, tuple[str, ...]]:
         bad.append("A7: no final post-CI closure")
     elif rec.get("A7_closure_names_merge_sha") != rec.get("A4_merge_sha"):
         bad.append("A7: closure names a different merge SHA")
+
+    # ---- DERIVED chronology, never asserted ------------------------------------------
+    if corrected:
+        _strictly_before(rec, "A1_review_at", "A2_rereview_at", "A1/A2", bad)
+        _strictly_before(rec, "A2_rereview_at", "A3_acceptance_at", "A2/A3", bad)
+    else:
+        _strictly_before(rec, "A1_review_at", "A3_acceptance_at", "A1/A3", bad)
+    _strictly_before(rec, "A3_acceptance_at", "A4_merge_at", "A3/A4", bad)
+    _strictly_before(rec, "A4_merge_at", "A5_verification_at", "A4/A5", bad)
+    _strictly_before(rec, "A4_merge_at", "A6_ci_completed_at", "A4/A6", bad)
+    _strictly_before(rec, "A5_verification_at", "A7_closure_at", "A5/A7", bad)
+    _strictly_before(rec, "A6_ci_completed_at", "A7_closure_at", "A6/A7", bad)
     return (not bad), tuple(bad)
 
 
-def evaluate_lifecycle_b(rec, a_qualifies: bool) -> tuple[bool, tuple[str, ...]]:
-    """Evaluate B1-B8 CONJUNCTIVELY, and refuse if Lifecycle A has not closed."""
-    bad = []
-    if not a_qualifies:
+def evaluate_lifecycle_b(rec, a_rec) -> tuple[bool, tuple[str, ...]]:
+    """Evaluate B1-B8 CONJUNCTIVELY, and refuse if Lifecycle A has not closed.
+
+    ``a_rec`` is the Lifecycle A RECORD, not a boolean: B1's start ordering is DERIVED
+    from A's own recorded A7 closure instant rather than self-attested.
+    """
+    bad: list[str] = []
+    a_ok, _ = evaluate_lifecycle_a(a_rec)
+    if not a_ok:
         bad.append("B: Lifecycle A has not closed; implementation may not begin")
+
     if not rec.get("B1_implementation_present"):
         bad.append("B1: no implementation")
-    if not rec.get("B1_started_after_a_closure"):
-        bad.append("B1: implementation began before Lifecycle A closed")
-    if not rec.get("B2_review_present"):
-        bad.append("B2: no independent FULL exact-head review")
-    if rec.get("B2_reviewed_head") != rec.get("accepted_head"):
-        bad.append("B2: review anchored to a stale or wrong head")
-    if rec.get("B3_recorrection_reviewed_head") != rec.get("accepted_head"):
-        bad.append("B3: re-review does not hold at the final accepted head")
+    corrected = _evaluate_review_path(rec, "B", bad)
+
     if not rec.get("B4_acceptance_present"):
         bad.append("B4: no principal exact-head acceptance")
     if rec.get("B4_accepted_head") != rec.get("accepted_head"):
@@ -1579,13 +1761,38 @@ def evaluate_lifecycle_b(rec, a_qualifies: bool) -> tuple[bool, tuple[str, ...]]
         bad.append("B8: no final post-CI closure")
     elif rec.get("B8_closure_names_merge_sha") != rec.get("B5_merge_sha"):
         bad.append("B8: closure names a different merge SHA")
+
+    # ---- DERIVED chronology, never asserted ------------------------------------------
+    # B1 must begin STRICTLY after Lifecycle A's own recorded closure.
+    a_closed = parse_instant(a_rec.get("A7_closure_at"))
+    b_started = parse_instant(rec.get("B1_started_at"))
+    if a_closed is None:
+        bad.append("B1: Lifecycle A's A7 closure instant is missing or malformed")
+    elif b_started is None:
+        bad.append("B1: B1_started_at is missing or malformed")
+    elif b_started == a_closed:
+        bad.append("B1: implementation began at the instant A closed; strict order required")
+    elif b_started < a_closed:
+        bad.append("B1: implementation began BEFORE Lifecycle A closed")
+
+    _strictly_before(rec, "B1_started_at", "B2_review_at", "B1/B2", bad)
+    if corrected:
+        _strictly_before(rec, "B2_review_at", "B3_rereview_at", "B2/B3", bad)
+        _strictly_before(rec, "B3_rereview_at", "B4_acceptance_at", "B3/B4", bad)
+    else:
+        _strictly_before(rec, "B2_review_at", "B4_acceptance_at", "B2/B4", bad)
+    _strictly_before(rec, "B4_acceptance_at", "B5_merge_at", "B4/B5", bad)
+    _strictly_before(rec, "B5_merge_at", "B6_verification_at", "B5/B6", bad)
+    _strictly_before(rec, "B5_merge_at", "B7_ci_completed_at", "B5/B7", bad)
+    _strictly_before(rec, "B6_verification_at", "B8_closure_at", "B6/B8", bad)
+    _strictly_before(rec, "B7_ci_completed_at", "B8_closure_at", "B7/B8", bad)
     return (not bad), tuple(bad)
 
 
 def qualifying_rebinding_base(a_rec, b_rec):
     """The §F.2 rule, mechanically: the base is the B5 merge, or nothing qualifies."""
     a_ok, _ = evaluate_lifecycle_a(a_rec)
-    b_ok, _ = evaluate_lifecycle_b(b_rec, a_ok)
+    b_ok, _ = evaluate_lifecycle_b(b_rec, a_rec)
     if not (a_ok and b_ok):
         return None
     if not (b_rec["B5_merge_sha"] == b_rec["B7_ci_head_sha"] == b_rec["B8_closure_names_merge_sha"]):
@@ -1594,10 +1801,13 @@ def qualifying_rebinding_base(a_rec, b_rec):
 
 
 #: Every A-condition, and the mutation that must drive it false.
+#: Anchored to the CORRECTED-path fixture (this repository's actual path).
 A_MUTATIONS = (
     ("A1 absent", {"A1_review_present": False}),
-    ("A1 stale reviewed head", {"A1_reviewed_head": "z" * 40}),
-    ("A2 re-review at wrong head", {"A2_recorrection_reviewed_head": "z" * 40}),
+    ("A1 FULL review already at the final head while a chain exists",
+     {"A1_reviewed_head": "a" * 40}),
+    ("A2 re-review missing though correction occurred", {"A2_rereview_present": False}),
+    ("A2 re-review at wrong head", {"A2_rereview_head": "z" * 40}),
     ("A3 absent", {"A3_acceptance_present": False}),
     ("A3 at wrong head", {"A3_accepted_head": "z" * 40}),
     ("A4 no merge", {"A4_merge_sha": None}),
@@ -1611,13 +1821,38 @@ A_MUTATIONS = (
     ("A7 closure names wrong SHA", {"A7_closure_names_merge_sha": "z" * 40}),
 )
 
+#: Correction-chain and chronology mutations for Lifecycle A.
+A_CHAIN_MUTATIONS = (
+    ("A2 chain discontinuous", {"A_correction_chain": (("1" * 40, "0" * 40), ("a" * 40, "9" * 40))}),
+    ("A2 chain wrong parent at link 0", {"A_correction_chain": (("a" * 40, "9" * 40),)}),
+    ("A2 chain ends at the wrong head", {"A_correction_chain": (("1" * 40, "0" * 40),)}),
+    ("A2 chain malformed link", {"A_correction_chain": (("1" * 40,),)}),
+    ("A2 chain incomplete (missing final link)",
+     {"A_correction_chain": (("1" * 40, "0" * 40), ("2" * 40, "1" * 40))}),
+)
+
+A_CHRONOLOGY_MUTATIONS = (
+    ("A1/A2 reversed", {"A2_rereview_at": "2025-12-31T00:00:00Z"}),
+    ("A2/A3 equal", {"A3_acceptance_at": "2026-01-01T12:00:00Z"}),
+    ("A3/A4 reversed", {"A4_merge_at": "2026-01-01T18:00:00Z"}),
+    ("A4/A5 reversed", {"A5_verification_at": "2026-01-02T12:00:00Z"}),
+    ("A4/A6 CI before merge", {"A6_ci_completed_at": "2026-01-02T12:00:00Z"}),
+    ("A5/A7 closure before verification", {"A7_closure_at": "2026-01-03T12:00:00Z"}),
+    ("A6/A7 closure equals CI completion", {"A7_closure_at": "2026-01-05T00:00:00Z"}),
+    ("A1 instant missing", {"A1_review_at": None}),
+    ("A7 instant malformed", {"A7_closure_at": "not-an-instant"}),
+    ("A7 instant shape-valid but impossible", {"A7_closure_at": "2026-13-45T99:99:99Z"}),
+)
+
 #: Every B-condition, and the mutation that must drive it false.
 B_MUTATIONS = (
     ("B1 absent", {"B1_implementation_present": False}),
-    ("B1 began before A closed", {"B1_started_after_a_closure": False}),
+    ("B1 began before A closed", {"B1_started_at": "2026-01-05T00:00:00Z"}),
     ("B2 absent", {"B2_review_present": False}),
-    ("B2 stale reviewed head", {"B2_reviewed_head": "z" * 40}),
-    ("B3 re-review at wrong head", {"B3_recorrection_reviewed_head": "z" * 40}),
+    ("B2 FULL review already at the final head while a chain exists",
+     {"B2_reviewed_head": "b" * 40}),
+    ("B3 re-review missing though correction occurred", {"B3_rereview_present": False}),
+    ("B3 re-review at wrong head", {"B3_rereview_head": "z" * 40}),
     ("B4 absent", {"B4_acceptance_present": False}),
     ("B4 at wrong head", {"B4_accepted_head": "z" * 40}),
     ("B5 no merge", {"B5_merge_sha": None}),
@@ -1631,19 +1866,42 @@ B_MUTATIONS = (
     ("B8 closure names wrong SHA", {"B8_closure_names_merge_sha": "z" * 40}),
 )
 
+B_CHAIN_MUTATIONS = (
+    ("B3 chain discontinuous", {"B_correction_chain": (("4" * 40, "3" * 40), ("b" * 40, "9" * 40))}),
+    ("B3 chain wrong parent at link 0", {"B_correction_chain": (("b" * 40, "9" * 40),)}),
+    ("B3 chain ends at the wrong head", {"B_correction_chain": (("4" * 40, "3" * 40),)}),
+    ("B3 chain malformed link", {"B_correction_chain": (("4" * 40,),)}),
+    ("B3 chain incomplete (missing final link)",
+     {"B_correction_chain": (("4" * 40, "3" * 40), ("5" * 40, "4" * 40))}),
+)
+
+B_CHRONOLOGY_MUTATIONS = (
+    ("B1 equals A closure", {"B1_started_at": "2026-01-06T00:00:00Z"}),
+    ("B1/B2 reversed", {"B2_review_at": "2026-01-31T00:00:00Z"}),
+    ("B2/B3 reversed", {"B3_rereview_at": "2026-02-01T12:00:00Z"}),
+    ("B3/B4 equal", {"B4_acceptance_at": "2026-02-02T12:00:00Z"}),
+    ("B4/B5 reversed", {"B5_merge_at": "2026-02-02T18:00:00Z"}),
+    ("B5/B6 reversed", {"B6_verification_at": "2026-02-03T12:00:00Z"}),
+    ("B5/B7 CI before merge", {"B7_ci_completed_at": "2026-02-03T12:00:00Z"}),
+    ("B6/B8 closure before verification", {"B8_closure_at": "2026-02-04T12:00:00Z"}),
+    ("B7/B8 closure equals CI completion", {"B8_closure_at": "2026-02-06T00:00:00Z"}),
+    ("B1 instant missing", {"B1_started_at": None}),
+    ("B8 instant malformed", {"B8_closure_at": "20260207"}),
+)
+
 
 class TestTheTwoLifecycleQualificationModel:
-    """MAJOR 1: a model that EVALUATES, not a search for labels."""
+    """MAJOR 1: a model that EVALUATES, not a search for labels.
+
+    RE-ANCHORED (DELTA 5027496489 MAJOR 1): the model now represents BOTH lawful review
+    paths and DERIVES chronology from recorded instants instead of accepting booleans.
+    """
 
     # ---- the model is bound to the decision, not restated beside it ----
 
     @pytest.mark.parametrize("step,content", LIFECYCLE_A_STEPS + LIFECYCLE_B_STEPS)
     def test_the_model_binds_to_the_decisions_exact_steps(self, decision_text, step, content):
-        """Each modelled step must exist in the decision AND carry its substantive content.
-
-        This is what closes MAJOR 1's B-step gap: gutting B7 while leaving `* B7.` in place now
-        fails here, because the CI/exact-merge-SHA content is pinned inside B7's own bullet.
-        """
+        """Each modelled step must exist in the decision AND carry its substantive content."""
         f = _section(decision_text, "F")
         marker = f"* {step}."
         assert marker in f, step
@@ -1659,19 +1917,106 @@ class TestTheTwoLifecycleQualificationModel:
         assert declared == modelled, (declared ^ modelled)
         assert len(modelled) == 15, len(modelled)
 
-    # ---- the all-true control qualifies ----
+    def test_the_decision_states_a2_and_b3_conditionally(self, decision_text):
+        """The operative wording is ALREADY conditional -- the defect was in the model.
 
-    def test_a_complete_correctly_ordered_pair_qualifies(self):
-        a, b = _complete_authorization_record(), _complete_implementation_record()
+        This pins that fact, so the model can never be 'corrected' by loosening the decision.
+        """
+        f = _flat(_section(decision_text, "F"))
+        assert "A2. **any** bounded correction and **exact-head re-review**".replace(
+            "**any**", "any"
+        ) in f.replace("**", "") or "any bounded correction and exact-head re-review" in f.replace(
+            "**", ""
+        )
+        assert f.replace("**", "").count("any bounded correction and exact-head re-review") == 2
+
+    # ---- BOTH lawful paths are positive controls (MAJOR 1A / 1B) ----
+
+    def test_the_clean_path_qualifies_for_both_lifecycles(self):
+        """A clean FULL exact-head review with NO correction must qualify.
+
+        This is the exact case the previous model refused: it demanded A2/B3 evidence that
+        does not exist when the initial review is clean and the head never moved.
+        """
+        a, b = _clean_authorization_record(), _clean_implementation_record()
         a_ok, a_bad = evaluate_lifecycle_a(a)
-        b_ok, b_bad = evaluate_lifecycle_b(b, a_ok)
         assert a_ok, a_bad
+        assert not a["A2_rereview_present"], "the clean path records NO re-review"
+        assert a["A_correction_chain"] == (), "the clean path records NO correction chain"
+        b_ok, b_bad = evaluate_lifecycle_b(b, a)
         assert b_ok, b_bad
-        assert qualifying_rebinding_base(a, b) == "n" * 40
+        assert qualifying_rebinding_base(a, b) == b["B5_merge_sha"]
+
+    def test_the_corrected_path_qualifies_for_both_lifecycles(self):
+        """FULL review at the ORIGINAL head + continuous chain + DELTA at the FINAL head.
+
+        This is the other case the previous model refused: it demanded the FULL review
+        already anchor to the final head, which is impossible once a correction moved it.
+        """
+        a, b = _corrected_authorization_record(), _corrected_implementation_record()
+        a_ok, a_bad = evaluate_lifecycle_a(a)
+        assert a_ok, a_bad
+        b_ok, b_bad = evaluate_lifecycle_b(b, a)
+        assert b_ok, b_bad
+        assert qualifying_rebinding_base(a, b) == b["B5_merge_sha"]
+
+    def test_the_two_heads_are_preserved_separately_never_rewritten(self):
+        """The ORIGINAL FULL-reviewed head and the FINAL DELTA-reviewed head are distinct."""
+        for rec, full_key, rere_key in (
+            (_corrected_authorization_record(), "A1_reviewed_head", "A2_rereview_head"),
+            (_corrected_implementation_record(), "B2_reviewed_head", "B3_rereview_head"),
+        ):
+            assert rec[full_key] != rec["accepted_head"], full_key
+            assert rec[rere_key] == rec["accepted_head"], rere_key
+            assert rec[full_key] != rec[rere_key], (full_key, rere_key)
+
+    @pytest.mark.parametrize(
+        "factory,full_key,chain_key,step",
+        [
+            (_corrected_authorization_record, "A1_reviewed_head", "A_correction_chain", "A1"),
+            (_corrected_implementation_record, "B2_reviewed_head", "B_correction_chain", "B2"),
+        ],
+    )
+    def test_a_final_head_full_review_beside_a_chain_is_refused_ON_THAT_GROUND(
+        self, factory, full_key, chain_key, step
+    ):
+        """ISOLATING case (found by mutation probe, DELTA 5027496489 round).
+
+        Setting the FULL-reviewed head to the final head normally also breaks chain
+        continuity, so a bare `not ok` assertion cannot tell which check refused --
+        and dropping the dedicated check went UNDETECTED. This case keeps the chain
+        continuous (it starts and ends at the accepted head) so the dedicated
+        'the FULL review cannot already be final' check is the ONLY thing that can refuse.
+        """
+        rec = factory()
+        accepted = rec["accepted_head"]
+        rec[full_key] = accepted
+        rec[chain_key] = ((accepted, accepted),)   # continuous by construction
+        evaluate = evaluate_lifecycle_a if step == "A1" else (
+            lambda r: evaluate_lifecycle_b(r, _complete_authorization_record())
+        )
+        ok, reasons = evaluate(rec)
+        assert not ok, f"{step}: a final-head FULL review beside a chain still qualified"
+        assert any(
+            "cannot already anchor to the final accepted head" in r for r in reasons
+        ), (step, reasons)
+        # and the masking check must NOT be what refused here
+        assert not any("DISCONTINUOUS" in r for r in reasons), (step, reasons)
+        assert not any("not at the final accepted head" in r for r in reasons), (step, reasons)
+
+    def test_a_rereview_without_a_correction_is_refused(self):
+        """A re-review presupposes a bounded correction; recording one without a chain is
+        incoherent and must not silently pass."""
+        a = _clean_authorization_record()
+        a.update({"A2_rereview_present": True, "A2_rereview_head": "a" * 40,
+                  "A2_rereview_at": "2026-01-01T06:00:00Z"})
+        ok, reasons = evaluate_lifecycle_a(a)
+        assert not ok and any("presupposes a bounded correction" in r for r in reasons), reasons
 
     # ---- every condition, independently driven false, must refuse ----
 
-    @pytest.mark.parametrize("label,mutation", A_MUTATIONS)
+    @pytest.mark.parametrize("label,mutation", A_MUTATIONS + A_CHAIN_MUTATIONS
+                             + A_CHRONOLOGY_MUTATIONS)
     def test_every_authorization_condition_is_load_bearing(self, label, mutation):
         a = _complete_authorization_record()
         a.update(mutation)
@@ -1679,32 +2024,138 @@ class TestTheTwoLifecycleQualificationModel:
         assert not ok, f"{label} still qualified"
         assert reasons, label
         # and B must refuse too, because A did not close
-        b_ok, b_reasons = evaluate_lifecycle_b(_complete_implementation_record(), ok)
+        b_ok, b_reasons = evaluate_lifecycle_b(_complete_implementation_record(), a)
         assert not b_ok and any("Lifecycle A has not closed" in r for r in b_reasons), label
         assert qualifying_rebinding_base(a, _complete_implementation_record()) is None, label
 
-    @pytest.mark.parametrize("label,mutation", B_MUTATIONS)
+    @pytest.mark.parametrize("label,mutation", B_MUTATIONS + B_CHAIN_MUTATIONS
+                             + B_CHRONOLOGY_MUTATIONS)
     def test_every_implementation_condition_is_load_bearing(self, label, mutation):
         a = _complete_authorization_record()
         b = _complete_implementation_record()
         b.update(mutation)
         a_ok, _ = evaluate_lifecycle_a(a)
         assert a_ok
-        ok, reasons = evaluate_lifecycle_b(b, a_ok)
+        ok, reasons = evaluate_lifecycle_b(b, a)
         assert not ok, f"{label} still qualified"
         assert reasons, label
         assert qualifying_rebinding_base(a, b) is None, label
 
+    # ---- correction-chain continuity, explicitly ----
+
+    def test_the_chain_must_start_at_the_original_reviewed_head(self):
+        a = _corrected_authorization_record()
+        a["A_correction_chain"] = (("1" * 40, "9" * 40), ("a" * 40, "1" * 40))
+        ok, reasons = evaluate_lifecycle_a(a)
+        assert not ok and any("DISCONTINUOUS" in r for r in reasons), reasons
+
+    def test_the_chain_must_end_at_the_final_accepted_head(self):
+        a = _corrected_authorization_record()
+        a["A_correction_chain"] = (("1" * 40, "0" * 40), ("7" * 40, "1" * 40))
+        ok, reasons = evaluate_lifecycle_a(a)
+        assert not ok and any("not at the final accepted head" in r for r in reasons), reasons
+
+    def test_every_link_of_a_longer_chain_is_load_bearing(self):
+        """Break each link of a three-link chain in turn; every break must refuse."""
+        h0, h1, h2, final = "0" * 40, "1" * 40, "2" * 40, "a" * 40
+        good = ((h1, h0), (h2, h1), (final, h2))
+        a = _corrected_authorization_record()
+        a["A_correction_chain"] = good
+        assert evaluate_lifecycle_a(a)[0], evaluate_lifecycle_a(a)[1]
+        for i in range(len(good)):
+            broken = list(good)
+            broken[i] = (broken[i][0], "z" * 40)
+            a = _corrected_authorization_record()
+            a["A_correction_chain"] = tuple(broken)
+            ok, reasons = evaluate_lifecycle_a(a)
+            assert not ok, f"link {i} was not load-bearing"
+            assert any("DISCONTINUOUS" in r or "not at the final" in r for r in reasons), i
+
+    # ---- chronology is DERIVED, not asserted (MAJOR 1C) ----
+
+    def test_the_self_attesting_boolean_is_gone(self):
+        """`B1_started_after_a_closure` must no longer exist as an accepted input."""
+        b = _complete_implementation_record()
+        assert "B1_started_after_a_closure" not in b
+
+        # AST-STRUCTURAL, not a substring scan: this very test necessarily names the
+        # forbidden field, so a text search would false-positive on its own guard --
+        # exactly the trap corrected twice earlier in this PR. Scope the check to the
+        # EVALUATOR functions and look for the literal as a real node in their bodies.
+        import ast, inspect
+
+        tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
+        evaluators = {
+            n.name: n
+            for n in ast.walk(tree)
+            if isinstance(n, ast.FunctionDef)
+            and n.name in {"evaluate_lifecycle_a", "evaluate_lifecycle_b",
+                           "_evaluate_review_path", "qualifying_rebinding_base"}
+        }
+        assert len(evaluators) == 4, sorted(evaluators)
+        for name, node in evaluators.items():
+            literals = [
+                c.value for c in ast.walk(node)
+                if isinstance(c, ast.Constant) and c.value == "B1_started_after_a_closure"
+            ]
+            assert not literals, f"{name} still consumes the self-attesting field"
+        # and the derivation really does read the instants instead
+        b_src = inspect.getsource(evaluate_lifecycle_b)
+        assert "A7_closure_at" in b_src and "B1_started_at" in b_src
+
+        # and setting it must not rescue an otherwise-bad chronology
+        b["B1_started_after_a_closure"] = True
+        b["B1_started_at"] = "2026-01-05T00:00:00Z"   # BEFORE A7 closure
+        ok, reasons = evaluate_lifecycle_b(b, _complete_authorization_record())
+        assert not ok and any("began BEFORE Lifecycle A closed" in r for r in reasons), reasons
+
+    def test_b1_must_begin_strictly_after_a7_closure(self):
+        a = _complete_authorization_record()
+        for started, frag in (
+            ("2026-01-06T00:00:00Z", "strict order required"),   # equal
+            ("2026-01-05T00:00:00Z", "began BEFORE"),            # earlier
+        ):
+            b = _complete_implementation_record()
+            b["B1_started_at"] = started
+            ok, reasons = evaluate_lifecycle_b(b, a)
+            assert not ok and any(frag in r for r in reasons), (started, reasons)
+
+    def test_chronology_is_derived_from_the_a_record_not_a_flag(self):
+        """Moving A's own closure instant later must, by itself, invalidate B's start."""
+        a = _complete_authorization_record()
+        b = _complete_implementation_record()
+        assert evaluate_lifecycle_b(b, a)[0]
+        a["A7_closure_at"] = "2026-03-01T00:00:00Z"   # now AFTER B1 started
+        ok, reasons = evaluate_lifecycle_b(b, a)
+        assert not ok and any("began BEFORE Lifecycle A closed" in r for r in reasons), reasons
+
+    @pytest.mark.parametrize(
+        "value", [None, "", "2026-01-01", "20260101T000000Z", "2026-01-01 00:00:00",
+                  "2026-13-45T99:99:99Z", 17, object()],
+    )
+    def test_missing_or_malformed_instants_are_refused_never_ordered(self, value):
+        assert parse_instant(value) is None
+        a = _complete_authorization_record()
+        a["A3_acceptance_at"] = value
+        ok, reasons = evaluate_lifecycle_a(a)
+        assert not ok and any("missing or malformed" in r for r in reasons), (value, reasons)
+
+    def test_a_well_formed_instant_parses(self):
+        """Non-vacuity: the parser must accept the real shape, or every test above is hollow."""
+        assert parse_instant("2026-08-26T06:34:05Z") is not None
+        assert parse_instant("2026-01-01T00:00:00Z") < parse_instant("2026-01-02T00:00:00Z")
+
     # ---- the named disqualifying cases, driven through the model ----
 
     def test_a_stale_reviewed_head_is_refused(self):
-        a = _complete_authorization_record(); a["A1_reviewed_head"] = "z" * 40
+        """Clean path with a stale FULL-review head."""
+        a = _clean_authorization_record(); a["A1_reviewed_head"] = "z" * 40
         ok, reasons = evaluate_lifecycle_a(a)
-        assert not ok and any("stale or wrong head" in r for r in reasons), reasons
+        assert not ok and any("it is stale" in r for r in reasons), reasons
 
     def test_a_wrong_merge_sha_is_refused(self):
         b = _complete_implementation_record(); b["B7_ci_head_sha"] = "z" * 40
-        ok, reasons = evaluate_lifecycle_b(b, True)
+        ok, reasons = evaluate_lifecycle_b(b, _complete_authorization_record())
         assert not ok and any("exact B5 merge SHA" in r for r in reasons), reasons
 
     def test_missing_or_failed_exact_merge_ci_is_refused(self):
@@ -1726,9 +2177,9 @@ class TestTheTwoLifecycleQualificationModel:
             assert not ok and any(frag in r for r in reasons), (mut, reasons)
 
     def test_implementation_beginning_before_a_closes_is_refused(self):
-        b = _complete_implementation_record(); b["B1_started_after_a_closure"] = False
-        ok, reasons = evaluate_lifecycle_b(b, True)
-        assert not ok and any("began before Lifecycle A closed" in r for r in reasons), reasons
+        b = _complete_implementation_record(); b["B1_started_at"] = "2026-01-01T00:00:00Z"
+        ok, reasons = evaluate_lifecycle_b(b, _complete_authorization_record())
+        assert not ok and any("began BEFORE Lifecycle A closed" in r for r in reasons), reasons
 
     def test_a_merged_but_ineffective_authorization_cannot_qualify(self):
         """The exact XASSET-0045 shape: merged, but merge-CI failed and closure never recorded."""
@@ -1778,7 +2229,8 @@ class TestTheTwoLifecycleQualificationModel:
 
     def test_the_model_adds_no_production_behaviour(self):
         """Test-only: the model must not be imported from, or exist in, the production module."""
-        for name in ("evaluate_lifecycle_a", "evaluate_lifecycle_b", "qualifying_rebinding_base"):
+        for name in ("evaluate_lifecycle_a", "evaluate_lifecycle_b", "qualifying_rebinding_base",
+                     "parse_instant", "_chain_is_continuous", "_evaluate_review_path"):
             assert not hasattr(AUTH, name), name
 
     def test_the_mutation_tables_cover_every_modelled_step(self):
@@ -1786,6 +2238,13 @@ class TestTheTwoLifecycleQualificationModel:
         covered = {lbl.split()[0] for lbl, _ in A_MUTATIONS + B_MUTATIONS}
         modelled = {s for s, _ in LIFECYCLE_A_STEPS + LIFECYCLE_B_STEPS}
         assert modelled <= covered, modelled - covered
+
+    def test_the_chronology_tables_cover_every_required_ordering(self):
+        """Non-vacuity: each required ordering edge must have a refusal mutation."""
+        labels = {lbl for lbl, _ in A_CHRONOLOGY_MUTATIONS + B_CHRONOLOGY_MUTATIONS}
+        for edge in ("A1/A2", "A2/A3", "A3/A4", "A4/A5", "A4/A6", "A5/A7", "A6/A7",
+                     "B1/B2", "B2/B3", "B3/B4", "B4/B5", "B5/B6", "B5/B7", "B6/B8", "B7/B8"):
+            assert any(edge in lbl for lbl in labels), edge
 
 
 # =====================================================================================
