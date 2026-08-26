@@ -686,6 +686,26 @@ class TestTheCommittedCorpusDoesNotRegress:
             today = AUTH.parse_formal_disposition(line + "\n")
             assert today is not None, line
 
+    def test_the_flagged_lines_partition_exhaustively_with_an_empty_regression_bucket(
+        self, markdown_corpus
+    ):
+        """SS-D.5's accounting: every flagged line is already MALFORMED or already a verdict,
+        the regression bucket is EMPTY, and there is no fourth category left unexplained."""
+        _, lines = markdown_corpus
+        flagged = [l for l in lines if is_candidate(l)]
+        already_malformed = [
+            l for l in flagged
+            if AUTH.parse_formal_disposition(l + "\n") is AUTH.MALFORMED_FORMAL_DISPOSITION
+        ]
+        already_verdict = [
+            l for l in flagged if isinstance(AUTH.parse_formal_disposition(l + "\n"), str)
+        ]
+        regressions = [l for l in flagged if _absent_today(l)]
+        assert len(already_malformed) + len(already_verdict) + len(regressions) == len(flagged)
+        assert regressions == [], regressions[:5]
+        assert already_malformed, "a partition with an empty first bucket would prove nothing"
+        assert already_verdict, "a partition with an empty second bucket would prove nothing"
+
     def test_no_verdict_yielding_line_lacks_the_canonical_prefix_in_the_fold(self, markdown_corpus):
         """Independent confirmation that the hook can never run on an accepted line."""
         _, lines = markdown_corpus

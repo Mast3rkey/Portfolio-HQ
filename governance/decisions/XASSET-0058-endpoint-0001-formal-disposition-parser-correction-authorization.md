@@ -234,11 +234,17 @@ On the real historical corpus the **whole-body** verdict is unchanged for **317 
 or other verdict today still carry it. Headings, blockquotes, bullets, malformed emphasis, code
 fences and prefix-bearing marker lines all keep their existing dispositions.
 
-Nine lines in the real corpus and two in the Markdown corpus are flagged by the rule **and are
-already MALFORMED today** — they are unchanged, not regressions. Eighty-seven real-corpus lines are
-flagged **and already yield a verdict today**; the rule never reaches them, because the hook sits on
-a branch an accepted form cannot take (§D.2, §D.6). Independently verified: **zero** verdict-yielding
-lines in either corpus lack the canonical prefix in the ASCII fold.
+Every line the rule flags is accounted for, in both corpora, with nothing left in an unexplained
+residue:
+
+| | Markdown corpus | Real corpus |
+|---|---|---|
+| Flagged **and already `MALFORMED` today** — unchanged, not regressions | **2** | **9** |
+| Flagged **and already yielding a verdict today** — the rule never reaches them, because the hook sits on a branch an accepted form cannot take (§D.2, §D.6) | **6** | **87** |
+| Flagged **and `ABSENT` today** — the only category that would be a regression | **0** | **0** |
+
+Independently verified on **both** corpora, not only one: **zero** verdict-yielding lines lack the
+canonical prefix in the ASCII fold, so no accepted line can reach the candidate branch at all.
 
 #### D.6 — Candidate recognition can NEVER authenticate
 
