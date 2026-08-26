@@ -17189,6 +17189,367 @@ workstreams:
           verification, link 5, attestation, lane creation, arming, claim, gate evaluation,
           execution, results generation, portfolio allocation, percentage calculation, trading,
           or protected RISK work.
+      - gate: xasset0056-lifecycle-closed
+        status: complete
+        pr: 357
+        description: >-
+          ADDITIVE POST-MERGE RECORD, recorded by XASSET-0057. The gate above is left BYTE-
+          UNEDITED per this register's established convention -- a predecessor gate's own text is
+          never rewritten, and its completed lifecycle is recorded additively instead. PR #357
+          (XASSET-0056) is MERGED and its lifecycle is CLOSED. All seven conditions were
+          independently re-verified from live git and live GitHub by the XASSET-0057 session
+          before it edited anything, and none was taken on any brief's word.
+
+          (1) INDEPENDENT FULL EXACT-HEAD REVIEW chain ending in clean DELTA review 5024576065 at
+          exact head f1bf3fd0f1f878ccf9db88f15c48059e5e4637e2, by Mast3rkey, author_association
+          OWNER, approving verdict with 0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE. (2) FOUR bounded
+          corrections, each with its own exact-head re-review (5015482594, 5019911766,
+          5020912146, 5022602312), the chain closing on a zero-finding approval. (3) PRINCIPAL
+          EXACT-HEAD ACCEPTANCE issuecomment-5417902549 at 2026-08-25T22:46:38Z, strictly after
+          the clean review and strictly before the merge. (4) NORMAL MERGE at
+          583022a5f2106d61f82d270edadd3520d8b0c55d with exactly two parents, parent 1
+          29e4969885970d942a5acecc1424fb2e2b080d60 (the exact base), parent 2
+          f1bf3fd0f1f878ccf9db88f15c48059e5e4637e2 (the exact accepted head), merge tree
+          8df4624eac7477a7b898e92178bc46be3ff1056b BYTE-IDENTICAL to the accepted-head tree, zero
+          drift at merge. (5) Post-merge verification issuecomment-5417925363 at
+          2026-08-25T22:48:42Z, which deliberately did NOT claim closure. (6) Merge-commit CI run
+          32907801650, job 97995562890, event push, run_attempt 1, completed/success, BOTH
+          head_sha EQUAL TO THE EXACT MERGE SHA rather than a proxy or a PR-head run, 10 of 10
+          steps success, 13284 passed. (7) Final post-CI verification and lifecycle closure
+          issuecomment-5418040301 at 2026-08-25T22:59:49Z, strictly after both (5) and the CI
+          job's completion at 22:58:06Z.
+
+          XASSET-0056 IS THEREFORE EFFECTIVE. Its closure record states in terms that the
+          successor rebinding is a separate, separately authorized work item and that closing
+          this lifecycle neither performs it nor authorizes it, and its SS-J forbids it from
+          performing a step-8-equivalent rebinding or authorizing any successor unit of any kind.
+          The load-bearing digest is consequently STALE BY DESIGN: the register still binds
+          SHA-256 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541, blob
+          f71b08b4ebe95f161c57cdbb2a924748f13af02d, while the merged module is
+          12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5, blob
+          b5622f9e412afd604a11cde04317b79c5e57920a. _verify_git_anchored_identity() is
+          byte-identical across the correction and still raises enforcement drift. Stage 1
+          remained UNARMED and NOT EXECUTABLE throughout, and remains so.
+      - gate: xasset0057-post-parser-correction-rebinding-authorization
+        status: in_progress
+        pr: 358
+        description: >-
+          DESIGN-ONLY LANE G GOVERNANCE AUTHORIZATION under OPS-0009, filed as XASSET-0057. It
+          authorizes EXACTLY ONE future, separate, bounded step-8-equivalent rebinding unit, the
+          successor XASSET-0056 needed and expressly withheld, and PERFORMS NO REBINDING ITSELF.
+          The gate first carried the IMPOSSIBLE SENTINEL -57 because GitHub had not yet issued this
+          filing's pull-request number; GitHub has since ISSUED and this filing has BOUND pull
+          request #358, read back live from the API rather than guessed, in the fast-forward
+          follow-up the convention requires. The gate remains in_progress because PR #358 is
+          still UNMERGED -- this filing does not mark its own unmerged work complete.
+
+          WHY THE AUTHORITY WAS NEEDED. XASSET-0048 SS-E granted exactly one rebinding unit and
+          that grant is SPENT, since XASSET-0049 exercised it and XASSET-0049 is the value
+          AUTHORIZING_DECISION still carries. XASSET-0056 SS-H recorded the newly derived module
+          identity FOR a later unit and stated it is not applied by anything there; SS-J forbade
+          performing a step-8-equivalent rebinding or authorizing any successor unit of any kind;
+          and its closure record repeated the point. No live authority therefore existed, and this
+          filing does not claim XASSET-0056 created one.
+
+          WHAT IS GRANTED, AND ONLY THIS. One future PR may file its own rebinding decision under
+          the next XASSET-#### identifier VERIFIED UNUSED AGAINST LIVE STATE at the time it is
+          filed, never predicted, reserved or named here; rebind AUTHORIZING_DECISION,
+          AUTHORIZING_PULL_REQUEST and REVIEWED_BASE_SHA; edit
+          level1_stage1_execution_authorization.py only so far as its own identity, evidence,
+          refusals and validation require; extend LOAD_BEARING_RELPATHS ADDITIVELY, its present
+          membership being 18 as independently enumerated at this base, removing nothing; amend
+          the canonical artifacts in AUTHORIZATION LANGUAGE ONLY; recompute stale pins ONCE and
+          LAST; and synchronize the catalog, this register and the coupled tests WITHOUT WEAKENING
+          ANY OF THEM.
+
+          THE CONDITIONS THAT BIND IT. Every moved value is an EXACT CLOSED TRANSITION with BOTH
+          ENDS independently proven from the git object store and the OLD value PRESERVED rather
+          than overwritten; the module transition's two ends are already fixed at 4ff28941 with
+          blob f71b08b4 (old, retained as a negative pin) and 12eab05e with blob b5622f9e (new).
+          The authorized unit's base MUST EQUAL the normal merge commit closing THIS decision's
+          own lifecycle. ANCESTRY IS NECESSARY AND EXPLICITLY INSUFFICIENT, that merge SHA must be
+          DERIVED from the completed lifecycle rather than predicted, and ANY INTERVENING main
+          COMMIT IS DRIFT AND A STOP unless separately authorized and admitted through an explicit
+          closed identity transition. The rebinding must be the SMALLEST STRICTLY NECESSARY one,
+          stopping and disclosing rather than deciding scope silently. It preserves UNCHANGED the
+          runner, result writer and serializer, result validator, universe closure validator,
+          deterministic derivation surface, canonical construction inputs, frozen construction
+          identities, their ORDERING, cardinality 680 / 48, aggregate universe hash
+          73c0965e...5224, comparison_subject_kind, unordered_pair_id, every gate, every
+          disposition rule, the accepted B1/B2/B3 semantics, and every protected portfolio and
+          risk_lane_boundary RISK path. Before review it must complete full and focused suites,
+          ADVERSARIAL MUTATION PROOFS with byte-identical restoration verified independently of
+          the harness, EXACT-HEAD CI, a SIMULATED NORMAL-MERGE VERIFICATION proving a
+          byte-identical tree with two ordered parents, a WORKING-TREE RESIDUE CHECK, and a
+          ZERO-WRITE REHEARSAL proving both predicates still return False.
+
+          WITHHELD ABSOLUTELY. Readiness verification, drift verification, step 11 and link 5,
+          attestation generation, READY or CLAIMED or COMPLETED lane state, AUTHORIZATION_ROOT,
+          arming, setting stage_1_executability.executable to anything but false, claiming or
+          consuming ATTEMPT_1, evaluating any gate for any construction, executing Stage 1,
+          producing stage1_results.yaml or any disposition or cell outcome or roll-up, acquiring
+          market or Stage-2 data, creating any endpoint or bound or point or range or PERCENTAGE
+          or weight or rank or target or allocation, touching targets.yaml, holdings.yaml,
+          gates.yaml, issuer_lookthrough.yaml, the allocator, margin state, charts, ladders,
+          trades or orders, reading any protected RISK artifact, CORRECTING THE PARSER, and
+          consuming XASSET-0027 SS-P.1's reserved results PR.
+
+          DISCLOSED, REPRODUCED, UNRESOLVED (SS-M). A POST-MERGE automated review, 5025021718 by
+          chatgpt-codex-connector[bot] with author_association NONE, was submitted at
+          2026-08-25T22:49:47Z, AFTER the merge and AFTER the post-merge verification, and is
+          therefore NOT part of the accepted XASSET-0056 lifecycle and no part of the independent
+          review chain. It reports a residual prefix-tampering bypass. Per this repository's own
+          verify-before-acting-on-external-review guardrail the claim was EXECUTED read-only
+          against the merged bytes rather than believed or dismissed, and IT REPRODUCES: a
+          prefix-interior homoglyph whose uppercase form remains non-ASCII, with U+039F, U+0410
+          and U+0130 each confirmed, causes an adverse first formal line to be SKIPPED so a later
+          canonical approval wins. It is BOUNDED: a tampered prefix alone never directly
+          authenticates, and a homoglyph in the VERDICT rather than the prefix does not bypass.
+          THIS FILING DOES NOT REPAIR IT AND IS NOT AUTHORIZED TO, because correcting the parser
+          is a production change to a load-bearing path needing its own authorization, review and
+          lifecycle. It does NOT make Stage 1 executable, since the digest is stale, both
+          predicates are False, the lane is ABSENT and ATTEMPT_1 is unconsumed. And it BEARS
+          DIRECTLY ON the base rule: if a separately authorized parser correction lands on main
+          before the authorized rebinding begins, that is an intervening main commit and the drift
+          rule applies without exception, so the rebinding STOPS.
+
+          EFFECTIVITY. Effective ONLY on complete closure of all seven conditions, in order:
+          independent FULL exact-head review under OPS-0007 SS-1; any bounded correction and
+          exact-head re-review; principal exact-head acceptance at the final head; normal merge;
+          immediate post-merge verification; successful merge-commit CI whose head_sha is the
+          EXACT MERGE SHA; and final post-CI verification and lifecycle closure. NONE IS
+          INDIVIDUALLY SUFFICIENT. Merging this decision performs no rebinding and arms nothing.
+          Stage 1 remains UNARMED and NOT EXECUTABLE, the lane is ABSENT, and ATTEMPT_1 is intact,
+          unclaimed and unconsumed.
+
+          BOUNDED CORRECTION, independent FULL exact-head review 5026362328 at reviewed head
+          a7f490904d42c23a6c30cd491fb84928887d1397 -- 1 BLOCKING / 1 MAJOR / 1 MINOR / 0 NOTE. All
+          three were REPRODUCED through their real mechanisms before anything was edited.
+
+          BLOCKING 1 RESOLVED -- the grant permitted rebinding the very bytes SS-M proves
+          defective. The prior drift rule was ASYMMETRIC: it stopped the SAFER case (a parser fix
+          landing first) while permitting the MORE DANGEROUS one (no fix, therefore no intervening
+          commit, therefore nothing fires, and the known-fail-open parser becomes the ACCEPTED
+          ENFORCEMENT ANCHOR). Reproduced live: at the exact bytes 12eab05e... a position-correct
+          adverse first line returns the approving verdict, and a scan of the whole decision found
+          ZERO occurrences of prerequisite / before-the-rebinding / must-be-corrected /
+          conjunctive. New SS-F.0 makes a SEPARATELY AUTHORIZED parser correction a CONJUNCTIVE
+          PREREQUISITE through all EIGHT of its own conditions (own authorization; own
+          implementation; independent FULL exact-head review plus any correction and re-review;
+          principal exact-head acceptance; normal merge; post-merge verification; merge-commit CI
+          at the exact merge SHA; final post-CI closure), pins 12eab05e... as a PERMANENT NEGATIVE
+          PIN that may NEVER be rebound, and binds the corrected module through an EXACT CLOSED
+          TRANSITION whose new end is DERIVED from that completed lifecycle and explicitly NOT
+          predicted here. SS-F.2 was RECONCILED rather than patched: because a mandatory parser
+          correction MUST advance main, an absolute equal-this-decision's-merge rule and the
+          required intervening merge cannot both hold, so the absolute-plus-generic-exception
+          formulation is WITHDRAWN AND REPLACED by ONE unambiguous rule -- the rebinding base must
+          EQUAL the exact merge commit closing the parser-correction lifecycle, with NO unadmitted
+          intervening drift. A rebinding based on THIS decision's own merge now FAILS SS-F.2.
+
+          MAJOR 1 RESOLVED -- SS-F.7 left the decisions governing the parser bytes outside the
+          byte-identity boundary. Reproduced live: LOAD_BEARING_RELPATHS is 18 and binds ELEVEN
+          governance decisions, but XASSET-0053, XASSET-0055, XASSET-0056 and XASSET-0057 are ALL
+          ABSENT, while the prior SS-E item 4 limited expansion to "this decision and the unit's
+          own". SS-F.7 now requires DIRECT MEMBERSHIP for XASSET-0053, XASSET-0055, XASSET-0056,
+          XASSET-0057, the future rebinding decision's own file, and EVERY future accepted
+          decision authorizing or implementing the prerequisite parser correction. XASSET-0054
+          REMAINS EXCLUDED -- identifier consumed, PR closed unmerged, no decision file on main --
+          admissible only on independent evidence that it is operative. CITATION IS NOT MEMBERSHIP:
+          related_decisions, quotation, derivation, equivalence, inheritance and narrative
+          reference are all explicitly insufficient. NO final count is guessed; the future unit
+          must DERIVE the exact final count and the exact closed membership transition from the
+          ACTUAL COMPLETED CHAIN. The XASSET-0041->XASSET-0044 precedent is cited and independently
+          verified to have bound all four of its own chain members.
+
+          MINOR 1 RESOLVED -- the committed SS-M reproduction did not build the attacks it claimed.
+          Reproduced exactly: _ADVERSE_TAIL[1:] DROPPED the leading S, so the Omicron case built
+          FORMAL DISP{U+039F}ITION rather than the reported FORMAL DISP{U+039F}SITION, and all
+          three code points were INSERTED AT THE O POSITION (index 11) instead of replacing their
+          own ASCII counterparts. Replaced with position-correct bodies built by single in-place
+          substitution against the canonical adverse line: U+039F for the ASCII O of DISPOSITION
+          (index 11), U+0410 for the ASCII A of FORMAL (index 4), U+0130 for the ASCII I of
+          DISPOSITION (index 8). Each is asserted to sit at a REAL occurrence of the character it
+          replaces, to differ in EXACTLY ONE code point, and to preserve length; each body is
+          driven through the REAL parser and ALL THREE real consumer seams
+          (_derive_pr337_actor_ratification, verify_lifecycle_against_truth,
+          _verify_selected_review_is_final) with an adverse first line followed by a canonical
+          approval, each with its own untampered CONTROL. The superseded construction is barred by
+          an AST-level guard rather than a substring scan, because the explanatory comment
+          necessarily names it.
+
+          SCOPE OF THE CORRECTION. Decision file, its supporting suite, this register entry, and
+          the strictly coupled tests those changes require. The production authorization module is
+          NOT edited -- asserted mechanically -- no parser correction is performed, and no
+          rebinding, readiness verification, drift verification, attestation, arming, lane
+          creation, claim, execution, results work, allocation, trading or protected RISK access
+          occurs. No test or validator is weakened, deleted, skipped or bypassed. Stage 1 remains
+          UNARMED and NOT EXECUTABLE.
+
+          SECOND BOUNDED CORRECTION, independent exact-head DELTA review 5026856868 at reviewed
+          head 28ae03f4b5811c9d9e1f5beca36d2549f05d920c -- 1 BLOCKING / 1 MAJOR / 1 MINOR / 0
+          NOTE. That review confirmed the FIRST correction's MINOR closed (position-correct
+          bodies reaching the parser and all three seams) and the direct-membership list correct;
+          its findings were in the corrected authority's own INTERNAL CONSISTENCY. All were
+          reproduced through their real mechanisms before anything was edited.
+
+          BLOCKING 1A RESOLVED -- SS-F.2 declared equality with no exception and then supplied
+          one. Reproduced: the section asserted "there is no other, and no exception clause
+          qualifies it" while a later sentence read "It must stop and obtain new authority, UNLESS
+          every such commit is itself separately authorized AND admitted into the rebinding
+          through an explicit closed identity transition". Once any intervening commit exists the
+          base cannot EQUAL the parser-correction merge, so that clause was either inoperative or
+          a reinstated exception; the guard test verified only the disclaiming sentence and never
+          rejected the unless. The admission path is now REMOVED, not narrowed: any later main
+          commit invalidates this grant for that base with NO admission path, and the only lawful
+          route is a NEW, SUPERSEDING rebinding authorization. A structural guard now permits the
+          word "unless" in section F only inside the sentence that explains its own removal.
+
+          BLOCKING 1B RESOLVED -- SS-F.0 permanently forbade 12eab05e... while SS-F.3 still fixed
+          that same identity as the transition's NEW end, labelled "the merged XASSET-0056 bytes",
+          with the supporting test still requiring that old/new pair. Both competing tables are
+          WITHDRAWN AND REPLACED by ONE ordered four-role chain: (1) PREVIOUSLY BOUND
+          4ff28941.../f71b08b4..., retained never discarded; (2) VULNERABLE INTERMEDIATE
+          12eab05e.../b5622f9e..., permanent negative and adverse history, NEVER a new bound end
+          under any reading; (3) PARSER-CORRECTED, derived at that correction's own merge only
+          after both its lifecycles close, never predicted; (4) FINAL STABILIZED POST-REBINDING,
+          derived after every authorized edit stabilizes, never predicted -- the one and only new
+          bound end. Every adjacent transition 1->2, 2->3, 3->4 must be proved, 1->2 as HISTORY
+          rather than adoption, plus the final register transition 4ff28941... -> role 4 with the
+          old value preserved rather than overwritten. THE FINAL BOUND IDENTITY CAN NEVER BE
+          12eab05e.... A structural test additionally proves no invented 64-hex digest appears
+          anywhere in the decision.
+
+          MAJOR 1 RESOLVED -- SS-F.0 item 1 required only "its own accepted governance
+          authorization, filed and merged". In this repository merged does NOT mean effective:
+          this decision's own SS-F.10 already records XASSET-0044 and XASSET-0045 as NOT
+          EFFECTIVE because their exact-merge-CI condition failed. A parser-correction
+          implementation could therefore have begun behind an authorization that merged with
+          failed CI or without closure. The single eight-step list is replaced by TWO SEPARATE
+          LIFECYCLES that must each close completely and in order: LIFECYCLE A (A1-A7) for the
+          parser-correction AUTHORIZATION decision itself -- independent FULL exact-head review,
+          any correction and exact-head re-review so the review holds at the FINAL accepted head,
+          principal exact-head acceptance, normal merge, post-merge verification, successful
+          merge-commit CI at that authorization's EXACT merge SHA, and final post-CI closure; and
+          LIFECYCLE B (B1-B8) for the IMPLEMENTATION, which MAY NOT BEGIN until Lifecycle A has
+          closed in full. Named disqualifying cases, each failing SS-F.0 without exception:
+          authorization merged with FAILED merge-CI; merged with NO RECORDED CLOSURE; review
+          anchored to a STALE HEAD; otherwise INCOMPLETE lifecycle; implementation begun BEFORE
+          Lifecycle A closed; and implementation whose own B1-B8 has not closed.
+
+          MINOR 1 RESOLVED -- the corrected artifact contained
+          "assert homoglyph.upper() == homoglyph or homoglyph.upper() != homoglyph", an exhaustive
+          x == y or x != y true of EVERY comparable value, proven vacuous against six sample values
+          including the empty string. Replaced with the ACTUAL documented property: the uppercased
+          lookalike must remain wholly non-ASCII, must not become the ASCII character it replaces,
+          and uppercasing must be idempotent. Added KNOWN-BAD controls proving plain ASCII
+          characters FAIL that property (the superseded tautology accepted them), and an AST-level
+          hygiene guard that rejects any x == y or x != y over the same operands in either order,
+          anywhere in the module -- itself proven non-vacuous by a detector test fired against a
+          known tautology.
+
+          PROACTIVE AUDIT FINDING INCORPORATED -- the three SS-M homoglyphs are EXAMPLES of one
+          root "near-canonical prefix gets skipped" family, not its definition. A read-only sweep
+          executed the UNCHANGED parser at 12eab05e... across the 17 non-space positions of the
+          FORMAL DISPOSITION prefix, with an adverse first line followed by a canonical approval.
+          Measured, not asserted: single-character DELETION 17/17 bypass; ASCII SUBSTITUTION
+          17/17; ASCII INSERTION 16/17; ADJACENT TRANSPOSITION 17/17 across 17 distinct-character
+          pairs; UNICODE/CONFUSABLE SUBSTITUTION 17/17. The one non-bypassing insertion is position
+          0 -- "XFORMAL DISPOSITION:" leaves the canonical prefix intact as a substring, so the
+          line is correctly read as adverse rather than skipped; recorded as a measured exception
+          rather than rounded away. Two counts differ from the originating audit's figures and are
+          reported as measured here: insertion 16/17 rather than 17/17, and transposition stated
+          against a 17-pair denominator rather than 16. New SS-F.0.1 records the matrix and states
+          that a future correction MERELY PATCHING THE THREE SS-M CODE POINTS DOES NOT SATISFY
+          SS-F.0. New SS-F.0.2 requires the future parser-correction decision to define a TOTAL,
+          MECHANICALLY TESTABLE recognition boundary; explicitly disposition deletion, ASCII
+          substitution, insertion, transposition and non-ASCII/confusable substitution across the
+          prefix; guarantee every candidate outside the exact accepted grammar becomes MALFORMED
+          and cannot be skipped so a later approval wins; preserve ordinary prose as ABSENT under a
+          governed testable rule; prove the rule through the parser AND all three consumer seams
+          including native-APPROVED rescue; use a family-by-position adversarial matrix and
+          mutation proof rather than handpicked literals; retain exact positive controls for every
+          accepted form; and complete BOTH lifecycles. THIS FILING DOES NOT DECIDE THAT BOUNDARY
+          -- doing so would design the correction inside an authorization that expressly withholds
+          it -- so the boundary is RESERVED to that future decision, and XASSET-0057's rebinding
+          REMAINS UNAVAILABLE until that decision's complete lifecycle closes. The parser is NOT
+          repaired here.
+
+          SCOPE OF THE SECOND CORRECTION. Decision file, its supporting suite, and this register
+          entry -- three files, no expansion. Production authorization module NOT edited and
+          byte-identical to base. Stage 1 remains UNARMED and NOT EXECUTABLE.
+          THIRD BOUNDED CORRECTION, independent exact-head DELTA review 5027180757 over
+          28ae03f4b5811c9d9e1f5beca36d2549f05d920c -> de7b33c7e09f0f4fb53810a4b3a31facebfbfac8 --
+          0 BLOCKING / 2 MAJOR / 1 MINOR / 0 NOTE. That review confirmed both prior BLOCKING
+          findings closed. Every finding was reproduced through its real mechanism before anything
+          was edited.
+
+          MAJOR 1 RESOLVED -- the two-lifecycle model was PROSE-ONLY, with no mechanical
+          counterpart. Reproduced: the supporting suite checked each B step by existence alone
+          (f"* {step}." in decision_flat), so GUTTING B7 to "a CI run of some kind" left all 226
+          tests PASSING; the file was restored byte-identically. A TEST-ONLY mechanical model is
+          now added: LIFECYCLE_A_STEPS (A1-A7) and LIFECYCLE_B_STEPS (B1-B8) declared from the
+          decision's own bullets, evaluate_lifecycle_a / evaluate_lifecycle_b, and
+          qualifying_rebinding_base, which returns the B5 merge SHA only when BOTH lifecycles
+          fully close and returns None otherwise. Fourteen A-mutations and sixteen B-mutations
+          each drive a distinct refusal; the model asserts DECLARED == MODELLED across all
+          fifteen steps and pins SUBSTANTIVE content inside each step's own bullet, so the exact
+          B7 gutting that previously passed now fails. A merged-but-ineffective authorization
+          (the XASSET-0045 shape) is proved non-qualifying, and B-before-A is refused. The model
+          adds NO production behaviour -- asserted mechanically against the real module.
+
+          MAJOR 2 RESOLVED -- SS-F.2 still pointed at "the required parser-correction lifecycle
+          (SS F.0 conditions 1-8)", a reference SS-F.0.3 had already dissolved by splitting the
+          prerequisite into TWO lifecycles, A1-A7 for the authorization and B1-B8 for the
+          implementation; the coupled test merely searched for the string "parser-correction
+          lifecycle" and so could not detect the ambiguity. The generic "SS F.0 conditions 1-8"
+          wording is WITHDRAWN AND REPLACED wherever it governed, INCLUDING the first-correction
+          narrative above, whose phrase "EQUAL the exact merge commit closing the parser-correction
+          lifecycle" is likewise superseded and is retained only as historical record of what that
+          earlier round said. THE OPERATIVE RULE IS NOW EXACT: the authorized unit's base must
+          EQUAL the Lifecycle B implementation's NORMAL-MERGE COMMIT AT B5 and nothing else, that
+          B5 SHA is the SAME commit B7 merge-commit CI tests and B8 closure names, and the unit
+          must prove all three are one commit. Four candidates are named NON-QUALIFYING and are
+          each covered by a negative test: the Lifecycle A authorization merge; any
+          pre-implementation commit, including THIS decision's own merge; any later descendant of
+          the B5 merge; and any unrelated or intervening main commit. The ordering statement now
+          routes explicitly through both lifecycles, and drift is measured from the B5
+          implementation merge rather than an ambiguous "parser-correction merge".
+
+          MINOR 1 RESOLVED -- SS-F.0.1 described the single non-bypassing insertion (position 0)
+          as being "read as a genuine adverse record". Reproduced against the REAL parser:
+          parse_formal_disposition on "X" + the canonical adverse line + a canonical approval
+          returns MALFORMED_FORMAL_DISPOSITION, NOT "CHANGES REQUIRED". The claim is corrected and
+          the earlier wording expressly WITHDRAWN AS INACCURATE: at position 0 the canonical prefix
+          survives INTACT AS A SUBSTRING, so the line is recognized as formal-looking and FAILS
+          CLOSED as MALFORMED, which stops the parse so the later approval cannot win. The
+          security conclusion is unchanged -- the attack does not bypass -- but the MECHANISM is
+          now stated accurately, which matters because a future correction must preserve
+          fail-closed MALFORMED handling, not an adverse-verdict path that does not exist.
+
+          SELF-CAUGHT GAP DURING THE THIRD CORRECTION, disclosed rather than passed over. The
+          first pass corrected MINOR 1 in PROSE ONLY. The mutation proof then showed the revert
+          probe -- restoring "read as a genuine adverse record" -- STILL PASSED all 288 tests,
+          i.e. exactly the prose-without-a-mechanical-counterpart defect this same review raised
+          as MAJOR 1. It was closed rather than left: a new class drives the position-0 body
+          through the REAL parser and asserts the returned value IS the module's
+          MALFORMED_FORMAL_DISPOSITION SENTINEL OBJECT -- pinned by IDENTITY, not by a string,
+          after inspection showed the parser returns an object of type
+          _MalformedFormalDisposition rather than the literal -- proves it is NOT "CHANGES
+          REQUIRED", proves it still does not bypass, proves it is a DIFFERENT outcome class from
+          every bypassing homoglyph attack, and carries a positive control showing a non-zero
+          insertion DOES break the prefix and DOES bypass. SS-F.0.1 was correspondingly tightened
+          to state the sentinel-object fact. The revert probe now FAILS, as do probes gutting B7,
+          renaming A6, restoring the obsolete conditions-1-8 wording, and weakening equality to
+          descent -- six probes, all caught, with both edited files verified restored
+          BYTE-IDENTICAL afterwards.
+
+          SCOPE OF THE THIRD CORRECTION. Decision file, its supporting suite, and this register
+          entry -- three files, no expansion. Four coupled assertions inside that same suite were
+          RE-ANCHORED to the corrected SS-F.2 naming and are strictly STRONGER, each retaining the
+          superseded wording as a NEGATIVE pin; no test or validator is weakened, deleted, skipped
+          or bypassed. Production authorization module NOT edited and byte-identical to base. No
+          parser correction is performed. Stage 1 remains UNARMED and NOT EXECUTABLE.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -18880,10 +19241,10 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/xasset-0055-parser-correction-c3ro29
-    active_pr: 357
-    last_verified_main_sha: 29e4969885970d942a5acecc1424fb2e2b080d60
-    last_verified_date: "2026-08-25"
+    active_branch: claude/xasset-successor-authorization-3b0btg
+    active_pr: 358
+    last_verified_main_sha: 583022a5f2106d61f82d270edadd3520d8b0c55d
+    last_verified_date: "2026-08-26"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively

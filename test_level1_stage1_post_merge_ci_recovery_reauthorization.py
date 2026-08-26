@@ -188,11 +188,17 @@ XASSET0055_ACTIVE_PR = 356
 #: RETAINED below as a negative pin rather than deleted, so every field stays bound at BOTH
 #: ends and a silent revert to ANY finished unit's state still fails here.
 XASSET0056_MAIN_SHA = "29e4969885970d942a5acecc1424fb2e2b080d60"
+
+#: ADVANCED BY XASSET-0057. WS-0014's SINGLE SHARED live self-reference field advances
+#: with every generation; XASSET-0056's own value is retained above as a NEGATIVE pin, so
+#: a silent revert to that finished unit's state still fails here.
+XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 #: Read back from the live pull request AFTER GitHub issued it, never predicted. The
 #: branch's first commit carried the impossible sentinel -56 (negative, so structurally
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
 #: follow-up commit, with no amend and no force-push.
 XASSET0056_ACTIVE_PR = 357
+XASSET0057_ACTIVE_PR = 358
 
 
 #: PR #345's lifecycle evidence that DID complete, preserved as authenticated predecessor
@@ -1136,7 +1142,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
         # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
         # pin, so a silent revert to finished work still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0056_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0057_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0056_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0055_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0053_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0052_MAIN_SHA

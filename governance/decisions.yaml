@@ -1152,3 +1152,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0027, XASSET-0029, XASSET-0030, XASSET-0036, XASSET-0037, XASSET-0040, XASSET-0041, XASSET-0042, XASSET-0043, XASSET-0044, XASSET-0045, XASSET-0046, XASSET-0047, XASSET-0048, XASSET-0049, XASSET-0050, XASSET-0051, XASSET-0052, XASSET-0053, XASSET-0055, LEVEL2-0001, RISK-0001]
     supporting_artifact: test_level1_stage1_formal_disposition_parser_correction.py
     file: governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md
+  - decision_id: XASSET-0057
+    date: 2026-08-26
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0027, XASSET-0029, XASSET-0030, XASSET-0036, XASSET-0037, XASSET-0040, XASSET-0041, XASSET-0042, XASSET-0043, XASSET-0044, XASSET-0045, XASSET-0046, XASSET-0047, XASSET-0048, XASSET-0049, XASSET-0050, XASSET-0051, XASSET-0052, XASSET-0053, XASSET-0055, XASSET-0056, LEVEL2-0001, RISK-0001]
+    supporting_artifact: test_level1_stage1_post_parser_correction_rebinding_authorization.py
+    file: governance/decisions/XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md
