@@ -311,14 +311,37 @@ class TestTheRequiredPropertiesAreConditions:
         assert "none may be waived by the unit that performs it" in f
 
     def test_the_base_rule_is_equality_not_descent(self, decision_text):
-        """RE-ANCHORED (DELTA 5026362328 BLOCKING 1): the base rule is now equality to the
-        PARSER-CORRECTION merge, stated once, with no absolute-plus-exception formulation."""
+        """RE-ANCHORED (DELTA 5027180757 MAJOR 2): the base rule now names the qualifying
+        commit EXACTLY -- the Lifecycle B implementation's B5 normal-merge commit -- rather
+        than referring to the withdrawn, ambiguous "the required parser-correction lifecycle
+        (SS F.0 conditions 1-8)". Strictly stronger: the superseded OPERATIVE form is pinned
+        absent, the withdrawal is pinned present, and the new exact naming is pinned present."""
         f = _flat(_section(decision_text, "F"))
         assert "Equality, not descent" in f
-        assert "must EQUAL the exact normal-merge commit that closes the required" in f
-        assert "parser-correction lifecycle" in f
-        # the superseded formulation must be gone, not merely supplemented
+
+        # (a) the superseded OPERATIVE formulation is gone as a rule.
+        assert "must EQUAL the exact normal-merge commit" not in f
+        # ... and the earlier absolute-plus-exception formulation stays gone.
         assert "at *this* authorization's own merge" not in f
+
+        # (b) its withdrawal is stated, not silently dropped.
+        assert "That reference is **withdrawn and replaced**" in f
+        assert "There are no longer generic \u00a7F.0 conditions 1\u20138" in _flat(
+            _section(decision_text, "F")
+        ).replace("\u201c", "").replace("\u201d", "").replace('"', "")
+
+        # (c) the replacement names the commit exactly, at BOTH statements of it.
+        assert (
+            "must EQUAL the Lifecycle B implementation's normal-merge commit at B5"
+            in f
+        )
+        assert "the base must **equal the B5 normal-merge commit** of the Lifecycle B" in f
+
+        # (d) B5 is tied to the SHA B7 tests and B8 names -- the three are one commit.
+        assert "exact B5 merge SHA is the SHA tested by B7" in f
+        assert "named by B8" in f
+
+        # (e) singularity is unchanged.
         assert "single, unambiguous" in f
 
     def test_ancestry_is_stated_necessary_but_explicitly_insufficient(self, decision_text):
@@ -336,7 +359,12 @@ class TestTheRequiredPropertiesAreConditions:
         assert "may not proceed on the strength of this\nauthorization**, full stop" in _section(
             decision_text, "F"
         ) or "full stop" in f
-        assert "between the parser-correction merge and the authorized unit's base" in f
+        # RE-ANCHORED (DELTA 5027180757 MAJOR 2): drift is measured from the exactly-named
+        # B5 implementation merge, not from an ambiguous "parser-correction merge".
+        assert (
+            "between the **B5 implementation merge** and the authorized unit's base" in f
+        )
+        assert "between the parser-correction merge and the authorized" not in f
 
     def test_the_base_must_be_derived_not_predicted(self, decision_text):
         f = _flat(_section(decision_text, "F"))
@@ -893,8 +921,17 @@ class TestTheParserCorrectionIsAConjunctivePrerequisite:
         assert "at *this* authorization's own merge" not in _flat(decision_text)
 
     def test_the_ordering_is_stated_explicitly(self, decision_text):
+        # RE-ANCHORED (DELTA 5027180757 MAJOR 2): the ordering now routes through BOTH named
+        # lifecycles and terminates on the exactly-named B5 merge. Strictly stronger: the
+        # superseded two-step chain is pinned absent and every new hop is pinned present.
         f = _flat(_section(decision_text, "F"))
-        assert "this decision's merge → the parser correction's" in f
+        assert "this decision's merge \u2192 the parser correction's" not in f
+        assert "this decision's merge \u2192 Lifecycle A's complete closure (A1\u2013A7)" in f
+        assert "\u2192 Lifecycle B's complete closure (B1\u2013B8)" in f
+        assert "whose **B5 merge** is the sole qualifying commit" in f
+        assert (
+            "\u2192 the authorized rebinding's base, which **equals that B5 merge**" in f
+        )
         assert "A rebinding based on this decision's own merge" in f
         assert "fails this condition" in f
 
@@ -1013,8 +1050,14 @@ class TestTheBaseRuleIsGenuinelySingular:
         assert "It is therefore **removed**, not narrowed" in f
 
     def test_the_equality_rule_still_stands_alone(self, decision_text):
+        # RE-ANCHORED (DELTA 5027180757 MAJOR 2): singularity is unchanged; only the naming
+        # of the qualifying commit moved. Superseded operative form pinned absent.
         f = _flat(_section(decision_text, "F"))
-        assert "must EQUAL the exact normal-merge commit that closes the required" in f
+        assert "must EQUAL the exact normal-merge commit" not in f
+        assert (
+            "must EQUAL the Lifecycle B implementation's normal-merge commit at B5" in f
+        )
+        assert "\u2014 and nothing else" in f
         assert "there is no other, and no exception clause qualifies it" in f
 
 
@@ -1383,6 +1426,369 @@ class TestNoTautologicalAssertionsSurvive:
 
 
 # =====================================================================================
+# 9e. DELTA 5027180757 MAJOR 1 — a MECHANICAL two-lifecycle qualification model
+# =====================================================================================
+#
+# The prior suite only searched for A/B labels and phrases. DELTA review 5027180757 MAJOR 1
+# proved the consequence concretely: gutting B7 to "a CI run of some kind" left every committed
+# test passing, because only the label `* B7.` was checked. What follows is a TEST-ONLY pure
+# condition model that actually EVALUATES a candidate lifecycle pair conjunctively.
+#
+# It adds NO production authorization behaviour. `level1_stage1_execution_authorization.py` is
+# untouched by this filing and is asserted byte-identical to base elsewhere in this module.
+
+
+#: The decision's own enumerated steps, bound MECHANICALLY to the record rather than restated.
+#: Each entry is (step_id, substantive content that must appear inside that step's own bullet).
+#: If the decision renames, reorders, drops or guts a step, `test_the_model_binds_to_the_decision`
+#: fails -- so the model cannot silently diverge from the authority it models.
+LIFECYCLE_A_STEPS = (
+    ("A1", "independent **FULL** exact-head review"),
+    ("A2", "exact-head re-review"),
+    ("A3", "principal exact-head acceptance"),
+    ("A4", "normal merge"),
+    ("A5", "post-merge verification"),
+    ("A6", "successful merge-commit CI whose `head_sha` is that authorization's exact merge SHA"),
+    ("A7", "final post-CI verification and lifecycle closure"),
+)
+
+LIFECYCLE_B_STEPS = (
+    ("B1", "the implementation itself, correcting the defect family"),
+    ("B2", "independent **FULL** exact-head review"),
+    ("B3", "exact-head re-review"),
+    ("B4", "principal exact-head acceptance"),
+    ("B5", "normal merge"),
+    ("B6", "immediate post-merge verification"),
+    ("B7", "successful merge-commit CI whose `head_sha` is that implementation's exact merge SHA"),
+    ("B8", "final post-CI verification and lifecycle closure"),
+)
+
+
+class LifecycleRecord(dict):
+    """A candidate lifecycle, as a plain mapping. Test-only; no production coupling."""
+
+
+def _complete_authorization_record() -> LifecycleRecord:
+    """One complete, correctly ordered, exact-head / exact-merge Lifecycle A."""
+    return LifecycleRecord(
+        accepted_head="a" * 40,
+        A1_review_present=True,
+        A1_reviewed_head="a" * 40,          # anchored to the FINAL accepted head
+        A2_recorrection_reviewed_head="a" * 40,
+        A3_acceptance_present=True,
+        A3_accepted_head="a" * 40,
+        A4_merge_sha="m" * 40,
+        A4_merge_parents=("p" * 40, "a" * 40),   # second parent is the accepted head
+        A5_verification_present=True,
+        A6_ci_present=True,
+        A6_ci_conclusion="success",
+        A6_ci_head_sha="m" * 40,            # equals the merge SHA
+        A7_closure_present=True,
+        A7_closure_names_merge_sha="m" * 40,
+    )
+
+
+def _complete_implementation_record() -> LifecycleRecord:
+    """One complete, correctly ordered Lifecycle B, begun after A closed."""
+    return LifecycleRecord(
+        accepted_head="b" * 40,
+        B1_implementation_present=True,
+        B1_started_after_a_closure=True,
+        B2_review_present=True,
+        B2_reviewed_head="b" * 40,
+        B3_recorrection_reviewed_head="b" * 40,
+        B4_acceptance_present=True,
+        B4_accepted_head="b" * 40,
+        B5_merge_sha="n" * 40,
+        B5_merge_parents=("q" * 40, "b" * 40),
+        B6_verification_present=True,
+        B7_ci_present=True,
+        B7_ci_conclusion="success",
+        B7_ci_head_sha="n" * 40,            # equals the B5 merge SHA
+        B8_closure_present=True,
+        B8_closure_names_merge_sha="n" * 40,
+    )
+
+
+def evaluate_lifecycle_a(rec) -> tuple[bool, tuple[str, ...]]:
+    """Evaluate A1-A7 CONJUNCTIVELY. Returns (qualifies, refusal reasons)."""
+    bad = []
+    if not rec.get("A1_review_present"):
+        bad.append("A1: no independent FULL exact-head review")
+    if rec.get("A1_reviewed_head") != rec.get("accepted_head"):
+        bad.append("A1: review anchored to a stale or wrong head")
+    if rec.get("A2_recorrection_reviewed_head") != rec.get("accepted_head"):
+        bad.append("A2: re-review does not hold at the final accepted head")
+    if not rec.get("A3_acceptance_present"):
+        bad.append("A3: no principal exact-head acceptance")
+    if rec.get("A3_accepted_head") != rec.get("accepted_head"):
+        bad.append("A3: acceptance at a different head")
+    parents = rec.get("A4_merge_parents") or ()
+    if not rec.get("A4_merge_sha"):
+        bad.append("A4: no normal merge")
+    elif len(parents) != 2 or parents[1] != rec.get("accepted_head"):
+        bad.append("A4: merge is not a normal two-parent merge of the accepted head")
+    if not rec.get("A5_verification_present"):
+        bad.append("A5: no post-merge verification")
+    if not rec.get("A6_ci_present"):
+        bad.append("A6: no merge-commit CI")
+    elif rec.get("A6_ci_conclusion") != "success":
+        bad.append("A6: merge-commit CI did not succeed")
+    elif rec.get("A6_ci_head_sha") != rec.get("A4_merge_sha"):
+        bad.append("A6: CI ran against a commit other than the exact merge SHA")
+    if not rec.get("A7_closure_present"):
+        bad.append("A7: no final post-CI closure")
+    elif rec.get("A7_closure_names_merge_sha") != rec.get("A4_merge_sha"):
+        bad.append("A7: closure names a different merge SHA")
+    return (not bad), tuple(bad)
+
+
+def evaluate_lifecycle_b(rec, a_qualifies: bool) -> tuple[bool, tuple[str, ...]]:
+    """Evaluate B1-B8 CONJUNCTIVELY, and refuse if Lifecycle A has not closed."""
+    bad = []
+    if not a_qualifies:
+        bad.append("B: Lifecycle A has not closed; implementation may not begin")
+    if not rec.get("B1_implementation_present"):
+        bad.append("B1: no implementation")
+    if not rec.get("B1_started_after_a_closure"):
+        bad.append("B1: implementation began before Lifecycle A closed")
+    if not rec.get("B2_review_present"):
+        bad.append("B2: no independent FULL exact-head review")
+    if rec.get("B2_reviewed_head") != rec.get("accepted_head"):
+        bad.append("B2: review anchored to a stale or wrong head")
+    if rec.get("B3_recorrection_reviewed_head") != rec.get("accepted_head"):
+        bad.append("B3: re-review does not hold at the final accepted head")
+    if not rec.get("B4_acceptance_present"):
+        bad.append("B4: no principal exact-head acceptance")
+    if rec.get("B4_accepted_head") != rec.get("accepted_head"):
+        bad.append("B4: acceptance at a different head")
+    parents = rec.get("B5_merge_parents") or ()
+    if not rec.get("B5_merge_sha"):
+        bad.append("B5: no normal merge")
+    elif len(parents) != 2 or parents[1] != rec.get("accepted_head"):
+        bad.append("B5: merge is not a normal two-parent merge of the accepted head")
+    if not rec.get("B6_verification_present"):
+        bad.append("B6: no immediate post-merge verification")
+    if not rec.get("B7_ci_present"):
+        bad.append("B7: no merge-commit CI")
+    elif rec.get("B7_ci_conclusion") != "success":
+        bad.append("B7: merge-commit CI did not succeed")
+    elif rec.get("B7_ci_head_sha") != rec.get("B5_merge_sha"):
+        bad.append("B7: CI ran against a commit other than the exact B5 merge SHA")
+    if not rec.get("B8_closure_present"):
+        bad.append("B8: no final post-CI closure")
+    elif rec.get("B8_closure_names_merge_sha") != rec.get("B5_merge_sha"):
+        bad.append("B8: closure names a different merge SHA")
+    return (not bad), tuple(bad)
+
+
+def qualifying_rebinding_base(a_rec, b_rec):
+    """The §F.2 rule, mechanically: the base is the B5 merge, or nothing qualifies."""
+    a_ok, _ = evaluate_lifecycle_a(a_rec)
+    b_ok, _ = evaluate_lifecycle_b(b_rec, a_ok)
+    if not (a_ok and b_ok):
+        return None
+    if not (b_rec["B5_merge_sha"] == b_rec["B7_ci_head_sha"] == b_rec["B8_closure_names_merge_sha"]):
+        return None
+    return b_rec["B5_merge_sha"]
+
+
+#: Every A-condition, and the mutation that must drive it false.
+A_MUTATIONS = (
+    ("A1 absent", {"A1_review_present": False}),
+    ("A1 stale reviewed head", {"A1_reviewed_head": "z" * 40}),
+    ("A2 re-review at wrong head", {"A2_recorrection_reviewed_head": "z" * 40}),
+    ("A3 absent", {"A3_acceptance_present": False}),
+    ("A3 at wrong head", {"A3_accepted_head": "z" * 40}),
+    ("A4 no merge", {"A4_merge_sha": None}),
+    ("A4 not a two-parent merge", {"A4_merge_parents": ("p" * 40,)}),
+    ("A4 merge of a different head", {"A4_merge_parents": ("p" * 40, "z" * 40)}),
+    ("A5 no verification", {"A5_verification_present": False}),
+    ("A6 CI missing", {"A6_ci_present": False}),
+    ("A6 CI failed", {"A6_ci_conclusion": "failure"}),
+    ("A6 CI on the wrong SHA", {"A6_ci_head_sha": "z" * 40}),
+    ("A7 no closure", {"A7_closure_present": False}),
+    ("A7 closure names wrong SHA", {"A7_closure_names_merge_sha": "z" * 40}),
+)
+
+#: Every B-condition, and the mutation that must drive it false.
+B_MUTATIONS = (
+    ("B1 absent", {"B1_implementation_present": False}),
+    ("B1 began before A closed", {"B1_started_after_a_closure": False}),
+    ("B2 absent", {"B2_review_present": False}),
+    ("B2 stale reviewed head", {"B2_reviewed_head": "z" * 40}),
+    ("B3 re-review at wrong head", {"B3_recorrection_reviewed_head": "z" * 40}),
+    ("B4 absent", {"B4_acceptance_present": False}),
+    ("B4 at wrong head", {"B4_accepted_head": "z" * 40}),
+    ("B5 no merge", {"B5_merge_sha": None}),
+    ("B5 not a two-parent merge", {"B5_merge_parents": ("q" * 40,)}),
+    ("B5 merge of a different head", {"B5_merge_parents": ("q" * 40, "z" * 40)}),
+    ("B6 no verification", {"B6_verification_present": False}),
+    ("B7 CI missing", {"B7_ci_present": False}),
+    ("B7 CI failed", {"B7_ci_conclusion": "failure"}),
+    ("B7 CI on the wrong SHA", {"B7_ci_head_sha": "z" * 40}),
+    ("B8 no closure", {"B8_closure_present": False}),
+    ("B8 closure names wrong SHA", {"B8_closure_names_merge_sha": "z" * 40}),
+)
+
+
+class TestTheTwoLifecycleQualificationModel:
+    """MAJOR 1: a model that EVALUATES, not a search for labels."""
+
+    # ---- the model is bound to the decision, not restated beside it ----
+
+    @pytest.mark.parametrize("step,content", LIFECYCLE_A_STEPS + LIFECYCLE_B_STEPS)
+    def test_the_model_binds_to_the_decisions_exact_steps(self, decision_text, step, content):
+        """Each modelled step must exist in the decision AND carry its substantive content.
+
+        This is what closes MAJOR 1's B-step gap: gutting B7 while leaving `* B7.` in place now
+        fails here, because the CI/exact-merge-SHA content is pinned inside B7's own bullet.
+        """
+        f = _section(decision_text, "F")
+        marker = f"* {step}."
+        assert marker in f, step
+        body = f[f.index(marker) :]
+        body = body[: body.index("\n*")] if "\n*" in body else body
+        assert _flat(content) in _flat(body), (step, _flat(body)[:200])
+
+    def test_the_model_covers_every_step_the_decision_enumerates(self, decision_text):
+        """Non-vacuity: the model must not silently omit a step the decision defines."""
+        f = _section(decision_text, "F")
+        declared = set(re.findall(r"^\* (A\d|B\d)\.", f, re.M))
+        modelled = {s for s, _ in LIFECYCLE_A_STEPS + LIFECYCLE_B_STEPS}
+        assert declared == modelled, (declared ^ modelled)
+        assert len(modelled) == 15, len(modelled)
+
+    # ---- the all-true control qualifies ----
+
+    def test_a_complete_correctly_ordered_pair_qualifies(self):
+        a, b = _complete_authorization_record(), _complete_implementation_record()
+        a_ok, a_bad = evaluate_lifecycle_a(a)
+        b_ok, b_bad = evaluate_lifecycle_b(b, a_ok)
+        assert a_ok, a_bad
+        assert b_ok, b_bad
+        assert qualifying_rebinding_base(a, b) == "n" * 40
+
+    # ---- every condition, independently driven false, must refuse ----
+
+    @pytest.mark.parametrize("label,mutation", A_MUTATIONS)
+    def test_every_authorization_condition_is_load_bearing(self, label, mutation):
+        a = _complete_authorization_record()
+        a.update(mutation)
+        ok, reasons = evaluate_lifecycle_a(a)
+        assert not ok, f"{label} still qualified"
+        assert reasons, label
+        # and B must refuse too, because A did not close
+        b_ok, b_reasons = evaluate_lifecycle_b(_complete_implementation_record(), ok)
+        assert not b_ok and any("Lifecycle A has not closed" in r for r in b_reasons), label
+        assert qualifying_rebinding_base(a, _complete_implementation_record()) is None, label
+
+    @pytest.mark.parametrize("label,mutation", B_MUTATIONS)
+    def test_every_implementation_condition_is_load_bearing(self, label, mutation):
+        a = _complete_authorization_record()
+        b = _complete_implementation_record()
+        b.update(mutation)
+        a_ok, _ = evaluate_lifecycle_a(a)
+        assert a_ok
+        ok, reasons = evaluate_lifecycle_b(b, a_ok)
+        assert not ok, f"{label} still qualified"
+        assert reasons, label
+        assert qualifying_rebinding_base(a, b) is None, label
+
+    # ---- the named disqualifying cases, driven through the model ----
+
+    def test_a_stale_reviewed_head_is_refused(self):
+        a = _complete_authorization_record(); a["A1_reviewed_head"] = "z" * 40
+        ok, reasons = evaluate_lifecycle_a(a)
+        assert not ok and any("stale or wrong head" in r for r in reasons), reasons
+
+    def test_a_wrong_merge_sha_is_refused(self):
+        b = _complete_implementation_record(); b["B7_ci_head_sha"] = "z" * 40
+        ok, reasons = evaluate_lifecycle_b(b, True)
+        assert not ok and any("exact B5 merge SHA" in r for r in reasons), reasons
+
+    def test_missing_or_failed_exact_merge_ci_is_refused(self):
+        for mut, frag in (
+            ({"A6_ci_present": False}, "no merge-commit CI"),
+            ({"A6_ci_conclusion": "failure"}, "did not succeed"),
+        ):
+            a = _complete_authorization_record(); a.update(mut)
+            ok, reasons = evaluate_lifecycle_a(a)
+            assert not ok and any(frag in r for r in reasons), (mut, reasons)
+
+    def test_missing_verification_or_closure_is_refused(self):
+        for mut, frag in (
+            ({"A5_verification_present": False}, "no post-merge verification"),
+            ({"A7_closure_present": False}, "no final post-CI closure"),
+        ):
+            a = _complete_authorization_record(); a.update(mut)
+            ok, reasons = evaluate_lifecycle_a(a)
+            assert not ok and any(frag in r for r in reasons), (mut, reasons)
+
+    def test_implementation_beginning_before_a_closes_is_refused(self):
+        b = _complete_implementation_record(); b["B1_started_after_a_closure"] = False
+        ok, reasons = evaluate_lifecycle_b(b, True)
+        assert not ok and any("began before Lifecycle A closed" in r for r in reasons), reasons
+
+    def test_a_merged_but_ineffective_authorization_cannot_qualify(self):
+        """The exact XASSET-0045 shape: merged, but merge-CI failed and closure never recorded."""
+        a = _complete_authorization_record()
+        a.update({"A6_ci_conclusion": "failure", "A7_closure_present": False})
+        assert a["A4_merge_sha"], "the authorization DID merge -- that is the point"
+        ok, reasons = evaluate_lifecycle_a(a)
+        assert not ok
+        assert any("did not succeed" in r for r in reasons)
+        assert any("no final post-CI closure" in r for r in reasons)
+        assert qualifying_rebinding_base(a, _complete_implementation_record()) is None
+
+    # ---- the §F.2 base rule, mechanically ----
+
+    def test_only_the_b5_merge_qualifies_as_the_base(self):
+        a, b = _complete_authorization_record(), _complete_implementation_record()
+        base = qualifying_rebinding_base(a, b)
+        assert base == b["B5_merge_sha"]
+        assert base != a["A4_merge_sha"], "the Lifecycle A authorization merge must NOT qualify"
+
+    @pytest.mark.parametrize(
+        "candidate,why",
+        [
+            ("m" * 40, "the Lifecycle A authorization merge"),
+            ("p" * 40, "a pre-implementation commit"),
+            ("d" * 40, "a later descendant"),
+            ("u" * 40, "an unrelated or intervening main commit"),
+        ],
+    )
+    def test_no_other_commit_can_serve_as_the_base(self, candidate, why):
+        a, b = _complete_authorization_record(), _complete_implementation_record()
+        assert qualifying_rebinding_base(a, b) != candidate, why
+
+    def test_b5_b7_and_b8_must_name_the_same_commit(self):
+        for field in ("B7_ci_head_sha", "B8_closure_names_merge_sha"):
+            b = _complete_implementation_record(); b[field] = "z" * 40
+            assert qualifying_rebinding_base(_complete_authorization_record(), b) is None, field
+
+    # ---- falsifiability of the model itself ----
+
+    def test_the_model_is_conjunctive_not_disjunctive(self):
+        """Two independent failures must both be reported, not short-circuited to one."""
+        a = _complete_authorization_record()
+        a.update({"A5_verification_present": False, "A7_closure_present": False})
+        ok, reasons = evaluate_lifecycle_a(a)
+        assert not ok and len(reasons) >= 2, reasons
+
+    def test_the_model_adds_no_production_behaviour(self):
+        """Test-only: the model must not be imported from, or exist in, the production module."""
+        for name in ("evaluate_lifecycle_a", "evaluate_lifecycle_b", "qualifying_rebinding_base"):
+            assert not hasattr(AUTH, name), name
+
+    def test_the_mutation_tables_cover_every_modelled_step(self):
+        """Non-vacuity: no modelled step may be left without a refusal mutation."""
+        covered = {lbl.split()[0] for lbl, _ in A_MUTATIONS + B_MUTATIONS}
+        modelled = {s for s, _ in LIFECYCLE_A_STEPS + LIFECYCLE_B_STEPS}
+        assert modelled <= covered, modelled - covered
+
+
+# =====================================================================================
 # 10. The register is synchronized, additively
 # =====================================================================================
 
@@ -1476,3 +1882,92 @@ class TestNonVacuity:
         clean = _adverse_then_approval("FORMAL DISPOSITION: CHANGES REQUIRED")
         assert tampered != clean
         assert AUTH.parse_formal_disposition(tampered) != AUTH.parse_formal_disposition(clean)
+
+
+# =====================================================================================
+# 14. DELTA 5027180757 MINOR 1 — the position-zero mechanism is pinned to the REAL parser
+# =====================================================================================
+
+
+class TestThePositionZeroInsertionFailsClosedAsMalformed:
+    """DELTA review 5027180757 MINOR 1.
+
+    §F.0.1 previously said the single non-bypassing insertion (position 0) "is read as a
+    genuine adverse record". That is inaccurate. This class pins the CORRECTED claim to the
+    REAL parser rather than to prose alone -- deliberately, because the review's own MAJOR 1
+    was that a prose-only statement with no mechanical counterpart cannot be falsified.
+    """
+
+    #: The one insertion index that leaves the canonical prefix intact as a substring.
+    POSITION_ZERO_LINE = "X" + _CANONICAL_ADVERSE
+
+    def test_the_canonical_prefix_survives_intact_at_position_zero(self):
+        """Non-vacuity: this really is the case where the prefix is NOT broken."""
+        assert _CANONICAL_ADVERSE in self.POSITION_ZERO_LINE
+        assert not self.POSITION_ZERO_LINE.startswith(_CANONICAL_ADVERSE)
+        assert len(self.POSITION_ZERO_LINE) == len(_CANONICAL_ADVERSE) + 1
+
+    def test_the_real_parser_returns_malformed_not_the_adverse_verdict(self):
+        """The load-bearing correction: MALFORMED, not 'CHANGES REQUIRED'."""
+        body = _adverse_then_approval(self.POSITION_ZERO_LINE)
+        verdict = AUTH.parse_formal_disposition(body)
+        # pinned by IDENTITY against the module's own sentinel, not by a string that a
+        # future refactor could reproduce accidentally.
+        assert verdict is AUTH.MALFORMED_FORMAL_DISPOSITION, repr(verdict)
+        assert type(verdict).__name__ == "_MalformedFormalDisposition"
+        # the superseded claim -- that it is read as a genuine adverse record -- is FALSE.
+        assert verdict != "CHANGES REQUIRED"
+        assert not isinstance(verdict, str)
+
+    def test_it_still_does_not_bypass(self):
+        """The SECURITY conclusion is unchanged: the later approval must not win."""
+        body = _adverse_then_approval(self.POSITION_ZERO_LINE)
+        assert AUTH.parse_formal_disposition(body) != (
+            "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+        )
+
+    def test_it_differs_from_every_bypassing_attack(self):
+        """Position zero is genuinely a different outcome class from the skip family."""
+        zero = AUTH.parse_formal_disposition(
+            _adverse_then_approval(self.POSITION_ZERO_LINE)
+        )
+        for label, ascii_char, index, homoglyph in _HOMOGLYPH_ATTACKS:
+            bypassing = AUTH.parse_formal_disposition(
+                _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
+            )
+            assert bypassing == "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE", label
+            assert zero != bypassing, label
+
+    def test_a_nonzero_insertion_does_break_the_prefix_and_bypasses(self):
+        """Control: insertion anywhere INSIDE the prefix behaves differently."""
+        broken = _CANONICAL_ADVERSE[:5] + "X" + _CANONICAL_ADVERSE[5:]
+        assert _CANONICAL_ADVERSE not in broken
+        assert AUTH.parse_formal_disposition(_adverse_then_approval(broken)) == (
+            "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+        )
+
+    # ---- and the decision must STATE the corrected mechanism, not the superseded one ----
+
+    def test_the_decision_states_the_corrected_mechanism(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert (
+            "**recognized as formal-looking and fails closed as `MALFORMED`**" in f
+        ), "the corrected mechanism must be stated"
+        assert "`MALFORMED_FORMAL_DISPOSITION` **sentinel object**" in f
+        assert "not the adverse verdict, and not a string" in f
+        assert "pins it by **identity** against that sentinel" in f
+        assert "the canonical prefix **survives intact as a substring**" in f
+
+    def test_the_decision_withdraws_the_inaccurate_wording(self, decision_text):
+        f = _flat(_section(decision_text, "F"))
+        assert "withdrawn as inaccurate" in f
+        # the superseded claim may appear ONLY inside its own withdrawal sentence.
+        assert f.count("read as a genuine adverse record") == 1
+        idx = f.index("read as a genuine adverse record")
+        assert "withdrawn as inaccurate" in f[idx : idx + 400]
+
+    def test_the_superseded_claim_is_not_stated_as_operative(self, decision_text):
+        """Falsifiability guard: reverting the prose must FAIL this class."""
+        f = _flat(_section(decision_text, "F"))
+        assert "is **read as a genuine adverse record**" not in f
+        assert "line is therefore read as a genuine adverse record" not in f

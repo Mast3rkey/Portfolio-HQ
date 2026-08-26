@@ -17478,6 +17478,78 @@ workstreams:
           SCOPE OF THE SECOND CORRECTION. Decision file, its supporting suite, and this register
           entry -- three files, no expansion. Production authorization module NOT edited and
           byte-identical to base. Stage 1 remains UNARMED and NOT EXECUTABLE.
+          THIRD BOUNDED CORRECTION, independent exact-head DELTA review 5027180757 over
+          28ae03f4b5811c9d9e1f5beca36d2549f05d920c -> de7b33c7e09f0f4fb53810a4b3a31facebfbfac8 --
+          0 BLOCKING / 2 MAJOR / 1 MINOR / 0 NOTE. That review confirmed both prior BLOCKING
+          findings closed. Every finding was reproduced through its real mechanism before anything
+          was edited.
+
+          MAJOR 1 RESOLVED -- the two-lifecycle model was PROSE-ONLY, with no mechanical
+          counterpart. Reproduced: the supporting suite checked each B step by existence alone
+          (f"* {step}." in decision_flat), so GUTTING B7 to "a CI run of some kind" left all 226
+          tests PASSING; the file was restored byte-identically. A TEST-ONLY mechanical model is
+          now added: LIFECYCLE_A_STEPS (A1-A7) and LIFECYCLE_B_STEPS (B1-B8) declared from the
+          decision's own bullets, evaluate_lifecycle_a / evaluate_lifecycle_b, and
+          qualifying_rebinding_base, which returns the B5 merge SHA only when BOTH lifecycles
+          fully close and returns None otherwise. Fourteen A-mutations and sixteen B-mutations
+          each drive a distinct refusal; the model asserts DECLARED == MODELLED across all
+          fifteen steps and pins SUBSTANTIVE content inside each step's own bullet, so the exact
+          B7 gutting that previously passed now fails. A merged-but-ineffective authorization
+          (the XASSET-0045 shape) is proved non-qualifying, and B-before-A is refused. The model
+          adds NO production behaviour -- asserted mechanically against the real module.
+
+          MAJOR 2 RESOLVED -- SS-F.2 still pointed at "the required parser-correction lifecycle
+          (SS F.0 conditions 1-8)", a reference SS-F.0.3 had already dissolved by splitting the
+          prerequisite into TWO lifecycles, A1-A7 for the authorization and B1-B8 for the
+          implementation; the coupled test merely searched for the string "parser-correction
+          lifecycle" and so could not detect the ambiguity. The generic "SS F.0 conditions 1-8"
+          wording is WITHDRAWN AND REPLACED wherever it governed, INCLUDING the first-correction
+          narrative above, whose phrase "EQUAL the exact merge commit closing the parser-correction
+          lifecycle" is likewise superseded and is retained only as historical record of what that
+          earlier round said. THE OPERATIVE RULE IS NOW EXACT: the authorized unit's base must
+          EQUAL the Lifecycle B implementation's NORMAL-MERGE COMMIT AT B5 and nothing else, that
+          B5 SHA is the SAME commit B7 merge-commit CI tests and B8 closure names, and the unit
+          must prove all three are one commit. Four candidates are named NON-QUALIFYING and are
+          each covered by a negative test: the Lifecycle A authorization merge; any
+          pre-implementation commit, including THIS decision's own merge; any later descendant of
+          the B5 merge; and any unrelated or intervening main commit. The ordering statement now
+          routes explicitly through both lifecycles, and drift is measured from the B5
+          implementation merge rather than an ambiguous "parser-correction merge".
+
+          MINOR 1 RESOLVED -- SS-F.0.1 described the single non-bypassing insertion (position 0)
+          as being "read as a genuine adverse record". Reproduced against the REAL parser:
+          parse_formal_disposition on "X" + the canonical adverse line + a canonical approval
+          returns MALFORMED_FORMAL_DISPOSITION, NOT "CHANGES REQUIRED". The claim is corrected and
+          the earlier wording expressly WITHDRAWN AS INACCURATE: at position 0 the canonical prefix
+          survives INTACT AS A SUBSTRING, so the line is recognized as formal-looking and FAILS
+          CLOSED as MALFORMED, which stops the parse so the later approval cannot win. The
+          security conclusion is unchanged -- the attack does not bypass -- but the MECHANISM is
+          now stated accurately, which matters because a future correction must preserve
+          fail-closed MALFORMED handling, not an adverse-verdict path that does not exist.
+
+          SELF-CAUGHT GAP DURING THE THIRD CORRECTION, disclosed rather than passed over. The
+          first pass corrected MINOR 1 in PROSE ONLY. The mutation proof then showed the revert
+          probe -- restoring "read as a genuine adverse record" -- STILL PASSED all 288 tests,
+          i.e. exactly the prose-without-a-mechanical-counterpart defect this same review raised
+          as MAJOR 1. It was closed rather than left: a new class drives the position-0 body
+          through the REAL parser and asserts the returned value IS the module's
+          MALFORMED_FORMAL_DISPOSITION SENTINEL OBJECT -- pinned by IDENTITY, not by a string,
+          after inspection showed the parser returns an object of type
+          _MalformedFormalDisposition rather than the literal -- proves it is NOT "CHANGES
+          REQUIRED", proves it still does not bypass, proves it is a DIFFERENT outcome class from
+          every bypassing homoglyph attack, and carries a positive control showing a non-zero
+          insertion DOES break the prefix and DOES bypass. SS-F.0.1 was correspondingly tightened
+          to state the sentinel-object fact. The revert probe now FAILS, as do probes gutting B7,
+          renaming A6, restoring the obsolete conditions-1-8 wording, and weakening equality to
+          descent -- six probes, all caught, with both edited files verified restored
+          BYTE-IDENTICAL afterwards.
+
+          SCOPE OF THE THIRD CORRECTION. Decision file, its supporting suite, and this register
+          entry -- three files, no expansion. Four coupled assertions inside that same suite were
+          RE-ANCHORED to the corrected SS-F.2 naming and are strictly STRONGER, each retaining the
+          superseded wording as a NEGATIVE pin; no test or validator is weakened, deleted, skipped
+          or bypassed. Production authorization module NOT edited and byte-identical to base. No
+          parser correction is performed. Stage 1 remains UNARMED and NOT EXECUTABLE.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

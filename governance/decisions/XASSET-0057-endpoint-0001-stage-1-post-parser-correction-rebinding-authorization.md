@@ -171,9 +171,19 @@ positions** of the `FORMAL DISPOSITION` prefix. Measured, not asserted:
 | **Unicode / confusable substitution** | **17 / 17** |
 
 The single non-bypassing insertion is position 0 — inserting before the `F` yields
-`XFORMAL DISPOSITION:`, in which the canonical prefix **survives intact as a substring**, so the
-line is read as a genuine adverse record rather than skipped. That is correct behaviour, and it is
-recorded here as a measured exception rather than rounded away.
+`XFORMAL DISPOSITION:`, in which the canonical prefix **survives intact as a substring**. That line
+is therefore **recognized as formal-looking and fails closed as `MALFORMED`**, which stops the parse
+so the later approval cannot win.
+
+**Stated precisely, because the distinction matters:** the position-0 line is **not** parsed as the
+genuine `CHANGES REQUIRED` disposition. `parse_formal_disposition` returns the module's
+`MALFORMED_FORMAL_DISPOSITION` **sentinel object** — not the adverse verdict, and not a string, so
+the supporting artifact pins it by **identity** against that sentinel rather than by a literal a
+future refactor could reproduce accidentally. Both outcomes prevent the later approval
+from winning — so no bypass reopens here — but the mechanism actually measured is **fail-closed
+MALFORMED**, and this record describes what was measured rather than what would merely have been
+sufficient. An earlier draft of this subsection said the line "is read as a genuine adverse record";
+that wording is **withdrawn as inaccurate**. The distinction is pinned by the supporting artifact.
 
 **Consequence, and the point of this subsection: a future correction that merely patches the three
 §M code points does NOT satisfy §F.0.** The three are one cell of a much larger matrix, and every
@@ -271,23 +281,44 @@ earlier formulation — an absolute equality followed by a generic exception —
 replaced**. What follows is the **single, unambiguous** future-base rule; there is no other, and no
 exception clause qualifies it.
 
-**The authorized unit's base must EQUAL the exact normal-merge commit that closes the required
-parser-correction lifecycle** (§F.0 conditions 1–8) — the merge whose merge-commit CI succeeded at
-that exact merge SHA and whose final post-CI closure was recorded.
+**The authorized unit's base must EQUAL the Lifecycle B implementation's normal-merge commit at
+B5** — and nothing else.
+
+The superseded wording said "the exact normal-merge commit that closes the required
+parser-correction lifecycle (§F.0 conditions 1–8)". There are no longer generic "§F.0 conditions
+1–8": §F.0.3 defines **two** lifecycles, **A1–A7** for the authorization and **B1–B8** for the
+implementation, so "the parser-correction lifecycle" was ambiguous between them while exact base
+identity is this section's load-bearing subject. That reference is **withdrawn and replaced** by the
+following, which names the commit exactly:
+
+1. **Lifecycle A1–A7 must already have closed** in full;
+2. **Lifecycle B1–B8 must also have closed** in full;
+3. the base must **equal the B5 normal-merge commit** of the Lifecycle B implementation;
+4. that **exact B5 merge SHA is the SHA tested by B7** merge-commit CI, and **named by B8** closure —
+   the three must be the *same* commit, and the authorized unit must prove it.
+
+**What does NOT qualify**, stated so no reading can substitute one for another:
+
+* **the Lifecycle A authorization merge** — it closes the authorization, not the implementation, and
+  the corrected bytes do not exist at it;
+* **any pre-implementation commit** — including this decision's own merge, at which the defect is
+  still live;
+* **any later descendant** of the B5 merge — descent is not identity (see *Equality, not descent*);
+* **any unrelated or intervening `main` commit** — no admission path exists (see below).
 
 That identity is **not stated here as a literal SHA and must never be predicted**: the parser
-correction has not been written, let alone merged. The authorized unit must **derive it from that
-completed lifecycle and prove the equality from the git object store**, exactly as §F.1 requires of
-every other identity.
+correction has not been written, let alone merged. The authorized unit must **derive the B5 merge
+SHA from the completed Lifecycle B and prove the equality from the git object store**, exactly as
+§F.1 requires of every other identity.
 
 **Equality, not descent.** *Descends from* proves ancestry; it does not prove scope identity. Under a
 descent-only rule any later commit on `main` would qualify while carrying bytes no review ever saw.
 Ancestry remains **necessary history and explicitly insufficient authority**: the base must still
-descend from this decision's own merge, which must itself be an ancestor of the parser-correction
-merge — but descent alone never qualifies a base.
+descend from this decision's own merge, which must itself be an ancestor of the **B5 implementation
+merge** — but descent alone never qualifies a base.
 
 **Any later `main` commit invalidates this grant for that base — with no admission path.** If `main`
-carries **any** commit between the parser-correction merge and the authorized unit's base, that unit
+carries **any** commit between the **B5 implementation merge** and the authorized unit's base, that unit
 **may not proceed on the strength of this authorization**, full stop. There is **no** clause by which
 such a commit may be admitted, absorbed, or cured inside `XASSET-0057` — not by separate
 authorization, not by a closed identity transition, not by review. The **only** lawful route is a
@@ -295,11 +326,12 @@ authorization, not by a closed identity transition, not by review. The **only** 
 
 This is deliberate, and it is the reviewer's own point: an `unless` admission path would reinstate
 exactly the absolute-plus-exception structure this section withdrew. Once any intervening commit
-exists the base **cannot** equal the parser-correction merge, so an admission clause could only ever
-contradict the equality rule or be inoperative. It is therefore **removed**, not narrowed.
+exists the base **cannot** equal the **B5 implementation merge**, so an admission clause could only
+ever contradict the equality rule or be inoperative. It is therefore **removed**, not narrowed.
 
-The ordering this rule fixes is therefore exactly: this decision's merge → the parser correction's
-own complete lifecycle and merge → the authorized rebinding's base. A rebinding based on this
+The ordering this rule fixes is therefore exactly: this decision's merge → Lifecycle A's complete
+closure (A1–A7) → Lifecycle B's complete closure (B1–B8), whose **B5 merge** is the sole qualifying
+commit → the authorized rebinding's base, which **equals that B5 merge**. A rebinding based on this
 decision's own merge — the state in which the §M defect is still live — **fails this condition**,
 and that is precisely the case the earlier formulation wrongly permitted.
 
