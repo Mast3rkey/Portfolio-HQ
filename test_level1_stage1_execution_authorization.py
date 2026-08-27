@@ -1338,16 +1338,38 @@ class TestExactBaseAndMergeDrift:
         # deleted. The strengthening is XASSET-0048 §F.2: the relationship is an EQUALITY, not a
         # descent, and the module now decides it through a pure function rather than an inline
         # comparison -- so this assertion is joined by an exercise of that function's own refusal.
-        assert AUTH.REVIEWED_BASE_SHA == AUTH.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
-        assert AUTH.REVIEWED_BASE_SHA == "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+        # RE-ANCHORED AGAIN BY XASSET-0060, unchanged in KIND for the fifth time -- and changed
+        # in SUBJECT for the first, which is disclosed rather than buried. XASSET-0057 §F.2
+        # WITHDREW "the base equals your own authorization's merge", because §F.0 makes an
+        # intervening parser correction MANDATORY and the two cannot both hold; the replacement
+        # names the Lifecycle B implementation merge. XASSET-0049's own accepted equality is
+        # retained immediately below on the constants that now carry it, so nothing is dropped.
+        assert AUTH.REVIEWED_BASE_SHA == AUTH.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA
+        assert AUTH.REVIEWED_BASE_SHA == "301e79334876a4bda6e7b89a6156b34e8d38a605"
+        assert AUTH.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == AUTH.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
+        assert AUTH.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+        assert AUTH.REVIEWED_BASE_SHA != "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
         assert AUTH.REVIEWED_BASE_SHA != "0709d2f05ab031ecb6f69c40465ed4a227983aed"
         assert AUTH.REVIEWED_BASE_SHA != "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
         # The equality rule itself accepts the bound pair and refuses a substitution.
         assert (
-            AUTH._verify_step8_equivalent_base_equality(
-                AUTH.REVIEWED_BASE_SHA, AUTH.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA, True
+            AUTH._verify_post_parser_correction_base_equality(
+                AUTH.REVIEWED_BASE_SHA, AUTH.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA, True
             )
             == []
+        )
+        # The superseded rule is retained and still decides ITS own pair correctly ...
+        assert (
+            AUTH._verify_step8_equivalent_base_equality(
+                AUTH.PRIOR_STEP8_EQUIVALENT_MERGE_BASE,
+                AUTH.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA,
+                True,
+            )
+            == []
+        )
+        # ... and REFUSES the live base, which is what "the rule moved" actually means.
+        assert AUTH._verify_step8_equivalent_base_equality(
+            AUTH.REVIEWED_BASE_SHA, AUTH.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA, True
         )
         assert AUTH._verify_step8_equivalent_base_equality(
             AUTH.RECOVERY_AUTHORIZING_MERGE_SHA,

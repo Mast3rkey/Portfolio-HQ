@@ -236,6 +236,9 @@ XASSET0058_ACTIVE_PR = 359
 #: finished work still fails. The active_pr carries the IMPOSSIBLE SENTINEL until GitHub
 #: issues this unit's real number, which is bound in one fast-forward follow-up commit.
 XASSET0059_ACTIVE_PR = 360
+#: ADVANCED BY XASSET-0060: WS-0014's SHARED live active_pr names the currently-live unit, and
+#: XASSET-0059's own number is retained below as a NEGATIVE pin rather than deleted.
+XASSET0060_ACTIVE_PR = 361
 
 XASSET0043_ACTIVE_PR = 343
 #: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number
@@ -326,6 +329,25 @@ EXPECTED_LOAD_BEARING = tuple(sorted((
     "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
     "governance/decisions/"
     "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
+    # EXTENDED AGAIN BY XASSET-0060, 18 -> 25, under XASSET-0057 §F.7. The seven additions are
+    # the six decisions that authorized and defined the formal-disposition parser -- XASSET-0053,
+    # XASSET-0055, XASSET-0056, XASSET-0057, XASSET-0058, XASSET-0059 -- plus the rebinding's own
+    # decision, all by DIRECT MEMBERSHIP. Nothing is removed: every prior path is still here, and
+    # the sorted comparison below is unchanged in kind and still EXACT. XASSET-0054 stays
+    # EXCLUDED (identifier consumed, PR closed unmerged, no decision file on main) and
+    # XASSET-0045 stays excluded because it authorizes nothing.
+    "governance/decisions/"
+    "XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+    "governance/decisions/"
+    "XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+    "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+    "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md",
 )))
 
 #: The five Python modules inside those ten paths, each independently able to affect the 680
@@ -1317,7 +1339,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0059_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0060_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0059_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0058_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0057_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0056_ACTIVE_PR

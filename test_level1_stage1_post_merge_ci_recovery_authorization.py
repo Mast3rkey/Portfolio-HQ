@@ -825,13 +825,22 @@ class TestSuccessorLifecycleAnchorRequired:
         # IS a lifecycle that can close -- not that one particular successor holds it forever.
         # XASSET-0047 was that successor; XASSET-0049 lawfully succeeded it under XASSET-0048
         # SS-E, and XASSET-0047's own identity is preserved rather than erased.
-        assert auth.AUTHORIZING_DECISION == "XASSET-0049"
+        # RE-ANCHORED BY XASSET-0060, unchanged in KIND. The property is that production binds a
+        # lifecycle that CAN close and never the stopped one -- not that it names any particular
+        # successor forever. Both ends stay bound: every superseded anchor is still reachable.
+        assert auth.AUTHORIZING_DECISION == "XASSET-0060"
+        assert auth.AUTHORIZING_DECISION != "XASSET-0049"
+        assert auth.PRIOR_STEP8_EQUIVALENT_DECISION == "XASSET-0049"
         assert auth.PRIOR_RECONCILIATION_DECISION == "XASSET-0047"
         assert auth.AUTHORIZING_DECISION not in auth.PERMANENTLY_INEFFECTIVE_DECISIONS
         assert auth.AUTHORIZING_PULL_REQUEST not in auth.PERMANENTLY_INEFFECTIVE_PULL_REQUESTS
         # The reviewed base equals its own authority's merge -- the same equality, re-anchored
         # onto the decision that authorizes the CURRENT unit.
-        assert auth.REVIEWED_BASE_SHA == auth.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
+        # RE-ANCHORED BY XASSET-0060: XASSET-0057 §F.2 moved the base rule onto the Lifecycle B
+        # implementation merge, so the equality names that. XASSET-0049's own accepted equality
+        # is retained on the constants that now carry it, so nothing is dropped.
+        assert auth.REVIEWED_BASE_SHA == auth.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA
+        assert auth.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == auth.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
         assert auth.PRIOR_RECONCILIATION_MERGE_BASE == auth.RECOVERY_AUTHORIZING_MERGE_SHA
         # The stopped lifecycle is PRESERVED as history, by exact identity, not erased.
         assert auth.STOPPED_REBINDING_DECISION == "XASSET-0044"

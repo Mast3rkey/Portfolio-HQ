@@ -285,7 +285,9 @@ XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 SUCCESSOR_MAIN_SHA = XASSET0060_MAIN_SHA
 #: ADVANCED BY XASSET-0059: WS-0014's SHARED live branch moved onto the Lifecycle B unit;
 #: the XASSET-0058 generation is retained beside it as a NEGATIVE pin.
-SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
+# ADVANCED BY XASSET-0060; XASSET-0059's branch joins the NEGATIVE pins, retained exactly.
+SUCCESSOR_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
+XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
 XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
 XASSET0057_BRANCH = "claude/xasset-successor-authorization-3b0btg"
 #: The generation this one superseded, retained as a negative pin.
@@ -297,7 +299,12 @@ CLOSED_UNMERGED_BRANCH = "claude/xasset-0054-parser-contract-correction-h3nq7p"
 #: EXACT by naming this set explicitly rather than being relaxed to "somewhere in the list".
 #: ADVANCED BY XASSET-0059, appended after XASSET-0058 and named EXACTLY, so "last"
 #: stays an EXACT index rather than being relaxed to "present".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0055", "XASSET-0056", "XASSET-0057", "XASSET-0058", "XASSET-0059")
+#: ADVANCED BY XASSET-0060, appended after XASSET-0059 and named EXACTLY, so "last" stays an
+#: exact arithmetic claim rather than a relaxed "present somewhere" one.
+SUCCESSORS_APPENDED_SINCE = (
+    "XASSET-0055", "XASSET-0056", "XASSET-0057", "XASSET-0058", "XASSET-0059",
+    "XASSET-0060",
+)
 
 
 # =============================================================================================
@@ -370,6 +377,41 @@ def _sha256_at(commit: str, relpath: str) -> str:
         cwd=ROOT, capture_output=True, check=True,
     ).stdout
     return hashlib.sha256(raw).hexdigest()
+
+
+def _load_bearing_declared_at(commit: str) -> tuple[str, ...]:
+    """The exact ``LOAD_BEARING_RELPATHS`` the module DECLARED at a given commit.
+
+    Parsed with ``ast`` and never imported or executed. Aliases and implicit concatenation are
+    resolved from the SAME historical source, never from the live module.
+    """
+    tree = ast.parse(_git("show", f"{commit}:{AUTHORIZATION_MODULE_RELPATH}"))
+    consts: dict[str, str] = {}
+
+    def _literal(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if isinstance(node, ast.Name) and node.id in consts:
+            return consts[node.id]
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            left, right = _literal(node.left), _literal(node.right)
+            if left is not None and right is not None:
+                return left + right
+        return None
+
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if not isinstance(target, ast.Name):
+                continue
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                consts[target.id] = node.value.value
+            if target.id == "LOAD_BEARING_RELPATHS" and isinstance(node.value, ast.Tuple):
+                items = [_literal(e) for e in node.value.elts]
+                assert all(i is not None for i in items), "unresolved element"
+                return tuple(items)
+    raise AssertionError(f"LOAD_BEARING_RELPATHS is not declared at {commit}")
 
 
 def _blob_at(commit: str, relpath: str) -> str:
@@ -1593,9 +1635,18 @@ class TestTheCorrectionIsNotPerformedHere:
         the authorized successor correction changes, and its live divergence is the designed
         fail-closed hand-off, pinned here as such rather than silently excused.
         """
-        assert len(A.LOAD_BEARING_RELPATHS) == EXPECTED_LOAD_BEARING_COUNT
-        assert len(set(A.LOAD_BEARING_RELPATHS)) == EXPECTED_LOAD_BEARING_COUNT
-        for relpath in A.LOAD_BEARING_RELPATHS:
+        # RE-ANCHORED BY XASSET-0060, over the boundary AS IT WAS at the bound merge. Its seven
+        # additions did not exist in that tuple at all, so asking whether they are "identical to
+        # the bound merge" was unanswerable rather than merely weaker; their identity is bound by
+        # XASSET-0060's own suite. The eighteen this unit saw are still checked exhaustively, and
+        # the live tuple is pinned EXACTLY at its current size so a silent shrink still fails.
+        historical = _load_bearing_declared_at(BOUND_MERGE_SHA)
+        assert len(historical) == EXPECTED_LOAD_BEARING_COUNT
+        assert len(set(historical)) == EXPECTED_LOAD_BEARING_COUNT
+        assert tuple(A.LOAD_BEARING_RELPATHS)[:EXPECTED_LOAD_BEARING_COUNT] == historical
+        assert len(A.LOAD_BEARING_RELPATHS) == 25
+        assert len(set(A.LOAD_BEARING_RELPATHS)) == 25
+        for relpath in historical:
             at_bound = _blob_at(BOUND_MERGE_SHA, relpath)
             assert at_bound == _blob_at(DECISION_MERGE_SHA, relpath), relpath
             live = _git("hash-object", relpath).strip()
@@ -1620,15 +1671,29 @@ class TestTheCorrectionIsNotPerformedHere:
         reading no longer measures THIS unit. The closed range does, exactly and permanently.
         """
         changed = set(_git("diff", "--name-only", BASE_SHA, DECISION_MERGE_SHA).split())
-        forbidden = set(A.LOAD_BEARING_RELPATHS) | set(PORTFOLIO_RELPATHS) | set(CANONICAL_PINS)
+        # RE-ANCHORED BY XASSET-0060: the boundary is read AS IT WAS at this unit's own merge.
+        # Its diff is a CLOSED range and never changes; the live boundary does, and this unit's
+        # own decision file is now inside it, which it could not have "touched unlawfully".
+        forbidden = (
+            set(_load_bearing_declared_at(DECISION_MERGE_SHA))
+            | set(PORTFOLIO_RELPATHS)
+            | set(CANONICAL_PINS)
+        )
         assert not (changed & forbidden), sorted(changed & forbidden)
 
 
 class TestTheAttestationMechanismIsClosedAndUnchanged:
     def test_the_bound_constants_did_not_move(self):
-        assert A.AUTHORIZING_DECISION == BOUND_AUTHORIZING_DECISION
-        assert A.AUTHORIZING_PULL_REQUEST == BOUND_AUTHORIZING_PULL_REQUEST
-        assert A.REVIEWED_BASE_SHA == BOUND_REVIEWED_BASE_SHA
+        # RE-ANCHORED BY XASSET-0060, bound at BOTH ends. THIS filing moved no constant, which
+        # is immutable; the successor lawfully did, so the values this unit saw are retained as
+        # NEGATIVE pins on the constants that now carry them and the successor's are positive.
+        assert A.AUTHORIZING_DECISION == "XASSET-0060"
+        assert A.AUTHORIZING_DECISION != BOUND_AUTHORIZING_DECISION
+        assert A.PRIOR_STEP8_EQUIVALENT_DECISION == BOUND_AUTHORIZING_DECISION
+        assert A.AUTHORIZING_PULL_REQUEST != BOUND_AUTHORIZING_PULL_REQUEST
+        assert A.PRIOR_STEP8_EQUIVALENT_PULL_REQUEST == BOUND_AUTHORIZING_PULL_REQUEST
+        assert A.REVIEWED_BASE_SHA != BOUND_REVIEWED_BASE_SHA
+        assert A.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == BOUND_REVIEWED_BASE_SHA
 
     def test_the_lifecycle_gate_tuple_is_unchanged(self):
         assert A.REQUIRED_LIFECYCLE_GATES == EXPECTED_LIFECYCLE_GATES
@@ -1805,6 +1870,7 @@ class TestRegisterSynchronisation:
         onto the successor; this unit's own branch survives in the register as history, which
         is what this assertion was really protecting. Bound at BOTH ends."""
         assert ws0014["active_branch"] == SUCCESSOR_BRANCH
+        assert ws0014["active_branch"] != XASSET0059_BRANCH
         assert ws0014["active_branch"] != XASSET0058_BRANCH
         assert ws0014["active_branch"] != XASSET0057_BRANCH
         assert ws0014["active_branch"] != BRANCH

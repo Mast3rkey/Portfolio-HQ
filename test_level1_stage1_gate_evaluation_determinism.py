@@ -775,6 +775,15 @@ class TestLoadBearingReauthorizationDependency:
             # MEMBERSHIP; a citation or prose restatement is not a byte binding.
             "governance/decisions/XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
             "governance/decisions/XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
+            # EXTENDED BY XASSET-0060 under XASSET-0057 §F.7 -- seven decisions, by DIRECT
+            # MEMBERSHIP, nothing removed. The set stays EXACT: an eighth addition fails here.
+            "governance/decisions/XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+            "governance/decisions/XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+            "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+            "governance/decisions/XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+            "governance/decisions/XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+            "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md",
+            "governance/decisions/XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md",
         }
         # Every addition beyond SS-D's six is either outcome-producing code or a governance
         # decision file. Nothing else may enter the trust boundary by this route.

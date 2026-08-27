@@ -790,6 +790,24 @@ class TestThisFilingMutatesNothingLoadBearing:
             "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
             "governance/decisions/"
             "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
+            # EXTENDED AGAIN BY XASSET-0060 / XASSET-0057 §F.7, 18 -> 25. SS-F.7 is BROADER than
+            # the SS-E principle every earlier extension applied: it reaches EVERY decision that
+            # makes the newly bound BYTES lawful, because binding the parser-corrected
+            # implementation while leaving the decisions that define what the parser must do
+            # outside the boundary would protect the code and not the authority over it. NOTHING
+            # was removed: every path above is still retained, and the set stays EXACT.
+            "governance/decisions/"
+            "XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+            "governance/decisions/"
+            "XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+            "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+            "governance/decisions/"
+            "XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+            "governance/decisions/"
+            "XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+            "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md",
+            "governance/decisions/"
+            "XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md",
         }
 
     def test_frozen_universe_is_unchanged(self) -> None:

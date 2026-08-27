@@ -1716,8 +1716,17 @@ class TestThisFilingChangesNoProductionByte:
         so the count and the exact membership are still asserted -- at HEAD, where it matters --
         while the byte-identity claim moves to the immutable range it was really about.
         """
-        assert len(AUTH.LOAD_BEARING_RELPATHS) == 18
-        assert tuple(AUTH.LOAD_BEARING_RELPATHS) == tuple(BASE_AUTH.LOAD_BEARING_RELPATHS)
+        # RE-ANCHORED BY XASSET-0060, the ONE rebinding XASSET-0057 §E authorizes. THIS filing
+        # left the boundary at eighteen -- immutable, and asserted over its own range below.
+        # XASSET-0057 §F.7 then REQUIRED the successor to extend it, so pinning the live count at
+        # eighteen asserted the opposite of the authority this suite exists to protect. Both ends
+        # are bound: the eighteen this unit saw are still an ORDERED PREFIX -- nothing removed,
+        # reordered or traded away -- and the live count is pinned EXACTLY at twenty-five.
+        base_boundary = tuple(BASE_AUTH.LOAD_BEARING_RELPATHS)
+        assert len(base_boundary) == 18
+        assert tuple(AUTH.LOAD_BEARING_RELPATHS)[:18] == base_boundary
+        assert len(AUTH.LOAD_BEARING_RELPATHS) == 25
+        assert len(set(AUTH.LOAD_BEARING_RELPATHS)) == 25
         base = _content_at(THIS_UNIT_BASE_SHA, PRODUCTION_MODULE_RELPATH)
         assert base == _content_at(XASSET_0058_MERGE_SHA, PRODUCTION_MODULE_RELPATH)
 
@@ -1861,12 +1870,17 @@ class TestTheRegisterIsSynchronized:
     #: filing merged they lawfully moved onto the Lifecycle B unit SS-F authorizes. This filing's
     #: own durable record is its GATE, which does not move; the superseded values are retained
     #: below as NEGATIVE pins, so the fields stay bound at BOTH ends.
-    SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
-    SUCCESSOR_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+    # ADVANCED BY XASSET-0060; XASSET-0059's values are retained below as NEGATIVE pins.
+    SUCCESSOR_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
+    SUCCESSOR_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+    XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
+    XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
 
     def test_the_shared_live_fields_name_this_unit(self, register):
         assert register["active_branch"] == self.SUCCESSOR_BRANCH
         assert register["last_verified_main_sha"] == self.SUCCESSOR_MAIN_SHA
+        assert register["active_branch"] != self.XASSET0059_BRANCH
+        assert register["last_verified_main_sha"] != self.XASSET0059_MAIN_SHA
         assert register["active_branch"] != BRANCH
         assert register["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
         assert register["last_verified_main_sha"] != XASSET_0057_MERGE_PARENT_1
@@ -2162,8 +2176,13 @@ SUPERSEDED_GENERATION_BRANCH = "claude/xasset-successor-authorization-3b0btg"
 
 #: The generation that succeeded THIS filing: the Lifecycle B parser correction its own
 #: SS-F authorizes. WS-0014's live fields are SHARED, so they lawfully moved onto it.
-SUCCESSOR_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
-SUCCESSOR_BRANCH_NAME = "claude/xasset-0058-parser-correction-a2kteq"
+# ADVANCED BY XASSET-0060, on exactly the terms this file's own meta-assertions already state:
+# XASSET-0059's constant becomes a NEGATIVE pin -- retained with its exact value, never deleted --
+# and the newly live unit is the positive pin.
+SUCCESSOR_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+SUCCESSOR_BRANCH_NAME = "claude/xasset-0057-rebinding-gqtg9o"
+XASSET0059_MAIN_SHA_VALUE = "34c45900ce23742d04d80cf12471c34aabe9682d"
+XASSET0059_BRANCH_NAME = "claude/xasset-0058-parser-correction-a2kteq"
 
 
 class TestThePredecessorSuitesWereReAnchoredNotWeakened:
@@ -2241,8 +2260,12 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
         for name in defining:
             live = (ROOT / name).read_text(encoding="utf-8")
             assert "!= XASSET0058_MAIN_SHA" in live, name
-            assert f'XASSET0059_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
-            assert "== XASSET0059_MAIN_SHA" in live, name
+            # ADVANCED BY XASSET-0060: XASSET-0059's constant is retained with its exact value
+            # as a NEGATIVE pin, and the newly live unit's constant is the positive one.
+            assert f'XASSET0059_MAIN_SHA = "{XASSET0059_MAIN_SHA_VALUE}"' in live, name
+            assert "!= XASSET0059_MAIN_SHA" in live, name
+            assert f'XASSET0060_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            assert "== XASSET0060_MAIN_SHA" in live, name
             assert f'XASSET0057_MAIN_SHA = "{SUPERSEDED_GENERATION_SHA}"' in live, name
             assert "!= XASSET0057_MAIN_SHA" in live, name
 
@@ -2256,13 +2279,15 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             # RE-ANCHORED BY XASSET-0059: the SUCCESSOR constants name the newly live unit,
             # and this filing's own generation is retained beside them as a NEGATIVE pin.
             assert f'SUCCESSOR_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live or (
-                "SUCCESSOR_MAIN_SHA = XASSET0059_MAIN_SHA" in live
+                "SUCCESSOR_MAIN_SHA = XASSET0060_MAIN_SHA" in live
             ), name
             assert f'SUCCESSOR_BRANCH = "{SUCCESSOR_BRANCH_NAME}"' in live, name
+            assert f'XASSET0059_BRANCH = "{XASSET0059_BRANCH_NAME}"' in live, name
             assert f'XASSET0058_BRANCH = "{BRANCH}"' in live, name
             assert f'XASSET0057_BRANCH = "{SUPERSEDED_GENERATION_BRANCH}"' in live, name
             assert "XASSET-0058" in live, name
             assert "XASSET-0059" in live, name
+            assert "XASSET-0060" in live, name
 
     def test_the_re_anchoring_is_non_vacuous_at_the_base(self):
         """Each re-anchored suite must genuinely have failed at the base under this unit's

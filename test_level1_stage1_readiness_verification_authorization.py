@@ -228,6 +228,9 @@ XASSET0058_ACTIVE_PR = 359
 #: finished work still fails. The active_pr carries the IMPOSSIBLE SENTINEL until GitHub
 #: issues this unit's real number, which is bound in one fast-forward follow-up commit.
 XASSET0059_ACTIVE_PR = 360
+#: ADVANCED BY XASSET-0060: WS-0014's SHARED live active_pr names the currently-live unit, and
+#: XASSET-0059's own number is retained below as a NEGATIVE pin rather than deleted.
+XASSET0060_ACTIVE_PR = 361
 
 XASSET0043_ACTIVE_PR = 343
 #: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number
@@ -1054,7 +1057,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0059_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0060_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0059_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0058_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0057_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0056_ACTIVE_PR
