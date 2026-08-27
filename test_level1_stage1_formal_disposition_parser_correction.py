@@ -394,7 +394,11 @@ class TestTheFindingCountSuffixGrammar:
         assert _base_module().parse_formal_disposition(body) == APPROVE  # identical to base
         assert "stripped = line.strip()" in _base_source()
         assert "stripped = line.strip()" not in _live_source()  # the broad strip is gone
-        assert 'line[end - 1] in " \\t"' in _live_source()  # replaced by an explicit trim
+        # RE-ANCHORED AGAIN for DELTA review ``5041611657``: the explicit trim is no longer a
+        # backwards scan at all -- it rides the fold -- so the mechanism is pinned by what now
+        # carries it, and the removed scan is pinned as ABSENT. Both directions, as before.
+        assert "trailing_ws" in _live_source()  # the explicit trim, now inside the fold
+        assert "line[end - 1]" not in _live_source()  # and the backwards scan is gone
 
     def test_a_suffix_is_never_discarded_unread(self):
         """§E.1: the pre-correction parser split and threw the suffix away."""
@@ -2031,7 +2035,24 @@ class TestAcceptedLineCorrectionShape:
         assert "if indent > 3:" in source
 
     def test_trailing_trim_admits_only_ascii_space_and_tab(self):
-        assert "line[end - 1] in ' \\t'" in self._executable_source()
+        """RE-ANCHORED AGAIN for DELTA review ``5041611657``, and TIGHTER.
+
+        The superseded form pinned the SPELLING of a backwards scan. That scan no longer
+        exists: §D.1's trailing bound now rides the fold that has to walk the line anyway, so
+        pinning its text would pin a construct the correction deliberately removed. The
+        PROPERTY is unchanged and is pinned directly instead -- exactly ASCII space and tab
+        extend the trailing run, and nothing else does -- which the old form only implied.
+        """
+        source = self._executable_source()
+        assert "character == ' ' or character == '\\t'" in source
+        assert "trailing_ws += 1" in source
+        # ...and the superseded backwards scan must not have come back.
+        assert "line[end - 1]" not in source
+        # The property itself, not just its spelling: only space and tab are trimmed.
+        for trimmed in (" ", "\t"):
+            assert P(f"{PREFIX} {APPROVE}{trimmed}") == APPROVE
+        for kept in ("\u00a0", "\u000b", "\u2028"):
+            assert P(f"{PREFIX} {APPROVE}{kept}") != APPROVE
 
     def test_the_correction_added_no_module_level_name(self):
         reviewed = _module_level_names(

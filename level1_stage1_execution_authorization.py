@@ -1847,9 +1847,32 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
         #
         # A line that resembles the prefix without matching it exactly is MALFORMED, never
         # ABSENT, so it stops the parse and no later approval can win past it.
-        ascii_upper = "".join(
-            character.upper() if "a" <= character <= "z" else character for character in line
-        )
+        #
+        # MAJOR 1 (DELTA review 5041611657): this traversal now ALSO produces §D.1's trailing
+        # bound. The first correction relocated a SEPARATE trailing-space/tab loop into this
+        # prologue and called it pre-existing parser work. It was not: at the reviewed
+        # predecessor a prefix-absent line called the candidate rule and ``continue``d BEFORE
+        # the accepted-form ``end`` derivation, so on the only branch where the rule runs that
+        # bound did not exist yet. Relocating the loop made the helper constant-time while the
+        # raw-line pipeline stayed linear -- moving the scan across a function boundary, not
+        # removing it.
+        #
+        # This fold is the traversal that IS unavoidable: every character must be folded to
+        # decide the canonical prefix, on every line, and it predates candidate recognition
+        # entirely -- it is present unchanged in the base module at 34c45900. ``trailing_ws``
+        # rides it: a running count of the CURRENT trailing run of ASCII spaces and tabs,
+        # reset by any other character, so when the traversal ends the run is exactly the
+        # trailing padding. No second pass exists, and none is added.
+        folded: list[str] = []
+        append_folded = folded.append
+        trailing_ws = 0
+        for character in line:
+            if character == " " or character == "\t":
+                trailing_ws += 1
+            else:
+                trailing_ws = 0
+            append_folded(character.upper() if "a" <= character <= "z" else character)
+        ascii_upper = "".join(folded)
         resembles_prefix = FORMAL_DISPOSITION_PREFIX in "".join(
             character for character in line.upper() if " " <= character <= "~"
         )
@@ -1872,23 +1895,13 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
         indent = 0
         while indent < len(line) and line[indent] == " ":
             indent += 1  # ASCII spaces ONLY -- a tab reaches column four and cannot open
-        # Trailing padding is trimmed with ASCII spaces and tabs ONLY. A trailing non-breaking
-        # space, vertical tab or U+2028 therefore SURVIVES into the region and is refused by
-        # whole-verdict inequality (§C.4) rather than being normalized into the approval.
-        #
-        # MAJOR 1 (review 5037196415): this loop was RELOCATED here, unchanged, from the accepted
-        # form section below. §D.2 bounds the candidate rule at three index probes and three
-        # capped comparisons per projection, but the rule DERIVED its own projection bounds by
-        # scanning every leading space and every trailing space/tab itself -- so a line padded
-        # with 2,000,000 spaces cost about 0.09s per call against 0.0000029s for a short one, and
-        # the rule was linear, not O(1). ``indent`` and ``end`` are exactly §D.1's bounds, which
-        # the parser must derive for ACCEPTANCE regardless; deriving them ONCE here and passing
-        # them lets the candidate rule do the bounded work §D.2 specifies and NO scan of its own.
-        # This adds no pass the parser did not already make: folding the line, building
-        # ``resembles_prefix`` and testing the prefix substring are each already Θ(n) per line.
-        end = len(line)
-        while end > indent and line[end - 1] in " \t":
-            end -= 1
+        # §D.1's trailing bound, read off the fold above in O(1) -- no scan of its own. Trailing
+        # padding is ASCII spaces and tabs ONLY, so a trailing non-breaking space, vertical tab
+        # or U+2028 SURVIVES into the region and is refused by whole-verdict inequality (§C.4)
+        # rather than being normalized into the approval. ``max`` restores the floor the deleted
+        # loop's ``end > indent`` guard provided: an all-whitespace line trims back to ``indent``,
+        # never past it.
+        end = max(len(line) - trailing_ws, indent)
         marker = line[indent] if indent < len(line) else ""
         if marker in ("`", "~"):
             run = 0

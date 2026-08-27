@@ -17915,6 +17915,70 @@ workstreams:
           The anchor check caught it, every probe's replacement text was then scanned across
           the worktree, the single residue was restored to its committed original, and the
           proof was re-run from clean. No probe was counted while it was present.
+          SECOND BOUNDED CORRECTION -- MAJOR 1 OF DELTA REVIEW 5041611657. The first bounded
+          correction was NOT SUFFICIENT and the DELTA finding is CORRECT. It made the helper
+          constant-time by taking start/end as parameters, RELOCATED the unbounded
+          trailing-space/tab loop into the parser's unconditional prologue, and called it
+          pre-existing SS-D.1 work. It was NOT pre-existing work on the branch that matters: at
+          the reviewed predecessor ebec2f16 a prefix-absent line called the candidate rule and
+          continued BEFORE the accepted-form end derivation. Proved twice before editing --
+          STATICALLY, the helper call at L1881 and its continue at L1883 both precede
+          end = len(line) at L1906; and AT RUNTIME, traced through the predecessor module, L1881
+          executes and L1906 DOES NOT. The relocation therefore moved a scan across a function
+          boundary rather than removing it from the pipeline SS-D.2 defines from raw L.
+          Measured on the rejected head through the COMPLETE parse_formal_disposition, not the
+          helper, three calls each: short control 0.000040s; 2,000,000 leading spaces 0.958144s
+          (23943x); 2,000,000 trailing spaces 0.844379s (21100x); 2,000,000 trailing tabs
+          0.654908s (16365x); bold with 2,000,000 trailing spaces 0.853352s (21324x);
+          2,000,000-character verdict 0.597983s (14943x). The evidence excluded exactly the
+          disputed work: _work derived the bounds ON the counted object and then zeroed both
+          counters.
+          A LAWFUL CODE-ONLY CORRECTION EXISTS AND NO NEW AUTHORITY IS TAKEN. The test is
+          whether the bound can be produced by a traversal that happens anyway. It can.
+          parse_formal_disposition already folds EVERY character of EVERY line to decide the
+          canonical prefix -- required by XASSET-0053's own BLOCKING 1, present unchanged in the
+          base module at 34c45900, and performed whether or not candidate recognition exists.
+          The trailing bound now RIDES that fold: a running count of the current trailing run of
+          ASCII spaces and tabs, reset by any other character, read off in O(1) as
+          max(len(line) - trailing_ws, indent). The separate backwards scan is DELETED, not
+          moved.
+          MEASURED BY TRAVERSALS, which is what a relocation cannot change: constructs
+          traversing line inside parse_formal_disposition are 5 in the base module (which has no
+          candidate rule at all), 5 at the rejected head, and 4 after this correction. Candidate
+          recognition adds NO traversal the parser did not already make, and the corrected parser
+          makes ONE FEWER than the base that predates candidate recognition entirely.
+          SEMANTICS PRESERVED EXACTLY. max(..., indent) restores the floor the deleted loop's
+          end > indent guard provided; equivalence was proved against the old formulation on
+          every padded shape and on empty, all-space, all-tab and mixed edge cases, and
+          classification was compared head-to-head with the rejected module across every shape
+          and both tails -- IDENTICAL EVERYWHERE. Through the complete pipeline the corrected
+          parser costs 0.95x-1.34x the base parser that has no candidate rule: a constant factor,
+          not a pass.
+          THE EVIDENCE NOW MEASURES THE COMPLETE PIPELINE. _work no longer resets anything --
+          bounds are derived from a SEPARATE PLAIN COPY and the counted object is created
+          afterwards and touched by nothing but the rule, so its count is the rule's own work
+          from zero. TestTheRuleIsBounded is honestly rescoped IN WRITING to the rule's
+          conditional property, and a new class, TestTheCompletePipelineIsBounded, calls
+          parse_formal_disposition ITSELF: a non-vacuity guard proving the scan detector fires
+          against the ACTUAL REJECTED SOURCE READ FROM GIT; the predecessor-ordering fact the
+          first correction got wrong, pinned; no separate trailing-scan construct surviving; no
+          traversal added beyond the base parser's; the bound provably produced INSIDE the fold
+          and read off in O(1); a RUNTIME TRACE over every padded shape showing NO trailing scan
+          executes; and strictly fewer traversing constructs executing than at the rejected head.
+          THE NEW EVIDENCE DISCRIMINATES: run against the rejected head 0082fae, 13 of its 16
+          tests FAIL; against the correction all 16 pass. A new probe, P28, restores the exact
+          separate scan -- behaviour-preserving and pipeline-violating, so only these guards can
+          catch it -- and is caught for its intended reason.
+          ONE DEFECT IN THIS ROUND'S OWN EVIDENCE, CAUGHT BY ITS OWN GUARD. The first version of
+          the scan detector compared against the wrong escaping of the whitespace literal and
+          silently matched NOTHING. The non-vacuity guard -- which exists precisely to refuse a
+          detector that cannot see the defect it forbids -- failed immediately. The predicate was
+          reshaped around the STRUCTURE (a construct indexing the line at a position derived from
+          the trailing bound) rather than one spelling of it. Two predecessor shape guards that
+          pinned the deleted loop's TEXT were RE-ANCHORED, not weakened: each now pins the
+          PROPERTY directly (exactly ASCII space and tab extend the trailing run, proved
+          behaviourally against non-breaking space, vertical tab and U+2028) and additionally
+          pins the removed scan as ABSENT.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

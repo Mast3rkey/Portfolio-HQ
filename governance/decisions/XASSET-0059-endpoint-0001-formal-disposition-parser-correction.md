@@ -187,6 +187,85 @@ those modifications, invisible to `git status`. The anchor check caught it, ever
 replacement text was then scanned across the worktree, the single residue was restored to its
 committed original, and the proof was re-run from clean. No probe was counted while it was present.
 
+#### C.2 Second bounded correction — MAJOR 1 of DELTA review `5041611657`
+
+The bounded correction in §C.1 was **not sufficient**, and the DELTA review's finding is correct.
+§C.1 made the helper constant-time by taking `start`/`end` as parameters, relocated the unbounded
+trailing-space/tab loop into the parser's unconditional prologue, and called it pre-existing §D.1
+work. **It was not pre-existing work on the branch that matters.** At the reviewed predecessor
+`ebec2f16…`, a prefix-absent line called the candidate rule and `continue`d *before* the
+accepted-form `end` derivation. Proved twice, before editing:
+
+* **statically** — the helper call (L1881) and its `continue` (L1883) both precede
+  `end = len(line)` (L1906);
+* **at runtime** — traced through the predecessor module, L1881 executes and **L1906 does not**.
+
+So the relocation moved a scan across a function boundary rather than removing it from the
+pipeline §D.2 defines from raw `L`. Measured on the rejected head `0082fae…`, through the
+**complete** `parse_formal_disposition` — not the helper — three calls each:
+
+| shape | three calls | vs. the short control |
+| --- | ---: | ---: |
+| short control | 0.000040 s | 1x |
+| 2,000,000 leading ASCII spaces | 0.958144 s | **23,943x** |
+| 2,000,000 trailing ASCII spaces | 0.844379 s | **21,100x** |
+| 2,000,000 trailing ASCII tabs | 0.654908 s | **16,365x** |
+| bold, 2,000,000 trailing spaces | 0.853352 s | **21,324x** |
+| 2,000,000-character verdict | 0.597983 s | **14,943x** |
+
+And the evidence excluded exactly the disputed work: `_work` derived the bounds **on the counted
+object** and then zeroed both counters.
+
+**A lawful code-only correction exists, and no new authority is taken.** The test is whether the
+bound can be produced by a traversal that happens anyway. It can. `parse_formal_disposition`
+already folds **every character of every line** to decide the canonical prefix — required by
+`XASSET-0053`'s own BLOCKING 1, present unchanged in the base module at `34c45900…`, and performed
+whether or not candidate recognition exists. The trailing bound now rides that fold: a running
+count of the current trailing run of ASCII spaces and tabs, reset by any other character, read off
+in O(1) as `max(len(line) - trailing_ws, indent)`. The separate backwards scan is **deleted**, not
+moved.
+
+**Measured by traversals, which is what a relocation cannot change:**
+
+| module | constructs traversing `line` in `parse_formal_disposition` |
+| --- | ---: |
+| base `34c45900…` (no candidate rule at all) | **5** |
+| rejected head `0082fae…` | **5** |
+| corrected | **4** |
+
+Candidate recognition adds **no** traversal the parser did not already make, and the corrected
+parser makes **one fewer** than the base that predates candidate recognition entirely.
+
+**Semantics preserved exactly.** `max(…, indent)` restores the floor the deleted loop's
+`end > indent` guard provided; equivalence was proved against the old formulation on every padded
+shape and on empty, all-space, all-tab and mixed edge cases, and classification was compared
+head-to-head with the rejected module across every shape and both tails: **identical everywhere**.
+Through the complete pipeline the corrected parser now costs **0.95x–1.34x** the base parser that
+has no candidate rule — a constant factor, not a pass.
+
+**The evidence now measures the complete pipeline.** `_work` no longer resets anything: bounds are
+derived from a **separate plain copy**, and the counted object is created afterwards and touched by
+nothing but the rule, so its count is the rule's own work from zero. `TestTheRuleIsBounded` is
+honestly rescoped in writing to the rule's conditional property, and a new class,
+`TestTheCompletePipelineIsBounded`, calls `parse_formal_disposition` itself: a non-vacuity guard
+proving the scan detector fires against the **actual rejected source read from git**; the
+predecessor-ordering fact that §C.1 got wrong, pinned; no separate trailing-scan construct
+surviving; no traversal added beyond the base parser's; the bound provably produced *inside* the
+fold and read off in O(1); a runtime trace over every padded shape showing **no trailing scan
+executes**; and strictly fewer traversing constructs executing than at the rejected head.
+
+**The new evidence discriminates.** Run against the rejected head `0082fae…`, **13 of its 16 tests
+fail**; against the correction, all 16 pass. A new probe, `P28`, restores the exact separate scan —
+behaviour-preserving and pipeline-violating, so only these guards can catch it — and is caught for
+its intended reason.
+
+**One defect in this round's own evidence, caught by its own guard.** The first version of the
+scan detector compared against the wrong escaping of the whitespace literal and silently matched
+**nothing**. The non-vacuity guard — which exists precisely to refuse a detector that cannot see
+the defect it forbids — failed immediately. The predicate was reshaped around the structure (a
+construct indexing the line at a position derived from the trailing bound) rather than one
+spelling of it.
+
 ### D. Result — the whole matrix, closed
 
 | Family (plain presentation) | Cells | live `BYPASS` | corrected `BYPASS` | corrected `MALFORMED` | corrected `ADVERSE` |

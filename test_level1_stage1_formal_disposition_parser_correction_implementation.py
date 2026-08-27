@@ -30,7 +30,9 @@ import ast
 import hashlib
 import inspect
 import subprocess
+import sys
 import time
+import types
 from pathlib import Path
 
 import pytest
@@ -56,6 +58,7 @@ class _SEAMS:
 
 ROOT = Path(__file__).resolve().parent
 MODULE_RELPATH = "level1_stage1_execution_authorization.py"
+MODULE_PATH = ROOT / MODULE_RELPATH
 DECISION_RELPATH = (
     "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md"
 )
@@ -1338,11 +1341,21 @@ class _CountingLine(str):
 
 
 def _work(line: str) -> tuple[bool, int, int]:
-    """Run the rule on ``line`` exactly as the parser does, and report the work it did."""
-    counting = _CountingLine(_ascii_fold(line))
-    start, end = _d1_bounds(counting)
-    counting.touched = 0  # the bounds are the CALLER's pre-existing SS-D.1 work, not the rule's
-    counting.reads = 0
+    """Report every character the RULE reads, with nothing excluded and nothing reset.
+
+    MAJOR 1 of DELTA review ``5041611657`` objected -- correctly -- that this helper used to
+    derive the bounds ON the counted object and then zero its counters, excluding the very scan
+    under review. There is no reset here and no exclusion: the bounds are derived from a
+    SEPARATE plain copy, and the counted object is created afterwards and touched by nothing but
+    the rule. Its count is therefore the rule's own work, whole, from zero.
+
+    This measures the RULE's contract, which is one half of the property. The other half -- that
+    deriving the bounds adds no traversal to the parser -- is measured over the COMPLETE pipeline
+    by ``TestTheCompletePipelineIsBounded``, which calls ``parse_formal_disposition`` itself.
+    """
+    plain = _ascii_fold(line)
+    start, end = _d1_bounds(plain)  # on a PLAIN copy: never counted, never subtracted
+    counting = _CountingLine(plain)
     verdict = AUTH._is_formal_disposition_candidate(counting, start, end)
     return verdict, counting.touched, counting.reads
 
@@ -1353,6 +1366,12 @@ class TestTheRuleIsBounded:
     The escaped test lengthened only a NON-SPACE verdict suffix, on which neither trimming loop
     iterated; it measured the comparison, not the rule. Every test here exercises a padding shape
     that made the superseded implementation linear.
+
+    SCOPE, stated honestly after DELTA review ``5041611657``: this class measures the RULE given
+    §D.1's bounds. That is a real property and it is proved here without exclusions -- but it is
+    NOT the whole contract, and this class does not claim to be. Whether deriving those bounds
+    adds a traversal to the candidate pipeline is a DIFFERENT question, measured over the
+    complete ``parse_formal_disposition`` call by ``TestTheCompletePipelineIsBounded`` below.
     """
 
     def test_the_work_is_identical_whatever_the_line_is(self):
@@ -1506,6 +1525,7 @@ class TestTheRuleIsBounded:
                 assert _seam_three_refused(_SEAMS.run_consumer_three(body, state)), (name, state)
             assert _seam_two_refused(_SEAMS.run_consumer_two(body)), name
 
+
     def test_it_probes_at_most_three_indices_per_projection(self):
         assert len(AUTH._ADMISSIBLE_COLON_INDICES) == 3
         assert len(set(AUTH._ADMISSIBLE_COLON_INDICES)) == 3
@@ -1518,6 +1538,212 @@ class TestTheRuleIsBounded:
         # A THIRD wrapper is not recognized: single asterisks are not a governed form.
         assert _candidate((f"*{line}*")) is False
         assert _candidate((f"_{line}_")) is False
+
+
+# =====================================================================================
+# 9b. MAJOR 1 of DELTA review `5041611657` -- the COMPLETE candidate pipeline
+# =====================================================================================
+#
+# The first correction made the helper constant-time by taking `start`/`end` as parameters, and
+# relocated the unbounded trailing-space/tab loop into the parser's unconditional prologue,
+# calling it pre-existing §D.1 work. The review found that false, and it is: at the reviewed
+# predecessor a prefix-absent line called the rule and `continue`d BEFORE the accepted-form `end`
+# derivation, so on the ONLY branch where the rule runs, that bound did not exist yet. Moving a
+# scan across a function boundary does not remove it from the pipeline §D.2 defines from raw `L`.
+#
+# Everything below therefore measures `parse_formal_disposition` ITSELF. Nothing here derives
+# bounds outside the measurement, resets a counter, or times the helper alone.
+
+#: The two immutable anchors this section reasons against, both read from git rather than assumed.
+BASE_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"          # no candidate rule exists at all
+PRIOR_SHA = "0082fae3f1ea591594e720f6177295e5ddceb91b"          # the head DELTA review 5041611657 rejected
+
+
+def _module_source_at(commit: str) -> str:
+    return subprocess.run(
+        ["git", "show", f"{commit}:{MODULE_RELPATH}"],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout
+
+
+def _line_traversals(source: str) -> list[tuple[int, str]]:
+    """Every construct inside ``parse_formal_disposition`` that walks the raw ``line``.
+
+    Comprehensions, ``for`` loops and ``while`` loops whose guard indexes or measures ``line``.
+    This counts TRAVERSALS, not statements: it is the quantity §D.2's bound is about, and the one
+    a relocation cannot change.
+    """
+    function = next(
+        node for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.FunctionDef) and node.name == "parse_formal_disposition"
+    )
+    found: list[tuple[int, str]] = []
+    for node in ast.walk(function):
+        if isinstance(node, (ast.GeneratorExp, ast.ListComp, ast.SetComp)):
+            for generator in node.generators:
+                iterated = ast.unparse(generator.iter)
+                if "line" in iterated:
+                    found.append((node.lineno, f"comprehension over {iterated}"))
+        elif isinstance(node, ast.For) and "line" in ast.unparse(node.iter):
+            found.append((node.lineno, f"for over {ast.unparse(node.iter)}"))
+        elif isinstance(node, ast.While):
+            guard = ast.unparse(node.test)
+            if "line[" in guard or "len(line)" in guard:
+                found.append((node.lineno, f"while {guard}"))
+    return sorted(found)
+
+
+def _is_trailing_scan(description: str) -> bool:
+    """A construct that walks BACKWARDS over trailing ASCII spaces and tabs.
+
+    Shaped around the STRUCTURE -- indexing the line at a position derived from the trailing
+    bound -- rather than around one spelling of the whitespace literal. The first version of this
+    predicate compared against the wrong escaping and silently matched NOTHING, which is exactly
+    the failure the non-vacuity guard above exists to catch, and did.
+    """
+    return "line[end" in description.replace(" ", "")
+
+
+def _load_module_source(source: str, name: str):
+    """Load a module from SOURCE TEXT, in memory, writing nothing to disk."""
+    module = types.ModuleType(name)
+    module.__file__ = f"<{name}>"
+    sys.modules[name] = module
+    exec(compile(source, f"<{name}>", "exec"), module.__dict__)
+    return module
+
+
+def _executed_lines(function, *args) -> set[int]:
+    """Every source line of ``parse_formal_disposition`` that actually RAN during the call."""
+    seen: set[int] = set()
+
+    def tracer(frame, event, arg):
+        if event == "call":
+            return tracer if frame.f_code.co_name == "parse_formal_disposition" else None
+        if event == "line":
+            seen.add(frame.f_lineno)
+        return tracer
+
+    previous = sys.gettrace()
+    sys.settrace(tracer)
+    try:
+        function(*args)
+    finally:
+        sys.settrace(previous)
+    return seen
+
+
+def _traversals_executed(function, *args) -> set[int]:
+    return _executed_lines(function, *args)
+
+
+def _count_traversals_executed(module, source: str, body: str) -> int:
+    """How many of the module's line-traversing constructs actually run for ``body``."""
+    executed = _executed_lines(module.parse_formal_disposition, body)
+    return sum(1 for lineno, _d in _line_traversals(source) if lineno in executed)
+
+class TestTheCompletePipelineIsBounded:
+    """The rule's bound measured where §D.2 defines it: from the raw line, through the parser."""
+
+    def test_the_detector_is_not_vacuous_against_the_rejected_head(self):
+        """Non-vacuity, proved against the ACTUAL rejected source rather than a mock.
+
+        If this fails, every other test in this class is worthless, because the detector cannot
+        see the defect it exists to forbid.
+        """
+        rejected = _line_traversals(_module_source_at(PRIOR_SHA))
+        scans = [d for _lineno, d in rejected if _is_trailing_scan(d)]
+        assert scans, f"the detector must find the rejected head's trailing scan; saw {rejected}"
+
+    def test_the_base_parser_never_derived_the_bound_on_the_candidate_branch(self):
+        """The premise the first correction got wrong, pinned as a fact about the predecessor.
+
+        At the reviewed predecessor the candidate call and its ``continue`` both precede the
+        accepted-form ``end`` derivation, so a prefix-absent line never reached it. The bound was
+        NOT pre-existing work on that branch, and calling it so was the error.
+        """
+        source = _module_source_at("ebec2f1626e59db587903bcb684fbe4fd600a922")
+        start = source.index("def parse_formal_disposition")
+        call = source.index(f"{HELPER_NAME}(ascii_upper)", start)
+        keep_scanning = source.index("continue  # genuinely not formal-looking", start)
+        derived = source.index("        end = len(line)", start)
+        assert call < keep_scanning < derived
+
+    def test_no_separate_trailing_scan_construct_survives(self):
+        """The scan must be GONE, not relocated. This is what fails at the rejected head."""
+        live = _line_traversals(MODULE_PATH.read_text(encoding="utf-8"))
+        scans = [(lineno, d) for lineno, d in live if _is_trailing_scan(d)]
+        assert scans == [], f"a separate trailing scan still walks the line: {scans}"
+
+    def test_the_pipeline_adds_no_traversal_the_base_parser_did_not_already_make(self):
+        """Candidate recognition may cost a constant. It may not cost a PASS.
+
+        The base module predates candidate recognition entirely, so its traversal count is the
+        honest ceiling: whatever the parser had to do anyway.
+        """
+        base = _line_traversals(_module_source_at(BASE_SHA))
+        live = _line_traversals(MODULE_PATH.read_text(encoding="utf-8"))
+        assert len(live) <= len(base), (
+            f"candidate recognition added a traversal: base {len(base)}, live {len(live)}\n"
+            f"base={base}\nlive={live}"
+        )
+
+    def test_the_bound_is_produced_by_the_unavoidable_fold_itself(self):
+        """Not merely 'no extra pass' -- the bound must come OUT of the pass that had to happen.
+
+        Every character must be folded to decide the canonical prefix, on every line, whether or
+        not candidate recognition exists. The trailing-run counter rides exactly that loop.
+        """
+        source = MODULE_PATH.read_text(encoding="utf-8")
+        function = next(
+            node for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.FunctionDef) and node.name == "parse_formal_disposition"
+        )
+        folds = [
+            node for node in ast.walk(function)
+            if isinstance(node, ast.For) and ast.unparse(node.iter) == "line"
+        ]
+        assert len(folds) == 1, f"expected exactly one fold over the raw line, found {len(folds)}"
+        body = ast.unparse(folds[0])
+        assert "ascii_upper" in body or "append_folded" in body, body
+        assert "trailing_ws" in body, "the trailing run must be counted INSIDE the fold"
+        # ...and `end` must then be read off in O(1), never rescanned.
+        derivations = [
+            node for node in ast.walk(function)
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == "end"
+        ]
+        assert len(derivations) == 1, f"``end`` must be bound once, found {len(derivations)}"
+        assert ast.unparse(derivations[0].value) == "max(len(line) - trailing_ws, indent)"
+
+    @pytest.mark.parametrize(
+        "name,line,control", _BOUND_SHAPES, ids=[n for n, _, _ in _BOUND_SHAPES]
+    )
+    def test_no_trailing_scan_EXECUTES_for_any_padded_candidate(
+        self, name: str, line: str, control: str
+    ):
+        """Runtime, complete pipeline: not one traversing construct that executes is a scan.
+
+        Structure can be argued about; execution cannot. This drives the REAL parser over the
+        real padded line and looks at which traversing constructs actually ran.
+        """
+        source = MODULE_PATH.read_text(encoding="utf-8")
+        traversals = _line_traversals(source)
+        executed = _traversals_executed(AUTH.parse_formal_disposition, _adverse_then_approval(line))
+        assert executed, f"non-vacuity: some traversal must run for {name}"
+        ran = [(lineno, d) for lineno, d in traversals if lineno in executed]
+        assert [d for _l, d in ran if _is_trailing_scan(d)] == [], (name, ran)
+
+    def test_fewer_traversals_execute_than_at_the_rejected_head(self):
+        """The complete pipeline must do strictly LESS walking than the head that was rejected."""
+        padded = _BOUND_CAND + " " * _BOUND_PAD
+        body = _adverse_then_approval(padded)
+        rejected = _load_module_source(_module_source_at(PRIOR_SHA), "pipeline_prior_mod")
+        before = _count_traversals_executed(rejected, _module_source_at(PRIOR_SHA), body)
+        after = _count_traversals_executed(AUTH, MODULE_PATH.read_text(encoding="utf-8"), body)
+        assert after < before, f"rejected head walked {before}, live walks {after}"
 
 
 # =====================================================================================
@@ -1950,6 +2176,20 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
         _anchor("            label = ascii_upper_line[base:limit][:index]", "  # exactly"),
         "taking the label through an unbounded slice must fail the boundedness guards",
         "TestTheRuleIsBounded",
+    ),
+    # ---- MAJOR 1 of DELTA review `5041611657`: the scan must not return, anywhere ---------
+    # Behaviour-preserving and pipeline-violating: it restores the exact separate backwards scan
+    # the DELTA review rejected, leaving every verdict, matrix cell and seam untouched. Only the
+    # complete-pipeline guards can see it -- which is the whole point, since relocating the scan
+    # was itself invisible to every helper-level guard.
+    (
+        "P28-separate-trailing-scan-restored",
+        MODULE_RELPATH,
+        _anchor("        end = max(len(line) - trailing_ws,", " indent)"),
+        _anchor("        end = len(line)\n        while end > indent and line[end - 1] in ",
+                '" \\t":\n            end -= 1'),
+        "restoring the separate backwards scan must fail the complete-pipeline guards",
+        "TestTheCompletePipelineIsBounded",
     ),
 )
 
