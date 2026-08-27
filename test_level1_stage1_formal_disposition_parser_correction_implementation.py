@@ -611,6 +611,23 @@ class TestTheTerminatingColonResidualIsPreservedExactly:
         assert len(TERMINATING_COLON_RESIDUAL) >= 3
 
     @pytest.mark.parametrize("name", sorted(TERMINATING_COLON_RESIDUAL))
+    def test_every_residual_control_is_a_genuine_terminating_colon_mutation(self, name):
+        """SUBSTANCE, not just presence -- added because a mutation probe proved it was needed.
+
+        Replacing a residual control with ordinary prose left every other assertion in this
+        class passing: unrelated prose is also ABSENT, also not a candidate, and also carries
+        no admissible colon. The controls would have been silently emptied of evidence while
+        still looking green. Each must therefore genuinely BE the case it claims to cover: the
+        canonical label intact, followed by something that is not the canonical colon.
+        """
+        line = TERMINATING_COLON_RESIDUAL[name]
+        assert line.startswith(CANON_LABEL), name
+        tail = line[len(CANON_LABEL):]
+        assert tail, name
+        assert not tail.startswith(":"), name          # the colon really is mutated away
+        assert ADVERSE_VERDICT in line, name           # and it really is a formal-looking record
+
+    @pytest.mark.parametrize("name", sorted(TERMINATING_COLON_RESIDUAL))
     def test_the_residual_line_carries_no_colon_at_any_admissible_index(self, name):
         """The mechanism, not just the outcome: the rule still REQUIRES a colon."""
         line = TERMINATING_COLON_RESIDUAL[name]
@@ -1073,6 +1090,27 @@ class TestTheProductionShapeIsExactlyAuthorized:
         assert "len(" in block
         assert AUTH._ADMISSIBLE_COLON_INDICES == (17, 18, 19)
 
+    def test_the_budget_constant_and_the_comparison_are_coupled(self):
+        """DISCLOSED, and pinned -- added because a mutation probe surfaced it.
+
+        The comparison is a closed-form first-divergence test, which decides "within ONE edit"
+        directly rather than running a budget-parameterized distance matrix. That is exactly
+        what XASSET-0058 SS-D.2 specifies and what keeps the rule O(1) -- but it means the
+        budget constant governs only the DERIVED INDEX SET, not the comparison. Changing the
+        constant alone would therefore widen the indices while the comparison still tested one
+        edit, producing an incoherent rule. The coupling is pinned here so that a future change
+        to the constant cannot pass without also changing the comparison.
+        """
+        assert AUTH._FORMAL_DISPOSITION_EDIT_BUDGET == 1
+        helper = ast.get_source_segment(_live_source(), _toplevel(_live_source())[HELPER_NAME])
+        # The closed form's three one-edit arms, named so a silent replacement fails here.
+        assert "one substitution" in helper
+        assert "one character deleted" in helper
+        assert "one character inserted" in helper
+        assert "one ADJACENT transposition" in helper
+        # ...and it is documented as capped AT the budget, not at a separate hard-coded value.
+        assert "_FORMAL_DISPOSITION_EDIT_BUDGET" in helper
+
     def test_the_edit_budget_and_label_are_derived_from_the_prefix(self):
         assert AUTH._FORMAL_DISPOSITION_LABEL == PREFIX[:-1]
         assert AUTH._FORMAL_DISPOSITION_EDIT_BUDGET == 1
@@ -1469,8 +1507,10 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
         MODULE_RELPATH,
         "_FORMAL_DISPOSITION_EDIT_BUDGET = 1",
         "_FORMAL_DISPOSITION_EDIT_BUDGET = 2",
-        "widening the budget must disagree with the reference distance metric",
-        "TestTheDistanceMetricIsCorrect",
+        "widening the budget must break the derived-index and boundedness guards; the "
+        "closed-form comparison implements a budget of exactly ONE, so the constant and "
+        "the comparison are COUPLED, and that coupling is pinned by its own test",
+        "TestTheProductionShapeIsExactlyAuthorized",
     ),
     (
         "P05-bold-projection-removed",
@@ -1534,10 +1574,11 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
     (
         "P12-acceptance-widened",
         MODULE_RELPATH,
-        "        if FORMAL_DISPOSITION_PREFIX not in ascii_upper:",
-        "        if FORMAL_DISPOSITION_PREFIX not in ascii_upper.replace(\"0\", \"O\"):",
-        "touching acceptance must break the accepted-form controls",
-        "TestAcceptanceIsUnchanged",
+        "        if not revealed_upper.startswith(FORMAL_DISPOSITION_PREFIX):",
+        "        if FORMAL_DISPOSITION_PREFIX not in revealed_upper:",
+        "WIDENING acceptance, by letting a line merely CONTAIN the prefix authenticate, "
+        "must be caught by the matrix's own ADVERSE-cell guard",
+        "TestTheWholeMatrixIsClosedByTheRealParser",
     ),
     # ---- probes against THIS SUITE's own evidence ---------------------------------------
     (
@@ -1633,9 +1674,8 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
     (
         "P22-historical-corpus-emptied",
         Path(__file__).name,
-        _anchor("HISTORICAL_REVIEW_LINES = (\n", "    (359, 5034171910,"),
-        _anchor("HISTORICAL_REVIEW_LINES = (\n", "    (359, 5034171910,\n)\n",
-                "UNUSED = (\n    (359, 5034171910,"),
+        _anchor(")\n\n#: A REAL bot review body carrying", " NO formal line at all."),
+        _anchor(")[:1]\n\n#: A REAL bot review body carrying", " NO formal line at all."),
         "emptying the historical corpus must fail its substantiality guard",
         "TestRealHistoricalReviewBodiesRetainTheirVerdicts",
     ),
@@ -1646,6 +1686,14 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
         _anchor("def _reference_osa(a: str,", " b: str) -> int:\n    return 0"),
         "a trivial reference metric must fail its OWN known-bad controls",
         "TestTheDistanceMetricIsCorrect",
+    ),
+    (
+        "P25-budget-coupling-guard-removed",
+        MODULE_RELPATH,
+        _anchor("            if abs(gap) > ", "_FORMAL_DISPOSITION_EDIT_BUDGET:"),
+        _anchor("            if abs(gap) > ", "1:"),
+        "severing the budget constant from the comparison must fail the coupling guard",
+        "TestTheProductionShapeIsExactlyAuthorized",
     ),
     (
         "P24-prose-controls-emptied",
@@ -1760,12 +1808,31 @@ def _run_mutation_proof() -> int:
         (ROOT / relpath).write_text(mutated, encoding="utf-8")
         try:
             result = subprocess.run(
-                [sys.executable, "-m", "pytest", "-x", "-q", "--no-header",
+                # NOT ``-x``: stopping at the first failure hides every other guard, so a
+                # probe caught by three guards would be reported as caught by whichever ran
+                # first. The whole module runs, and the INTENDED guard must be among the
+                # failures -- which is what "fails for the intended reason" actually means.
+                [sys.executable, "-m", "pytest", "-q", "--no-header",
                  "-p", "no:cacheprovider", Path(__file__).name],
                 cwd=ROOT, capture_output=True, text=True,
             )
             noticed = result.returncode != 0
-            intended = marker in (result.stdout + result.stderr)
+            # Two of this module's own guards fail during EVERY probe by construction: the
+            # anchor-uniqueness and no-op checks read the file WHILE it is mutated. Counting
+            # them would make every probe "caught" whether or not the guard it targets
+            # actually noticed -- the exact vacuity this harness exists to prevent. They are
+            # therefore excluded before the intended-reason test is applied.
+            failed_nodes = [
+                line.split(" ")[1] if line.startswith("FAILED ") else line
+                for line in (result.stdout + result.stderr).split("\n")
+                if line.startswith("FAILED ")
+            ]
+            substantive = [
+                node for node in failed_nodes
+                if "test_every_anchor_occurs_exactly_once" not in node
+                and "test_no_probe_is_a_no_op" not in node
+            ]
+            intended = any(marker in node for node in substantive)
             if noticed and intended:
                 caught.append(probe_id)
             elif noticed:
