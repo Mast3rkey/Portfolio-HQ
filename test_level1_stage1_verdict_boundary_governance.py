@@ -98,7 +98,8 @@ SUCCESSOR_DECISION = "XASSET-0056"
 #: ADVANCED BY XASSET-0059: WS-0014's SHARED live fields moved again, onto the Lifecycle B
 #: parser correction. The XASSET-0058 generation is retained beside it as a NEGATIVE pin.
 SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
-SUCCESSOR_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+SUCCESSOR_MAIN_SHA = XASSET0059_MAIN_SHA
 XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
 XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 XASSET0057_BRANCH = "claude/xasset-successor-authorization-3b0btg"
@@ -791,6 +792,7 @@ class TestCatalogAndRegisterSynchronisation:
         live = _ws0014()
         assert live["active_branch"] == SUCCESSOR_BRANCH
         assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
+        assert live["last_verified_main_sha"] == XASSET0059_MAIN_SHA
         assert live["active_branch"] != XASSET0058_BRANCH
         assert live["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert live["active_branch"] != XASSET0057_BRANCH
