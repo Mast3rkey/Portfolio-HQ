@@ -72,7 +72,7 @@ The only production surface touched is `parse_formal_disposition()` in
 `level1_stage1_execution_authorization.py`, plus **one** narrowly devoted candidate-recognition
 helper and the **three** constants it derives:
 
-* `_is_formal_disposition_candidate(ascii_upper_line) -> bool`
+* `_is_formal_disposition_candidate(ascii_upper_line, start, end) -> bool`
 * `_FORMAL_DISPOSITION_LABEL` — derived from `FORMAL_DISPOSITION_PREFIX`
 * `_FORMAL_DISPOSITION_EDIT_BUDGET` — `1`, a `NUM-0001` **class 5 provisional governance guardrail**
 * `_ADMISSIBLE_COLON_INDICES` — derived from the label length and the budget, **never literals**
@@ -97,6 +97,95 @@ A qualifying non-exact candidate returns **`MALFORMED`**. It can return nothing 
 **What it is not.** No general Markdown framework, no general Unicode framework, no normalization
 table, no confusable map, no third wrapper form, no fourth call site of the parser, and no fuzzy
 comparison anywhere in acceptance or verdict determination.
+
+#### C.1 Bounded correction — MAJOR 1 of independent review `5037196415`
+
+Independent FULL exact-head review `5037196415` returned **BOUNDED CORRECTION REQUIRED — 0
+BLOCKING / 1 MAJOR / 0 MINOR / 0 NOTE** against head `ebec2f1626e59db587903bcb684fbe4fd600a922`,
+and the finding was correct. `XASSET-0058` §D.2 item 3 bounds the rule at three index probes and
+three capped comparisons per projection, *"so the rule remains **O(1) in the line's length**"*.
+The first implementation **derived its own projection bounds**, scanning every leading ASCII space
+and every trailing ASCII space or tab before probing. The rule was therefore linear, and the
+docstring's O(1) claim was false. Reproduced here before anything was changed, ten calls each:
+
+| shape | ten calls | vs. the short control |
+| --- | ---: | ---: |
+| short candidate | 0.000029 s | 1x |
+| 2,000,000 leading ASCII spaces | 0.895893 s | **30,442x** |
+| 2,000,000 trailing ASCII spaces | 0.829430 s | **28,183x** |
+| 2,000,000 trailing ASCII tabs | 0.797732 s | **27,106x** |
+| bold, 2,000,000 trailing spaces | 0.806718 s | **27,411x** |
+| bold, 2,000,000 leading spaces | 0.867799 s | **29,487x** |
+
+The escaped guard, `test_it_is_flat_in_the_line_length`, lengthened only a **non-space** verdict
+suffix — measured here at **1.7x** — on which neither trimming loop iterates. It proved the
+*comparison* bounded, never the *rule*.
+
+**No governing conflict exists, and none is claimed.** §D.2 item 1 defines the projections in
+terms of §D.1's own `revealed`, and the parser must already derive exactly those bounds for
+**acceptance**. Deriving them once, in the per-line prologue, and passing them satisfies item 3
+literally: three probes and three capped comparisons, and no scan of the rule's own. The
+correction is therefore the one the review itself preferred — *"reusing/precomputing the parser's
+already-derived line bounds without an additional unbounded candidate scan"* — and needs no new
+authority.
+
+**The correction, in three parts.**
+
+1. `end` — §D.1's trailing bound — is **relocated unchanged** from the accepted-form section into
+   the unconditional per-line prologue beside `indent`, which was already computed there for every
+   line. Both consumers now read one derivation. The loop's text, its `end > indent` floor and its
+   ASCII-space-and-tab-only semantics are byte-identical to the ones it replaces.
+2. The rule takes `start` and `end` as **required** parameters and derives neither. No optional
+   fallback survives, because a self-deriving path would leave the linear scan in the module.
+3. Both projections are carried as `(base, limit)` **offsets** instead of materialized substrings.
+   `revealed` is `(start, end)`; the `**` wrapper's enclosed text is `(start + 2, end - 2)`. The
+   wrapper test reads exactly four characters; `k < len(P)` becomes the integer test
+   `at >= limit`; and `label` is `ascii_upper_line[base:at]`, whose length is exactly `index` and
+   so at most `max(_ADMISSIBLE_COLON_INDICES)` characters.
+
+**Projection semantics are unchanged, not relaxed.** `indent` counts leading ASCII spaces only and
+`end` trims trailing ASCII spaces and tabs only — character for character what the deleted loops
+did. The ASCII fold is length-preserving and the identity outside `a`–`z`, so bounds derived from
+the raw line index the folded one exactly. Equivalence was verified over the entire matrix, every
+presentation, every seam and both native states: **no cell changed classification**.
+
+**Measured after the correction**, same shapes, same method: **1.02x, 0.82x, 0.67x, 0.78x, 1.16x**
+— flat. End to end the parser still costs about 0.34 s on a 2,000,000-character line, because
+folding it, building `resembles_prefix` and testing the prefix substring are each Θ(n) and always
+were; that cost is the parser's, is unchanged by this correction, and is not what §D.2 bounds.
+
+**The evidence was strengthened, never relabelled.** The escaped guard was **kept** — corrected so
+folding sits outside the measurement — and demoted in writing to *supporting evidence*. The proof
+is now deterministic instrumentation: a `str` subclass records every character the rule reads, and
+the count is asserted **identical** across all eight padding shapes and bounded by a ceiling
+**derived** from `_ADMISSIBLE_COLON_INDICES` rather than written down. Two structural guards forbid
+the rule from measuring the line at all and pin its single remaining loop to the label; a negative
+control proves the `False` path bounded too; parser-level and all-three-seam controls prove padding
+changes no outcome; and two new mutation probes — `P26`, which materializes `revealed` for the
+wrapper test, and `P27`, which takes the label through an unbounded slice — reintroduce the defect.
+Both are deliberately **behaviour-preserving and bound-violating**: every verdict, matrix cell and
+seam stays exactly as it is, so only the boundedness guards can catch them. That is precisely the
+regression class that escaped, and a probe that also changed an outcome would not test it.
+
+**`P26` then found a second axis this correction had itself missed, and it was fixed rather than
+argued away.** On its first run `P26` was reported **MISSED — wrong reason**: it failed the suite,
+but only through the harness's own anchor check, never through `TestTheRuleIsBounded`. The cause is
+a real distinction the review's own shapes do not separate. Padding sits **outside** `[start, end)`,
+so a padded line cannot detect a rule that materializes or scans the region **between** the bounds
+— exactly what `revealed` is. The shape set was therefore extended with a second axis: a candidate
+carrying a 2,000,000-character **verdict**, plain and bold, and one line long on both axes at once.
+`P26` and `P27` are now caught by `TestTheRuleIsBounded` itself, and the work-identity assertion
+compares each shape against an explicitly named control of its own presentation rather than one
+inferred from its label. The first shape set was insufficient; the finding is recorded here because
+it was measured, and because it is the same failure mode — a guard that looks conclusive while
+exercising the wrong input — that produced MAJOR 1 in the first place.
+
+**One residue was found and removed, not overlooked.** An earlier mutation run was stopped part-way
+so it could be restarted against the final probe set. Because the harness's targets were already
+modified by this correction, the interrupted probe's replacement text (`P20`) survived *inside*
+those modifications, invisible to `git status`. The anchor check caught it, every probe's
+replacement text was then scanned across the worktree, the single residue was restored to its
+committed original, and the proof was re-run from clean. No probe was counted while it was present.
 
 ### D. Result — the whole matrix, closed
 

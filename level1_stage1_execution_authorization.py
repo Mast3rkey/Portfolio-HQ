@@ -1656,7 +1656,9 @@ _ADMISSIBLE_COLON_INDICES = tuple(
 )
 
 
-def _is_formal_disposition_candidate(ascii_upper_line: str) -> bool:
+def _is_formal_disposition_candidate(
+    ascii_upper_line: str, start: int, end: int
+) -> bool:
     """Is this line a FORMAL-DISPOSITION CANDIDATE -- a formal record with a tampered label?
 
     XASSET-0058 §D.2. **Classification only.** Returns a plain ``bool`` and nothing else: it
@@ -1666,16 +1668,24 @@ def _is_formal_disposition_candidate(ascii_upper_line: str) -> bool:
     ``ascii_upper_line`` is the caller's own ``ascii_upper`` view -- the SAME ASCII-only case fold
     acceptance uses (§D.2 item 3), so ASCII upper, lower and mixed case stay interchangeable and a
     non-ASCII character never becomes an ASCII label letter. That fold is length-preserving and is
-    the identity on every character except ``a``-``z``, so slicing, the ASCII space/tab trimming
-    below and the ``**`` wrapper test all give identical results on the folded and raw views --
-    which is why the folded view alone is sufficient here.
+    the identity on every character except ``a``-``z``, so slicing and the ``**`` wrapper test give
+    identical results on the folded and raw views -- which is why the folded view alone is
+    sufficient here, and why bounds derived from the RAW line index the folded one exactly.
+
+    ``start`` and ``end`` are §D.1's own line bounds, derived once per line by the caller:
+    ``start`` past the leading ASCII spaces, ``end`` back over the trailing ASCII spaces and tabs,
+    with ``0 <= start <= end <= len(ascii_upper_line)``. They are REQUIRED, not optional, and this
+    rule never derives them for itself -- that is precisely what MAJOR 1 of review ``5037196415``
+    corrected, and leaving a self-deriving path here would leave the linear scan in the module.
 
     The rule (§D.2):
 
     1. **Projections.** ``revealed`` is the line with leading ASCII spaces and trailing ASCII
-       spaces and tabs removed; and, only when it is a balanced whole-line ``**`` pair, also its
-       enclosed text. Those are exactly the two governed wrapper forms of §D.1. **No third
-       projection exists**, and this rule recognizes no new wrapper.
+       spaces and tabs removed -- i.e. exactly the region ``[start, end)`` the caller supplies;
+       and, only when it is a balanced whole-line ``**`` pair, also its enclosed text, the region
+       ``[start + 2, end - 2)``. Those are exactly the two governed wrapper forms of §D.1. **No
+       third projection exists**, and this rule recognizes no new wrapper. Both are carried as
+       OFFSETS, never materialized as substrings, so neither costs anything in the line's length.
     2. **Indexed probing.** A projection yields a candidate at an admissible index ``k`` iff it
        carries an ASCII colon at ``k`` and the label before it is within the edit budget of the
        canonical label, under the restricted Damerau / optimal-string-alignment distance in which
@@ -1694,28 +1704,52 @@ def _is_formal_disposition_candidate(ascii_upper_line: str) -> bool:
     stays ABSENT, exactly as today. That residual is decided, disclosed and deliberately preserved
     by §D.8, and closing it is outside this correction's grant.
 
-    At most ``len(_ADMISSIBLE_COLON_INDICES)`` index probes and as many capped comparisons run per
-    projection, and the comparison itself is capped at the budget and never explored beyond it, so
-    the whole rule is **O(1) in the line's length**.
-    """
-    start = 0
-    while start < len(ascii_upper_line) and ascii_upper_line[start] == " ":
-        start += 1
-    end = len(ascii_upper_line)
-    while end > start and ascii_upper_line[end - 1] in " \t":
-        end -= 1
-    revealed = ascii_upper_line[start:end]
+    **Bounded work -- MAJOR 1 of review ``5037196415``.** §D.2 item 3 bounds this rule at three
+    index probes and three capped comparisons per projection, "so the rule remains **O(1) in the
+    line's length**". That claim was FALSE as first implemented: the rule derived its own
+    projection bounds by scanning every leading space and every trailing space or tab, so a line
+    padded with 2,000,000 spaces cost roughly **30,000x** a short one -- linear, not constant. The
+    escaped test lengthened only a NON-SPACE verdict suffix, on which neither loop iterates, so it
+    measured the comparison rather than the rule.
 
-    projections = [revealed]
-    if len(revealed) >= 4 and revealed.startswith("**") and revealed.endswith("**"):
-        projections.append(revealed[2:-2])  # §D.1's second governed wrapper. There is no third.
+    Every step below is now bounded by a constant:
+
+    * the wrapper test reads exactly **four** characters, at ``start``, ``start + 1``, ``end - 2``
+      and ``end - 1`` -- never a ``startswith``/``endswith`` over a materialized ``revealed``;
+    * at most ``len(_ADMISSIBLE_COLON_INDICES)`` probes run per projection, each an integer
+      comparison and one character read;
+    * ``label`` is ``ascii_upper_line[base:at]``, whose length is exactly ``index`` and therefore
+      at most ``max(_ADMISSIBLE_COLON_INDICES)`` characters, so it is bounded by the DERIVED index
+      set and shrinks automatically if the budget ever changes;
+    * the comparison is capped at the budget and never explored beyond it.
+
+    So the total characters this rule touches is bounded by a constant, independent of the line's
+    length. Deriving ``start``/``end`` is the CALLER's pre-existing §D.1 work -- the parser must
+    already fold the whole line, build ``resembles_prefix`` and test the prefix substring, each
+    Θ(n) -- and this rule adds no pass of its own to it.
+    """
+    # §D.2 item 1 -- the two governed projections, carried as ``(base, limit)`` OFFSETS into
+    # the caller's line rather than as SUBSTRINGS of it. ``(start, end)`` is ``revealed``;
+    # ``(start + 2, end - 2)`` is the ``**`` wrapper's enclosed text, i.e. ``revealed[2:-2]``,
+    # and exists only under the same balanced whole-line test §D.1 already fixes. Nothing here
+    # copies, trims or measures the line, so no step grows with its length.
+    projections = [(start, end)]
+    if (
+        end - start >= 4
+        and ascii_upper_line[start:start + 2] == "**"
+        and ascii_upper_line[end - 2:end] == "**"
+    ):
+        projections.append((start + 2, end - 2))  # §D.1's second wrapper. There is no third.
 
     canonical = _FORMAL_DISPOSITION_LABEL
-    for projection in projections:
+    for base, limit in projections:
         for index in _ADMISSIBLE_COLON_INDICES:
-            if index >= len(projection) or projection[index] != ":":
+            at = base + index
+            # ``at >= limit`` is §D.2 item 3's ``k < len(P)`` written on the offsets: an integer
+            # comparison, never a length measurement of the line.
+            if at >= limit or ascii_upper_line[at] != ":":
                 continue
-            label = projection[:index]
+            label = ascii_upper_line[base:at]  # exactly ``index`` characters, so at most 19
             # --- restricted Damerau / OSA distance, CAPPED at the budget -------------------
             # A comparison capped at one edit needs no distance matrix, and building one would
             # be exactly the "explored beyond the cap" §D.2 forbids: a length difference above
@@ -1838,6 +1872,23 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
         indent = 0
         while indent < len(line) and line[indent] == " ":
             indent += 1  # ASCII spaces ONLY -- a tab reaches column four and cannot open
+        # Trailing padding is trimmed with ASCII spaces and tabs ONLY. A trailing non-breaking
+        # space, vertical tab or U+2028 therefore SURVIVES into the region and is refused by
+        # whole-verdict inequality (§C.4) rather than being normalized into the approval.
+        #
+        # MAJOR 1 (review 5037196415): this loop was RELOCATED here, unchanged, from the accepted
+        # form section below. §D.2 bounds the candidate rule at three index probes and three
+        # capped comparisons per projection, but the rule DERIVED its own projection bounds by
+        # scanning every leading space and every trailing space/tab itself -- so a line padded
+        # with 2,000,000 spaces cost about 0.09s per call against 0.0000029s for a short one, and
+        # the rule was linear, not O(1). ``indent`` and ``end`` are exactly §D.1's bounds, which
+        # the parser must derive for ACCEPTANCE regardless; deriving them ONCE here and passing
+        # them lets the candidate rule do the bounded work §D.2 specifies and NO scan of its own.
+        # This adds no pass the parser did not already make: folding the line, building
+        # ``resembles_prefix`` and testing the prefix substring are each already Θ(n) per line.
+        end = len(line)
+        while end > indent and line[end - 1] in " \t":
+            end -= 1
         marker = line[indent] if indent < len(line) else ""
         if marker in ("`", "~"):
             run = 0
@@ -1878,7 +1929,7 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
             # Candidate recognition closes exactly that gap. It is reachable ONLY here, on the
             # prefix-absent branch, so acceptance is structurally untouched (§D.1), and its only
             # effect is one more fail-closed MALFORMED (§D.6).
-            if _is_formal_disposition_candidate(ascii_upper):
+            if _is_formal_disposition_candidate(ascii_upper, indent, end):
                 return MALFORMED_FORMAL_DISPOSITION
             continue  # genuinely not formal-looking: still ABSENT, keep scanning
         if fence_char:
@@ -1900,12 +1951,8 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
         # grammar §D.16 fixes at exactly two.
         if indent > 3:
             return MALFORMED_FORMAL_DISPOSITION
-        # Trailing padding is trimmed with ASCII spaces and tabs ONLY. A trailing non-breaking
-        # space, vertical tab or U+2028 therefore SURVIVES into the region and is refused by
-        # whole-verdict inequality (§C.4) rather than being normalized into the approval.
-        end = len(line)
-        while end > indent and line[end - 1] in " \t":
-            end -= 1
+        # ``end`` is §D.1's trailing bound, derived once in the per-line prologue above and used
+        # unchanged here -- the same value this branch computed for itself before MAJOR 1.
         revealed = line[indent:end]
         # ``ascii_upper`` is a character-for-character fold of ``line``, so the same slice
         # is the ASCII-folded view of ``revealed``. Acceptance never consults ``.upper()``.

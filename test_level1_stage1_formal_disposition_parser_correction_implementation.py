@@ -222,6 +222,29 @@ def _ascii_fold(text: str) -> str:
     return "".join(c.upper() if "a" <= c <= "z" else c for c in text)
 
 
+def _d1_bounds(folded: str) -> tuple[int, int]:
+    """§D.1's own line bounds, derived exactly the way ``parse_formal_disposition`` derives them.
+
+    MAJOR 1 of review ``5037196415``: the rule must NOT derive these for itself, so every caller
+    -- production and test alike -- supplies them. This mirrors the parser, and mirroring it here
+    is what keeps these tests measuring the rule the parser actually runs.
+    """
+    start = 0
+    while start < len(folded) and folded[start] == " ":
+        start += 1
+    end = len(folded)
+    while end > start and folded[end - 1] in " \t":
+        end -= 1
+    return start, end
+
+
+def _candidate(line: str) -> bool:
+    """Call the candidate rule the way the parser calls it: folded, with §D.1's bounds."""
+    folded = _ascii_fold(line)
+    start, end = _d1_bounds(folded)
+    return AUTH._is_formal_disposition_candidate(folded, start, end)
+
+
 # =====================================================================================
 # 1. The swept region and the matrix are DERIVED, and cross-checked against the decision
 # =====================================================================================
@@ -395,8 +418,7 @@ class TestTheColonCellsAreIndependentlyLoadBearing:
     def test_the_real_terminating_colon_is_still_probed_behind_an_inserted_one(self):
         """The exact mechanism the correction repaired, stated as a mechanism."""
         for family, index, character, label in COLON_CELLS:
-            folded = _ascii_fold(_render(label, PLAIN))
-            assert AUTH._is_formal_disposition_candidate(folded), (family, index)
+            assert _candidate(_render(label, PLAIN)), (family, index)
 
 
 # =====================================================================================
@@ -427,7 +449,7 @@ class TestTheNamedAttacksAreClosed:
             if k < len(line) and line[k] == ":"
         ]
         assert admissible, label
-        assert AUTH._is_formal_disposition_candidate(_ascii_fold(line))
+        assert _candidate((line))
 
     @pytest.mark.parametrize("label", NAMED_ATTACKS)
     def test_the_attack_is_a_real_cell_of_the_exhaustive_matrix(self, label):
@@ -576,7 +598,7 @@ class TestOrdinaryProseStaysAbsent:
     @pytest.mark.parametrize("name", sorted(PROSE_ABSENT_CONTROLS))
     def test_the_prose_line_is_not_a_candidate(self, name):
         line = PROSE_ABSENT_CONTROLS[name]
-        assert AUTH._is_formal_disposition_candidate(_ascii_fold(line)) is False, name
+        assert _candidate((line)) is False, name
 
     @pytest.mark.parametrize("name", sorted(PROSE_ABSENT_CONTROLS))
     def test_the_prose_line_does_not_block_a_later_real_approval(self, name):
@@ -638,7 +660,7 @@ class TestTheTerminatingColonResidualIsPreservedExactly:
     @pytest.mark.parametrize("name", sorted(TERMINATING_COLON_RESIDUAL))
     def test_the_residual_line_is_not_a_candidate(self, name):
         line = TERMINATING_COLON_RESIDUAL[name]
-        assert AUTH._is_formal_disposition_candidate(_ascii_fold(line)) is False, name
+        assert _candidate((line)) is False, name
 
     @pytest.mark.parametrize("name", sorted(TERMINATING_COLON_RESIDUAL))
     def test_the_residual_line_is_still_ABSENT(self, name):
@@ -655,8 +677,8 @@ class TestTheTerminatingColonResidualIsPreservedExactly:
         """The internal-colon case is CLOSED; the terminating-colon case remains ABSENT."""
         internal = f"FORM:L DISPOSITION: {ADVERSE_VERDICT}"
         terminating = f"{CANON_LABEL} {ADVERSE_VERDICT}"
-        assert AUTH._is_formal_disposition_candidate(_ascii_fold(internal)) is True
-        assert AUTH._is_formal_disposition_candidate(_ascii_fold(terminating)) is False
+        assert _candidate((internal)) is True
+        assert _candidate((terminating)) is False
         assert any(
             k < len(internal) and internal[k] == ":"
             for k in AUTH._ADMISSIBLE_COLON_INDICES
@@ -985,7 +1007,7 @@ class TestTheCandidateMechanismCannotCreateAVerdict:
         """Execution, alongside the structural proof rather than instead of it."""
         for _f, _i, _c, label in EXHAUSTIVE:
             for form in PRESENTATIONS:
-                value = AUTH._is_formal_disposition_candidate(_ascii_fold(_render(label, form)))
+                value = _candidate((_render(label, form)))
                 assert value is True or value is False, (label, form)
 
     def test_it_never_names_the_approving_verdict_or_the_sentinel(self):
@@ -1001,7 +1023,7 @@ class TestTheCandidateMechanismCannotCreateAVerdict:
         """The verdict text can be anything at all without changing the classification."""
         for label in ("FORM:L DISPOSITION", "FORMAL DISPOSITON", CANON_LABEL):
             outcomes = {
-                AUTH._is_formal_disposition_candidate(_ascii_fold(f"{label}: {verdict}"))
+                _candidate((f"{label}: {verdict}"))
                 for verdict in (
                     APPROVE, ADVERSE_VERDICT, "", "ANYTHING AT ALL", "x" * 500,
                 )
@@ -1018,7 +1040,7 @@ class TestTheCandidateMechanismCannotCreateAVerdict:
         for _f, _i, _c, label in EXHAUSTIVE:
             for form in PRESENTATIONS:
                 line = _render(label, form)
-                if not AUTH._is_formal_disposition_candidate(_ascii_fold(line)):
+                if not _candidate((line)):
                     continue
                 if PREFIX in _ascii_fold(line):
                     continue  # accepted-form territory; the rule is unreachable there
@@ -1176,7 +1198,7 @@ def _production_within_budget(label: str) -> bool:
     The label is presented at an admissible index with a real terminating colon, so the ONLY
     thing that can decide the outcome is the distance test itself.
     """
-    return AUTH._is_formal_disposition_candidate(_ascii_fold(label + ":"))
+    return _candidate((label + ":"))
 
 
 class TestTheDistanceMetricIsCorrect:
@@ -1249,7 +1271,7 @@ class TestTheDistanceMetricIsCorrect:
     def test_ascii_case_folding_makes_case_irrelevant_to_classification(self):
         for label in ("form:l disposition", "FORM:L DISPOSITION", "FoRm:L dIsPoSiTiOn"):
             line = f"{label}: {ADVERSE_VERDICT}"
-            assert AUTH._is_formal_disposition_candidate(_ascii_fold(line)) is True, label
+            assert _candidate((line)) is True, label
 
     def test_a_non_ascii_character_never_folds_into_an_ascii_label_letter(self):
         """SS-D.1: ASCII-only folding. ``ſ`` uppercases to ``S`` under Unicode, and must not here."""
@@ -1259,25 +1281,230 @@ class TestTheDistanceMetricIsCorrect:
         assert AUTH.parse_formal_disposition(line + "\n") != APPROVE
 
 
-class TestTheRuleIsBounded:
-    def test_it_is_flat_in_the_line_length(self):
-        """O(1): three index probes and three capped comparisons, whatever the line's length."""
-        short = f"FORM:L DISPOSITION: {ADVERSE_VERDICT}"
-        long = f"FORM:L DISPOSITION: {'x' * 2_000_000}"
+_BOUND_PAD = 2_000_000
+_BOUND_CAND = f"FORM:L DISPOSITION: {ADVERSE_VERDICT}"
+_BOUND_BOLD = f"**FORM:L DISPOSITION: {ADVERSE_VERDICT}**"
 
-        def timed(line: str) -> float:
-            folded = _ascii_fold(line)
+#: A candidate whose VERDICT is enormous. This is the second boundedness axis, and it is not the
+#: same as padding: padding sits OUTSIDE ``[start, end)``, so it cannot catch a rule that
+#: materializes or scans the region BETWEEN the bounds. Probe ``P26`` proved the distinction is
+#: real -- it was MISSED by a padding-only shape set and had to be added, not argued away.
+_BOUND_LONG = f"FORM:L DISPOSITION: {'X' * _BOUND_PAD}"
+_BOUND_LONG_BOLD = f"**FORM:L DISPOSITION: {'X' * _BOUND_PAD}**"
+
+#: MAJOR 1 of review ``5037196415``: every shape the escaped test never exercised, on BOTH axes.
+#: Each entry is ``(name, line, control)``. Every line is a genuine candidate, so the rule runs to
+#: a ``True`` -- its LONGEST path, never an early exit -- and each is compared against the SHORT
+#: control of its own presentation, named explicitly rather than inferred from the label.
+_BOUND_SHAPES: tuple[tuple[str, str, str], ...] = (
+    # --- axis A: padding OUTSIDE the bounds -- the shape the review measured ---------------
+    ("2,000,000 leading ASCII spaces", " " * _BOUND_PAD + _BOUND_CAND, _BOUND_CAND),
+    ("2,000,000 trailing ASCII spaces", _BOUND_CAND + " " * _BOUND_PAD, _BOUND_CAND),
+    ("2,000,000 trailing ASCII tabs", _BOUND_CAND + "\t" * _BOUND_PAD, _BOUND_CAND),
+    ("2,000,000 leading and trailing", " " * _BOUND_PAD + _BOUND_CAND + " " * _BOUND_PAD,
+     _BOUND_CAND),
+    ("bold, 2,000,000 leading spaces", " " * _BOUND_PAD + _BOUND_BOLD, _BOUND_BOLD),
+    ("bold, 2,000,000 trailing spaces", _BOUND_BOLD + " " * _BOUND_PAD, _BOUND_BOLD),
+    ("bold, 2,000,000 trailing tabs", _BOUND_BOLD + "\t" * _BOUND_PAD, _BOUND_BOLD),
+    # --- axis B: an enormous region BETWEEN the bounds -- what P26 and P27 attack ----------
+    ("2,000,000-character verdict", _BOUND_LONG, _BOUND_CAND),
+    ("bold, 2,000,000-character verdict", _BOUND_LONG_BOLD, _BOUND_BOLD),
+    ("both axes at once", " " * _BOUND_PAD + _BOUND_LONG + "\t" * _BOUND_PAD, _BOUND_CAND),
+)
+
+
+class _CountingLine(str):
+    """A ``str`` that records exactly how many characters the rule reads out of it.
+
+    Deterministic, and strictly stronger than timing: a slice records its full extent, so this
+    catches a reintroduced scan AND a reintroduced ``revealed``-style copy, neither of which a
+    wall-clock threshold reliably separates from noise.
+    """
+
+    def __new__(cls, value: str) -> "_CountingLine":
+        obj = super().__new__(cls, value)
+        obj.touched = 0
+        obj.reads = 0
+        return obj
+
+    def __getitem__(self, key):  # noqa: D105 -- instrumentation, not behaviour
+        self.reads += 1
+        if isinstance(key, slice):
+            lo, hi, step = key.indices(str.__len__(self))
+            self.touched += len(range(lo, hi, step))
+        else:
+            self.touched += 1
+        return str.__getitem__(self, key)
+
+
+def _work(line: str) -> tuple[bool, int, int]:
+    """Run the rule on ``line`` exactly as the parser does, and report the work it did."""
+    counting = _CountingLine(_ascii_fold(line))
+    start, end = _d1_bounds(counting)
+    counting.touched = 0  # the bounds are the CALLER's pre-existing SS-D.1 work, not the rule's
+    counting.reads = 0
+    verdict = AUTH._is_formal_disposition_candidate(counting, start, end)
+    return verdict, counting.touched, counting.reads
+
+
+class TestTheRuleIsBounded:
+    """MAJOR 1 of review ``5037196415``, pinned so it cannot return.
+
+    The escaped test lengthened only a NON-SPACE verdict suffix, on which neither trimming loop
+    iterated; it measured the comparison, not the rule. Every test here exercises a padding shape
+    that made the superseded implementation linear.
+    """
+
+    def test_the_work_is_identical_whatever_the_line_is(self):
+        """The characters the rule reads do not change when 2,000,000 are added -- on EITHER axis.
+
+        Around the record (padding, outside the bounds) or inside it (an enormous verdict,
+        between the bounds): the rule reads exactly what it reads for the short control.
+        """
+        assert _work(_BOUND_CAND)[0] is True  # non-vacuity: the control really is a candidate
+        for name, line, control in _BOUND_SHAPES:
+            verdict, touched, reads = _work(line)
+            assert verdict is True, name
+            expected = _work(control)
+            assert (touched, reads) == expected[1:], (name, touched, reads, expected[1:])
+
+    @pytest.mark.parametrize(
+        "name,line,control", _BOUND_SHAPES, ids=[n for n, _, _ in _BOUND_SHAPES]
+    )
+    def test_the_work_is_bounded_by_the_derived_index_set(
+        self, name: str, line: str, control: str
+    ):
+        """A constant DERIVED from the budget, never a magic number: it shrinks if the budget does.
+
+        Per projection the rule may read four wrapper characters, and per admissible index one
+        colon plus a label of at most ``max(index)`` characters. Two projections bound it at
+        ``2 * (4 + 3 * (1 + max))``.
+        """
+        indices = AUTH._ADMISSIBLE_COLON_INDICES
+        ceiling = 2 * (4 + len(indices) * (1 + max(indices)))
+        verdict, touched, _ = _work(line)
+        assert verdict is True, name
+        assert touched <= ceiling, (name, touched, ceiling)
+
+    def test_a_negative_control_is_bounded_too(self):
+        """Padding must not become unbounded on the path that returns ``False`` either."""
+        prose = "This paragraph mentions no formal record at all."
+        for padded in (" " * _BOUND_PAD + prose, prose + " " * _BOUND_PAD, prose + "\t" * _BOUND_PAD):
+            verdict, touched, _ = _work(padded)
+            assert verdict is False
+            assert touched <= _work(prose)[1]
+
+    def test_the_rule_never_measures_the_line(self):
+        """Structural: ``len(ascii_upper_line)`` is how the superseded scans were written.
+
+        A rule that cannot ask how long the line is cannot iterate over it.
+        """
+        tree = ast.parse(inspect.getsource(AUTH._is_formal_disposition_candidate))
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "len"
+            ):
+                assert not (
+                    node.args
+                    and isinstance(node.args[0], ast.Name)
+                    and node.args[0].id == "ascii_upper_line"
+                ), "the rule must not measure the line it is given"
+
+    def test_the_rule_contains_no_loop_over_the_line(self):
+        """Structural: the ONLY ``while`` is the first-divergence scan, bounded by the label."""
+        tree = ast.parse(inspect.getsource(AUTH._is_formal_disposition_candidate))
+        whiles = [n for n in ast.walk(tree) if isinstance(n, ast.While)]
+        assert len(whiles) == 1, f"expected exactly one bounded loop, found {len(whiles)}"
+        guard = ast.unparse(whiles[0].test)
+        assert "ascii_upper_line" not in guard, guard
+        assert "head < len(label)" in guard and "head < len(canonical)" in guard, guard
+
+    def test_the_only_loop_is_bounded_by_the_derived_index_set(self):
+        """``label`` -- the one thing the bounded loop measures -- is a slice ending at ``at``.
+
+        ``at`` is ``base + index`` for ``index`` drawn from ``_ADMISSIBLE_COLON_INDICES``, so
+        ``len(label)`` is at most ``max(_ADMISSIBLE_COLON_INDICES)``: bounded by the DERIVED set,
+        never by the line. A slice taken to any other upper bound would fail here.
+        """
+        tree = ast.parse(inspect.getsource(AUTH._is_formal_disposition_candidate))
+        assigned = [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == "label"
+        ]
+        assert len(assigned) == 1, f"``label`` must be bound exactly once, found {len(assigned)}"
+        assert ast.unparse(assigned[0].value) == "ascii_upper_line[base:at]", ast.unparse(
+            assigned[0].value
+        )
+        at_assigned = [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == "at"
+        ]
+        assert len(at_assigned) == 1, len(at_assigned)
+        assert ast.unparse(at_assigned[0].value) == "base + index", ast.unparse(
+            at_assigned[0].value
+        )
+
+    def test_the_bounds_are_required_not_derived(self):
+        """No self-deriving fallback may survive: omitting the bounds must be an error."""
+        with pytest.raises(TypeError):
+            AUTH._is_formal_disposition_candidate(_ascii_fold(_BOUND_CAND))
+
+    def test_it_is_flat_in_the_line_length(self):
+        """Supporting evidence only. The instrumentation above is the proof."""
+        folded_short = _ascii_fold(_BOUND_CAND)
+        folded_long = _ascii_fold(f"FORM:L DISPOSITION: {'x' * _BOUND_PAD}")
+        folded_pad = _ascii_fold(" " * _BOUND_PAD + _BOUND_CAND)
+
+        def timed(folded: str) -> float:
+            start, end = _d1_bounds(folded)  # SS-D.1's bounds: OUTSIDE the measurement
             best = None
             for _ in range(5):
-                start = time.perf_counter()
+                t0 = time.perf_counter()
                 for _ in range(200):
-                    AUTH._is_formal_disposition_candidate(folded)
-                elapsed = time.perf_counter() - start
+                    AUTH._is_formal_disposition_candidate(folded, start, end)
+                elapsed = time.perf_counter() - t0
                 best = elapsed if best is None else min(best, elapsed)
             return best
 
-        # Folding is linear, so it is done ONCE, outside the measurement, on both sides.
-        assert timed(long) < timed(short) * 20
+        baseline = timed(folded_short)
+        assert timed(folded_long) < baseline * 20
+        assert timed(folded_pad) < baseline * 20
+
+    def test_padding_changes_no_outcome_at_the_parser(self):
+        """Bounded work must not come at the cost of behaviour: every padded shape still fails
+        closed exactly as its unpadded control does."""
+        for name, line, _control in _BOUND_SHAPES:
+            assert _classify(line) == SAFE_MALFORMED, name
+
+    def test_a_padded_terminating_colon_mutation_still_stays_ABSENT(self):
+        """The SS-D.8 residual is preserved under padding too, not only unpadded."""
+        residual = f"FORMAL DISPOSITION {ADVERSE_VERDICT}"  # the terminating colon DELETED
+        for padded in (
+            residual,
+            " " * _BOUND_PAD + residual,
+            residual + " " * _BOUND_PAD,
+            residual + "\t" * _BOUND_PAD,
+        ):
+            assert _candidate(padded) is False
+            assert _classify(padded) == UNSAFE_BYPASS  # unchanged: SS-D.8's disclosed residual
+
+    def test_padding_changes_no_outcome_at_any_consumer_seam(self, monkeypatch):
+        """All three seams, and the native-APPROVED rescue path, over every padded shape."""
+        for name, line, _control in _BOUND_SHAPES:
+            body = _adverse_then_approval(line)
+            for state in ("COMMENTED", "APPROVED"):
+                recorder = _SEAMS.run_consumer_one(body, monkeypatch, state=state)
+                assert not _seam_one_reached_finality(recorder), (name, state)
+                assert _seam_three_refused(_SEAMS.run_consumer_three(body, state)), (name, state)
+            assert _seam_two_refused(_SEAMS.run_consumer_two(body)), name
 
     def test_it_probes_at_most_three_indices_per_projection(self):
         assert len(AUTH._ADMISSIBLE_COLON_INDICES) == 3
@@ -1286,11 +1513,11 @@ class TestTheRuleIsBounded:
     def test_it_recognizes_exactly_the_two_governed_wrapper_forms(self):
         """No third projection exists, so no new wrapper is recognized."""
         line = f"FORM:L DISPOSITION: {ADVERSE_VERDICT}"
-        assert AUTH._is_formal_disposition_candidate(_ascii_fold(line)) is True
-        assert AUTH._is_formal_disposition_candidate(_ascii_fold(f"**{line}**")) is True
+        assert _candidate((line)) is True
+        assert _candidate((f"**{line}**")) is True
         # A THIRD wrapper is not recognized: single asterisks are not a governed form.
-        assert AUTH._is_formal_disposition_candidate(_ascii_fold(f"*{line}*")) is False
-        assert AUTH._is_formal_disposition_candidate(_ascii_fold(f"_{line}_")) is False
+        assert _candidate((f"*{line}*")) is False
+        assert _candidate((f"_{line}_")) is False
 
 
 # =====================================================================================
@@ -1477,10 +1704,10 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
     (
         "P01-first-colon-search-reintroduced",
         MODULE_RELPATH,
-        "            if index >= len(projection) or projection[index] != \":\":\n"
+        "            if at >= limit or ascii_upper_line[at] != \":\":\n"
         "                continue",
-        "            index = projection.find(\":\")\n"
-        "            if index == -1 or index not in _ADMISSIBLE_COLON_INDICES:\n"
+        "            at = base + ascii_upper_line[base:limit].find(\":\")\n"
+        "            if at < base or at - base not in _ADMISSIBLE_COLON_INDICES:\n"
         "                continue",
         "reverting to the SUPERSEDED first-colon search must reopen the colon cells",
         "TestTheColonCellsAreIndependentlyLoadBearing",
@@ -1497,8 +1724,8 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
     (
         "P03-colon-requirement-dropped",
         MODULE_RELPATH,
-        "            if index >= len(projection) or projection[index] != \":\":",
-        "            if index >= len(projection):",
+        "            if at >= limit or ascii_upper_line[at] != \":\":",
+        "            if at >= limit:",
         "dropping the colon requirement must violate the preserved SS-D.8 residual",
         "TestTheTerminatingColonResidualIsPreservedExactly",
     ),
@@ -1515,8 +1742,8 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
     (
         "P05-bold-projection-removed",
         MODULE_RELPATH,
-        "        projections.append(revealed[2:-2])",
-        "        pass",
+        "        projections.append((start + 2, end - 2))",
+        "        projections.append((start, end))",
         "dropping the bold projection must reopen the bold presentation",
         "TestTheWholeMatrixIsClosedByTheRealParser",
     ),
@@ -1558,8 +1785,8 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
     (
         "P10-hook-unreachable",
         MODULE_RELPATH,
-        "            if _is_formal_disposition_candidate(ascii_upper):",
-        "            if False and _is_formal_disposition_candidate(ascii_upper):",
+        "            if _is_formal_disposition_candidate(ascii_upper, indent, end):",
+        "            if False and _is_formal_disposition_candidate(ascii_upper, indent, end):",
         "disconnecting the hook must reopen the entire matrix",
         "TestTheWholeMatrixIsClosedByTheRealParser",
     ),
@@ -1702,6 +1929,27 @@ MUTATIONS: tuple[tuple[str, str, str, str, str, str], ...] = (
         _anchor("    \"plain prose -- REMOVED\": ", "\"formal disposition: SOMETHING\","),
         "weakening the prose ABSENT controls must fail",
         "TestOrdinaryProseStaysAbsent",
+    ),
+    # ---- MAJOR 1 of review `5037196415`: an unbounded scan must never return ------------
+    # Both probes are BEHAVIOUR-PRESERVING and BOUND-VIOLATING: every verdict, every matrix
+    # cell and every seam stays exactly as it is, and only the boundedness guards can see the
+    # difference. That is precisely the regression that escaped the first time, so a probe
+    # that changed an outcome as well would not test what this one must.
+    (
+        "P26-wrapper-test-materializes-the-line",
+        MODULE_RELPATH,
+        _anchor("        and ascii_upper_line[end - 2:end] ==", " \"**\""),
+        _anchor("        and ascii_upper_line[start:end].endswith(", "\"**\")"),
+        "materializing `revealed` to test the wrapper must fail the boundedness guards",
+        "TestTheRuleIsBounded",
+    ),
+    (
+        "P27-label-slice-unbounded",
+        MODULE_RELPATH,
+        _anchor("            label = ascii_upper_line[base:at]", "  # exactly"),
+        _anchor("            label = ascii_upper_line[base:limit][:index]", "  # exactly"),
+        "taking the label through an unbounded slice must fail the boundedness guards",
+        "TestTheRuleIsBounded",
     ),
 )
 

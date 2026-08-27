@@ -645,6 +645,22 @@ def ascii_fold(text: str) -> str:
     return "".join(c.upper() if "a" <= c <= "z" else c for c in text)
 
 
+def candidate(line: str) -> bool:
+    """Call the candidate rule the way ``parse_formal_disposition`` calls it.
+
+    MAJOR 1 of review ``5037196415``: the rule takes SS-D.1's line bounds from its caller and
+    derives none for itself, so every caller supplies them. Deriving them here mirrors the parser.
+    """
+    folded = ascii_fold(line)
+    start = 0
+    while start < len(folded) and folded[start] == " ":
+        start += 1
+    end = len(folded)
+    while end > start and folded[end - 1] in " \t":
+        end -= 1
+    return AUTH._is_formal_disposition_candidate(folded, start, end)
+
+
 def osa(a: str, b: str, cap: int = MAX_EDITS) -> int:
     """Restricted Damerau / optimal-string-alignment distance, capped at ``cap``.
 
@@ -1732,9 +1748,7 @@ class TestThisFilingChangesNoProductionByte:
                 line = _render(label, form)
                 if not hook_is_reachable(line):
                     continue
-                assert AUTH._is_formal_disposition_candidate(ascii_fold(line)) is is_candidate(
-                    line
-                ), (line, form)
+                assert candidate(line) is is_candidate(line), (line, form)
                 checked += 1
         assert checked >= len(EXHAUSTIVE), checked
 

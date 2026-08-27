@@ -2372,7 +2372,15 @@ class TestPrefixBoundaryCorrectionShape:
         # RE-ANCHORED, and TIGHTER: XASSET-0058 §D.2's candidate rule is reachable ONLY on this
         # branch -- so an accepted line can never reach it -- and it, too, precedes the
         # ``continue`` that would otherwise skip the line as ABSENT.
-        assert f"if {XASSET_0058_ADDED_DEFINITION}(ascii_upper):" in window
+        # RE-ANCHORED AGAIN, and TIGHTER STILL -- MAJOR 1 of review `5037196415`: the rule now
+        # takes SS-D.1's line bounds from this caller instead of deriving them by scanning the
+        # line for itself, so the call site names them. Pinning the FULL call keeps both facts
+        # -- reachable only here, and given bounds rather than finding them -- under one guard.
+        assert (
+            f"if {XASSET_0058_ADDED_DEFINITION}(ascii_upper, indent, end):" in window
+        ), window
+        # The superseded one-argument form must not return anywhere in the module.
+        assert f"{XASSET_0058_ADDED_DEFINITION}(ascii_upper)" not in source
         assert window.index(XASSET_0058_ADDED_DEFINITION) < window.index("continue")
         assert source.count(f"{XASSET_0058_ADDED_DEFINITION}(") == 1
 
