@@ -97,9 +97,14 @@ SUCCESSOR_DECISION = "XASSET-0056"
 #: negative pins rather than deleted, so every field stays bound at BOTH ends.
 #: ADVANCED BY XASSET-0059: WS-0014's SHARED live fields moved again, onto the Lifecycle B
 #: parser correction. The XASSET-0058 generation is retained beside it as a NEGATIVE pin.
-SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
+# ADVANCED BY XASSET-0060, the post-parser-correction rebinding. XASSET-0059's own branch and
+# main SHA are RETAINED with their exact values as NEGATIVE pins -- never deleted -- and the newly
+# live unit becomes the positive pin, exactly as every prior generation was handled.
+SUCCESSOR_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
+XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+SUCCESSOR_MAIN_SHA = XASSET0060_MAIN_SHA
+XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
 XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
-SUCCESSOR_MAIN_SHA = XASSET0059_MAIN_SHA
 XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
 XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 XASSET0057_BRANCH = "claude/xasset-successor-authorization-3b0btg"
@@ -109,7 +114,11 @@ THIS_GATE = "xasset0055-verdict-boundary-governance"
 #: relaxed to "present somewhere in the list".
 #: ADVANCED BY XASSET-0059, appended after XASSET-0058 and named EXACTLY, so "last"
 #: stays an EXACT index rather than being relaxed to "present".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0056", "XASSET-0057", "XASSET-0058", "XASSET-0059")
+#: ADVANCED BY XASSET-0060, appended after XASSET-0059 and named EXACTLY, so "last" stays an
+#: exact arithmetic claim rather than a relaxed "present somewhere" one.
+SUCCESSORS_APPENDED_SINCE = (
+    "XASSET-0056", "XASSET-0057", "XASSET-0058", "XASSET-0059", "XASSET-0060",
+)
 
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
 
@@ -155,6 +164,44 @@ def _changed_paths() -> set[str]:
     return set(_git("diff", "--name-only", BASE_SHA, MERGE_SHA).split())
 
 
+def _load_bearing_declared_at(commit: str) -> tuple[str, ...]:
+    """The exact ``LOAD_BEARING_RELPATHS`` the production module DECLARED at a given commit.
+
+    Parsed with ``ast`` and never imported or executed, so a historical module's code cannot run.
+    Module-level string aliases and implicit concatenation are resolved from the SAME historical
+    source, never from the live module -- otherwise a live rename could silently reshape a
+    historical claim, which is the whole defect this helper exists to close.
+    """
+    source = _git("show", f"{commit}:{MODULE_RELPATH}")
+    tree = ast.parse(source)
+    consts: dict[str, str] = {}
+
+    def _literal(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if isinstance(node, ast.Name) and node.id in consts:
+            return consts[node.id]
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            left, right = _literal(node.left), _literal(node.right)
+            if left is not None and right is not None:
+                return left + right
+        return None
+
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if not isinstance(target, ast.Name):
+                continue
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                consts[target.id] = node.value.value
+            if target.id == "LOAD_BEARING_RELPATHS" and isinstance(node.value, ast.Tuple):
+                items = [_literal(e) for e in node.value.elts]
+                assert all(i is not None for i in items), "unresolved element"
+                return tuple(items)
+    raise AssertionError(f"LOAD_BEARING_RELPATHS is not declared at {commit}")
+
+
 def _ws0014() -> dict:
     data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))
     return next(w for w in data["workstreams"] if w["id"] == "WS-0014")
@@ -189,9 +236,27 @@ class TestNoProductionCodeIsChanged:
         assert _git("hash-object", MODULE_RELPATH).strip() != BASE_MODULE_BLOB
 
     def test_no_load_bearing_path_appears_in_this_units_diff(self):
+        """RE-ANCHORED (XASSET-0060), and made exact rather than relaxed.
+
+        This unit's diff is a CLOSED RANGE and never changes. The LIVE boundary does: XASSET-0060,
+        under XASSET-0057 §F.7, lawfully added this very decision's own file to it, so intersecting
+        an immutable diff with a moving set turned "I touched no load-bearing path" into "no
+        successor may ever bind a file I created" -- a claim this suite never had the authority to
+        make, and the anchoring-to-a-moving-reference defect that stopped PRs #344 and #345.
+
+        The boundary is therefore read AS IT WAS at this unit's own merge, from the module source
+        at that commit, parsed and never executed. That is the set the claim was always about, and
+        it is now immutable at both ends. Nothing is exempted: every path in it is still checked.
+        """
+        boundary_then = set(_load_bearing_declared_at(MERGE_SHA))
+        assert boundary_then, "the boundary at this unit's merge must be derivable"
         changed = _changed_paths()
-        touched = changed & set(A.LOAD_BEARING_RELPATHS)
+        touched = changed & boundary_then
         assert not touched, sorted(touched)
+        # And the file this unit DID create is bound now -- by a successor's authorized act, not
+        # by this unit. Asserted so the re-anchor cannot hide a silent removal from the boundary.
+        assert str(DECISION.relative_to(ROOT)) in set(A.LOAD_BEARING_RELPATHS)
+        assert str(DECISION.relative_to(ROOT)) not in boundary_then
 
     @pytest.mark.parametrize(
         "relpath",
@@ -627,13 +692,31 @@ class TestNoOperationalAuthorityIsGranted:
         assert prereg["stage_1_executability"]["executable"] is False
 
     def test_the_bound_authorizing_identity_did_not_move(self):
-        assert A.AUTHORIZING_DECISION == "XASSET-0049"
-        assert A.AUTHORIZING_PULL_REQUEST == 349
-        assert A.REVIEWED_BASE_SHA == "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+        # RE-ANCHORED BY XASSET-0060, and bound at BOTH ends rather than one. What this test
+        # protects is that THIS filing moved no lifecycle anchor -- not that no later, separately
+        # authorized rebinding ever may. XASSET-0049's values are retained as NEGATIVE pins on the
+        # constants that now carry them, so a silent revert still fails here.
+        assert A.AUTHORIZING_DECISION == "XASSET-0060"
+        assert A.AUTHORIZING_DECISION != "XASSET-0049"
+        assert A.PRIOR_STEP8_EQUIVALENT_DECISION == "XASSET-0049"
+        assert A.PRIOR_STEP8_EQUIVALENT_PULL_REQUEST == 349
+        assert A.AUTHORIZING_PULL_REQUEST != 349
+        assert A.REVIEWED_BASE_SHA == "301e79334876a4bda6e7b89a6156b34e8d38a605"
+        assert A.REVIEWED_BASE_SHA != "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+        assert A.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 
     def test_the_frozen_universe_is_unchanged(self):
-        assert len(A.LOAD_BEARING_RELPATHS) == 18
-        assert len(set(A.LOAD_BEARING_RELPATHS)) == 18
+        # RE-ANCHORED BY XASSET-0060, and STRENGTHENED rather than relaxed. XASSET-0057 §F.7
+        # authorized ONE additive extension, 18 -> 25, adding the six decisions that authorized and
+        # defined the formal-disposition parser plus the rebinding's own decision. The bare count
+        # this line carried could not tell an authorized addition from a wholesale replacement of
+        # equal length, so both ends are now bound: the eighteen this unit saw must still ALL be
+        # present (nothing removed, swapped or traded away), and the live count is pinned EXACTLY
+        # at 25 so a further silent addition still fails here.
+        assert len(A.LOAD_BEARING_RELPATHS) == 25
+        assert len(set(A.LOAD_BEARING_RELPATHS)) == 25
+        assert len(A.LOAD_BEARING_RELPATHS) != 18
+        assert len(set(A.LOAD_BEARING_RELPATHS)) != 18
 
     def test_this_decision_is_not_inserted_into_the_mechanism(self):
         """The identifier may never enter an executable constant or operative literal.
@@ -792,7 +875,11 @@ class TestCatalogAndRegisterSynchronisation:
         live = _ws0014()
         assert live["active_branch"] == SUCCESSOR_BRANCH
         assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
-        assert live["last_verified_main_sha"] == XASSET0059_MAIN_SHA
+        assert live["last_verified_main_sha"] == XASSET0060_MAIN_SHA
+        # ADVANCED BY XASSET-0060: XASSET-0059's own values become NEGATIVE pins, retained
+        # exactly rather than deleted, so a silent revert to finished work still fails here.
+        assert live["active_branch"] != XASSET0059_BRANCH
+        assert live["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert live["active_branch"] != XASSET0058_BRANCH
         assert live["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert live["active_branch"] != XASSET0057_BRANCH
@@ -952,8 +1039,13 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             # value, never deleted -- and the newly named successor is the positive pin.
             assert f'XASSET0058_MAIN_SHA = "{XASSET0058_MAIN_SHA}"' in live, name
             assert "!= XASSET0058_MAIN_SHA" in live, name
-            assert f'XASSET0059_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
-            assert "== XASSET0059_MAIN_SHA" in live, name
+            # ADVANCED BY XASSET-0060, on exactly the terms this docstring already states.
+            # XASSET-0059's own constant becomes a NEGATIVE pin -- retained with its exact value,
+            # never deleted -- and the newly named successor is the positive pin.
+            assert f'XASSET0059_MAIN_SHA = "{XASSET0059_MAIN_SHA}"' in live, name
+            assert "!= XASSET0059_MAIN_SHA" in live, name
+            assert f'XASSET0060_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            assert "== XASSET0060_MAIN_SHA" in live, name
             # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
             # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
             # itself in the third person -- so the constant is asserted exactly where it is

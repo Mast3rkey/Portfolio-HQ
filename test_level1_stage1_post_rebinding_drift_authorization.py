@@ -217,6 +217,10 @@ XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 #: new one as a NEGATIVE pin -- bound at both ends, so a silent revert to finished work
 #: still fails -- and nothing is deleted, skipped or relaxed.
 XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+#: ADVANCED BY XASSET-0060, the post-parser-correction rebinding. This is the register's SHARED
+#: live self-reference, so it names the currently-live unit; every prior generation stays a
+#: NEGATIVE pin below, so a silent revert to finished work still fails here.
+XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 #: Read back from the live pull request AFTER GitHub issued it, never predicted. The
 #: branch's first commit carried the impossible sentinel -56 (negative, so structurally
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
@@ -320,6 +324,29 @@ EXPECTED_LOAD_BEARING = tuple(sorted((
     "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
     "governance/decisions/"
     "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
+    # EXTENDED AGAIN BY XASSET-0060, 18 -> 25, under XASSET-0057 SS-F.7. The seven additions are
+    # the six decisions that authorized and defined the formal-disposition parser -- XASSET-0053,
+    # XASSET-0055, XASSET-0056, XASSET-0057, XASSET-0058, XASSET-0059 -- plus the rebinding's own
+    # decision, all by DIRECT MEMBERSHIP on the footing every predecessor already occupies. SS-F.7
+    # is BROADER than the SS-E principle the earlier extensions applied: it reaches every decision
+    # that makes the newly bound BYTES lawful, because binding the parser-corrected implementation
+    # while leaving the decisions that define what the parser must do outside the boundary would
+    # protect the code and not the authority over it. Nothing is removed: all eighteen prior paths
+    # are still here, and the comparison below is unchanged in kind and still EXACT.
+    # XASSET-0054 stays EXCLUDED -- identifier consumed, pull request closed unmerged, no decision
+    # file on main -- and XASSET-0045 stays excluded because it authorizes nothing.
+    "governance/decisions/"
+    "XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+    "governance/decisions/"
+    "XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+    "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+    "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md",
 )))
 
 #: The five Python modules inside those ten paths, each independently able to affect the 680
@@ -1113,7 +1140,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
         # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
         # pin, so a silent revert to finished work still fails here.
-        assert workstream["last_verified_main_sha"] == XASSET0059_MAIN_SHA
+        assert workstream["last_verified_main_sha"] == XASSET0060_MAIN_SHA
+        assert workstream["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0056_MAIN_SHA

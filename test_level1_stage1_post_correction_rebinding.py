@@ -110,6 +110,28 @@ XASSET_0049_BOUNDARY_ADDITIONS = (
     "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
     XASSET_0049_DECISION_RELPATH,
 )
+
+#: ADDED BY XASSET-0060, under XASSET-0057 SS-F.7: the ONE additive extension that grant permits,
+#: 18 -> 25. Six decisions that authorized and defined the formal-disposition parser, plus the
+#: rebinding's own decision. SS-F.7 is BROADER than the SS-E principle earlier extensions applied
+#: -- it reaches every decision that makes the newly bound BYTES lawful. Named here so THIS suite's
+#: own exact-addition claims stay EXACT: each later unit's additions are subtracted BY NAME rather
+#: than relaxed into a subset test any future growth would satisfy.
+XASSET_0060_BOUNDARY_ADDITIONS = (
+    "governance/decisions/"
+    "XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+    "governance/decisions/"
+    "XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+    "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+    "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md",
+)
+XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 #: The authorization module's exact bytes at XASSET-0047's own merge -- the identity THAT unit
 #: recorded, immutable, and therefore still true after a lawful successor rebinding.
 XASSET_0047_FINAL_MODULE_SHA256 = (
@@ -466,7 +488,15 @@ class TestFiveDistinctIdentities:
         # the XASSET-0048-authorized step-8-EQUIVALENT rebinding, so the equality names
         # XASSET-0048's merge. XASSET-0047's own accepted equality is retained immediately below
         # on the constants that now carry it, so nothing is dropped.
-        assert A.REVIEWED_BASE_SHA == A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
+        # ADVANCED AGAIN BY XASSET-0060, unchanged in KIND for the fourth time -- and changed in
+        # SUBJECT for the first, which is disclosed rather than buried. XASSET-0057 SS-F.2
+        # WITHDREW the "base equals your own authorization's merge" rule, because SS-F.0 makes an
+        # intervening parser correction MANDATORY and the two cannot both hold; the replacement
+        # names the Lifecycle B implementation merge instead. XASSET-0049's own accepted equality
+        # is retained immediately below on the constants that now carry it, so nothing is dropped.
+        assert A.REVIEWED_BASE_SHA == A.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA
+        assert A.REVIEWED_BASE_SHA != A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
+        assert A.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
         assert A.REVIEWED_BASE_SHA != PR_BASE_SHA
         assert A.PRIOR_RECONCILIATION_MERGE_BASE == A.RECOVERY_AUTHORIZING_MERGE_SHA
         # THIS decision's own closed anchor, retained: PR #344 really did branch from PR #343's
@@ -538,8 +568,17 @@ class TestTrustBoundaryGrowsByDirectMembership:
         """
         # ADVANCED AGAIN BY XASSET-0049: 16 -> 18, additively and by direct membership.
         assert len(XASSET_0037_LOAD_BEARING) == 10
-        assert len(A.LOAD_BEARING_RELPATHS) == 18
-        assert len(set(A.LOAD_BEARING_RELPATHS)) == 18
+        # RE-ANCHORED BY XASSET-0060, and STRENGTHENED rather than relaxed. XASSET-0057 §F.7
+        # authorized ONE additive extension, 18 -> 25, adding the six decisions that authorized and
+        # defined the formal-disposition parser plus the rebinding's own decision. The bare count
+        # this line carried could not tell an authorized addition from a wholesale replacement of
+        # equal length, so both ends are now bound: the eighteen this unit saw must still ALL be
+        # present (nothing removed, swapped or traded away), and the live count is pinned EXACTLY
+        # at 25 so a further silent addition still fails here.
+        assert len(A.LOAD_BEARING_RELPATHS) == 25
+        assert len(set(A.LOAD_BEARING_RELPATHS)) == 25
+        assert len(A.LOAD_BEARING_RELPATHS) != 18
+        assert len(set(A.LOAD_BEARING_RELPATHS)) != 18
         assert len(A.LOAD_BEARING_RELPATHS) != 16
         assert len(A.LOAD_BEARING_RELPATHS) != 14
         # THIS decision's own four additions are still present, all four, individually.
@@ -561,20 +600,29 @@ class TestTrustBoundaryGrowsByDirectMembership:
         # THIS decision's four additions are still asserted EXACTLY, by subtracting each later
         # unit's own additions BY NAME. Nothing is relaxed into a subset test any future growth
         # would satisfy: a further unexplained addition still fails here.
+        # ADVANCED AGAIN BY XASSET-0060, which added seven more under its own separate authority.
+        # THIS decision's four additions are still asserted EXACTLY, by subtracting each later
+        # unit's own additions BY NAME. Still not a subset test: an eighth unexplained addition
+        # fails here, and so does any overlap between the generations.
         additions = set(A.LOAD_BEARING_RELPATHS) - set(XASSET_0037_LOAD_BEARING)
         assert additions == (
             set(BOUNDARY_ADDITIONS)
             | set(XASSET_0047_BOUNDARY_ADDITIONS)
             | set(XASSET_0049_BOUNDARY_ADDITIONS)
+            | set(XASSET_0060_BOUNDARY_ADDITIONS)
         )
         assert (
             additions
             - set(XASSET_0047_BOUNDARY_ADDITIONS)
             - set(XASSET_0049_BOUNDARY_ADDITIONS)
+            - set(XASSET_0060_BOUNDARY_ADDITIONS)
         ) == set(BOUNDARY_ADDITIONS)
         assert set(BOUNDARY_ADDITIONS).isdisjoint(XASSET_0047_BOUNDARY_ADDITIONS)
         assert set(BOUNDARY_ADDITIONS).isdisjoint(XASSET_0049_BOUNDARY_ADDITIONS)
+        assert set(BOUNDARY_ADDITIONS).isdisjoint(XASSET_0060_BOUNDARY_ADDITIONS)
         assert set(XASSET_0047_BOUNDARY_ADDITIONS).isdisjoint(XASSET_0049_BOUNDARY_ADDITIONS)
+        assert set(XASSET_0047_BOUNDARY_ADDITIONS).isdisjoint(XASSET_0060_BOUNDARY_ADDITIONS)
+        assert set(XASSET_0049_BOUNDARY_ADDITIONS).isdisjoint(XASSET_0060_BOUNDARY_ADDITIONS)
 
     @pytest.mark.parametrize("relpath", BOUNDARY_ADDITIONS)
     def test_each_addition_is_a_real_file_bound_by_membership_not_citation(self, relpath):
@@ -1154,11 +1202,16 @@ class TestNotAnActivation:
         # anchor names a lifecycle that CAN close and never this stopped one -- not that it names
         # any one particular successor forever. Both ends stay bound: the anchor is a real
         # successor, and it is not this decision nor any permanently ineffective one.
-        assert A.AUTHORIZING_DECISION == "XASSET-0049"
+        # RE-ANCHORED AGAIN BY XASSET-0060, unchanged in KIND. The property this protects is that
+        # the anchor names a lifecycle that CAN close and never this stopped one -- not that it
+        # names any one particular successor forever. Both ends stay bound.
+        assert A.AUTHORIZING_DECISION == "XASSET-0060"
+        assert A.AUTHORIZING_DECISION != "XASSET-0049"
         assert A.AUTHORIZING_DECISION not in A.PERMANENTLY_INEFFECTIVE_DECISIONS
         assert A.AUTHORIZING_DECISION != DECISION_ID
-        # The superseded anchor is PRESERVED as history rather than erased.
+        # Every superseded anchor is PRESERVED as history rather than erased.
         assert A.PRIOR_RECONCILIATION_DECISION == "XASSET-0047"
+        assert A.PRIOR_STEP8_EQUIVALENT_DECISION == "XASSET-0049"
         assert DECISION_ID not in reason
         assert DECISION_ID in A.PERMANENTLY_INEFFECTIVE_DECISIONS
 
@@ -1385,7 +1438,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049. This is WS-0014's SINGLE SHARED live self-reference and moves
         # with every unit; each generation's own value is retained as a NEGATIVE pin so a silent
         # revert to any finished unit's state still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0059_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0060_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0056_MAIN_SHA

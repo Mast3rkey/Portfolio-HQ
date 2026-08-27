@@ -815,6 +815,29 @@ class TestNothingHereAuthorizesOrExecutes:
             "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
             "governance/decisions/"
             "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
+            # EXTENDED AGAIN BY XASSET-0060, 18 -> 25, under XASSET-0057 SS-F.7. The seven additions are
+            # the six decisions that authorized and defined the formal-disposition parser -- XASSET-0053,
+            # XASSET-0055, XASSET-0056, XASSET-0057, XASSET-0058, XASSET-0059 -- plus the rebinding's own
+            # decision, all by DIRECT MEMBERSHIP on the footing every predecessor already occupies. SS-F.7
+            # is BROADER than the SS-E principle the earlier extensions applied: it reaches every decision
+            # that makes the newly bound BYTES lawful, because binding the parser-corrected implementation
+            # while leaving the decisions that define what the parser must do outside the boundary would
+            # protect the code and not the authority over it. Nothing is removed: all eighteen prior paths
+            # are still here, and the comparison below is unchanged in kind and still EXACT.
+            # XASSET-0054 stays EXCLUDED -- identifier consumed, pull request closed unmerged, no decision
+            # file on main -- and XASSET-0045 stays excluded because it authorizes nothing.
+            "governance/decisions/"
+            "XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+            "governance/decisions/"
+            "XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+            "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+            "governance/decisions/"
+            "XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+            "governance/decisions/"
+            "XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+            "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md",
+            "governance/decisions/"
+            "XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md",
         }
 
     def test_canonical_pins_are_history_and_current_bytes_match_the_effective_pins(self):

@@ -747,7 +747,11 @@ class TestCatalogAndRegisterSynchronisation:
         # field names whichever unit is live, and XASSET-0057's own superseded values join the
         # negative pins below rather than being deleted, so the field stays bound at BOTH ends.
         # ADVANCED BY XASSET-0059; the predecessor value joins the NEGATIVE pins below.
+        # ADVANCED BY XASSET-0060; the predecessor branch joins the NEGATIVE pins below.
         assert ws0014["active_branch"] == (
+            "claude/xasset-0057-rebinding-gqtg9o"
+        )
+        assert ws0014["active_branch"] != (
             "claude/xasset-0058-parser-correction-a2kteq"
         )
         assert ws0014["active_branch"] != (
@@ -759,10 +763,12 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["active_branch"] != (
             "claude/xasset-0055-parser-correction-c3ro29"
         )
-        # ADVANCED BY XASSET-0059; the predecessor value joins the NEGATIVE pins below.
-        assert ws0014["last_verified_main_sha"] == (
-            "34c45900ce23742d04d80cf12471c34aabe9682d"
-        )
+        # ADVANCED BY XASSET-0060, the post-parser-correction rebinding; the predecessor value
+        # joins the NEGATIVE pins below, retained exactly rather than deleted.
+        XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+        XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+        assert ws0014["last_verified_main_sha"] == XASSET0060_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != (
             "556a43cf91679d3e8ca95703c8d49e672b662b73"
         )

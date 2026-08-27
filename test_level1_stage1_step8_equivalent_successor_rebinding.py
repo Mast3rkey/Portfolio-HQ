@@ -109,6 +109,32 @@ BRANCH_NAME = "claude/xasset-0049-rebinding-ll6hzf"
 #: makes the relationship an EQUALITY, which is asserted rather than assumed.
 THIS_UNIT_BASE_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 
+# ── RE-ANCHORED BY XASSET-0060 ──────────────────────────────────────────────────────────────
+#
+# XASSET-0057 authorized ONE post-parser-correction rebinding and XASSET-0060 is it. Every claim
+# below about what THIS unit did is IMMUTABLE and stays exactly as strict; every claim that read
+# the LIVE anchor as though it must still be this unit is re-anchored onto the successor, with
+# this unit's own values retained as NEGATIVE pins so both ends stay bound. Nothing is relaxed
+# into a subset test any future growth would satisfy.
+SUCCESSOR_DECISION_ID = "XASSET-0060"
+SUCCESSOR_REVIEWED_BASE_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+SUCCESSOR_LOAD_BEARING_COUNT = 25
+#: XASSET-0060's own seven additions, named EXACTLY so this unit's own two stay an exact claim.
+XASSET_0060_BOUNDARY_ADDITIONS = (
+    "governance/decisions/"
+    "XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+    "governance/decisions/"
+    "XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+    "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+    "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md",
+)
+
 #: PR #348's lifecycle evidence, all seven conditions.
 PR348_FULL_REVIEW = "4998661361"
 PR348_CLEAN_DELTA_REVIEW = "4999458224"
@@ -262,9 +288,20 @@ class TestBaseEqualityIsOperative:
     """
 
     def test_the_module_binds_this_units_base_by_equality(self):
-        assert A.REVIEWED_BASE_SHA == THIS_UNIT_BASE_SHA
-        assert A.REVIEWED_BASE_SHA == A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
+        """RE-ANCHORED BY XASSET-0060, and bound at BOTH ends.
+
+        THIS unit's base really was the XASSET-0048 merge, and that is immutable history: the
+        constant carrying it is asserted exactly, unchanged. What moved is the LIVE anchor, and
+        it moved because XASSET-0057 §F.2 WITHDREW the "base equals your own authorization's
+        merge" rule -- §F.0 makes an intervening parser correction MANDATORY, and the two cannot
+        both hold. The successor's own equality is asserted here on the rule that governs it.
+        """
+        assert A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA == THIS_UNIT_BASE_SHA
         assert A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA == PR348_MERGE_SHA
+        assert A.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == THIS_UNIT_BASE_SHA
+        assert A.REVIEWED_BASE_SHA == SUCCESSOR_REVIEWED_BASE_SHA
+        assert A.REVIEWED_BASE_SHA != THIS_UNIT_BASE_SHA
+        assert A.REVIEWED_BASE_SHA == A.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA
 
     def test_the_authorizing_merge_really_has_the_derived_identity(self):
         """§F.2 forbids ASSERTING this merge and requires DERIVING it. Derived here from the
@@ -278,9 +315,19 @@ class TestBaseEqualityIsOperative:
         assert _git("rev-parse", f"{PR348_ACCEPTED_HEAD}^{{tree}}") == PR348_MERGE_TREE
 
     def test_the_rule_accepts_the_bound_pair(self):
+        """RE-ANCHORED BY XASSET-0060: the rule is unchanged and still accepts the pair IT
+        governs, which is now driven with this unit's own historical values rather than with a
+        live anchor that lawfully moved. The successor's own rule is exercised beside it."""
+        assert A._verify_step8_equivalent_base_equality(
+            THIS_UNIT_BASE_SHA, A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA, True
+        ) == []
+        assert A._verify_post_parser_correction_base_equality(
+            A.REVIEWED_BASE_SHA, A.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA, True
+        ) == []
+        # ... and the superseded pairing is now REFUSED, which is what "the rule moved" means.
         assert A._verify_step8_equivalent_base_equality(
             A.REVIEWED_BASE_SHA, A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA, True
-        ) == []
+        ) != []
 
     def test_the_rule_refuses_a_real_later_descendant_even_with_ancestry_granted(self):
         """THE MAJOR FINDING, reproduced against a REAL commit rather than a placeholder.
@@ -346,10 +393,24 @@ class TestBaseEqualityIsOperative:
 
     def test_an_unresolvable_ancestry_answer_is_not_itself_a_failure(self):
         """``None`` is the pre-merge case -- the rebinding merge does not exist yet. The
-        surrounding verifier checks ancestry independently once a real merge exists."""
-        assert A._verify_step8_equivalent_base_equality(
-            A.REVIEWED_BASE_SHA, A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA, None
+        surrounding verifier checks ancestry independently once a real merge exists.
+
+        RE-ANCHORED BY XASSET-0060: driven with this unit's own historical pair, so the property
+        stays proved about the rule rather than about whichever anchor is currently live.
+        """
+        assert A._verify_post_parser_correction_base_equality(
+            A.REVIEWED_BASE_SHA, A.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA, None
         ) == []
+        assert A._verify_step8_equivalent_base_equality(
+            THIS_UNIT_BASE_SHA, A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA, None
+        ) == []
+        # The live anchor's base is NOT this rule's subject any more, so an unresolvable ancestry
+        # answer does not rescue it: the EQUALITY still fails, and that failure is the point.
+        errors = A._verify_step8_equivalent_base_equality(
+            A.REVIEWED_BASE_SHA, A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA, None
+        )
+        assert errors
+        assert all("ancestry remains NECESSARY" not in e for e in errors), errors
 
     def test_the_rule_reads_no_external_source(self):
         """Pure and offline: it must not be silenceable by an unavailable git, GitHub, or clock.
@@ -394,19 +455,33 @@ class TestBaseEqualityIsOperative:
 
 class TestExactClosedTransitions:
     def test_the_anchor_decision_moved_and_both_ends_are_bound(self):
-        assert A.AUTHORIZING_DECISION == DECISION_ID
-        assert A.AUTHORIZING_DECISION != ANCHOR_DECISION_AT_BASE
+        # RE-ANCHORED BY XASSET-0060. THIS unit's move is immutable and stays fully asserted:
+        # the predecessor it superseded is still bound, and its own identifier is still bound --
+        # now as the PRIOR anchor, on the constant XASSET-0060 added for exactly that purpose.
+        assert A.PRIOR_STEP8_EQUIVALENT_DECISION == DECISION_ID
         assert A.PRIOR_RECONCILIATION_DECISION == ANCHOR_DECISION_AT_BASE
+        assert A.PRIOR_STEP8_EQUIVALENT_DECISION != ANCHOR_DECISION_AT_BASE
+        assert A.AUTHORIZING_DECISION == SUCCESSOR_DECISION_ID
+        assert A.AUTHORIZING_DECISION != DECISION_ID
+        assert A.AUTHORIZING_DECISION != ANCHOR_DECISION_AT_BASE
 
     def test_the_anchor_pull_request_moved_and_both_ends_are_bound(self):
-        assert A.AUTHORIZING_PULL_REQUEST == THIS_PULL_REQUEST
-        assert A.AUTHORIZING_PULL_REQUEST != ANCHOR_PULL_REQUEST_AT_BASE
+        # RE-ANCHORED BY XASSET-0060, on the same terms.
+        assert A.PRIOR_STEP8_EQUIVALENT_PULL_REQUEST == THIS_PULL_REQUEST
         assert A.PRIOR_RECONCILIATION_PULL_REQUEST == ANCHOR_PULL_REQUEST_AT_BASE
+        assert A.PRIOR_STEP8_EQUIVALENT_PULL_REQUEST != ANCHOR_PULL_REQUEST_AT_BASE
+        assert A.AUTHORIZING_PULL_REQUEST != THIS_PULL_REQUEST
+        assert A.AUTHORIZING_PULL_REQUEST != ANCHOR_PULL_REQUEST_AT_BASE
 
     def test_the_reviewed_base_moved_and_both_ends_are_bound(self):
-        assert A.REVIEWED_BASE_SHA == THIS_UNIT_BASE_SHA
-        assert A.REVIEWED_BASE_SHA != ANCHOR_REVIEWED_BASE_AT_BASE
+        # RE-ANCHORED BY XASSET-0060, on the same terms: THIS unit's base is still bound exactly,
+        # now on PRIOR_STEP8_EQUIVALENT_MERGE_BASE and STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA.
+        assert A.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == THIS_UNIT_BASE_SHA
         assert A.PRIOR_RECONCILIATION_MERGE_BASE == ANCHOR_REVIEWED_BASE_AT_BASE
+        assert A.PRIOR_STEP8_EQUIVALENT_MERGE_BASE != ANCHOR_REVIEWED_BASE_AT_BASE
+        assert A.REVIEWED_BASE_SHA == SUCCESSOR_REVIEWED_BASE_SHA
+        assert A.REVIEWED_BASE_SHA != THIS_UNIT_BASE_SHA
+        assert A.REVIEWED_BASE_SHA != ANCHOR_REVIEWED_BASE_AT_BASE
         assert A.RECOVERY_AUTHORIZING_MERGE_SHA == ANCHOR_REVIEWED_BASE_AT_BASE
 
     def test_the_old_end_really_was_the_old_end(self):
@@ -520,8 +595,13 @@ class TestPredecessorIdentitiesArePreserved:
 
 class TestTrustBoundaryGrewAdditively:
     def test_the_set_grew_from_sixteen_to_eighteen(self):
-        assert len(A.LOAD_BEARING_RELPATHS) == LOAD_BEARING_COUNT_AFTER
-        assert len(set(A.LOAD_BEARING_RELPATHS)) == LOAD_BEARING_COUNT_AFTER
+        # RE-ANCHORED BY XASSET-0060, which added seven more under XASSET-0057 §F.7. THIS unit's
+        # own growth -- sixteen to eighteen -- is immutable and is asserted exactly, from the base
+        # tree, below. The LIVE size is pinned exactly at its current value and bound at both
+        # ends, so neither a shrink back nor a further unexplained growth passes.
+        assert len(A.LOAD_BEARING_RELPATHS) == SUCCESSOR_LOAD_BEARING_COUNT
+        assert len(set(A.LOAD_BEARING_RELPATHS)) == SUCCESSOR_LOAD_BEARING_COUNT
+        assert len(A.LOAD_BEARING_RELPATHS) != LOAD_BEARING_COUNT_AFTER
         assert len(A.LOAD_BEARING_RELPATHS) != LOAD_BEARING_COUNT_AT_BASE
 
     def test_the_additions_are_exactly_the_two_authority_chain_files(self):
@@ -529,8 +609,13 @@ class TestTrustBoundaryGrewAdditively:
             pytest.skip("this unit's base is not present in this checkout")
         at_base = _load_bearing_declared_at(THIS_UNIT_BASE_SHA)
         assert len(at_base) == LOAD_BEARING_COUNT_AT_BASE
+        # RE-ANCHORED BY XASSET-0060: THIS unit's two additions are still asserted EXACTLY, by
+        # subtracting the successor's own seven BY NAME rather than relaxing to a subset test.
         additions = set(A.LOAD_BEARING_RELPATHS) - set(at_base)
-        assert additions == set(BOUNDARY_ADDITIONS)
+        assert additions == set(BOUNDARY_ADDITIONS) | set(XASSET_0060_BOUNDARY_ADDITIONS)
+        assert additions - set(XASSET_0060_BOUNDARY_ADDITIONS) == set(BOUNDARY_ADDITIONS)
+        assert set(BOUNDARY_ADDITIONS).isdisjoint(XASSET_0060_BOUNDARY_ADDITIONS)
+        assert len(XASSET_0060_BOUNDARY_ADDITIONS) == 7
 
     def test_nothing_was_removed(self):
         """Growth is additive. A path traded away is the defect this catches."""
@@ -664,7 +749,14 @@ class TestNoOutcomeProducingByteChanged:
             pytest.skip("this unit's base is not present in this checkout")
         changed = []
         for relative in A.LOAD_BEARING_RELPATHS:
-            if relative == AUTH_MODULE_RELPATH or relative in BOUNDARY_ADDITIONS:
+            # RE-ANCHORED BY XASSET-0060: its seven additions are likewise not paths THIS unit
+            # bound, so they are skipped for the same reason this unit's own two are -- and their
+            # identity is bound by XASSET-0060's own suite rather than left unchecked anywhere.
+            if (
+                relative == AUTH_MODULE_RELPATH
+                or relative in BOUNDARY_ADDITIONS
+                or relative in XASSET_0060_BOUNDARY_ADDITIONS
+            ):
                 continue
             at_base = _blob_at(THIS_UNIT_BASE_SHA, relative)
             assert at_base is not None, relative

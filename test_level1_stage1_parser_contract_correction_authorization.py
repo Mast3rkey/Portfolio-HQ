@@ -274,11 +274,15 @@ XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 #: new one as a NEGATIVE pin -- bound at both ends, so a silent revert to finished work
 #: still fails -- and nothing is deleted, skipped or relaxed.
 XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+#: ADVANCED BY XASSET-0060, the post-parser-correction rebinding. WS-0014's SHARED live
+#: self-reference names the currently-live unit; XASSET-0059's own constant is RETAINED with its
+#: exact value as a NEGATIVE pin below -- never deleted -- so a silent revert still fails here.
+XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 #: ADVANCED BY XASSET-0058. The shared live fields moved once more onto the successor;
 #: XASSET-0057's own values are RETAINED as negative pins rather than deleted, so every
 #: field stays bound at BOTH ends.
 #: ADVANCED BY XASSET-0059: the shared field moved onto the Lifecycle B unit's own base.
-SUCCESSOR_MAIN_SHA = XASSET0059_MAIN_SHA
+SUCCESSOR_MAIN_SHA = XASSET0060_MAIN_SHA
 #: ADVANCED BY XASSET-0059: WS-0014's SHARED live branch moved onto the Lifecycle B unit;
 #: the XASSET-0058 generation is retained beside it as a NEGATIVE pin.
 SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
@@ -1815,7 +1819,8 @@ class TestRegisterSynchronisation:
     def test_the_last_verified_main_sha_advanced_and_is_bound_at_both_ends(self, ws0014):
         """RE-ANCHORED BY XASSET-0055 -- see `SUCCESSOR_MAIN_SHA`. This unit's own base joins
         the negative pins rather than being deleted, so the field stays bound at BOTH ends."""
-        assert ws0014["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA == XASSET0059_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA == XASSET0060_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0056_MAIN_SHA
