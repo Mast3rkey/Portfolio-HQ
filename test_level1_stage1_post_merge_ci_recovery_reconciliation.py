@@ -212,6 +212,9 @@ XASSET0058_ACTIVE_PR = 359
 #: finished work still fails. The active_pr carries the IMPOSSIBLE SENTINEL until GitHub
 #: issues this unit's real number, which is bound in one fast-forward follow-up commit.
 XASSET0059_ACTIVE_PR = 360
+#: ADVANCED BY XASSET-0060, the post-parser-correction rebinding: the register's SHARED active_pr
+#: names the currently-live unit, and every prior generation stays a NEGATIVE pin below.
+XASSET0060_ACTIVE_PR = 361
 
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 
@@ -1858,7 +1861,8 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws["last_verified_main_sha"] != PR346_MERGE_SHA
         assert ws["last_verified_main_sha"] != PR346_BASE_SHA
         assert ws["last_verified_main_sha"] != PR345_BASE_SHA
-        assert ws["active_pr"] == XASSET0059_ACTIVE_PR
+        assert ws["active_pr"] == XASSET0060_ACTIVE_PR
+        assert ws["active_pr"] != XASSET0059_ACTIVE_PR
         assert ws["active_pr"] != XASSET0058_ACTIVE_PR
         assert ws["active_pr"] != XASSET0057_ACTIVE_PR
         assert ws["active_pr"] != XASSET0056_ACTIVE_PR
@@ -2229,7 +2233,8 @@ class TestTheBoundPullRequestNumber:
         assert gate["pr"] == THIS_PULL_REQUEST
         # ADVANCED BY XASSET-0049: the register's shared active_pr now names the LIVE unit, and
         # the live unit is a rebinding, so it and the module agree exactly.
-        assert ws["active_pr"] == XASSET0059_ACTIVE_PR
+        assert ws["active_pr"] == XASSET0060_ACTIVE_PR
+        assert ws["active_pr"] != XASSET0059_ACTIVE_PR
         assert ws["active_pr"] != XASSET0058_ACTIVE_PR
         assert ws["active_pr"] != XASSET0057_ACTIVE_PR
         assert ws["active_pr"] != XASSET0056_ACTIVE_PR

@@ -119,6 +119,7 @@ THIS_UNIT_BASE_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 SUCCESSOR_DECISION_ID = "XASSET-0060"
 SUCCESSOR_REVIEWED_BASE_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 SUCCESSOR_LOAD_BEARING_COUNT = 25
+SUCCESSOR_PULL_REQUEST = 361
 #: XASSET-0060's own seven additions, named EXACTLY so this unit's own two stay an exact claim.
 XASSET_0060_BOUNDARY_ADDITIONS = (
     "governance/decisions/"
@@ -1387,7 +1388,17 @@ class TestTheNewestBlockSupersedesThisUnitRatherThanReviveIt:
 
 class TestTheBoundPullRequestNumber:
     def test_the_module_binds_the_number_github_actually_issued(self):
-        assert A.AUTHORIZING_PULL_REQUEST == THIS_PULL_REQUEST
+        """RE-ANCHORED BY XASSET-0060, bound at BOTH ends.
+
+        THIS unit's number is immutable and is still bound exactly -- now on the constant
+        XASSET-0060 added to preserve it. The LIVE anchor lawfully moved onto the successor, which
+        is pinned positively, so a revert to this unit's number fails and so does a drift to any
+        third value.
+        """
+        assert A.PRIOR_STEP8_EQUIVALENT_PULL_REQUEST == THIS_PULL_REQUEST
+        assert A.AUTHORIZING_PULL_REQUEST == SUCCESSOR_PULL_REQUEST
+        assert A.AUTHORIZING_PULL_REQUEST != THIS_PULL_REQUEST
+        assert A.AUTHORIZING_PULL_REQUEST > THIS_PULL_REQUEST
 
     def test_the_sentinel_is_impossible_and_distinct_from_every_predecessors(self):
         """It cannot be positive, so it can never validate; and it is not 0 or -1, so it can

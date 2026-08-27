@@ -79,7 +79,7 @@ PRIOR_UNIT_GATE = "xasset0059-post-merge-verification"
 # XASSET-0048's ``-1`` and XASSET-0049's ``-2``.
 PULL_REQUEST_SENTINEL = -3
 #: Read back from live GitHub AFTER the draft was opened. Never predicted.
-THIS_PULL_REQUEST = PULL_REQUEST_SENTINEL  # BOUND AFTER GITHUB ISSUES THE NUMBER
+THIS_PULL_REQUEST = 361
 
 # ── XASSET-0057 / PR #358 — this unit's AUTHORITY (not its base) ────────────────────────────
 PR358_BASE_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
@@ -143,8 +143,8 @@ ROLE3_COMMIT = PR360_ACCEPTED_HEAD
 
 #: Role 4 -- DERIVED after every authorized byte stabilized, recorded once and last. It is
 #: deliberately NOT a module constant: a file cannot carry its own post-edit digest.
-ROLE4_SHA256 = "ROLE4_SHA256_PENDING"
-ROLE4_BLOB = "ROLE4_BLOB_PENDING"
+ROLE4_SHA256 = "3f261b6b3cdcabc5f0cb228d987a52dd36e2a0f522e7fc4e57c483d3c0e3001a"
+ROLE4_BLOB = "a9753d1273785e9ce2ebb4de2067489dfbb9156c"
 
 #: The exact membership the register bound at this unit's base, and the seven additions.
 LOAD_BEARING_COUNT_AT_BASE = 18

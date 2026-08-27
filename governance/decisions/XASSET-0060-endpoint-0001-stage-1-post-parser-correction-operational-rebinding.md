@@ -129,7 +129,7 @@ four roles, and **only role 4 is ever bound**. Every value is derived from the g
 | 1 | **Previously bound** | `4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541` | `f71b08b4ebe95f161c57cdbb2a924748f13af02d` | `8ab77386…` (`XASSET-0049`) |
 | 2 | **Vulnerable intermediate** | `12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5` | `b5622f9e412afd604a11cde04317b79c5e57920a` | `f1bf3fd0…` (`XASSET-0056`) |
 | 3 | **Parser-corrected** | `1283a2d4ccc3794fd37b81d4e5e23ac6f67a0b87b911ef3861c724d636fabd00` | `b8414a69f41e37f8fdd5c18dae13176fd847170e` | `90b82986…` (`XASSET-0059`), merged at `301e7933…` |
-| 4 | **Final stabilized post-rebinding** | `ROLE4_SHA256_PENDING` | `ROLE4_BLOB_PENDING` | this unit's own final head |
+| 4 | **Final stabilized post-rebinding** | `3f261b6b3cdcabc5f0cb228d987a52dd36e2a0f522e7fc4e57c483d3c0e3001a` | `a9753d1273785e9ce2ebb4de2067489dfbb9156c` | this unit's own final head |
 
 **Adjacent transitions, each proved from the object store, each end bound:**
 
@@ -157,7 +157,7 @@ Every moved value, both ends explicit, the old end preserved rather than overwri
 | Constant | Old — retained | New | Old value preserved as |
 |---|---|---|---|
 | `AUTHORIZING_DECISION` | `XASSET-0049` | `XASSET-0060` | `PRIOR_STEP8_EQUIVALENT_DECISION` |
-| `AUTHORIZING_PULL_REQUEST` | `349` | `PR_NUMBER_PENDING` | `PRIOR_STEP8_EQUIVALENT_PULL_REQUEST` |
+| `AUTHORIZING_PULL_REQUEST` | `349` | `361` | `PRIOR_STEP8_EQUIVALENT_PULL_REQUEST` |
 | `REVIEWED_BASE_SHA` | `f052efad38e3d57e3e5615799ac3bcbebe83ff5f` | `301e79334876a4bda6e7b89a6156b34e8d38a605` | `STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA` **and** `PRIOR_STEP8_EQUIVALENT_MERGE_BASE` |
 
 **The prior-anchor family is mandatory, not decorative.** Reproduced against the live module *before*

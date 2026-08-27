@@ -324,7 +324,7 @@ PREDECESSOR_DECISION = "XASSET-0028"
 #: a predecessor's. The draft pull request was then opened, GitHub issued its own number, that
 #: number was read back from live GitHub, and only then was it bound here and re-verified against
 #: the live pull request's own head, base and state.
-AUTHORIZING_PULL_REQUEST = -3
+AUTHORIZING_PULL_REQUEST = 361
 
 #: The single Stage-1 execution lane XASSET-0027 SS-P.1 permits. Derived from repository
 #: truth, not invented: no Stage-1 attempt has ever been executed or authorized. UNCHANGED by the
