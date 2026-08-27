@@ -249,6 +249,7 @@ filing alone: it requires Lifecycle B to close **in full**, and the B5 merge is 
 qualifying base for the later step-8-equivalent rebinding, which remains `XASSET-0057`'s own
 reserved successor unit and is unauthorized here.
 
-**This pull request is PR #999999** — an impossible sentinel, bound to the real number GitHub
-issues in one fast-forward follow-up commit. Not merged, not independently reviewed, not
-principal-accepted in this session.
+**This pull request is PR #360.** It was opened carrying an impossible sentinel, and the real
+number GitHub issued was read back live from the API — never guessed — and bound in one
+fast-forward follow-up commit. Not merged, not independently reviewed, not principal-accepted
+in this session.

@@ -207,7 +207,7 @@ XASSET0058_ACTIVE_PR = 359
 #: new one as a NEGATIVE pin, so the field stays bound at BOTH ends and a silent revert to
 #: finished work still fails. The active_pr carries the IMPOSSIBLE SENTINEL until GitHub
 #: issues this unit's real number, which is bound in one fast-forward follow-up commit.
-XASSET0059_ACTIVE_PR = -59
+XASSET0059_ACTIVE_PR = 360
 
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 

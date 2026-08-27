@@ -17764,14 +17764,15 @@ workstreams:
           therefore EFFECTIVE, and its SS-F grant of exactly one implementation unit is live.
       - gate: xasset0059-formal-disposition-parser-correction-implementation
         status: in_progress
-        pr: -59
+        pr: 360
         description: >-
           THE ONE IMPLEMENTATION UNIT XASSET-0058 SS-F AUTHORIZES, filed as XASSET-0059. It is
           XASSET-0058 SS-G.5 step B1 and NOTHING FURTHER. The gate carries the IMPOSSIBLE
-          SENTINEL -59 because GitHub has not yet issued this filing's pull-request number; it
-          is bound to the real number, read back live from the API rather than guessed, in one
-          fast-forward follow-up commit. The gate is in_progress because this filing's own PR
-          is DRAFT and UNMERGED -- it does not mark its own unmerged work complete.
+          SENTINEL -59 because GitHub had not yet issued this filing's pull-request number;
+          GitHub has since ISSUED and this filing has BOUND pull request #360, read back live
+          from the API rather than guessed, in the fast-forward follow-up the convention
+          requires. The gate remains in_progress because this filing's own PR is DRAFT and
+          UNMERGED -- it does not mark its own unmerged work complete.
           WHAT WAS CORRECTED. parse_formal_disposition() now implements XASSET-0058 SS-D
           exactly. The defect was fail-closed in name only: a ONE-CHARACTER mutation of the
           canonical label made an adverse first line INVISIBLE to the existing wide resemblance
@@ -19528,7 +19529,7 @@ workstreams:
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
     active_branch: claude/xasset-0058-parser-correction-a2kteq
-    active_pr: -59
+    active_pr: 360
     last_verified_main_sha: 34c45900ce23742d04d80cf12471c34aabe9682d
     last_verified_date: 2026-08-27
     authorized_by: >
