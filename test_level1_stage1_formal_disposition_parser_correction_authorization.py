@@ -1822,9 +1822,20 @@ class TestTheRegisterIsSynchronized:
         )
         base_ws = next(w for w in base_doc["workstreams"] if w["id"] == "WS-0014")
         before = base_ws["milestones"]
+        # RE-ANCHORED BY XASSET-0059: "this filing appended exactly one gate" is a claim about
+        # THIS filing's own immutable range. Measured against the live register it would forbid
+        # every later unit from appending one of its own, which is exactly what the convention
+        # requires them to do. The APPEND-ONLY property is still asserted at HEAD -- and that is
+        # the part that actually protects the record.
+        merged = yaml.safe_load(
+            _content_at(XASSET_0058_MERGE_SHA, "operations/WORKSTREAMS.yaml").decode("utf-8")
+        )
+        merged_ws = next(w for w in merged["workstreams"] if w["id"] == "WS-0014")
+        assert merged_ws["milestones"][: len(before)] == before
+        assert len(merged_ws["milestones"]) == len(before) + 1
         live = register["milestones"]
         assert live[: len(before)] == before, "existing gates were modified, not appended to"
-        assert len(live) == len(before) + 1
+        assert len(live) >= len(before) + 1
 
     def test_no_sentinel_survives_anywhere_in_the_register(self):
         raw = WORKSTREAMS.read_text(encoding="utf-8")
@@ -1832,13 +1843,34 @@ class TestTheRegisterIsSynchronized:
             assert f"active_pr: {sentinel}" not in raw, sentinel
             assert f"pr: {sentinel}" not in raw, sentinel
 
+    #: RE-ANCHORED BY XASSET-0059. WS-0014's live fields are SHARED (OPS-0001), so once this
+    #: filing merged they lawfully moved onto the Lifecycle B unit SS-F authorizes. This filing's
+    #: own durable record is its GATE, which does not move; the superseded values are retained
+    #: below as NEGATIVE pins, so the fields stay bound at BOTH ends.
+    SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
+    SUCCESSOR_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+
     def test_the_shared_live_fields_name_this_unit(self, register):
-        assert register["active_branch"] == BRANCH
-        assert register["last_verified_main_sha"] == THIS_UNIT_BASE_SHA
+        assert register["active_branch"] == self.SUCCESSOR_BRANCH
+        assert register["last_verified_main_sha"] == self.SUCCESSOR_MAIN_SHA
+        assert register["active_branch"] != BRANCH
+        assert register["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
         assert register["last_verified_main_sha"] != XASSET_0057_MERGE_PARENT_1
 
     def test_the_active_pr_is_a_real_github_number(self, register):
-        pr = register["active_pr"]
+        """RE-ANCHORED BY XASSET-0059 onto this filing's OWN durable record.
+
+        ``active_pr`` is SHARED, so it now carries the successor unit's number -- and while
+        that successor is still unmerged it lawfully carries an IMPOSSIBLE SENTINEL, exactly as
+        this filing's own gate description records doing. Asserting a real number on the shared
+        field would therefore forbid the very convention this repository uses. THIS filing's
+        number is pinned where it cannot move: on its own gate.
+        """
+        gate = next(
+            g for g in register["milestones"]
+            if g["gate"] == "xasset0058-formal-disposition-parser-correction-authorization"
+        )
+        pr = gate["pr"]
         assert isinstance(pr, int) and pr > XASSET_0057_PULL_REQUEST
         assert pr not in PRIOR_SENTINELS and pr != PR_SENTINEL
 
@@ -1877,8 +1909,15 @@ class TestTheCatalogIsSynchronized:
         base_rows = yaml.safe_load(
             _content_at(THIS_UNIT_BASE_SHA, "governance/decisions.yaml").decode("utf-8")
         )["decisions"]
-        assert len(rows) == len(base_rows) + 1
+        # RE-ANCHORED BY XASSET-0059, for the same reason: exactly-one-row is a claim about
+        # THIS filing's own range. Append-only is still asserted at HEAD.
+        merged_rows = yaml.safe_load(
+            _content_at(XASSET_0058_MERGE_SHA, "governance/decisions.yaml").decode("utf-8")
+        )["decisions"]
+        assert len(merged_rows) == len(base_rows) + 1
+        assert merged_rows[: len(base_rows)] == base_rows
         assert rows[: len(base_rows)] == base_rows
+        assert len(rows) >= len(base_rows) + 1
 
     def test_the_identifier_was_unused_at_the_base(self):
         raw = _content_at(THIS_UNIT_BASE_SHA, "governance/decisions.yaml").decode("utf-8")
@@ -2107,6 +2146,11 @@ REANCHORED_SUITES = (
 SUPERSEDED_GENERATION_SHA = XASSET_0057_MERGE_PARENT_1
 SUPERSEDED_GENERATION_BRANCH = "claude/xasset-successor-authorization-3b0btg"
 
+#: The generation that succeeded THIS filing: the Lifecycle B parser correction its own
+#: SS-F authorizes. WS-0014's live fields are SHARED, so they lawfully moved onto it.
+SUCCESSOR_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+SUCCESSOR_BRANCH_NAME = "claude/xasset-0058-parser-correction-a2kteq"
+
 
 class TestThePredecessorSuitesWereReAnchoredNotWeakened:
     def test_every_re_anchored_suite_exists_and_was_actually_modified(self):
@@ -2165,15 +2209,26 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
         """Only suites that DEFINE the generation constant are in scope: a suite that merely
         NAMES it inside its own meta-assertion text is checking someone else's file, not
         carrying a pin of its own, and requiring a definition there would be a false positive."""
+        # RE-ANCHORED BY XASSET-0059: this filing's own constant is now itself a NEGATIVE
+        # pin -- retained with its exact value, never deleted -- and the successor generation
+        # is the positive pin. The chain stays bound at EVERY end, not just the two newest.
+        # RE-ANCHORED BY XASSET-0059: "defines the generation constant" means defines it at
+        # MODULE level, which is what this scan was always about. A CLASS-scoped
+        # ``SUCCESSOR_*``/``XASSET00NN_*`` attribute is the OTHER convention, and it is covered
+        # by ``test_the_successor_named_suites_advanced_their_successor_constants`` -- requiring
+        # both shapes of the same file would demand a pin that suite does not use. Anchoring on
+        # the line start makes the filter EXACT rather than merely narrower.
         defining = [
             name for name in REANCHORED_SUITES
-            if f'XASSET0058_MAIN_SHA = "{THIS_UNIT_BASE_SHA}"'
+            if f'\nXASSET0058_MAIN_SHA = "{THIS_UNIT_BASE_SHA}"'
             in (ROOT / name).read_text(encoding="utf-8")
         ]
         assert len(defining) >= 9, defining
         for name in defining:
             live = (ROOT / name).read_text(encoding="utf-8")
-            assert "== XASSET0058_MAIN_SHA" in live, name
+            assert "!= XASSET0058_MAIN_SHA" in live, name
+            assert f'XASSET0059_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            assert "== XASSET0059_MAIN_SHA" in live, name
             assert f'XASSET0057_MAIN_SHA = "{SUPERSEDED_GENERATION_SHA}"' in live, name
             assert "!= XASSET0057_MAIN_SHA" in live, name
 
@@ -2184,12 +2239,16 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
         for name in ("test_level1_stage1_verdict_boundary_governance.py",
                      "test_level1_stage1_parser_contract_correction_authorization.py"):
             live = (ROOT / name).read_text(encoding="utf-8")
-            assert f'SUCCESSOR_MAIN_SHA = "{THIS_UNIT_BASE_SHA}"' in live or (
-                "SUCCESSOR_MAIN_SHA = XASSET0058_MAIN_SHA" in live
+            # RE-ANCHORED BY XASSET-0059: the SUCCESSOR constants name the newly live unit,
+            # and this filing's own generation is retained beside them as a NEGATIVE pin.
+            assert f'SUCCESSOR_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live or (
+                "SUCCESSOR_MAIN_SHA = XASSET0059_MAIN_SHA" in live
             ), name
-            assert f'SUCCESSOR_BRANCH = "{BRANCH}"' in live, name
+            assert f'SUCCESSOR_BRANCH = "{SUCCESSOR_BRANCH_NAME}"' in live, name
+            assert f'XASSET0058_BRANCH = "{BRANCH}"' in live, name
             assert f'XASSET0057_BRANCH = "{SUPERSEDED_GENERATION_BRANCH}"' in live, name
             assert "XASSET-0058" in live, name
+            assert "XASSET-0059" in live, name
 
     def test_the_re_anchoring_is_non_vacuous_at_the_base(self):
         """Each re-anchored suite must genuinely have failed at the base under this unit's
@@ -2200,12 +2259,24 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
         )
         live = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))
         now = next(w for w in live["workstreams"] if w["id"] == "WS-0014")
+        # RE-ANCHORED BY XASSET-0059. "This filing moved the shared fields onto itself" is a
+        # fact about THIS filing's own range, so it is proved at THIS filing's own merge. The
+        # shared fields have since lawfully moved again, onto the Lifecycle B unit -- which is
+        # the convention working, not a regression -- and that is asserted separately below.
+        merged = yaml.safe_load(
+            _content_at(XASSET_0058_MERGE_SHA, "operations/WORKSTREAMS.yaml").decode("utf-8")
+        )
+        at_merge = next(w for w in merged["workstreams"] if w["id"] == "WS-0014")
         assert before["last_verified_main_sha"] == SUPERSEDED_GENERATION_SHA
         assert before["active_branch"] == SUPERSEDED_GENERATION_BRANCH
-        assert now["last_verified_main_sha"] == THIS_UNIT_BASE_SHA
-        assert now["active_branch"] == BRANCH
+        assert at_merge["last_verified_main_sha"] == THIS_UNIT_BASE_SHA
+        assert at_merge["active_branch"] == BRANCH
+        assert at_merge["last_verified_main_sha"] != before["last_verified_main_sha"]
+        assert at_merge["active_branch"] != before["active_branch"]
+        # ...and the SHARED fields now name the successor, bound at BOTH ends.
+        assert now["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
+        assert now["active_branch"] != BRANCH
         assert now["last_verified_main_sha"] != before["last_verified_main_sha"]
-        assert now["active_branch"] != before["active_branch"]
 
     def test_the_decision_discloses_the_re_anchoring(self, decision_flat):
         assert "re-anchor" in decision_flat.lower()

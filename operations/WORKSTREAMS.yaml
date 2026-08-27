@@ -17737,6 +17737,105 @@ workstreams:
           workaround is substituted, and the earlier three-second startup_failure on an intermediate
           head remains disclosed as infrastructure history that VALIDATES NOTHING, because no job
           started and no test body ran.
+      - gate: xasset0058-post-merge-verification
+        status: complete
+        pr: 359
+        description: >-
+          LANE M FACTUAL SYNCHRONISATION, additive. XASSET-0058's own gate above is left
+          BYTE-UNEDITED: it was accurate when the drafting session wrote it, and this
+          repository's convention is to record a confirmed later state in a NEW gate rather
+          than rewrite a predecessor's own words. Independently re-verified from live git and
+          the live GitHub API by the XASSET-0059 implementation session, not quoted from a
+          brief. PR #359 MERGED and CLOSED, merged_by Mast3rkey, at normal-merge commit
+          34c45900ce23742d04d80cf12471c34aabe9682d -- exactly two ORDERED parents
+          556a43cf91679d3e8ca95703c8d49e672b662b73 then
+          e8d53c184a7612ab6e38ba8d7ae1e348f7046de2, merge tree
+          76e1021499464f4c2152d9e55c0d03b5ea14708c byte-identical to the accepted head's own
+          tree, so there was ZERO DRIFT at merge. Lifecycle A closed in order: A1 independent
+          FULL review 5034171910 at 48a6ea09 (2 BLOCKING); a bounded fast-forward correction;
+          A2 exact-head DELTA review 5035960873 at the accepted head, 0 BLOCKING / 0 MAJOR /
+          0 MINOR / 0 NOTE; A3 principal exact-head acceptance issuecomment-5432460504; A5
+          post-merge verification issuecomment-5432479068; A6 merge-commit CI run 33024792395
+          / job 98363500732, BOTH head_sha equal to the exact merge SHA, attempt 1,
+          completed/success, decoded log 14362 passed; A7 final closure
+          issuecomment-5432562310. The A3 comment's own A4 label is a MIS-NUMBERING, not a
+          lifecycle gap -- the retained A5 and A7 records both name it as the principal
+          exact-head acceptance, and the instants are in strict order. XASSET-0058 is
+          therefore EFFECTIVE, and its SS-F grant of exactly one implementation unit is live.
+      - gate: xasset0059-formal-disposition-parser-correction-implementation
+        status: in_progress
+        pr: -59
+        description: >-
+          THE ONE IMPLEMENTATION UNIT XASSET-0058 SS-F AUTHORIZES, filed as XASSET-0059. It is
+          XASSET-0058 SS-G.5 step B1 and NOTHING FURTHER. The gate carries the IMPOSSIBLE
+          SENTINEL -59 because GitHub has not yet issued this filing's pull-request number; it
+          is bound to the real number, read back live from the API rather than guessed, in one
+          fast-forward follow-up commit. The gate is in_progress because this filing's own PR
+          is DRAFT and UNMERGED -- it does not mark its own unmerged work complete.
+          WHAT WAS CORRECTED. parse_formal_disposition() now implements XASSET-0058 SS-D
+          exactly. The defect was fail-closed in name only: a ONE-CHARACTER mutation of the
+          canonical label made an adverse first line INVISIBLE to the existing wide resemblance
+          test, so it was skipped as ABSENT and a later, better-formed approval won past it --
+          the exact XASSET-0053 SS-D.17 failure. Reproduced FIRST, against the unchanged merged
+          bytes, through the real parser and ALL THREE real consumer seams including
+          native-APPROVED rescue: both bodies independent review 5034171910 named,
+          FORM:L DISPOSITION and FORM:AL DISPOSITION, returned the APPROVING verdict and were
+          accepted at every seam, while the untampered adverse control was correctly refused
+          at every seam.
+          THE PRODUCTION SURFACE, and no other. parse_formal_disposition() plus ONE narrowly
+          devoted candidate-recognition helper, _is_formal_disposition_candidate, and the three
+          constants it derives -- _FORMAL_DISPOSITION_LABEL, _FORMAL_DISPOSITION_EDIT_BUDGET
+          (1, a NUM-0001 CLASS 5 PROVISIONAL GOVERNANCE GUARDRAIL) and
+          _ADMISSIBLE_COLON_INDICES, derived from the label length and the budget and NEVER
+          written as literals. SS-F.2 permits at most one helper and only on proof it is
+          smaller and clearer than inline logic: inline the rule would add roughly thirty-five
+          lines two levels deep inside an already two-hundred-line loop body, whereas the call
+          site is ONE LINE and the helper's no-verdict property becomes provable from the
+          syntax tree. The ceiling of one is now exactly spent, and a SECOND helper fails a
+          test.
+          WHERE IT RUNS. Only on the branch taken when the canonical prefix is ABSENT from the
+          ASCII-folded line. Every accepted form contains that prefix, so an accepted line can
+          never reach the rule -- acceptance is untouched STRUCTURALLY, not by promise.
+          THE MECHANISM. For each of the two governed projections the rule probes the three
+          ADMISSIBLE COLON INDICES DIRECTLY, requires a real ASCII colon there, and compares
+          the label before it with the canonical label under a restricted Damerau /
+          optimal-string-alignment distance capped at one edit. Probing the indices directly
+          rather than searching for the FIRST colon is what makes it robust to an
+          attacker-supplied colon; the superseded formulation left 33 of 34 colon cells open.
+          THE RESULT. The complete printable-ASCII matrix was re-derived rather than copied:
+          3264 cells per presentation, 9792 across the three governed presentations, 9450 open
+          (BYPASS) before and ZERO open after. Per family in the plain presentation --
+          deletion 17 cells 17 open then 0; ASCII substitution 1598 cells 1581 open then 0
+          with 17 surviving correctly as ADVERSE; ASCII insertion 1615 cells 1518 open then 0;
+          adjacent transposition 17 cells 17 open then 0; Unicode/confusable substitution 17
+          cells 17 open then 0. The 34 COLON CELLS are exercised INDEPENDENTLY AND BY NAME, 33
+          open in every presentation before and 0 after. The operative claim is a PROPERTY, not
+          a count: no cell of the exhaustive matrix, in any governed presentation, lets a later
+          approval win.
+          WHAT DID NOT MOVE. Acceptance is unchanged in every direction across ten control
+          classes; the OPEN verdict vocabulary and WHOLE-VERDICT EXACT EQUALITY are preserved;
+          ordinary prose stays ABSENT across twelve control shapes with ZERO regressions over
+          410 tracked Markdown files / 131902 lines and 2167 tracked text files / 375907 lines;
+          twelve REAL historical lifecycle review lines from PRs 357, 358 and 359, exercising
+          three distinct open-vocabulary verdicts, all retain their exact verdict; and seam 3's
+          genuinely-ABSENT policy is preserved exactly as XASSET-0053 SS-D.20.1 left it.
+          THE SS-D.8 RESIDUAL IS PRESERVED, NOT CLOSED. Mutation of the TERMINATING colon
+          itself carries no ASCII colon at any admissible index, so it yields no candidate and
+          remains ABSENT -- unchanged behaviour, expressly outside this unit's grant, and
+          proved directly rather than assumed.
+          IDENTITY. XASSET-0057 SS-F.3 makes the parser-corrected module ROLE 3 -- derived at
+          the correction's own merge, NEVER PREDICTED, and never bound directly. NO live module
+          digest is recorded anywhere by this unit: not in the decision, not in
+          governance/decisions.yaml, not in this register, not in any suite. That is enforced
+          MECHANICALLY. The vulnerable
+          12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5 remains a PERMANENT
+          NEGATIVE PIN, neither rebound nor re-pinned nor repaired, and LOAD_BEARING_RELPATHS
+          is unchanged at 18 in both count and membership.
+          AUTHORITY WITHHELD. No step-8-equivalent rebinding, no re-pinning, no readiness or
+          drift verification, no attestation, no arming, no lane creation, no ATTEMPT_1 claim,
+          no execution, no results, no allocation, no trading, no protected RISK access.
+          Stage 1 remains UNARMED and NOT EXECUTABLE. Only B1 is performed; B2 through B8
+          remain open.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -19428,10 +19527,10 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/parser-correction-xasset-auth-w91gse
-    active_pr: 359
-    last_verified_main_sha: 556a43cf91679d3e8ca95703c8d49e672b662b73
-    last_verified_date: 2026-08-26
+    active_branch: claude/xasset-0058-parser-correction-a2kteq
+    active_pr: -59
+    last_verified_main_sha: 34c45900ce23742d04d80cf12471c34aabe9682d
+    last_verified_date: 2026-08-27
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively

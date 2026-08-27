@@ -2423,14 +2423,20 @@ class TestTheRegisterIsSynchronized:
     #: NEGATIVE pins rather than deleted, so the fields stay bound at BOTH ends, and this unit's
     #: own GATE -- which does not move -- remains the durable anchor for what this assertion was
     #: really protecting.
-    SUCCESSOR_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
-    SUCCESSOR_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+    #: ADVANCED BY XASSET-0059: the shared fields moved again, onto the Lifecycle B unit.
+    #: The XASSET-0058 generation is retained beside it as a NEGATIVE pin.
+    SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
+    SUCCESSOR_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+    XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
+    XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 
     def test_the_shared_live_fields_name_this_unit(self, register):
         assert register["active_branch"] == self.SUCCESSOR_BRANCH
         assert register["last_verified_main_sha"] == self.SUCCESSOR_MAIN_SHA
         assert register["active_branch"] != BRANCH
+        assert register["active_branch"] != self.XASSET0058_BRANCH
         assert register["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
+        assert register["last_verified_main_sha"] != self.XASSET0058_MAIN_SHA
         assert register["active_branch"] != "claude/xasset-0055-parser-correction-c3ro29"
         assert register["last_verified_main_sha"] != XASSET_0056_MERGE_PARENT_1
         # This unit's OWN record in the register is its GATE, which does not move.
