@@ -268,11 +268,21 @@ XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 #: every generation; XASSET-0057's own value is retained above as a NEGATIVE pin, so a silent
 #: revert to that finished unit's state still fails here.
 XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+#: ADVANCED BY XASSET-0059 -- the Lifecycle B parser correction XASSET-0058 SS-F authorized.
+#: WS-0014's live self-reference fields are SHARED under OPS-0001's Active-GitHub-fields
+#: rule, so they name whichever unit is live. The superseded value is retained BESIDE the
+#: new one as a NEGATIVE pin -- bound at both ends, so a silent revert to finished work
+#: still fails -- and nothing is deleted, skipped or relaxed.
+XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
 #: ADVANCED BY XASSET-0058. The shared live fields moved once more onto the successor;
 #: XASSET-0057's own values are RETAINED as negative pins rather than deleted, so every
 #: field stays bound at BOTH ends.
-SUCCESSOR_MAIN_SHA = XASSET0058_MAIN_SHA
-SUCCESSOR_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
+#: ADVANCED BY XASSET-0059: the shared field moved onto the Lifecycle B unit's own base.
+SUCCESSOR_MAIN_SHA = XASSET0059_MAIN_SHA
+#: ADVANCED BY XASSET-0059: WS-0014's SHARED live branch moved onto the Lifecycle B unit;
+#: the XASSET-0058 generation is retained beside it as a NEGATIVE pin.
+SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
+XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
 XASSET0057_BRANCH = "claude/xasset-successor-authorization-3b0btg"
 #: The generation this one superseded, retained as a negative pin.
 XASSET0055_MAIN_SHA = "683c324629544a84d2cf75ebca37325e3375c479"
@@ -281,7 +291,9 @@ XASSET0055_BRANCH = "claude/xasset-0055-parser-contract-conflict-w4kp2n"
 CLOSED_UNMERGED_BRANCH = "claude/xasset-0054-parser-contract-correction-h3nq7p"
 #: Every decision appended to the catalog AFTER this one. The catalog assertions below stay
 #: EXACT by naming this set explicitly rather than being relaxed to "somewhere in the list".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0055", "XASSET-0056", "XASSET-0057", "XASSET-0058")
+#: ADVANCED BY XASSET-0059, appended after XASSET-0058 and named EXACTLY, so "last"
+#: stays an EXACT index rather than being relaxed to "present".
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0055", "XASSET-0056", "XASSET-0057", "XASSET-0058", "XASSET-0059")
 
 
 # =============================================================================================
@@ -1789,6 +1801,7 @@ class TestRegisterSynchronisation:
         onto the successor; this unit's own branch survives in the register as history, which
         is what this assertion was really protecting. Bound at BOTH ends."""
         assert ws0014["active_branch"] == SUCCESSOR_BRANCH
+        assert ws0014["active_branch"] != XASSET0058_BRANCH
         assert ws0014["active_branch"] != XASSET0057_BRANCH
         assert ws0014["active_branch"] != BRANCH
         assert ws0014["active_branch"] != CLOSED_UNMERGED_BRANCH
@@ -1802,8 +1815,8 @@ class TestRegisterSynchronisation:
     def test_the_last_verified_main_sha_advanced_and_is_bound_at_both_ends(self, ws0014):
         """RE-ANCHORED BY XASSET-0055 -- see `SUCCESSOR_MAIN_SHA`. This unit's own base joins
         the negative pins rather than being deleted, so the field stays bound at BOTH ends."""
-        assert ws0014["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
-        assert ws0014["last_verified_main_sha"] == XASSET0058_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA == XASSET0059_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0056_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0055_MAIN_SHA

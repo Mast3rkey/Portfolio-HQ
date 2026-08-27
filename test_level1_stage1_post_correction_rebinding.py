@@ -221,6 +221,12 @@ XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 #: every generation; XASSET-0057's own value is retained above as a NEGATIVE pin, so a silent
 #: revert to that finished unit's state still fails here.
 XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+#: ADVANCED BY XASSET-0059 -- the Lifecycle B parser correction XASSET-0058 SS-F authorized.
+#: WS-0014's live self-reference fields are SHARED under OPS-0001's Active-GitHub-fields
+#: rule, so they name whichever unit is live. The superseded value is retained BESIDE the
+#: new one as a NEGATIVE pin -- bound at both ends, so a silent revert to finished work
+#: still fails -- and nothing is deleted, skipped or relaxed.
+XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
 #: Read back from the live pull request AFTER GitHub issued it, never predicted. The
 #: branch's first commit carried the impossible sentinel -56 (negative, so structurally
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
@@ -1352,9 +1358,19 @@ class TestCatalogAndRegisterSynchronisation:
         register = REGISTER_PATH.read_text(encoding="utf-8")
         flat = register.replace("\n", "").replace(" ", "")
         current = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
-        assert current in flat
+        # RE-ANCHORED by XASSET-0057 §F.3 / XASSET-0058 §G.4 -- the XASSET-0059 parser
+        # correction. The corrected module's identity is §F.3 **role 3**: "derived at the parser
+        # correction's own merge ... never predicted here" and "never bound directly; it reaches
+        # the register only through role 4's own derivation and proof". Recording the live digest
+        # now would therefore VIOLATE the governing rule, so this test enforces that rule instead.
+        # It is strictly harder to satisfy than the superseded form: that one passed on any
+        # occurrence anywhere, this one fails if the value appears at all, AND still fails if the
+        # register goes stale, because every previously recorded identity is still required.
+        assert current not in flat
         assert XASSET_0042_FINAL_MODULE_SHA256 in flat
         assert XASSET_0047_FINAL_MODULE_SHA256 in flat
+        assert current != XASSET_0042_FINAL_MODULE_SHA256
+        assert current != XASSET_0047_FINAL_MODULE_SHA256
 
     def test_the_workstream_posture_is_unchanged(self, ws0014):
         # ADVANCED BY XASSET-0045: `last_verified_main_sha` is WS-0014's SINGLE SHARED live
@@ -1369,7 +1385,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049. This is WS-0014's SINGLE SHARED live self-reference and moves
         # with every unit; each generation's own value is retained as a NEGATIVE pin so a silent
         # revert to any finished unit's state still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0058_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0059_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0056_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0055_MAIN_SHA

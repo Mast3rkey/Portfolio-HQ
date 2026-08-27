@@ -746,7 +746,11 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0058, on exactly the same terms: WS-0014's SINGLE SHARED live
         # field names whichever unit is live, and XASSET-0057's own superseded values join the
         # negative pins below rather than being deleted, so the field stays bound at BOTH ends.
+        # ADVANCED BY XASSET-0059; the predecessor value joins the NEGATIVE pins below.
         assert ws0014["active_branch"] == (
+            "claude/xasset-0058-parser-correction-a2kteq"
+        )
+        assert ws0014["active_branch"] != (
             "claude/parser-correction-xasset-auth-w91gse"
         )
         assert ws0014["active_branch"] != (
@@ -755,7 +759,11 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["active_branch"] != (
             "claude/xasset-0055-parser-correction-c3ro29"
         )
+        # ADVANCED BY XASSET-0059; the predecessor value joins the NEGATIVE pins below.
         assert ws0014["last_verified_main_sha"] == (
+            "34c45900ce23742d04d80cf12471c34aabe9682d"
+        )
+        assert ws0014["last_verified_main_sha"] != (
             "556a43cf91679d3e8ca95703c8d49e672b662b73"
         )
         assert ws0014["last_verified_main_sha"] != (
@@ -811,7 +819,9 @@ class TestCatalogAndRegisterSynchronisation:
             "bb95ed26964b1bc7a2e230c76060fec82752efa1"
         )
         # ADVANCED BY XASSET-0053, with the shared fields above. Bound at BOTH ends.
-        assert str(ws0014["last_verified_date"]) == "2026-08-26"
+        # ADVANCED BY XASSET-0059; the predecessor date joins the NEGATIVE pins.
+        assert str(ws0014["last_verified_date"]) == "2026-08-27"
+        assert str(ws0014["last_verified_date"]) != "2026-08-26"
         assert str(ws0014["last_verified_date"]) != "2026-08-25"
         assert str(ws0014["last_verified_date"]) != "2026-08-24"
         assert str(ws0014["last_verified_date"]) != "2026-08-23"

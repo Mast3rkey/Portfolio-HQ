@@ -95,14 +95,21 @@ SUCCESSOR_DECISION = "XASSET-0056"
 #: ADVANCED BY XASSET-0058, on exactly the terms this block already states: the shared
 #: live fields moved once more, and XASSET-0057's own values are RETAINED below as
 #: negative pins rather than deleted, so every field stays bound at BOTH ends.
-SUCCESSOR_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
-SUCCESSOR_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+#: ADVANCED BY XASSET-0059: WS-0014's SHARED live fields moved again, onto the Lifecycle B
+#: parser correction. The XASSET-0058 generation is retained beside it as a NEGATIVE pin.
+SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
+XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+SUCCESSOR_MAIN_SHA = XASSET0059_MAIN_SHA
+XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
+XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 XASSET0057_BRANCH = "claude/xasset-successor-authorization-3b0btg"
 XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 THIS_GATE = "xasset0055-verdict-boundary-governance"
 #: Every decision appended to the catalog AFTER this one. Stated EXACTLY by name rather than
 #: relaxed to "present somewhere in the list".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0056", "XASSET-0057", "XASSET-0058")
+#: ADVANCED BY XASSET-0059, appended after XASSET-0058 and named EXACTLY, so "last"
+#: stays an EXACT index rather than being relaxed to "present".
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0056", "XASSET-0057", "XASSET-0058", "XASSET-0059")
 
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
 
@@ -785,6 +792,9 @@ class TestCatalogAndRegisterSynchronisation:
         live = _ws0014()
         assert live["active_branch"] == SUCCESSOR_BRANCH
         assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
+        assert live["last_verified_main_sha"] == XASSET0059_MAIN_SHA
+        assert live["active_branch"] != XASSET0058_BRANCH
+        assert live["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert live["active_branch"] != XASSET0057_BRANCH
         assert live["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert live["active_branch"] != BRANCH
@@ -937,8 +947,13 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             # value, never deleted -- and the newly named successor is the positive pin.
             assert f'XASSET0057_MAIN_SHA = "{XASSET0057_MAIN_SHA}"' in live, name
             assert "!= XASSET0057_MAIN_SHA" in live, name
-            assert f'XASSET0058_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
-            assert "== XASSET0058_MAIN_SHA" in live, name
+            # ADVANCED BY XASSET-0059, on exactly the terms this docstring already states.
+            # XASSET-0058's own constant becomes a NEGATIVE pin -- retained with its exact
+            # value, never deleted -- and the newly named successor is the positive pin.
+            assert f'XASSET0058_MAIN_SHA = "{XASSET0058_MAIN_SHA}"' in live, name
+            assert "!= XASSET0058_MAIN_SHA" in live, name
+            assert f'XASSET0059_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            assert "== XASSET0059_MAIN_SHA" in live, name
             # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
             # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
             # itself in the third person -- so the constant is asserted exactly where it is

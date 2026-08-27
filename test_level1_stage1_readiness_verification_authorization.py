@@ -199,6 +199,12 @@ XASSET0057_MAIN_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 #: every generation; XASSET-0057's own value is retained above as a NEGATIVE pin, so a silent
 #: revert to that finished unit's state still fails here.
 XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+#: ADVANCED BY XASSET-0059 -- the Lifecycle B parser correction XASSET-0058 SS-F authorized.
+#: WS-0014's live self-reference fields are SHARED under OPS-0001's Active-GitHub-fields
+#: rule, so they name whichever unit is live. The superseded value is retained BESIDE the
+#: new one as a NEGATIVE pin -- bound at both ends, so a silent revert to finished work
+#: still fails -- and nothing is deleted, skipped or relaxed.
+XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
 #: Read back from the live pull request AFTER GitHub issued it, never predicted. The
 #: branch's first commit carried the impossible sentinel -56 (negative, so structurally
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
@@ -211,6 +217,13 @@ XASSET0057_ACTIVE_PR = 358
 #: fast-forward follow-up commit -- read back from the live API, never predicted, with no
 #: amend and no force-push.
 XASSET0058_ACTIVE_PR = 359
+#: ADVANCED BY XASSET-0059 -- the Lifecycle B parser correction XASSET-0058 SS-F authorized.
+#: WS-0014's live self-reference fields are SHARED under OPS-0001's Active-GitHub-fields
+#: rule, so they name whichever unit is live. Every superseded value is retained BESIDE the
+#: new one as a NEGATIVE pin, so the field stays bound at BOTH ends and a silent revert to
+#: finished work still fails. The active_pr carries the IMPOSSIBLE SENTINEL until GitHub
+#: issues this unit's real number, which is bound in one fast-forward follow-up commit.
+XASSET0059_ACTIVE_PR = 360
 
 XASSET0043_ACTIVE_PR = 343
 #: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number
@@ -972,7 +985,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
         # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
         # pin, so a silent revert to finished work still fails here.
-        assert workstream["last_verified_main_sha"] == XASSET0058_MAIN_SHA
+        assert workstream["last_verified_main_sha"] == XASSET0059_MAIN_SHA
+        assert workstream["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0056_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0055_MAIN_SHA
@@ -992,14 +1006,19 @@ class TestCatalogAndRegisterSynchronisation:
         # register's shared live self-reference moved onto this successor unit. Every
         # prior generation is retained as a NEGATIVE pin, so the field stays bound at
         # BOTH ends and a silent revert to finished work still fails.
-        assert str(workstream["last_verified_date"]).startswith("2026-08-26")
+        # ADVANCED BY XASSET-0059, with the shared fields above: the register's single
+        # shared verification date moved to this unit's own live preflight date. Every
+        # prior generation stays a NEGATIVE pin, so the field is bound at BOTH ends.
+        assert str(workstream["last_verified_date"]).startswith("2026-08-27")
+        assert not str(workstream["last_verified_date"]).startswith("2026-08-26")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-24")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-23")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-22")
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0058_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0059_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0058_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0057_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0056_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0055_ACTIVE_PR

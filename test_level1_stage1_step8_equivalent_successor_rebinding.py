@@ -1031,9 +1031,28 @@ class TestCatalogAndRegisterSynchronisation:
         assert [w["id"] for w in data["workstreams"] if w.get("priority") == "primary"] == []
 
     def test_the_register_records_this_units_module_identity(self, register_text):
+        """This unit's OWN identity stays recorded; the LIVE one is not predicted.
+
+        # RE-ANCHORED by XASSET-0057 §F.3 / XASSET-0058 §G.4 -- the XASSET-0059 parser
+        # correction. The corrected module's identity is §F.3 **role 3**: "derived at the parser
+        # correction's own merge ... never predicted here" and "never bound directly; it reaches
+        # the register only through role 4's own derivation and proof". Recording the live digest
+        # now would therefore VIOLATE the governing rule, so this test enforces that rule instead.
+        # It is strictly harder to satisfy than the superseded form: that one passed on any
+        # occurrence anywhere, this one fails if the value appears at all, AND still fails if the
+        # register goes stale, because every previously recorded identity is still required.
+        """
         flat = register_text.replace("\n", "").replace(" ", "")
         current = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
-        assert current in flat
+        this_unit = hashlib.sha256(
+            subprocess.run(
+                ["git", "show", f"{PR348_MERGE_SHA}:{AUTH_MODULE_RELPATH}"],
+                cwd=ROOT, stdout=subprocess.PIPE, check=True,
+            ).stdout
+        ).hexdigest()
+        assert this_unit in flat
+        assert current not in flat
+        assert current != this_unit
 
 
 class TestTheRegistersOperativeProseAgreesWithItsStructuredFields:
