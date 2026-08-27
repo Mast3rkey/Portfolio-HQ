@@ -64,6 +64,39 @@ SUCCESSORS_APPENDED_SINCE = ("XASSET-0057", "XASSET-0058")
 BASE_MODULE_SHA256 = "4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541"
 BASE_MODULE_BLOB = "f71b08b4ebe95f161c57cdbb2a924748f13af02d"
 
+# -------------------------------------------------------------------------------------
+# RE-ANCHORED by the XASSET-0058 Lifecycle B parser correction
+# -------------------------------------------------------------------------------------
+#: This suite's historical claims are about what the XASSET-0056 correction ITSELF did. They
+#: were written as ``live == <historical reviewed head>``, which silently re-points at whatever
+#: the module later becomes. XASSET-0058 §F.2 lawfully adds ONE helper and three derived
+#: constants, so each such claim is now proved over the IMMUTABLE range
+#: ``<historical reviewed head> .. XASSET_0058_BASE_SHA`` -- exactly what it always proved --
+#: and a SECOND, TIGHTER assertion pins the live delta to the authorized set by name.
+#: Nothing is relaxed: "no name was added" becomes "exactly these four were added, and no fifth".
+XASSET_0058_BASE_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+
+#: The module identity at that base -- XASSET-0057 §F.3 **role 2**, the VULNERABLE INTERMEDIATE.
+#: A PERMANENT NEGATIVE PIN: adverse history, and never a bound end under any reading.
+XASSET_0058_BASE_MODULE_SHA256 = (
+    "12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5"
+)
+
+#: The EXACTLY FOUR module-level names XASSET-0058 §F.2 authorizes: one narrowly devoted
+#: candidate-recognition helper, and the three derived constants it reads. Named EXHAUSTIVELY,
+#: so a fifth addition fails rather than passing as "some names changed".
+XASSET_0058_ADDED_MODULE_NAMES = frozenset(
+    {
+        "_is_formal_disposition_candidate",
+        "_FORMAL_DISPOSITION_LABEL",
+        "_FORMAL_DISPOSITION_EDIT_BUDGET",
+        "_ADMISSIBLE_COLON_INDICES",
+    }
+)
+
+#: The single top-level definition XASSET-0058 §F.2 authorizes the correction to ADD.
+XASSET_0058_ADDED_DEFINITION = "_is_formal_disposition_candidate"
+
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
 PREFIX = A.FORMAL_DISPOSITION_PREFIX
 #: Resolved with a fallback ONLY so this suite can be COLLECTED against the uncorrected base
@@ -108,6 +141,24 @@ def _toplevel(source: str) -> dict[str, str]:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             out[node.name] = "".join(lines[node.lineno - 1 : node.end_lineno])
     return out
+
+
+def _unit_base_source() -> str:
+    """The module exactly as merged at this unit's base. An IMMUTABLE commit, never a live ref."""
+    return _git("show", f"{XASSET_0058_BASE_SHA}:{MODULE_RELPATH}")
+
+
+def _module_level_names(source: str) -> set[str]:
+    """Every module-level def/class/assignment name. One shared derivation, not four copies."""
+    found: set[str] = set()
+    for node in ast.parse(source).body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            found.add(node.name)
+        elif isinstance(node, ast.Assign):
+            found.update(t.id for t in node.targets if isinstance(t, ast.Name))
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            found.add(node.target.id)
+    return found
 
 
 def _call_sites(source: str) -> list[int]:
@@ -1350,20 +1401,16 @@ class TestBlockingOneCorrectionShape:
         assert "inside_code_fence" in _git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
 
     def test_the_repair_added_no_module_level_name(self):
-        reviewed = _git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
-
-        def names(source: str) -> set[str]:
-            found = set()
-            for node in ast.parse(source).body:
-                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                    found.add(node.name)
-                elif isinstance(node, ast.Assign):
-                    found.update(t.id for t in node.targets if isinstance(t, ast.Name))
-                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-                    found.add(node.target.id)
-            return found
-
-        assert names(_live_source()) == names(reviewed)
+        reviewed = _module_level_names(
+            _git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
+        )
+        # PRESERVED, over the IMMUTABLE range: the correction ITSELF added no module-level name.
+        assert _module_level_names(_unit_base_source()) == reviewed
+        # RE-ANCHORED, and TIGHTER: the live delta is EXACTLY XASSET-0058 §F.2's authorized
+        # four, named one by one -- a FIFTH addition fails, and a removal fails too.
+        live = _module_level_names(_live_source())
+        assert live - reviewed == XASSET_0058_ADDED_MODULE_NAMES, sorted(live - reviewed)
+        assert reviewed - live == set(), sorted(reviewed - live)
 
     def test_the_repair_added_no_call_site(self):
         assert len(_call_sites(_live_source())) == 3
@@ -1371,9 +1418,19 @@ class TestBlockingOneCorrectionShape:
 
     def test_only_the_parser_changed_since_the_reviewed_head(self):
         reviewed = _toplevel(_git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}"))
+        # PRESERVED, over the IMMUTABLE range: only the parser changed at the time.
+        base = _toplevel(_unit_base_source())
+        assert {n for n in base if reviewed.get(n) != base[n]} == {
+            "parse_formal_disposition"
+        }
+        # RE-ANCHORED: live additionally carries XASSET-0058 §F.2's ONE authorized
+        # helper, and nothing else -- every other definition is still byte-identical.
         live = _toplevel(_live_source())
         changed = {n for n in live if reviewed.get(n) != live[n]}
-        assert changed == {"parse_formal_disposition"}, sorted(changed)
+        assert changed == {
+            "parse_formal_disposition",
+            XASSET_0058_ADDED_DEFINITION,
+        }, sorted(changed)
 
     def test_the_closer_rule_names_all_three_conditions(self):
         """DELTA 5019911766: the suffix check moved off ``stripped`` onto the RAW line."""
@@ -1612,25 +1669,31 @@ class TestDeltaBlockingOneCorrectionShape:
 
     def test_only_the_parser_changed_since_the_delta_reviewed_head(self):
         reviewed = _toplevel(_git("show", f"{DELTA_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}"))
+        # PRESERVED, over the IMMUTABLE range: only the parser changed at the time.
+        base = _toplevel(_unit_base_source())
+        assert {n for n in base if reviewed.get(n) != base[n]} == {
+            "parse_formal_disposition"
+        }
+        # RE-ANCHORED: live additionally carries XASSET-0058 §F.2's ONE authorized
+        # helper, and nothing else -- every other definition is still byte-identical.
         live = _toplevel(_live_source())
         changed = {n for n in live if reviewed.get(n) != live[n]}
-        assert changed == {"parse_formal_disposition"}, sorted(changed)
+        assert changed == {
+            "parse_formal_disposition",
+            XASSET_0058_ADDED_DEFINITION,
+        }, sorted(changed)
 
     def test_the_repair_added_no_module_level_name(self):
-        def names(source: str) -> set[str]:
-            found = set()
-            for node in ast.parse(source).body:
-                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                    found.add(node.name)
-                elif isinstance(node, ast.Assign):
-                    found.update(t.id for t in node.targets if isinstance(t, ast.Name))
-                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-                    found.add(node.target.id)
-            return found
-
-        assert names(_live_source()) == names(
+        reviewed = _module_level_names(
             _git("show", f"{DELTA_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
         )
+        # PRESERVED, over the IMMUTABLE range: the correction ITSELF added no module-level name.
+        assert _module_level_names(_unit_base_source()) == reviewed
+        # RE-ANCHORED, and TIGHTER: the live delta is EXACTLY XASSET-0058 §F.2's authorized
+        # four, named one by one -- a FIFTH addition fails, and a removal fails too.
+        live = _module_level_names(_live_source())
+        assert live - reviewed == XASSET_0058_ADDED_MODULE_NAMES, sorted(live - reviewed)
+        assert reviewed - live == set(), sorted(reviewed - live)
 
     def test_the_repair_added_no_call_site(self):
         assert len(_call_sites(_live_source())) == 3
@@ -1969,26 +2032,32 @@ class TestAcceptedLineCorrectionShape:
         assert "line[end - 1] in ' \\t'" in self._executable_source()
 
     def test_the_correction_added_no_module_level_name(self):
-        def names(source: str) -> set[str]:
-            found = set()
-            for node in ast.parse(source).body:
-                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                    found.add(node.name)
-                elif isinstance(node, ast.Assign):
-                    found.update(t.id for t in node.targets if isinstance(t, ast.Name))
-                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-                    found.add(node.target.id)
-            return found
-
-        assert names(_live_source()) == names(
+        reviewed = _module_level_names(
             _git("show", f"{FIFTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
         )
+        # PRESERVED, over the IMMUTABLE range: the correction ITSELF added no module-level name.
+        assert _module_level_names(_unit_base_source()) == reviewed
+        # RE-ANCHORED, and TIGHTER: the live delta is EXACTLY XASSET-0058 §F.2's authorized
+        # four, named one by one -- a FIFTH addition fails, and a removal fails too.
+        live = _module_level_names(_live_source())
+        assert live - reviewed == XASSET_0058_ADDED_MODULE_NAMES, sorted(live - reviewed)
+        assert reviewed - live == set(), sorted(reviewed - live)
 
     def test_only_the_parser_changed_since_the_reviewed_head(self):
         reviewed = _toplevel(_git("show", f"{FIFTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}"))
+        # PRESERVED, over the IMMUTABLE range: only the parser changed at the time.
+        base = _toplevel(_unit_base_source())
+        assert {n for n in base if reviewed.get(n) != base[n]} == {
+            "parse_formal_disposition"
+        }
+        # RE-ANCHORED: live additionally carries XASSET-0058 §F.2's ONE authorized
+        # helper, and nothing else -- every other definition is still byte-identical.
         live = _toplevel(_live_source())
         changed = {n for n in live if reviewed.get(n) != live[n]}
-        assert changed == {"parse_formal_disposition"}, sorted(changed)
+        assert changed == {
+            "parse_formal_disposition",
+            XASSET_0058_ADDED_DEFINITION,
+        }, sorted(changed)
 
     def test_the_call_site_count_is_unchanged(self):
         assert len(_call_sites(_live_source())) == 3
@@ -2286,12 +2355,24 @@ class TestPrefixBoundaryCorrectionShape:
         assert "inner.upper()" not in source
 
     def test_a_resembling_line_returns_malformed_rather_than_continuing(self):
+        """RE-ANCHORED: the window is DERIVED from the branch itself, not a magic character count.
+
+        The superseded form sliced a fixed 220 characters, so any comment added inside the
+        branch silently truncated the window. The branch now ends at its own ``continue``, which
+        is exactly the boundary this test is about -- and the ordering claim is unchanged.
+        """
         source = self._executable_source()
         index = source.index("if FORMAL_DISPOSITION_PREFIX not in ascii_upper:")
-        window = source[index : index + 220]
+        window = source[index : source.index("continue", index) + len("continue")]
         assert "if resembles_prefix:" in window
         assert "return MALFORMED_FORMAL_DISPOSITION" in window
         assert window.index("return MALFORMED_FORMAL_DISPOSITION") < window.index("continue")
+        # RE-ANCHORED, and TIGHTER: XASSET-0058 §D.2's candidate rule is reachable ONLY on this
+        # branch -- so an accepted line can never reach it -- and it, too, precedes the
+        # ``continue`` that would otherwise skip the line as ABSENT.
+        assert f"if {XASSET_0058_ADDED_DEFINITION}(ascii_upper):" in window
+        assert window.index(XASSET_0058_ADDED_DEFINITION) < window.index("continue")
+        assert source.count(f"{XASSET_0058_ADDED_DEFINITION}(") == 1
 
     def test_the_resemblance_test_is_a_strict_superset_of_the_canonical_one(self):
         """Proved by execution over the real corpus, not by reading the expression."""
@@ -2308,26 +2389,32 @@ class TestPrefixBoundaryCorrectionShape:
                         assert resembles, repr(line)
 
     def test_the_correction_added_no_module_level_name(self):
-        def names(source: str) -> set[str]:
-            found = set()
-            for node in ast.parse(source).body:
-                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                    found.add(node.name)
-                elif isinstance(node, ast.Assign):
-                    found.update(t.id for t in node.targets if isinstance(t, ast.Name))
-                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-                    found.add(node.target.id)
-            return found
-
-        assert names(_live_source()) == names(
+        reviewed = _module_level_names(
             _git("show", f"{SIXTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}")
         )
+        # PRESERVED, over the IMMUTABLE range: the correction ITSELF added no module-level name.
+        assert _module_level_names(_unit_base_source()) == reviewed
+        # RE-ANCHORED, and TIGHTER: the live delta is EXACTLY XASSET-0058 §F.2's authorized
+        # four, named one by one -- a FIFTH addition fails, and a removal fails too.
+        live = _module_level_names(_live_source())
+        assert live - reviewed == XASSET_0058_ADDED_MODULE_NAMES, sorted(live - reviewed)
+        assert reviewed - live == set(), sorted(reviewed - live)
 
     def test_only_the_parser_changed_since_the_reviewed_head(self):
         reviewed = _toplevel(_git("show", f"{SIXTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}"))
+        # PRESERVED, over the IMMUTABLE range: only the parser changed at the time.
+        base = _toplevel(_unit_base_source())
+        assert {n for n in base if reviewed.get(n) != base[n]} == {
+            "parse_formal_disposition"
+        }
+        # RE-ANCHORED: live additionally carries XASSET-0058 §F.2's ONE authorized
+        # helper, and nothing else -- every other definition is still byte-identical.
         live = _toplevel(_live_source())
         changed = {n for n in live if reviewed.get(n) != live[n]}
-        assert changed == {"parse_formal_disposition"}, sorted(changed)
+        assert changed == {
+            "parse_formal_disposition",
+            XASSET_0058_ADDED_DEFINITION,
+        }, sorted(changed)
 
     def test_the_call_site_count_is_unchanged(self):
         assert len(_call_sites(_live_source())) == 3
@@ -2366,8 +2453,17 @@ class TestTheScopeBoundaryHolds:
         assert not (set(base) - set(live)), sorted(set(base) - set(live))
 
     def test_the_only_addition_is_the_single_sentinel_type(self):
-        base, live = _toplevel(_base_source()), _toplevel(_live_source())
-        assert sorted(set(live) - set(base)) == ["_MalformedFormalDisposition"]
+        base = _toplevel(_base_source())
+        # PRESERVED, over the IMMUTABLE range: XASSET-0056's own only addition was the sentinel.
+        assert sorted(set(_toplevel(_unit_base_source())) - set(base)) == [
+            "_MalformedFormalDisposition"
+        ]
+        # RE-ANCHORED: XASSET-0058 §F.2 adds exactly ONE further definition -- its authorized
+        # helper -- so the live addition set is exactly those two, named, and no third.
+        live = _toplevel(_live_source())
+        assert sorted(set(live) - set(base)) == sorted(
+            ["_MalformedFormalDisposition", XASSET_0058_ADDED_DEFINITION]
+        )
 
     @staticmethod
     def _module_level_assignments(source: str) -> set[str]:
@@ -2387,10 +2483,17 @@ class TestTheScopeBoundaryHolds:
         The separator tuple and the category vocabulary both live INLINE inside the parser,
         which is an already-permitted surface.
         """
-        new = self._module_level_assignments(_live_source()) - self._module_level_assignments(
-            _base_source()
-        )
-        assert new == {"MALFORMED_FORMAL_DISPOSITION"}, sorted(new)
+        base = self._module_level_assignments(_base_source())
+        # PRESERVED, over the IMMUTABLE range: XASSET-0056 introduced only the sentinel binding.
+        assert self._module_level_assignments(_unit_base_source()) - base == {
+            "MALFORMED_FORMAL_DISPOSITION"
+        }
+        # RE-ANCHORED: XASSET-0058 §F.2 adds exactly the three DERIVED constants its authorized
+        # helper reads -- named one by one, so a fourth smuggled constant still fails.
+        new = self._module_level_assignments(_live_source()) - base
+        assert new == {"MALFORMED_FORMAL_DISPOSITION"} | (
+            XASSET_0058_ADDED_MODULE_NAMES - {XASSET_0058_ADDED_DEFINITION}
+        ), sorted(new)
 
     @pytest.mark.parametrize(
         "banned",
@@ -2443,14 +2546,25 @@ class TestTheScopeBoundaryHolds:
         assert holders == self.PERMITTED - {"parse_formal_disposition"}
 
     def test_no_new_helper_function_was_introduced_at_all(self):
-        """The ceiling is ONE; this correction introduces ZERO, which is strictly smaller."""
+        """XASSET-0056's ceiling was ONE and it introduced ZERO.
+
+        RE-ANCHORED: XASSET-0058 §F.2 authorizes exactly ONE narrowly devoted
+        candidate-recognition helper, and only on proof that it is smaller and clearer than
+        inline logic. The ceiling is therefore still ONE and it is now exactly spent -- so a
+        SECOND helper fails here, which the superseded ``== set()`` form could not distinguish
+        from the first.
+        """
         def funcs(src):
             return {
                 n.name for n in ast.walk(ast.parse(src))
                 if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
             }
-        new = funcs(_live_source()) - funcs(_base_source())
-        assert {n for n in new if not n.startswith("__")} == set(), sorted(new)
+        base = funcs(_base_source())
+        # PRESERVED, over the IMMUTABLE range.
+        assert {n for n in funcs(_unit_base_source()) - base if not n.startswith("__")} == set()
+        new = {n for n in funcs(_live_source()) - base if not n.startswith("__")}
+        assert new == {XASSET_0058_ADDED_DEFINITION}, sorted(new)
+        assert len(new) <= 1  # XASSET-0058 §F.2's ceiling, stated as the ceiling
 
     def test_no_general_purpose_parsing_framework_was_created(self):
         live = _live_source()
@@ -2692,9 +2806,34 @@ class TestTheGovernanceRecord:
         assert DECISION_ID in yaml.safe_dump(ws)
 
     def test_the_register_carries_the_new_module_identity(self):
+        """RE-ANCHORED by XASSET-0057 §F.3 and XASSET-0058 §G.4 -- and INVERTED on purpose.
+
+        XASSET-0056 recorded its own corrected identity in the register. A LATER accepted
+        decision withdraws that for this generation: §F.3 makes the parser-corrected identity
+        **role 3**, "derived at the parser correction's own merge ... **never predicted here**"
+        and "**never bound directly**; it reaches the register only through role 4's own
+        derivation and proof". XASSET-0058 §G.4 repeats it: the corrected SHA-256 is computed
+        once, after every authorized byte has stabilized, and "is stated nowhere in advance".
+
+        Writing the live digest into the register would therefore VIOLATE the governing rule, so
+        this test now enforces that rule mechanically instead. It is strictly harder to satisfy:
+        the superseded form was satisfied by any occurrence anywhere; this one fails if the value
+        appears at all, and additionally proves the correction really landed.
+        """
         live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+        # The correction genuinely landed: the live module is no longer the vulnerable role 2.
+        assert live != XASSET_0058_BASE_MODULE_SHA256
+        assert (
+            hashlib.sha256(_unit_base_source().encode("utf-8")).hexdigest()
+            == XASSET_0058_BASE_MODULE_SHA256
+        )
+        # Role 2 is retained as a PERMANENT NEGATIVE PIN -- adverse history, never discarded.
         flat = WORKSTREAMS.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
-        assert live in flat
+        assert XASSET_0058_BASE_MODULE_SHA256 in flat
+        # Role 3 is NOT predicted anywhere in the governed record.
+        assert live not in flat
+        for path in (CATALOG, DECISION):
+            assert live not in path.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
 
     def test_the_superseded_module_identity_is_retained_as_a_negative_pin(self):
         flat = WORKSTREAMS.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
@@ -2731,8 +2870,14 @@ class TestTheGovernanceRecord:
         """The decision's §H table carries the bound value, every superseded one, and now."""
         flat = DECISION.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
         live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+        # RE-ANCHORED by XASSET-0057 §F.3 / XASSET-0058 §G.4: role 3 is derived at the
+        # correction's own merge and NEVER predicted, so ``live`` is no longer among the values
+        # this decision may record. Every superseded identity it already carries is retained,
+        # and the vulnerable role 2 is now asserted here too rather than merely implied.
+        assert live not in flat
         for pin in (
             BASE_MODULE_SHA256,
+            XASSET_0058_BASE_MODULE_SHA256,
             hashlib.sha256(
                 _git("show", f"{REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
             ).hexdigest(),
@@ -2745,7 +2890,6 @@ class TestTheGovernanceRecord:
             hashlib.sha256(
                 _git("show", f"{SIXTH_REVIEWED_HEAD_SHA}:{MODULE_RELPATH}").encode("utf-8")
             ).hexdigest(),
-            live,
         ):
             assert pin in flat, pin
 

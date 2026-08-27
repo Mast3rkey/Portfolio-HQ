@@ -150,6 +150,60 @@ def _content_at(commit: str, relpath: str) -> bytes:
     ).stdout
 
 
+# -------------------------------------------------------------------------------------
+# RE-ANCHORED by the XASSET-0059 Lifecycle B parser correction (authorized by XASSET-0058)
+# -------------------------------------------------------------------------------------
+#: This filing is design-only, so every defect it REPRODUCES was reproduced against the live
+#: merged bytes -- the uncorrected ones. XASSET-0058 §F then authorized exactly one unit to
+#: correct them. Each reproduction is therefore re-anchored to the IMMUTABLE commit it was
+#: really about, so the recorded defect stays reproducible for ever instead of evaporating the
+#: moment it is fixed; the CLOSURE of the same cells is proved separately, against the real
+#: corrected parser, by that unit's own suite.
+XASSET_0058_MERGE_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+
+
+def _module_at(sha: str):
+    """The production module exactly as it stood at ``sha``. Compiled in memory; writes nothing."""
+    import importlib.util
+    import sys
+
+    key = f"_authorization_module_at_{sha[:12]}"
+    if key in sys.modules:
+        return sys.modules[key]
+    source = _content_at(sha, MODULE_RELPATH).decode("utf-8")
+    spec = importlib.util.spec_from_loader(key, loader=None)
+    module = importlib.util.module_from_spec(spec)
+    module.__file__ = str(ROOT / MODULE_RELPATH)
+    sys.modules[key] = module
+    try:
+        exec(compile(source, f"<{key}>", "exec"), module.__dict__)
+    except BaseException:
+        del sys.modules[key]
+        raise
+    return module
+
+
+#: The UNCORRECTED parser -- the exact bytes this filing measured.
+BASE_AUTH = _module_at(XASSET_0058_MERGE_SHA)
+
+
+def _seams_at_base():
+    """Drive the REAL seam runners against the BASE module's own real seams."""
+    import contextlib
+
+    @contextlib.contextmanager
+    def _swap():
+        previous = _SEAMS_MODULE.A
+        _SEAMS_MODULE.A = BASE_AUTH
+        try:
+            yield
+        finally:
+            _SEAMS_MODULE.A = previous
+
+    return _swap()
+
+
+
 def _flat(text: str) -> str:
     """Collapse whitespace so prose assertions survive line wrapping."""
     return re.sub(r"\s+", " ", text)
@@ -504,9 +558,19 @@ class TestAuthorityWithheld:
 
 class TestThisFilingChangesNoProductionByte:
     def test_the_load_bearing_module_is_byte_identical_to_its_base(self):
+        """RE-ANCHORED to THIS FILING's own immutable range.
+
+        "This filing changes no production byte" is a claim about
+        ``THIS_UNIT_BASE_SHA .. XASSET_0058_MERGE_SHA``. Measured against the working tree it
+        silently became a claim that no LATER unit may change one either -- which would forbid
+        the parser correction XASSET-0058 §F exists to authorize.
+        """
         assert _blob_at(THIS_UNIT_BASE_SHA, MODULE_RELPATH) == MERGED_MODULE_BLOB
-        live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
-        assert live == MERGED_MODULE_SHA256
+        assert _blob_at(XASSET_0058_MERGE_SHA, MODULE_RELPATH) == MERGED_MODULE_BLOB
+        merged = hashlib.sha256(
+            _content_at(XASSET_0058_MERGE_SHA, MODULE_RELPATH)
+        ).hexdigest()
+        assert merged == MERGED_MODULE_SHA256
 
     def test_the_structural_bindings_are_unmoved(self):
         assert AUTH.AUTHORIZING_DECISION == AUTHORIZING_DECISION
@@ -556,13 +620,19 @@ class TestThisFilingChangesNoProductionByte:
 
     def test_this_filing_touches_no_load_bearing_path(self):
         """Every load-bearing path is byte-identical between the base and the working tree."""
+        # RE-ANCHORED: proved over THIS filing's own immutable range. XASSET-0058 §F then
+        # authorizes exactly ONE later unit to change exactly ONE of these paths, so every
+        # OTHER load-bearing path is additionally still pinned against the working tree.
         for relpath in AUTH.LOAD_BEARING_RELPATHS:
-            p = ROOT / relpath
-            if not p.exists():
-                continue
             base_blob = _blob_at(THIS_UNIT_BASE_SHA, relpath)
-            live_blob = _git("hash-object", str(p))
-            assert base_blob == live_blob, f"load-bearing path changed: {relpath}"
+            merged_blob = _blob_at(XASSET_0058_MERGE_SHA, relpath)
+            assert base_blob == merged_blob, f"load-bearing path changed: {relpath}"
+            p = ROOT / relpath
+            if not p.exists() or relpath == MODULE_RELPATH:
+                continue
+            assert base_blob == _git("hash-object", str(p)), (
+                f"load-bearing path changed: {relpath}"
+            )
 
 
 # =====================================================================================
@@ -735,8 +805,12 @@ class TestTheDisclosedFindingIsReproducedAndBounded:
     ):
         """A prefix-interior homoglyph makes the adverse line skip and a later approval win."""
         body = _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
-        assert AUTH.parse_formal_disposition(body) == (
+        assert BASE_AUTH.parse_formal_disposition(body) == (
             "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+        ), label
+        # RE-ANCHORED: and the REAL corrected parser refuses it, by sentinel IDENTITY.
+        assert (
+            AUTH.parse_formal_disposition(body) is AUTH.MALFORMED_FORMAL_DISPOSITION
         ), label
 
     def test_the_canonical_adverse_line_still_wins(self):
@@ -774,8 +848,12 @@ class TestTheDisclosedFindingIsReproducedAndBounded:
         """Seam 1 -- `_derive_pr337_actor_ratification`: the tampered body passes the parser gate
         exactly as a clean approval does, so execution proceeds past it."""
         body = _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
-        recorder = _SEAMS.run_consumer_one(body, monkeypatch)
+        with _seams_at_base():
+            recorder = _SEAMS.run_consumer_one(body, monkeypatch)
         assert any(c.startswith("reviews:") for c in recorder.calls), (label, recorder.calls)
+        # RE-ANCHORED: the REAL corrected seam stops the same body at the parser gate.
+        corrected = _SEAMS.run_consumer_one(body, monkeypatch)
+        assert not any(c.startswith("reviews:") for c in corrected.calls), label
 
     def test_consumer_one_stops_on_the_untampered_adverse_body(self, monkeypatch):
         """Seam 1 control: the canonical adverse first line does NOT pass the gate."""
@@ -856,12 +934,17 @@ class TestTheParserCorrectionIsAConjunctivePrerequisite:
 
     def test_the_defective_identity_pinned_is_the_one_that_is_actually_defective(self):
         """Non-vacuity: the digest named as the negative pin is the live, reproducing module."""
-        live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
-        assert live == MERGED_MODULE_SHA256
+        base = hashlib.sha256(_content_at(XASSET_0058_MERGE_SHA, MODULE_RELPATH)).hexdigest()
+        assert base == MERGED_MODULE_SHA256
         body = _adverse_then_approval(_attack_first_line("O", 11, "\u039f"))
-        assert AUTH.parse_formal_disposition(body) == (
+        assert BASE_AUTH.parse_formal_disposition(body) == (
             "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
         ), "the pinned identity must be the one that actually fails open"
+        # RE-ANCHORED: the pin stays ADVERSE HISTORY -- the live module has moved off it, which
+        # is what proves the XASSET-0058-authorized correction actually landed.
+        live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
+        assert live != MERGED_MODULE_SHA256
+        assert AUTH.parse_formal_disposition(body) is AUTH.MALFORMED_FORMAL_DISPOSITION
 
     def test_all_eight_prerequisite_conditions_are_enumerated(self, decision_text):
         f = _flat(_section(decision_text, "F"))
@@ -909,9 +992,9 @@ class TestTheParserCorrectionIsAConjunctivePrerequisite:
 
     def test_the_module_is_untouched_by_this_correction(self):
         """Structural: the absolute boundary held through the correction too."""
+        # RE-ANCHORED to this filing's own immutable range, for the same reason as above.
         assert _blob_at(THIS_UNIT_BASE_SHA, MODULE_RELPATH) == MERGED_MODULE_BLOB
-        live = _git("hash-object", str(ROOT / MODULE_RELPATH))
-        assert live == MERGED_MODULE_BLOB
+        assert _blob_at(XASSET_0058_MERGE_SHA, MODULE_RELPATH) == MERGED_MODULE_BLOB
 
     def test_the_single_base_rule_has_no_competing_absolute(self, decision_text):
         """The reviewer's specific objection: no absolute rule followed by a generic exception."""
@@ -1088,13 +1171,18 @@ class TestTheModuleIdentityChainIsOrderedAndClosed:
 
     def test_role_two_is_the_actually_defective_identity(self):
         """Non-vacuity: role 2's digest is the live module that really fails open."""
-        assert hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest() == (
-            MERGED_MODULE_SHA256
-        )
+        assert hashlib.sha256(
+            _content_at(XASSET_0058_MERGE_SHA, MODULE_RELPATH)
+        ).hexdigest() == MERGED_MODULE_SHA256
         body = _adverse_then_approval(_attack_first_line("O", 11, "\u039f"))
-        assert AUTH.parse_formal_disposition(body) == (
+        assert BASE_AUTH.parse_formal_disposition(body) == (
             "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
         )
+        # RE-ANCHORED: role 2 is adverse history; the live module is no longer it.
+        assert hashlib.sha256(
+            (ROOT / MODULE_RELPATH).read_bytes()
+        ).hexdigest() != MERGED_MODULE_SHA256
+        assert AUTH.parse_formal_disposition(body) is AUTH.MALFORMED_FORMAL_DISPOSITION
 
     def test_roles_three_and_four_are_derived_never_predicted(self, decision_text):
         f = _flat(_section(decision_text, "F"))
@@ -1251,9 +1339,22 @@ class TestTheDefectIsTreatedAsAFamily:
 
     @staticmethod
     def _bypasses(first_line: str) -> bool:
-        return AUTH.parse_formal_disposition(
+        """RE-ANCHORED to the BASE parser -- the exact bytes this filing measured.
+
+        Re-measuring the CORRECTED parser here would report zero hits and silently turn every
+        family count below into a claim about nothing. The corrected refusal is asserted
+        alongside each count instead, by ``_now_refused``.
+        """
+        return BASE_AUTH.parse_formal_disposition(
             _adverse_then_approval(first_line)
         ) == "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+
+    @staticmethod
+    def _now_refused(first_line: str) -> bool:
+        """The same cell, through the REAL corrected parser: fail-closed MALFORMED."""
+        return AUTH.parse_formal_disposition(
+            _adverse_then_approval(first_line)
+        ) is AUTH.MALFORMED_FORMAL_DISPOSITION
 
     #: The 17 non-space positions of the `FORMAL DISPOSITION` prefix.
     PREFIX_POSITIONS = tuple(
@@ -1269,6 +1370,10 @@ class TestTheDefectIsTreatedAsAFamily:
             if self._bypasses(_CANONICAL_ADVERSE[:i] + _CANONICAL_ADVERSE[i + 1 :])
         ]
         assert len(hits) == 17, hits
+        assert all(
+            self._now_refused(_CANONICAL_ADVERSE[:i] + _CANONICAL_ADVERSE[i + 1 :])
+            for i in self.PREFIX_POSITIONS
+        )
 
     def test_ascii_substitution_bypasses_at_every_position(self):
         hits = []
@@ -1277,6 +1382,12 @@ class TestTheDefectIsTreatedAsAFamily:
             if self._bypasses(_replace_at(_CANONICAL_ADVERSE, i, r)):
                 hits.append(i)
         assert len(hits) == 17, hits
+        assert all(
+            self._now_refused(
+                _replace_at(_CANONICAL_ADVERSE, i, "X" if _CANONICAL_ADVERSE[i] != "X" else "Y")
+            )
+            for i in self.PREFIX_POSITIONS
+        )
 
     def test_ascii_insertion_bypasses_at_sixteen_of_seventeen(self):
         """Position 0 is the measured exception: inserting before the `F` leaves the canonical
@@ -1304,6 +1415,13 @@ class TestTheDefectIsTreatedAsAFamily:
             )
         ]
         assert len(pairs) == 17 and len(hits) == 17, (pairs, hits)
+        assert all(
+            self._now_refused(
+                _CANONICAL_ADVERSE[:i] + _CANONICAL_ADVERSE[i + 1]
+                + _CANONICAL_ADVERSE[i] + _CANONICAL_ADVERSE[i + 2 :]
+            )
+            for i in pairs
+        )
 
     def test_confusable_substitution_bypasses_at_every_position(self):
         confusables = {
@@ -1319,6 +1437,12 @@ class TestTheDefectIsTreatedAsAFamily:
             )
         ]
         assert len(covered) == 17 and len(hits) == 17, (covered, hits)
+        assert all(
+            self._now_refused(
+                _replace_at(_CANONICAL_ADVERSE, i, confusables[_CANONICAL_ADVERSE[i]])
+            )
+            for i in covered
+        )
 
     def test_ordinary_prose_is_not_treated_as_a_formal_record(self):
         """The boundary's other side: prose must not become a formal candidate."""
@@ -2405,19 +2529,27 @@ class TestThePositionZeroInsertionFailsClosedAsMalformed:
             _adverse_then_approval(self.POSITION_ZERO_LINE)
         )
         for label, ascii_char, index, homoglyph in _HOMOGLYPH_ATTACKS:
-            bypassing = AUTH.parse_formal_disposition(
-                _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
-            )
+            body = _adverse_then_approval(_attack_first_line(ascii_char, index, homoglyph))
+            bypassing = BASE_AUTH.parse_formal_disposition(body)
             assert bypassing == "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE", label
             assert zero != bypassing, label
+            # RE-ANCHORED: after the correction the two classes CONVERGE on fail-closed, which
+            # is the point of the correction -- and both are still refused, never approving.
+            assert (
+                AUTH.parse_formal_disposition(body) is AUTH.MALFORMED_FORMAL_DISPOSITION
+            ), label
 
     def test_a_nonzero_insertion_does_break_the_prefix_and_bypasses(self):
         """Control: insertion anywhere INSIDE the prefix behaves differently."""
         broken = _CANONICAL_ADVERSE[:5] + "X" + _CANONICAL_ADVERSE[5:]
         assert _CANONICAL_ADVERSE not in broken
-        assert AUTH.parse_formal_disposition(_adverse_then_approval(broken)) == (
+        assert BASE_AUTH.parse_formal_disposition(_adverse_then_approval(broken)) == (
             "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
         )
+        # RE-ANCHORED: the corrected parser refuses it.
+        assert AUTH.parse_formal_disposition(
+            _adverse_then_approval(broken)
+        ) is AUTH.MALFORMED_FORMAL_DISPOSITION
 
     # ---- and the decision must STATE the corrected mechanism, not the superseded one ----
 

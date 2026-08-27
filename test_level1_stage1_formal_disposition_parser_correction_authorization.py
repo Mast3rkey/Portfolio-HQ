@@ -23,11 +23,13 @@ state where ``HEAD`` equals ``origin/main``.
 from __future__ import annotations
 
 import ast
+import contextlib
 import datetime
 import hashlib
 import inspect
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -97,6 +99,20 @@ CATALOG = ROOT / "governance" / "decisions.yaml"
 WORKSTREAMS = ROOT / "operations" / "WORKSTREAMS.yaml"
 PRODUCTION_MODULE_RELPATH = "level1_stage1_execution_authorization.py"
 
+# -------------------------------------------------------------------------------------
+# RE-ANCHORED by the XASSET-0058 Lifecycle B parser correction
+# -------------------------------------------------------------------------------------
+#: XASSET-0058 is design-only, so every claim below was measured against the LIVE merged bytes
+#: -- which were the uncorrected ones at the time. The Lifecycle B implementation this decision
+#: authorizes lawfully corrects them, so each such measurement is re-anchored to the IMMUTABLE
+#: commit it was really about: this decision's own normal-merge commit, whose module blob is the
+#: vulnerable identity. The reproduction therefore keeps proving exactly what it proved, over a
+#: range that can never move, and the CLOSURE of the same cells is proved separately against the
+#: real corrected parser by the Lifecycle B suite.
+XASSET_0058_MERGE_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+
+
+
 
 # =====================================================================================
 # Small, explicit git helpers -- immutable ranges only, never a moving ref
@@ -121,6 +137,50 @@ def _blob_at(sha: str, relpath: str) -> str:
     return _git("rev-parse", f"{sha}:{relpath}").strip()
 
 
+def _module_at(sha: str):
+    """The production module exactly as it stood at ``sha``. Immutable, and never the live file.
+
+    Compiled straight from the git blob in memory: this suite writes NOTHING to the filesystem,
+    so loading the historical bytes may not either.
+    """
+    import importlib.util
+
+    key = f"_authorization_module_at_{sha[:12]}"
+    if key in sys.modules:
+        return sys.modules[key]
+    source = _content_at(sha, PRODUCTION_MODULE_RELPATH).decode("utf-8")
+    spec = importlib.util.spec_from_loader(key, loader=None)
+    module = importlib.util.module_from_spec(spec)
+    module.__file__ = str(ROOT / PRODUCTION_MODULE_RELPATH)
+    sys.modules[key] = module
+    try:
+        exec(compile(source, f"<{key}>", "exec"), module.__dict__)
+    except BaseException:
+        del sys.modules[key]
+        raise
+    return module
+
+
+#: The UNCORRECTED parser -- the exact bytes XASSET-0058 measured. Every reproduction below runs
+#: against this, never against the live file, so the defect it records stays reproducible for
+#: ever rather than evaporating the moment the defect is fixed.
+BASE_AUTH = _module_at(XASSET_0058_MERGE_SHA)
+
+
+@contextlib.contextmanager
+def _seams_at_base():
+    """Drive the REAL seam runners against the BASE module's own real seams.
+
+    The runners in the XASSET-0056 suite are written against its module-level ``A``. Rebinding
+    that name is what makes the historical seam evidence reproducible: it is the same real
+    runner code and the same real consumers, executed over the uncorrected bytes.
+    """
+    previous = _SEAMS_MODULE.A
+    _SEAMS_MODULE.A = BASE_AUTH
+    try:
+        yield
+    finally:
+        _SEAMS_MODULE.A = previous
 def _tracked(pattern: str) -> tuple[str, ...]:
     """The CI-equivalent tracked-file universe. A recursive glob silently omits dot-directories."""
     return tuple(p for p in _git("ls-files", pattern).split("\n") if p)
@@ -294,8 +354,12 @@ def _integrated_outcome(line: str, *, with_candidate_rule: bool) -> str:
     body = f"{line}\n\n{PREFIX} {APPROVE}\n"
     if with_candidate_rule and hook_is_reachable(line) and is_candidate(line):
         return SAFE_MALFORMED
-    result = AUTH.parse_formal_disposition(body)
-    if result is AUTH.MALFORMED_FORMAL_DISPOSITION:
+    # RE-ANCHORED: the substrate is the UNCORRECTED parser, so ``with_candidate_rule=False``
+    # keeps reproducing the live-at-the-time defect and ``True`` keeps modelling the decided
+    # boundary on top of it. The real corrected parser is proved to AGREE with the ``True``
+    # column, cell for cell, by the Lifecycle B suite.
+    result = BASE_AUTH.parse_formal_disposition(body)
+    if result is BASE_AUTH.MALFORMED_FORMAL_DISPOSITION:
         return SAFE_MALFORMED
     if result is None:
         return "ABSENT"
@@ -313,8 +377,15 @@ def _adverse_then_approval(label: str) -> str:
 
 
 def _classify(body: str) -> str:
-    r = AUTH.parse_formal_disposition(body)
-    if r is AUTH.MALFORMED_FORMAL_DISPOSITION:
+    """RE-ANCHORED: the UNCORRECTED parser this decision actually measured.
+
+    XASSET-0058 is design-only, so ``AUTH`` was the uncorrected module when this suite was
+    written. Pointing this at ``BASE_AUTH`` keeps every reproduction below measuring exactly the
+    bytes it was written about, instead of silently re-measuring whatever the module later
+    becomes -- which would make the recorded defect vanish rather than stay proved.
+    """
+    r = BASE_AUTH.parse_formal_disposition(body)
+    if r is BASE_AUTH.MALFORMED_FORMAL_DISPOSITION:
         return "MALFORMED"
     if r is None:
         return "ABSENT"
@@ -435,6 +506,11 @@ class TestTheDefectFamilyReproducesAtTheParser:
     def test_position_zero_returns_the_sentinel_OBJECT_not_a_literal(self):
         """SS-C pins it by IDENTITY, so a future refactor cannot reproduce it accidentally."""
         body = _adverse_then_approval("X" + CANON_LABEL)
+        assert (
+            BASE_AUTH.parse_formal_disposition(body)
+            is BASE_AUTH.MALFORMED_FORMAL_DISPOSITION
+        )
+        # ... and the corrected parser keeps it MALFORMED, by IDENTITY, not merely "not approving".
         assert AUTH.parse_formal_disposition(body) is AUTH.MALFORMED_FORMAL_DISPOSITION
 
     def test_position_zero_leaves_the_canonical_prefix_intact_as_a_substring(self):
@@ -446,7 +522,9 @@ class TestTheDefectFamilyReproducesAtTheParser:
     def test_a_bypassing_body_really_yields_the_APPROVING_verdict(self):
         """Not merely 'not adverse': the later approval actually wins."""
         body = _adverse_then_approval("FORMAL DISPOSITON")  # one deletion
-        assert AUTH.parse_formal_disposition(body) == APPROVE
+        assert BASE_AUTH.parse_formal_disposition(body) == APPROVE
+        # RE-ANCHORED: and the corrected parser refuses that exact body, fail-closed.
+        assert AUTH.parse_formal_disposition(body) is AUTH.MALFORMED_FORMAL_DISPOSITION
 
 
 # ---- the three REAL consumer seams --------------------------------------------------
@@ -480,27 +558,30 @@ class TestTheDefectFamilyReachesEveryRealConsumerSeam:
     def test_seam_one_is_reached(self, family, index, label, monkeypatch):
         """Seam 1 -- ``_derive_pr337_actor_ratification``: the tampered body passes the parser
         gate exactly as a clean approval does, so execution proceeds past it."""
-        recorder = _SEAMS.run_consumer_one(_adverse_then_approval(label), monkeypatch)
+        with _seams_at_base():
+            recorder = _SEAMS.run_consumer_one(_adverse_then_approval(label), monkeypatch)
         assert any(c.startswith("reviews:") for c in recorder.calls), (family, index)
 
     @pytest.mark.parametrize("family,index,label", _BYPASSING,
                              ids=[f"{f}-{i}" for f, i, _ in _BYPASSING])
     def test_seam_two_does_not_refuse(self, family, index, label):
-        assert not _seam_two_refused(_SEAMS.run_consumer_two(_adverse_then_approval(label)))
+        with _seams_at_base():
+            errors = _SEAMS.run_consumer_two(_adverse_then_approval(label))
+        assert not _seam_two_refused(errors)
 
     @pytest.mark.parametrize("family,index,label", _BYPASSING,
                              ids=[f"{f}-{i}" for f, i, _ in _BYPASSING])
     def test_seam_three_does_not_refuse(self, family, index, label):
-        assert not _seam_three_refused(
-            _SEAMS.run_consumer_three(_adverse_then_approval(label), "COMMENTED")
-        )
+        with _seams_at_base():
+            errors = _SEAMS.run_consumer_three(_adverse_then_approval(label), "COMMENTED")
+        assert not _seam_three_refused(errors)
 
     @pytest.mark.parametrize("family,index,label", _BYPASSING,
                              ids=[f"{f}-{i}" for f, i, _ in _BYPASSING])
     def test_seam_three_does_not_refuse_under_a_native_APPROVED_state(self, family, index, label):
-        assert not _seam_three_refused(
-            _SEAMS.run_consumer_three(_adverse_then_approval(label), "APPROVED")
-        )
+        with _seams_at_base():
+            errors = _SEAMS.run_consumer_three(_adverse_then_approval(label), "APPROVED")
+        assert not _seam_three_refused(errors)
 
     # ---- controls: the seams DO refuse the untampered adverse body ----
     def test_seam_one_stops_on_the_untampered_adverse_body(self, monkeypatch):
@@ -764,7 +845,7 @@ class TestTheDecidedBoundaryClosesTheWholeFamily:
             line = _render(l, PLAIN)
             if hook_is_reachable(line) and not superseded(line):
                 body = f"{line}\n\n{PREFIX} {APPROVE}\n"
-                if AUTH.parse_formal_disposition(body) == APPROVE:
+                if BASE_AUTH.parse_formal_disposition(body) == APPROVE:
                     open_cells.append((f, i, c))
         assert open_cells, "if nothing was fail-open the correction would be pointless"
         # every one of them was a COLON mutation, and every one is closed now
@@ -803,9 +884,13 @@ class TestTheDecidedBoundaryClosesTheWholeFamily:
             assert is_candidate(line), label
             assert _integrated_outcome(line, with_candidate_rule=True) == SAFE_MALFORMED, label
             body = f"{line}\n\n{PREFIX} {APPROVE}\n"
-            assert AUTH.parse_formal_disposition(body) == APPROVE, (
-                "the LIVE parser must still show the bypass this correction closes"
+            assert BASE_AUTH.parse_formal_disposition(body) == APPROVE, (
+                "the BASE parser must still show the bypass this correction closes"
             )
+            # RE-ANCHORED: and the corrected parser now refuses that exact body, fail-closed.
+            assert (
+                AUTH.parse_formal_disposition(body) is AUTH.MALFORMED_FORMAL_DISPOSITION
+            ), label
 
     def test_the_retained_fixed_representative_still_holds(self):
         """`MUTANTS` is SS-F.0.1's own measurement and is not discarded by the expansion."""
@@ -964,13 +1049,25 @@ class TestEveryCellIsRefusedAtEveryRealConsumerSeam:
         assert len(LIVE_MALFORMED_CELLS) > 0
 
     def test_the_live_parser_still_shows_the_defect_at_these_seams(self):
-        """Control: without the candidate rule the colon cells DO reach the seams and pass."""
+        """Control: without the candidate rule the colon cells DO reach the seams and pass.
+
+        RE-ANCHORED to the BASE seams. A control that silently re-measured the CORRECTED parser
+        would report ``reached == 0`` and turn this guard into a tautology instead of the
+        live-defect detector it is. The corrected refusal is proved separately, below.
+        """
         reached = 0
+        corrected_refused = 0
         for f, i, c, l in COLON_CELLS:
             body = f"{_render(l, PLAIN)}\n\n{PREFIX} {APPROVE}\n"
-            if not _seam_three_refused(_SEAMS.run_consumer_three(body, "COMMENTED")):
+            with _seams_at_base():
+                errors = _SEAMS.run_consumer_three(body, "COMMENTED")
+            if not _seam_three_refused(errors):
                 reached += 1
+            if _seam_three_refused(_SEAMS.run_consumer_three(body, "COMMENTED")):
+                corrected_refused += 1
         assert reached >= 30, reached
+        # RE-ANCHORED: every one of those same cells is refused at the REAL corrected seam.
+        assert corrected_refused == len(COLON_CELLS), (corrected_refused, len(COLON_CELLS))
 
 
 def _superseded_first_colon_is_candidate(line: str) -> bool:
@@ -1005,8 +1102,10 @@ class TestTheReviewFindingStaysReproducible:
         body = f"{line}\n\n{PREFIX} {APPROVE}\n"
         # the superseded rule did not even see them...
         assert _superseded_first_colon_is_candidate(line) is False
-        # ...so the LIVE parser returned the LATER APPROVAL, which is the whole defect.
-        assert AUTH.parse_formal_disposition(body) == APPROVE
+        # ...so the BASE parser returned the LATER APPROVAL, which is the whole defect.
+        assert BASE_AUTH.parse_formal_disposition(body) == APPROVE
+        # RE-ANCHORED: the REAL corrected parser refuses it, by sentinel IDENTITY.
+        assert AUTH.parse_formal_disposition(body) is AUTH.MALFORMED_FORMAL_DISPOSITION
         # the corrected rule sees them, and the outcome becomes fail-closed MALFORMED.
         assert is_candidate(line) is True
         assert _integrated_outcome(line, with_candidate_rule=True) == SAFE_MALFORMED
@@ -1546,14 +1645,48 @@ PROTECTED_RELPATHS = (
 
 
 class TestThisFilingChangesNoProductionByte:
+    """RE-ANCHORED to THIS FILING's own immutable range.
+
+    ``XASSET-0058`` changed no production byte -- a fact about **its own** range,
+    ``THIS_UNIT_BASE_SHA .. XASSET_0058_MERGE_SHA``. Written against ``HEAD`` it silently became
+    a claim that no LATER unit may change one either, which would forbid the very implementation
+    this decision exists to authorize. Every claim is now proved over that immutable range, and
+    the lawful Lifecycle B delta is pinned separately and exactly.
+    """
+
     @pytest.mark.parametrize("relpath", PROTECTED_RELPATHS)
     def test_the_path_is_byte_identical_to_the_base(self, relpath):
+        assert _blob_at(XASSET_0058_MERGE_SHA, relpath) == _blob_at(
+            THIS_UNIT_BASE_SHA, relpath
+        ), relpath
+
+    @pytest.mark.parametrize(
+        "relpath", [r for r in PROTECTED_RELPATHS if r != PRODUCTION_MODULE_RELPATH]
+    )
+    def test_every_other_protected_path_is_still_byte_identical_at_head(self, relpath):
+        """XASSET-0058 §F/§H authorize ONE production surface and no other. Pinned at HEAD."""
         assert _blob_at("HEAD", relpath) == _blob_at(THIS_UNIT_BASE_SHA, relpath), relpath
 
     def test_the_production_module_still_carries_the_vulnerable_identity(self):
-        digest = hashlib.sha256((ROOT / PRODUCTION_MODULE_RELPATH).read_bytes()).hexdigest()
-        assert digest == VULNERABLE_MODULE_SHA256
-        assert _blob_at("HEAD", PRODUCTION_MODULE_RELPATH) == VULNERABLE_MODULE_BLOB
+        """The vulnerable identity is preserved as ADVERSE HISTORY at this filing's own merge.
+
+        RE-ANCHORED: XASSET-0057 §F.3 makes ``12eab05e…`` **role 2** -- a permanent negative pin,
+        "never a bound end under any reading" -- and XASSET-0058 §G.3 forbids the Lifecycle B
+        implementation from rebinding, re-pinning or repairing it. So it is asserted where it is
+        genuinely immutable, and the live module is required to have MOVED OFF it, which is what
+        proves the authorized correction actually landed.
+        """
+        base = _content_at(XASSET_0058_MERGE_SHA, PRODUCTION_MODULE_RELPATH)
+        assert hashlib.sha256(base).hexdigest() == VULNERABLE_MODULE_SHA256
+        assert _blob_at(XASSET_0058_MERGE_SHA, PRODUCTION_MODULE_RELPATH) == (
+            VULNERABLE_MODULE_BLOB
+        )
+        live = hashlib.sha256((ROOT / PRODUCTION_MODULE_RELPATH).read_bytes()).hexdigest()
+        assert live != VULNERABLE_MODULE_SHA256
+        # XASSET-0057 §F.3 role 3 / XASSET-0058 §G.4: DERIVED at merge, never predicted here.
+        assert live not in (ROOT / DECISION_RELPATH).read_text(encoding="utf-8")
+        assert live not in WORKSTREAMS.read_text(encoding="utf-8")
+        assert live not in CATALOG.read_text(encoding="utf-8")
 
     def test_the_register_still_binds_the_stale_digest(self):
         assert STALE_BOUND_MODULE_SHA256 != VULNERABLE_MODULE_SHA256
@@ -1561,9 +1694,16 @@ class TestThisFilingChangesNoProductionByte:
         assert STALE_BOUND_MODULE_SHA256 in raw
 
     def test_the_load_bearing_boundary_is_unchanged_at_eighteen(self):
+        """The BOUNDARY is unchanged; only the parser's own bytes lawfully moved.
+
+        RE-ANCHORED: XASSET-0058 §H forbids re-pinning or extending ``LOAD_BEARING_RELPATHS``,
+        so the count and the exact membership are still asserted -- at HEAD, where it matters --
+        while the byte-identity claim moves to the immutable range it was really about.
+        """
         assert len(AUTH.LOAD_BEARING_RELPATHS) == 18
-        base = _content_at(THIS_UNIT_BASE_SHA, PRODUCTION_MODULE_RELPATH).decode("utf-8")
-        assert base == (ROOT / PRODUCTION_MODULE_RELPATH).read_text(encoding="utf-8")
+        assert tuple(AUTH.LOAD_BEARING_RELPATHS) == tuple(BASE_AUTH.LOAD_BEARING_RELPATHS)
+        base = _content_at(THIS_UNIT_BASE_SHA, PRODUCTION_MODULE_RELPATH)
+        assert base == _content_at(XASSET_0058_MERGE_SHA, PRODUCTION_MODULE_RELPATH)
 
     def test_this_module_adds_no_production_import_of_itself(self):
         """Nothing in production may import this test-only reference model."""
@@ -1571,9 +1711,32 @@ class TestThisFilingChangesNoProductionByte:
         assert Path(__file__).stem not in source
 
     def test_the_reference_model_is_defined_here_and_nowhere_in_production(self):
-        source = (ROOT / PRODUCTION_MODULE_RELPATH).read_text(encoding="utf-8")
+        """RE-ANCHORED, and INVERTED into the stronger claim.
+
+        While XASSET-0058 was design-only the model existed nowhere in production, and that is
+        asserted at this filing's own merge. Its Lifecycle B implementation then IMPLEMENTS the
+        decided boundary, so the interesting property is no longer absence -- it is AGREEMENT.
+        The real production parser is required to match this reference model on every cell of the
+        exhaustive matrix, in every governed presentation, which the absence check never proved.
+        """
+        base = _content_at(XASSET_0058_MERGE_SHA, PRODUCTION_MODULE_RELPATH).decode("utf-8")
         for name in ("is_candidate", "def osa(", "ADMISSIBLE_COLON_INDICES"):
-            assert name not in source, name
+            assert name not in base, name
+        # The model is still TEST-ONLY: production imports nothing from this module.
+        live = (ROOT / PRODUCTION_MODULE_RELPATH).read_text(encoding="utf-8")
+        assert Path(__file__).stem not in live
+        # ...and production now AGREES with it, cell for cell.
+        checked = 0
+        for _f, _i, _c, label in EXHAUSTIVE:
+            for form in (PLAIN, BOLD, INDENTED):
+                line = _render(label, form)
+                if not hook_is_reachable(line):
+                    continue
+                assert AUTH._is_formal_disposition_candidate(ascii_fold(line)) is is_candidate(
+                    line
+                ), (line, form)
+                checked += 1
+        assert checked >= len(EXHAUSTIVE), checked
 
 
 class TestStageOneRemainsFailClosed:
@@ -1960,7 +2123,12 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             DECISION_RELPATH,
             Path(__file__).name,
         }
-        tracked_changes = set(_git("diff", "--name-only", THIS_UNIT_BASE_SHA).split())
+        # RE-ANCHORED: this filing's own change set is its own IMMUTABLE range. Measured at
+        # HEAD it would forbid every later unit from touching any file this one touched.
+        allowed |= {PRODUCTION_MODULE_RELPATH}
+        tracked_changes = set(
+            _git("diff", "--name-only", THIS_UNIT_BASE_SHA, XASSET_0058_MERGE_SHA).split()
+        )
         untracked = set(_git("ls-files", "--others", "--exclude-standard").split())
         extra = (tracked_changes | untracked) - allowed
         assert not extra, sorted(extra)

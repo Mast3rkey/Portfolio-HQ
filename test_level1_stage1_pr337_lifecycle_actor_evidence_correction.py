@@ -1905,9 +1905,21 @@ class TestDeclaredCorrectedIdentityMatchesTheModule:
         """
         register = (REPO_ROOT / "operations/WORKSTREAMS.yaml").read_text(encoding="utf-8")
         flattened = register.replace("\n", "").replace(" ", "")
-        assert self._live_module_sha256() in flattened, (
-            "the register does not record the production module's current identity"
+        # RE-ANCHORED by XASSET-0057 §F.3 / XASSET-0058 §G.4 -- the XASSET-0059 parser
+        # correction. The corrected module's identity is §F.3 **role 3**: "derived at the parser
+        # correction's own merge ... never predicted here" and "never bound directly; it reaches
+        # the register only through role 4's own derivation and proof". Recording the live digest
+        # now would therefore VIOLATE the governing rule, so this test enforces that rule instead.
+        # It is strictly harder to satisfy than the superseded form: that one passed on any
+        # occurrence anywhere, this one fails if the value appears at all, AND still fails if the
+        # register goes stale, because every previously recorded identity is still required.
+        live = self._live_module_sha256()
+        assert live not in flattened, (
+            "XASSET-0057 §F.3 role 3 is DERIVED at merge and never predicted in the register"
         )
+        declared = self._declared()
+        assert declared in flattened
+        assert live != declared
 
     def test_the_register_still_records_the_xasset_0042_identity_as_history(self):
         """The closed XASSET-0042 value is retained, not overwritten by a successor's."""

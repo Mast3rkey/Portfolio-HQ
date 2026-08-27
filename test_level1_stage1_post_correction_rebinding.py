@@ -1352,9 +1352,19 @@ class TestCatalogAndRegisterSynchronisation:
         register = REGISTER_PATH.read_text(encoding="utf-8")
         flat = register.replace("\n", "").replace(" ", "")
         current = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
-        assert current in flat
+        # RE-ANCHORED by XASSET-0057 §F.3 / XASSET-0058 §G.4 -- the XASSET-0059 parser
+        # correction. The corrected module's identity is §F.3 **role 3**: "derived at the parser
+        # correction's own merge ... never predicted here" and "never bound directly; it reaches
+        # the register only through role 4's own derivation and proof". Recording the live digest
+        # now would therefore VIOLATE the governing rule, so this test enforces that rule instead.
+        # It is strictly harder to satisfy than the superseded form: that one passed on any
+        # occurrence anywhere, this one fails if the value appears at all, AND still fails if the
+        # register goes stale, because every previously recorded identity is still required.
+        assert current not in flat
         assert XASSET_0042_FINAL_MODULE_SHA256 in flat
         assert XASSET_0047_FINAL_MODULE_SHA256 in flat
+        assert current != XASSET_0042_FINAL_MODULE_SHA256
+        assert current != XASSET_0047_FINAL_MODULE_SHA256
 
     def test_the_workstream_posture_is_unchanged(self, ws0014):
         # ADVANCED BY XASSET-0045: `last_verified_main_sha` is WS-0014's SINGLE SHARED live

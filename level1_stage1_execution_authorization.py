@@ -1618,6 +1618,133 @@ class _MalformedFormalDisposition:
 MALFORMED_FORMAL_DISPOSITION = _MalformedFormalDisposition()
 
 
+# --------------------------------------------------------------------------------------
+# XASSET-0058 §D -- FORMAL-DISPOSITION CANDIDATE RECOGNITION
+# --------------------------------------------------------------------------------------
+#: XASSET-0057 §F.0 reproduced a fail-closed DEFECT, not a fail-open one -- and this is the
+#: correction XASSET-0058 §F authorizes for it. A single-character mutation of the canonical
+#: LABEL -- a dropped, swapped, transposed or confusable character -- breaks the exact substring
+#: ``FORMAL DISPOSITION:``, so the line was neither accepted nor recognized. It was SKIPPED as
+#: ABSENT, and a later, better-formed approval then won past an adverse first line -- exactly the
+#: XASSET-0053 §D.17 failure. Measured over the exhaustive printable-ASCII matrix, 9 450 of 9 792
+#: cells were open across the three governed presentations.
+#:
+#: The correction adds ONE bounded classification rule. It is CLASSIFICATION ONLY: it can produce
+#: no verdict, repair nothing, and its sole effect is ADDITIONAL fail-closed MALFORMED results
+#: (§D.6). Acceptance is UNCHANGED in every direction (§D.1) -- and that is structural, not
+#: promised: the rule is reachable only on the branch taken when the canonical prefix is ABSENT
+#: from the ASCII-folded line, so an accepted line can never reach it.
+
+#: §D.2 -- the swept region: the canonical prefix minus its terminating colon. DERIVED.
+_FORMAL_DISPOSITION_LABEL = FORMAL_DISPOSITION_PREFIX[:-1]
+
+#: §D.2 -- the edit budget, exactly one. A ``NUM-0001`` **class 5 provisional governance
+#: guardrail**, not an empirically calibrated value: it is the smallest budget that closes the
+#: entire measured family (budget 0 leaves all 9 450 open cells open; budget 1 leaves 0), and it
+#: is NOT claimed as a false-positive ceiling -- budgets 2 and 3 were also measured and also
+#: regress nothing, so 1 rests on sufficiency and restraint. Reviewed if a future measured
+#: mutation family needs two or more edits to reach, or if a prose regression ever appears at one.
+_FORMAL_DISPOSITION_EDIT_BUDGET = 1
+
+#: §D.2 item 2 -- the admissible colon indices, DERIVED from the label length and the budget and
+#: never written down as literals. A label within ``b`` edits of an ``n``-character canonical label
+#: has length ``n-b .. n+b``, so its TERMINATING colon sits at exactly one of those indices. At
+#: the governed values this is ``(17, 18, 19)``.
+_ADMISSIBLE_COLON_INDICES = tuple(
+    len(_FORMAL_DISPOSITION_LABEL) + offset
+    for offset in range(-_FORMAL_DISPOSITION_EDIT_BUDGET, _FORMAL_DISPOSITION_EDIT_BUDGET + 1)
+)
+
+
+def _is_formal_disposition_candidate(ascii_upper_line: str) -> bool:
+    """Is this line a FORMAL-DISPOSITION CANDIDATE -- a formal record with a tampered label?
+
+    XASSET-0058 §D.2. **Classification only.** Returns a plain ``bool`` and nothing else: it
+    never produces, repairs, normalizes, completes or coerces a verdict of any kind, and it reads
+    only the LABEL region before the colon -- never the verdict region (§D.6).
+
+    ``ascii_upper_line`` is the caller's own ``ascii_upper`` view -- the SAME ASCII-only case fold
+    acceptance uses (§D.2 item 3), so ASCII upper, lower and mixed case stay interchangeable and a
+    non-ASCII character never becomes an ASCII label letter. That fold is length-preserving and is
+    the identity on every character except ``a``-``z``, so slicing, the ASCII space/tab trimming
+    below and the ``**`` wrapper test all give identical results on the folded and raw views --
+    which is why the folded view alone is sufficient here.
+
+    The rule (§D.2):
+
+    1. **Projections.** ``revealed`` is the line with leading ASCII spaces and trailing ASCII
+       spaces and tabs removed; and, only when it is a balanced whole-line ``**`` pair, also its
+       enclosed text. Those are exactly the two governed wrapper forms of §D.1. **No third
+       projection exists**, and this rule recognizes no new wrapper.
+    2. **Indexed probing.** A projection yields a candidate at an admissible index ``k`` iff it
+       carries an ASCII colon at ``k`` and the label before it is within the edit budget of the
+       canonical label, under the restricted Damerau / optimal-string-alignment distance in which
+       deletion, insertion, substitution and ADJACENT TRANSPOSITION each cost exactly one.
+
+    The three indices are probed **directly**. Independent review ``5034171910`` found the
+    superseded rule -- which searched for the FIRST ASCII colon -- fail-open: an attacker-supplied
+    colon SUBSTITUTED or INSERTED into the label (``FORM:L DISPOSITION: ...``) made the first colon
+    land at an index whose prefix is far more than one edit from the canonical label, so the real
+    terminating colon at index 18 or 19 was never examined and the adverse line was skipped. 33 of
+    the 34 colon cells stayed open. Probing the admissible indices directly removes the dependency
+    on WHICH colon comes first: an inserted colon can no longer hide the real one.
+
+    The colon requirement itself is NOT weakened. Mutation of the TERMINATING colon -- deleting it
+    or replacing it -- carries no colon at any admissible index, so it yields no candidate and
+    stays ABSENT, exactly as today. That residual is decided, disclosed and deliberately preserved
+    by §D.8, and closing it is outside this correction's grant.
+
+    At most ``len(_ADMISSIBLE_COLON_INDICES)`` index probes and as many capped comparisons run per
+    projection, and the comparison itself is capped at the budget and never explored beyond it, so
+    the whole rule is **O(1) in the line's length**.
+    """
+    start = 0
+    while start < len(ascii_upper_line) and ascii_upper_line[start] == " ":
+        start += 1
+    end = len(ascii_upper_line)
+    while end > start and ascii_upper_line[end - 1] in " \t":
+        end -= 1
+    revealed = ascii_upper_line[start:end]
+
+    projections = [revealed]
+    if len(revealed) >= 4 and revealed.startswith("**") and revealed.endswith("**"):
+        projections.append(revealed[2:-2])  # §D.1's second governed wrapper. There is no third.
+
+    canonical = _FORMAL_DISPOSITION_LABEL
+    for projection in projections:
+        for index in _ADMISSIBLE_COLON_INDICES:
+            if index >= len(projection) or projection[index] != ":":
+                continue
+            label = projection[:index]
+            # --- restricted Damerau / OSA distance, CAPPED at the budget -------------------
+            # A comparison capped at one edit needs no distance matrix, and building one would
+            # be exactly the "explored beyond the cap" §D.2 forbids: a length difference above
+            # the cap already exceeds it, and at equal or adjacent lengths a single edit is
+            # decided entirely by the FIRST divergence.
+            gap = len(label) - len(canonical)
+            if abs(gap) > _FORMAL_DISPOSITION_EDIT_BUDGET:
+                continue
+            head = 0
+            while head < len(label) and head < len(canonical) and label[head] == canonical[head]:
+                head += 1
+            if gap == 0:
+                if (
+                    label[head:] == canonical[head:]  # identical: distance 0
+                    or label[head + 1:] == canonical[head + 1:]  # one substitution
+                    or (  # one ADJACENT transposition
+                        label[head:head + 2] == canonical[head:head + 2][::-1]
+                        and label[head + 2:] == canonical[head + 2:]
+                    )
+                ):
+                    return True
+            elif gap < 0:
+                if label[head:] == canonical[head + 1:]:  # one character deleted
+                    return True
+            elif label[head + 1:] == canonical[head:]:  # one character inserted
+                return True
+    return False
+
+
 def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposition":
     """Return the review's FORMAL DISPOSITION verdict, parsed exactly from the first formal line.
 
@@ -1742,6 +1869,16 @@ def parse_formal_disposition(body: str) -> "str | None | _MalformedFormalDisposi
             if resembles_prefix:
                 # Formal-looking to a reader, but not the canonical ASCII prefix: a
                 # tampered prefix FAILS CLOSED rather than being silently skipped.
+                return MALFORMED_FORMAL_DISPOSITION
+            # XASSET-0058 §D.2: ``resembles_prefix`` requires the canonical prefix to survive
+            # the mutation as an exact substring of the printable-ASCII projection, so it sees
+            # only tampering that ADDS or HIDES characters. A mutation that BREAKS the substring
+            # -- a dropped, swapped, transposed or projection-deleted character -- left the line
+            # invisible to it, and it was skipped as ABSENT while a later approval won (§D.17).
+            # Candidate recognition closes exactly that gap. It is reachable ONLY here, on the
+            # prefix-absent branch, so acceptance is structurally untouched (§D.1), and its only
+            # effect is one more fail-closed MALFORMED (§D.6).
+            if _is_formal_disposition_candidate(ascii_upper):
                 return MALFORMED_FORMAL_DISPOSITION
             continue  # genuinely not formal-looking: still ABSENT, keep scanning
         if fence_char:
