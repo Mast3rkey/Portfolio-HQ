@@ -70,6 +70,11 @@ BOUND_REVIEWED_BASE_SHA = BOUND_MERGE_BASE
 
 EXPECTED_LOAD_BEARING_COUNT = 25
 
+#: This filing's own pull request. Bound ONLY after GitHub issued it -- never predicted. The first
+#: commit carried ``null`` in the register, the draft was opened, and the issued number was read
+#: back and bound. Mirrors the XASSET-0050 suite's own ``THIS_PULL_REQUEST`` pattern.
+THIS_PULL_REQUEST = 362
+
 #: The predecessor link-3 authorization, and the anchor that no longer describes the system.
 DEAD_DECISION = "XASSET-0050"
 DEAD_MERGE_SHA = "a941455491cc5e4d3d868775fb6b4b88f0fe2ce3"
@@ -282,15 +287,40 @@ class TestTheFilingExistsAndIsWellFormed:
             assert heading in DECISION_TEXT, heading
 
     def test_workstream_gate_exists_and_does_not_mark_its_own_unmerged_work_complete(self):
+        """The load-bearing property is the STATUS, not the nullness of ``pr``.
+
+        A session may never mark its own still-unmerged filing ``complete``; that is what this
+        pins. ``pr`` is legitimately ``null`` before GitHub issues a number and exactly the issued
+        number afterwards -- and nothing else, so a predicted or wrong number still fails.
+        """
         gates = {m["gate"]: m for m in WS0014["milestones"]}
         assert GATE in gates
         assert gates[GATE]["status"] == "in_progress"
-        # A session may not mark its own still-unmerged filing complete.
-        assert gates[GATE]["pr"] is None
+        assert gates[GATE]["pr"] in (None, THIS_PULL_REQUEST), gates[GATE]["pr"]
 
     def test_ws0014_self_reference_fields_point_at_the_current_binding(self):
         assert WS0014["last_verified_main_sha"] == BOUND_MERGE_SHA
-        assert WS0014["active_pr"] is None, "the PR number must never be predicted"
+        assert WS0014["active_pr"] in (None, THIS_PULL_REQUEST), WS0014["active_pr"]
+
+    def test_binding_the_pull_request_number_touched_no_other_workstream(self):
+        """Reading back GitHub's issued number must not clobber a sibling workstream.
+
+        ``active_pr`` exists on every workstream, so a whole-file substitution would silently
+        rewrite several. Each sibling is pinned against its own value at the bound merge.
+        """
+        base = yaml.safe_load(
+            subprocess.run(
+                ["git", "show", f"{BOUND_MERGE_SHA}:operations/WORKSTREAMS.yaml"],
+                cwd=ROOT, capture_output=True, check=True, text=True,
+            ).stdout
+        )
+        base_by_id = {w["id"]: w for w in base["workstreams"]}
+        live_by_id = {w["id"]: w for w in yaml.safe_load(WORKSTREAMS_TEXT)["workstreams"]}
+        assert set(live_by_id) == set(base_by_id)
+        for wid, w in live_by_id.items():
+            if wid == "WS-0014":
+                continue
+            assert w.get("active_pr") == base_by_id[wid].get("active_pr"), wid
 
 
 class TestFoldForwardGateRecordsTheClosedLifecycleWithoutRewritingHistory:
