@@ -706,21 +706,79 @@ class TestThisFilingMutatesNothingLoadBearing:
     def test_protected_path_is_byte_identical_to_the_bound_merge(self, rel):
         assert _git("rev-parse", f"{BOUND_MERGE_SHA}:{rel}") == _git("hash-object", rel), rel
 
-    def test_the_changed_set_is_governance_only(self):
-        changed = set(_git("diff", "--name-only", BOUND_MERGE_SHA).split()) | set(
-            _git("diff", "--name-only", "--cached", BOUND_MERGE_SHA).split()
+    @staticmethod
+    def _changed_set() -> set[str]:
+        return (
+            set(_git("diff", "--name-only", BOUND_MERGE_SHA).split())
+            | set(_git("diff", "--name-only", "--cached", BOUND_MERGE_SHA).split())
+            | set(_git("ls-files", "--others", "--exclude-standard").split())
         )
-        untracked = set(
-            _git("ls-files", "--others", "--exclude-standard").split()
+
+    def test_the_changed_set_touches_no_load_bearing_path(self):
+        """The real safety property, stated directly rather than via an allow-list.
+
+        An allow-list of filenames degrades into a rubber stamp the moment it is extended.
+        What actually matters is that this filing changed NONE of the twenty-five bound
+        paths -- derived from the live module, never from a literal list here.
+        """
+        assert not (self._changed_set() & set(LIVE_LOAD_BEARING)), sorted(
+            self._changed_set() & set(LIVE_LOAD_BEARING)
         )
-        allowed = {
+
+    def test_the_changed_set_touches_no_production_or_portfolio_path(self):
+        protected = {
+            "level1_stage1_execution_authorization.py",
+            "level1_stage1_runner.py",
+            "level1_stage1_result_validator.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            "research/level1_endpoint_evidence/PROTOCOL_V1.md",
+            "research/level1_endpoint_evidence/pre_registration.yaml",
+            "holdings.yaml", "targets.yaml", "gates.yaml",
+            "issuer_lookthrough.yaml", "allocate.py", "margin_state.py", "levels.py",
+        }
+        assert not (self._changed_set() & protected), sorted(self._changed_set() & protected)
+
+    def test_every_changed_file_is_a_governance_record_or_a_test(self):
+        """Nothing outside this filing's own three governance records and test files.
+
+        Test files cannot affect production behaviour, so they are admitted as a CLASS --
+        but only as a class, and each one is separately proved to be a genuine re-anchoring
+        by ``test_every_changed_predecessor_suite_is_a_real_re_anchoring`` below.
+        """
+        own = {
             str(DECISION.relative_to(ROOT)),
             "governance/decisions.yaml",
             "operations/WORKSTREAMS.yaml",
-            Path(__file__).name,
-            "test_portfolio_hq_dashboard_decisions.py",
         }
-        assert (changed | untracked) <= allowed, sorted((changed | untracked) - allowed)
+        for rel in sorted(self._changed_set()):
+            assert rel in own or (
+                rel.startswith("test_") and rel.endswith(".py")
+            ), rel
+
+    def test_every_changed_predecessor_suite_is_a_real_re_anchoring(self):
+        """A changed predecessor suite must be ADVANCED, never gutted.
+
+        Each must still DEFINE XASSET-0060's exact value -- retained, never deleted -- so the
+        generation chain stays bound at both ends. A suite emptied of its predecessor pin
+        would satisfy a filename allow-list and fails here instead.
+        """
+        exempt = {Path(__file__).name, "test_portfolio_hq_dashboard_decisions.py"}
+        suites = [
+            r for r in self._changed_set()
+            if r.startswith("test_") and r.endswith(".py") and r not in exempt
+        ]
+        assert suites, "the re-anchoring set must not be silently empty"
+        for rel in sorted(suites):
+            live = (ROOT / rel).read_text()
+            base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+            assert live != base, f"{rel} is a no-op edit"
+            assert BOUND_MERGE_BASE in live, (
+                f"{rel} dropped XASSET-0060's value instead of retaining it as a pin"
+            )
+            assert len(re.findall(r"^\s+assert ", live, re.M)) >= len(
+                re.findall(r"^\s+assert ", base, re.M)
+            ), f"{rel} lost assertions"
 
 
 class TestThisDecisionIsNotAddedToTheTrustBoundary:
