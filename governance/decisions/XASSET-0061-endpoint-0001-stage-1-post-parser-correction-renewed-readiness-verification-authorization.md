@@ -7,8 +7,6 @@ related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, 
 supporting_artifact: test_level1_stage1_post_parser_correction_renewed_readiness_verification_authorization.py
 ---
 
-# XASSET-0061 — ENDPOINT-0001 Stage 1: post-parser-correction renewed readiness-verification authorization
-
 ## Context
 
 ### Live preflight

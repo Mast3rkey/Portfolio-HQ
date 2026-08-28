@@ -265,6 +265,18 @@ class TestTheFilingExistsAndIsWellFormed:
         assert entry["file"] == str(DECISION.relative_to(ROOT))
         assert entry["supporting_artifact"] == Path(__file__).name
 
+    def test_the_record_carries_no_h1_matching_every_other_catalogued_decision(self):
+        """The dashboard derives a decision's title from its filename, not a body heading.
+
+        `decisions.build_catalog` sets ``title_source == "h1"`` when a record opens with a
+        level-one heading, and the whole catalogued corpus relies on ``"filename"``. A single
+        record with an H1 breaks that invariant repository-wide, so it is pinned here too --
+        localised to this file, with a clearer failure than the corpus-wide assertion gives.
+        """
+        body = DECISION_TEXT.split("---", 2)[2]
+        offenders = [ln for ln in body.splitlines() if re.match(r"^# \S", ln)]
+        assert offenders == [], offenders
+
     def test_every_authored_section_is_present(self):
         for heading in EXPECTED_DECISION_SECTIONS:
             assert heading in DECISION_TEXT, heading
