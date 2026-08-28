@@ -100,9 +100,19 @@ SUCCESSOR_DECISION = "XASSET-0056"
 # ADVANCED BY XASSET-0060, the post-parser-correction rebinding. XASSET-0059's own branch and
 # main SHA are RETAINED with their exact values as NEGATIVE pins -- never deleted -- and the newly
 # live unit becomes the positive pin, exactly as every prior generation was handled.
-SUCCESSOR_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
+#: ADVANCED BY XASSET-0061. XASSET-0060's branch is retained as a NEGATIVE pin.
+XASSET0060_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
+SUCCESSOR_BRANCH = "claude/xasset-0061-authorization-jux8p9"
+XASSET0061_BRANCH = "claude/xasset-0061-authorization-jux8p9"
 XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
-SUCCESSOR_MAIN_SHA = XASSET0060_MAIN_SHA
+#: ADVANCED BY XASSET-0061. The shared live field moved onto the successor; the prior
+#: generation's value joins the NEGATIVE PINS rather than being deleted, so the field
+#: stays bound at BOTH ends and a silent revert to finished work still fails.
+XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
+#: ADVANCED BY XASSET-0061. WS-0014's single shared live field lawfully moved onto
+#: the successor. XASSET-0060's own value is RETAINED above and becomes a NEGATIVE
+#: pin, so the chain stays bound at BOTH ends rather than only the newest.
+SUCCESSOR_MAIN_SHA = XASSET0061_MAIN_SHA
 XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
 XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
 XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
@@ -118,6 +128,7 @@ THIS_GATE = "xasset0055-verdict-boundary-governance"
 #: exact arithmetic claim rather than a relaxed "present somewhere" one.
 SUCCESSORS_APPENDED_SINCE = (
     "XASSET-0056", "XASSET-0057", "XASSET-0058", "XASSET-0059", "XASSET-0060",
+    "XASSET-0061",
 )
 
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
@@ -875,7 +886,10 @@ class TestCatalogAndRegisterSynchronisation:
         live = _ws0014()
         assert live["active_branch"] == SUCCESSOR_BRANCH
         assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
-        assert live["last_verified_main_sha"] == XASSET0060_MAIN_SHA
+        assert live["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
+        # NEGATIVE PIN, so a silent revert to that finished generation still fails.
+        assert live["last_verified_main_sha"] != XASSET0060_MAIN_SHA
         # ADVANCED BY XASSET-0060: XASSET-0059's own values become NEGATIVE pins, retained
         # exactly rather than deleted, so a silent revert to finished work still fails here.
         assert live["active_branch"] != XASSET0059_BRANCH
@@ -1044,8 +1058,14 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             # never deleted -- and the newly named successor is the positive pin.
             assert f'XASSET0059_MAIN_SHA = "{XASSET0059_MAIN_SHA}"' in live, name
             assert "!= XASSET0059_MAIN_SHA" in live, name
-            assert f'XASSET0060_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
-            assert "== XASSET0060_MAIN_SHA" in live, name
+            # ADVANCED BY XASSET-0061, on exactly the terms this docstring already states.
+            # XASSET-0060's own constant becomes a NEGATIVE pin -- retained with its exact
+            # value, never deleted -- and the newly named successor is the positive pin.
+            assert f'XASSET0060_MAIN_SHA = "{XASSET0060_MAIN_SHA}"' in live, name
+            assert "!= XASSET0060_MAIN_SHA" in live, name
+            assert f'XASSET0061_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            # ADVANCED BY XASSET-0061: the POSITIVE pin is now the newest generation.
+            assert "== XASSET0061_MAIN_SHA" in live, name
             # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
             # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
             # itself in the third person -- so the constant is asserted exactly where it is

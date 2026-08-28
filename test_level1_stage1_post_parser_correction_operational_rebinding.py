@@ -81,6 +81,17 @@ PULL_REQUEST_SENTINEL = -3
 #: Read back from live GitHub AFTER the draft was opened. Never predicted.
 THIS_PULL_REQUEST = 361
 
+#: ADVANCED BY XASSET-0061. Every decision appended to the catalog AFTER this one,
+#: named EXACTLY, so "last" stays an exact index rather than being relaxed to "present".
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0061",)
+#: Gates this unit's successors added to WS-0014 after this unit's own two.
+SUCCESSOR_GATES_ADDED_SINCE = 2
+#: The shared live fields lawfully moved onto the successor; this unit's own values
+#: are retained as NEGATIVE pins so a silent revert to finished work still fails.
+SUCCESSOR_BRANCH_NAME = "claude/xasset-0061-authorization-jux8p9"
+SUCCESSOR_ACTIVE_PR = 362
+SUCCESSOR_MAIN_SHA_VALUE = "413e033ac33741829168762ab24d73327c047d4b"
+
 # ── XASSET-0057 / PR #358 — this unit's AUTHORITY (not its base) ────────────────────────────
 PR358_BASE_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 PR358_ACCEPTED_HEAD = "53d2d3d770f379393a1a3fde4408915c9fcf81f0"
@@ -1202,7 +1213,10 @@ class TestCatalogAndRegisterSynchronisation:
         ids = [d["decision_id"] for d in catalog["decisions"]]
         assert ids.count(DECISION_ID) == 1
         assert len(ids) == len(set(ids))
-        assert ids[-1] == DECISION_ID
+        assert ids[len(ids) - 1 - len(SUCCESSORS_APPENDED_SINCE)] == DECISION_ID
+        assert list(ids[len(ids) - len(SUCCESSORS_APPENDED_SINCE):]) == list(
+            SUCCESSORS_APPENDED_SINCE
+        )
         entry = next(d for d in catalog["decisions"] if d["decision_id"] == DECISION_ID)
         assert entry["file"] == DECISION_RELPATH
         assert (ROOT / entry["file"]).exists()
@@ -1215,7 +1229,7 @@ class TestCatalogAndRegisterSynchronisation:
         before = yaml.safe_load(
             _git("show", f"{THIS_UNIT_BASE_SHA}:{CATALOG_RELPATH}")
         )["decisions"]
-        assert len(catalog["decisions"]) == len(before) + 1
+        assert len(catalog["decisions"]) == len(before) + 1 + len(SUCCESSORS_APPENDED_SINCE)
         assert DECISION_ID not in {d["decision_id"] for d in before}
 
     def test_the_register_gained_exactly_two_gates_and_rewrote_none(self, ws0014):
@@ -1226,7 +1240,10 @@ class TestCatalogAndRegisterSynchronisation:
         )
         before_ws = next(w for w in before["workstreams"] if w["id"] == "WS-0014")
         assert ws0014["milestones"][: len(before_ws["milestones"])] == before_ws["milestones"]
-        assert len(ws0014["milestones"]) == len(before_ws["milestones"]) + 2
+        assert (
+            len(ws0014["milestones"])
+            == len(before_ws["milestones"]) + 2 + SUCCESSOR_GATES_ADDED_SINCE
+        )
 
     def test_this_units_gate_is_in_progress_not_complete(self, ws0014):
         """A unit does not mark its own unmerged work complete."""
@@ -1242,8 +1259,15 @@ class TestCatalogAndRegisterSynchronisation:
             assert token in gate["description"], token
 
     def test_the_shared_live_fields_name_this_unit(self, ws0014):
-        assert ws0014["active_branch"] == "claude/xasset-0057-rebinding-gqtg9o"
-        assert ws0014["last_verified_main_sha"] == THIS_UNIT_BASE_SHA
+        # ADVANCED BY XASSET-0061: the shared live field moved onto the successor; this
+        # unit's own branch is retained as a NEGATIVE pin. Its durable anchor is its GATE.
+        assert ws0014["active_branch"] == SUCCESSOR_BRANCH_NAME
+        assert ws0014["active_branch"] != "claude/xasset-0057-rebinding-gqtg9o"
+        # ADVANCED BY XASSET-0061: WS-0014's single shared live field lawfully moved onto
+        # the successor. This unit's own base is RETAINED as a NEGATIVE pin -- never
+        # deleted -- so the field stays bound at BOTH ends.
+        assert ws0014["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA_VALUE
+        assert ws0014["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
         # Every prior generation stays a NEGATIVE pin.
         assert ws0014["last_verified_main_sha"] != PR359_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR358_MERGE_SHA
@@ -1266,7 +1290,14 @@ class TestTheBoundPullRequestNumber:
         assert A.AUTHORIZING_PULL_REQUEST > 0
         gate = next(g for g in ws0014["milestones"] if g["gate"] == REGISTER_GATE)
         assert gate["pr"] == THIS_PULL_REQUEST
-        assert ws0014["active_pr"] == THIS_PULL_REQUEST
+        # ADVANCED BY XASSET-0061. What this protects -- that THIS unit bound the number
+        # GitHub really issued -- is immutable history and is asserted against this unit's
+        # OWN gate, which does not move.
+        assert ws0014["active_pr"] == SUCCESSOR_ACTIVE_PR
+        assert ws0014["active_pr"] != THIS_PULL_REQUEST
+        assert any(
+            g.get("pr") == THIS_PULL_REQUEST for g in ws0014["milestones"]
+        ), "this unit's own gate must still carry its real number"
 
     def test_the_sentinel_was_replaced_and_is_structurally_impossible(self):
         assert PULL_REQUEST_SENTINEL < 0

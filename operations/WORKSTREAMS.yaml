@@ -18130,10 +18130,12 @@ workstreams:
           STATE RE-DERIVED FROM THE MERGED TREE THIS SESSION: LOAD_BEARING_RELPATHS is exactly
           TWENTY-FIVE paths, all unique, every one present on disk, with the inherited eighteen
           still an ORDERED PREFIX and XASSET-0054 still EXCLUDED. The authorization module
-          level1_stage1_execution_authorization.py hashes to
-          3f261b6b3cdcabc5f0cb228d987a52dd36e2a0f522e7fc4e57c483d3c0e3001a, git blob
-          a9753d1273785e9ce2ebb4de2067489dfbb9156c -- role 4, the sole new bound end. The role-2
-          VULNERABLE intermediate
+          level1_stage1_execution_authorization.py carries its ROLE-4 identity, the sole new
+          bound end, DERIVED at verification time from the merged tree and DELIBERATELY NOT
+          RESTATED HERE: XASSET-0057 SS-F.3 and XASSET-0058 SS-G.4 govern, and the live
+          corrected digest "is stated nowhere in advance" and reaches the register only through
+          role 4's own derivation and proof. Writing it into this register would violate that
+          rule, so it is named by ROLE, never by value. The role-2 VULNERABLE intermediate
           12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5 remains in
           NEVER_BINDABLE_MODULE_SHA256 as a PERMANENT NEGATIVE PIN and is never a bound end.
           Authorization constants: AUTHORIZING_DECISION XASSET-0060, AUTHORIZING_PULL_REQUEST
@@ -18173,8 +18175,9 @@ workstreams:
           identity 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541. All four
           values have moved: the binding is now TWENTY-FIVE paths under XASSET-0060 / PR #361 at
           merge 413e033ac33741829168762ab24d73327c047d4b, tree
-          998c28a3c7f349cd36796255854924fa7473dfae, module role-4 identity
-          3f261b6b3cdcabc5f0cb228d987a52dd36e2a0f522e7fc4e57c483d3c0e3001a. XASSET-0050 SS-B
+          998c28a3c7f349cd36796255854924fa7473dfae, and the module at its ROLE-4 identity, named
+          by role rather than by value for the same XASSET-0057 SS-F.3 / XASSET-0058 SS-G.4
+          reason recorded in the gate above. XASSET-0050 SS-B
           applied exactly this reasoning to retire XASSET-0038's anchor; that reasoning now
           applies to XASSET-0050 itself. XASSET-0051 and XASSET-0052 are retired on the same two
           grounds and are NOT revived.

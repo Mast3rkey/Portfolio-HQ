@@ -278,15 +278,25 @@ XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
 #: self-reference names the currently-live unit; XASSET-0059's own constant is RETAINED with its
 #: exact value as a NEGATIVE pin below -- never deleted -- so a silent revert still fails here.
 XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+#: ADVANCED BY XASSET-0061. The shared live field moved onto the successor; the prior
+#: generation's value joins the NEGATIVE PINS rather than being deleted, so the field
+#: stays bound at BOTH ends and a silent revert to finished work still fails.
+XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
 #: ADVANCED BY XASSET-0058. The shared live fields moved once more onto the successor;
 #: XASSET-0057's own values are RETAINED as negative pins rather than deleted, so every
 #: field stays bound at BOTH ends.
 #: ADVANCED BY XASSET-0059: the shared field moved onto the Lifecycle B unit's own base.
-SUCCESSOR_MAIN_SHA = XASSET0060_MAIN_SHA
+#: ADVANCED BY XASSET-0061. WS-0014's single shared live field lawfully moved onto
+#: the successor. XASSET-0060's own value is RETAINED above and becomes a NEGATIVE
+#: pin, so the chain stays bound at BOTH ends rather than only the newest.
+SUCCESSOR_MAIN_SHA = XASSET0061_MAIN_SHA
 #: ADVANCED BY XASSET-0059: WS-0014's SHARED live branch moved onto the Lifecycle B unit;
 #: the XASSET-0058 generation is retained beside it as a NEGATIVE pin.
 # ADVANCED BY XASSET-0060; XASSET-0059's branch joins the NEGATIVE pins, retained exactly.
-SUCCESSOR_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
+#: ADVANCED BY XASSET-0061. XASSET-0060's branch is retained as a NEGATIVE pin.
+XASSET0060_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
+SUCCESSOR_BRANCH = "claude/xasset-0061-authorization-jux8p9"
+XASSET0061_BRANCH = "claude/xasset-0061-authorization-jux8p9"
 XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
 XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
 XASSET0057_BRANCH = "claude/xasset-successor-authorization-3b0btg"
@@ -304,6 +314,7 @@ CLOSED_UNMERGED_BRANCH = "claude/xasset-0054-parser-contract-correction-h3nq7p"
 SUCCESSORS_APPENDED_SINCE = (
     "XASSET-0055", "XASSET-0056", "XASSET-0057", "XASSET-0058", "XASSET-0059",
     "XASSET-0060",
+    "XASSET-0061",
 )
 
 
@@ -1885,7 +1896,10 @@ class TestRegisterSynchronisation:
     def test_the_last_verified_main_sha_advanced_and_is_bound_at_both_ends(self, ws0014):
         """RE-ANCHORED BY XASSET-0055 -- see `SUCCESSOR_MAIN_SHA`. This unit's own base joins
         the negative pins rather than being deleted, so the field stays bound at BOTH ends."""
-        assert ws0014["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA == XASSET0060_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA == XASSET0061_MAIN_SHA
+        # ADVANCED BY XASSET-0061: XASSET-0060 joins the negative pins rather than being
+        # deleted, so the field stays bound at BOTH ends.
+        assert ws0014["last_verified_main_sha"] != XASSET0060_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0057_MAIN_SHA
