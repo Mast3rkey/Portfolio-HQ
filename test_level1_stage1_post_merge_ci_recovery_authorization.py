@@ -282,6 +282,10 @@ XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 #: new one as a NEGATIVE pin -- bound at both ends, so a silent revert to finished work
 #: still fails -- and nothing is deleted, skipped or relaxed.
 XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+#: ADVANCED BY XASSET-0060, the post-parser-correction rebinding. WS-0014's SHARED live
+#: self-reference names the currently-live unit; XASSET-0059's own constant is RETAINED with its
+#: exact value as a NEGATIVE pin below -- never deleted -- so a silent revert still fails here.
+XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 #: Read back from the live pull request AFTER GitHub issued it, never predicted. The
 #: branch's first commit carried the impossible sentinel -56 (negative, so structurally
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
@@ -821,13 +825,22 @@ class TestSuccessorLifecycleAnchorRequired:
         # IS a lifecycle that can close -- not that one particular successor holds it forever.
         # XASSET-0047 was that successor; XASSET-0049 lawfully succeeded it under XASSET-0048
         # SS-E, and XASSET-0047's own identity is preserved rather than erased.
-        assert auth.AUTHORIZING_DECISION == "XASSET-0049"
+        # RE-ANCHORED BY XASSET-0060, unchanged in KIND. The property is that production binds a
+        # lifecycle that CAN close and never the stopped one -- not that it names any particular
+        # successor forever. Both ends stay bound: every superseded anchor is still reachable.
+        assert auth.AUTHORIZING_DECISION == "XASSET-0060"
+        assert auth.AUTHORIZING_DECISION != "XASSET-0049"
+        assert auth.PRIOR_STEP8_EQUIVALENT_DECISION == "XASSET-0049"
         assert auth.PRIOR_RECONCILIATION_DECISION == "XASSET-0047"
         assert auth.AUTHORIZING_DECISION not in auth.PERMANENTLY_INEFFECTIVE_DECISIONS
         assert auth.AUTHORIZING_PULL_REQUEST not in auth.PERMANENTLY_INEFFECTIVE_PULL_REQUESTS
         # The reviewed base equals its own authority's merge -- the same equality, re-anchored
         # onto the decision that authorizes the CURRENT unit.
-        assert auth.REVIEWED_BASE_SHA == auth.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
+        # RE-ANCHORED BY XASSET-0060: XASSET-0057 §F.2 moved the base rule onto the Lifecycle B
+        # implementation merge, so the equality names that. XASSET-0049's own accepted equality
+        # is retained on the constants that now carry it, so nothing is dropped.
+        assert auth.REVIEWED_BASE_SHA == auth.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA
+        assert auth.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == auth.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA
         assert auth.PRIOR_RECONCILIATION_MERGE_BASE == auth.RECOVERY_AUTHORIZING_MERGE_SHA
         # The stopped lifecycle is PRESERVED as history, by exact identity, not erased.
         assert auth.STOPPED_REBINDING_DECISION == "XASSET-0044"
@@ -1305,7 +1318,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
         # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
         # pin, so a silent revert to finished work still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0059_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0060_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0057_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0056_MAIN_SHA

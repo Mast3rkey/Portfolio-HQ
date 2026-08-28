@@ -79,6 +79,74 @@ AUTHORIZATION_MERGE_PARENTS = (
     "e8d53c184a7612ab6e38ba8d7ae1e348f7046de2",
 )
 
+#: This unit's OWN normal-merge commit -- the Lifecycle B merge that closed it. Every claim this
+#: unit makes about what IT changed is asserted over the IMMUTABLE range
+#: ``AUTHORIZATION_MERGE_SHA..IMPLEMENTATION_MERGE_SHA``, so a later authorized unit editing the
+#: same module cannot make this unit's own history read as a violation -- and, equally, cannot
+#: hide one. The LIVE delta is pinned separately and exhaustively below; nothing is relaxed.
+IMPLEMENTATION_MERGE_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+IMPLEMENTATION_MERGE_TREE = "3bf579d64fd86680668d628f557b86e66ab7e76a"
+IMPLEMENTATION_ACCEPTED_HEAD = "90b829863875223d56b8da2c62ba0bfc06fbcd7e"
+IMPLEMENTATION_MERGE_PARENTS = (AUTHORIZATION_MERGE_SHA, IMPLEMENTATION_ACCEPTED_HEAD)
+
+#: Role 3 -- the parser-corrected identity THIS unit produced, derived at its own merge. Recorded
+#: here as history now that it exists; ``§G.4`` forbade PREDICTING it, which is asserted against
+#: the pre-merge accepted head rather than against a live tree that decays as successors land.
+PARSER_CORRECTED_MODULE_SHA256 = (
+    "1283a2d4ccc3794fd37b81d4e5e23ac6f67a0b87b911ef3861c724d636fabd00"
+)
+PARSER_CORRECTED_MODULE_BLOB = "b8414a69f41e37f8fdd5c18dae13176fd847170e"
+
+#: Role 1 -- the identity the register bound BEFORE the vulnerable intermediate. Recorded here
+#: only as a negative pin: the live module must be neither role 1 nor role 2.
+PREVIOUSLY_BOUND_MODULE_SHA256 = (
+    "4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541"
+)
+
+#: The ONE post-parser-correction rebinding XASSET-0057 §E authorizes after this unit.
+SUCCESSOR_DECISION = "XASSET-0060"
+SUCCESSOR_DECISION_RELPATH = (
+    "governance/decisions/"
+    "XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md"
+)
+
+#: The two pure verifiers the successor ADDS. Named exhaustively so a third fails here.
+XASSET_0060_ADDED_FUNCTIONS = frozenset({
+    "_verify_post_parser_correction_base_equality",
+    "_verify_module_identity_is_not_the_vulnerable_intermediate",
+})
+
+#: Every top-level definition the successor adds OR modifies -- the two new verifiers above plus
+#: the three existing ones that gained the refusals, inherited-merge entries and negative pin.
+#: NEITHER the parser NOR this unit's helper appears here, and both are asserted byte-identical
+#: to this unit's own merged bytes separately, so the successor cannot touch them unnoticed.
+XASSET_0060_ADDED_DEFINITIONS = XASSET_0060_ADDED_FUNCTIONS | frozenset({
+    "_verify_git_anchored_identity",
+    "_verify_recovery_lifecycle_anchor",
+    "_verify_successor_rebinding_identity",
+})
+
+#: The boundary this unit left behind, and the boundary the successor lawfully grew it to.
+LOAD_BEARING_COUNT_AT_IMPLEMENTATION_MERGE = 18
+LOAD_BEARING_COUNT_NOW = 25
+
+#: The seven decision files XASSET-0057 §F.7 authorizes the successor to ADD to the boundary.
+#: Named individually so an eighth addition -- or a removal, reorder or substitution of any of
+#: the eighteen this unit left -- fails rather than passing as "grew by seven".
+XASSET_0060_BOUNDARY_ADDITIONS = frozenset({
+    "governance/decisions/"
+    "XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+    "governance/decisions/"
+    "XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+    "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+    DECISION_RELPATH,
+    SUCCESSOR_DECISION_RELPATH,
+})
+
 #: ``XASSET-0057 §F.3`` **role 2** -- the vulnerable intermediate. A PERMANENT NEGATIVE PIN:
 #: adverse history, never a bound end, never rebound or repaired by this unit (``§G.3``).
 VULNERABLE_MODULE_SHA256 = (
@@ -1071,21 +1139,26 @@ class TestTheProductionShapeIsExactlyAuthorized:
         assert len(inner) == 1
 
     def test_exactly_one_helper_was_added_and_no_second(self):
-        """SS-F.2's ceiling is ONE, and it is now exactly spent."""
-        base = subprocess.run(
-            ["git", "show", f"{AUTHORIZATION_MERGE_SHA}:{MODULE_RELPATH}"],
-            cwd=ROOT, capture_output=True, text=True, check=True,
-        ).stdout
+        """SS-F.2's ceiling is ONE, and it is now exactly spent.
 
-        def funcs(src):
-            return {
-                n.name for n in ast.walk(ast.parse(src))
-                if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
-                and not n.name.startswith("__")
-            }
-
-        added = funcs(_live_source()) - funcs(base)
+        Asserted over this unit's OWN immutable range, which is where the ceiling actually
+        binds. The LIVE delta is pinned in the companion test below, exhaustively by name, so
+        moving the anchor here removes nothing: a second helper still fails, in both places.
+        """
+        base = _module_source_at(AUTHORIZATION_MERGE_SHA)
+        merged = _module_source_at(IMPLEMENTATION_MERGE_SHA)
+        added = _top_level_functions(merged) - _top_level_functions(base)
         assert added == {HELPER_NAME}, sorted(added)
+        removed = _top_level_functions(base) - _top_level_functions(merged)
+        assert removed == set(), sorted(removed)
+
+    def test_the_live_function_set_grew_only_by_this_helper_and_the_named_successor_pair(self):
+        """The live delta, pinned EXHAUSTIVELY -- a fourth addition fails, a removal fails."""
+        base = _module_source_at(AUTHORIZATION_MERGE_SHA)
+        added = _top_level_functions(_live_source()) - _top_level_functions(base)
+        assert added == {HELPER_NAME} | XASSET_0060_ADDED_FUNCTIONS, sorted(added)
+        removed = _top_level_functions(base) - _top_level_functions(_live_source())
+        assert removed == set(), sorted(removed)
 
     def test_no_general_parsing_framework_was_created(self):
         source = _live_source()
@@ -1148,23 +1221,31 @@ class TestTheProductionShapeIsExactlyAuthorized:
         )
 
     def test_only_the_parser_and_the_new_helper_changed_in_production(self):
-        base = subprocess.run(
-            ["git", "show", f"{AUTHORIZATION_MERGE_SHA}:{MODULE_RELPATH}"],
-            cwd=ROOT, capture_output=True, text=True, check=True,
-        ).stdout
-
-        def defs(src):
-            lines = src.splitlines(keepends=True)
-            return {
-                n.name: "".join(lines[n.lineno - 1: n.end_lineno])
-                for n in ast.parse(src).body
-                if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
-            }
-
-        old, new = defs(base), defs(_live_source())
+        """This unit's OWN range: exactly two definitions differ, and nothing was removed."""
+        old = _top_level_definitions(_module_source_at(AUTHORIZATION_MERGE_SHA))
+        new = _top_level_definitions(_module_source_at(IMPLEMENTATION_MERGE_SHA))
         changed = {n for n in new if old.get(n) != new[n]}
         assert changed == {"parse_formal_disposition", HELPER_NAME}, sorted(changed)
         assert not (set(old) - set(new)), sorted(set(old) - set(new))
+
+    def test_the_successor_changed_only_its_own_named_definitions_and_not_the_parser(self):
+        """The live delta, pinned EXHAUSTIVELY -- and the parser and helper pinned BYTE-EXACT.
+
+        The successor rebinding is authorized to move lifecycle constants and add refusals; it
+        is authorized to touch NEITHER the corrected parser NOR this unit's helper. Asserting
+        their exact bytes against this unit's own merged source is strictly stronger than the
+        set-difference this test previously ran, which could not have seen an in-place edit.
+        """
+        old = _top_level_definitions(_module_source_at(AUTHORIZATION_MERGE_SHA))
+        merged = _top_level_definitions(_module_source_at(IMPLEMENTATION_MERGE_SHA))
+        live = _top_level_definitions(_live_source())
+        changed = {n for n in live if old.get(n) != live[n]}
+        assert changed == (
+            {"parse_formal_disposition", HELPER_NAME} | XASSET_0060_ADDED_DEFINITIONS
+        ), sorted(changed)
+        assert not (set(old) - set(live)), sorted(set(old) - set(live))
+        for name in ("parse_formal_disposition", HELPER_NAME):
+            assert live[name] == merged[name], name
 
 
 # =====================================================================================
@@ -1751,6 +1832,70 @@ class TestTheCompletePipelineIsBounded:
 # =====================================================================================
 
 
+def _top_level_functions(source: str) -> set[str]:
+    """Every non-dunder function name anywhere in ``source``, read from the syntax tree."""
+    return {
+        node.name
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and not node.name.startswith("__")
+    }
+
+
+def _top_level_definitions(source: str) -> dict[str, str]:
+    """Every top-level definition in ``source``, mapped to its exact bytes."""
+    lines = source.splitlines(keepends=True)
+    return {
+        node.name: "".join(lines[node.lineno - 1: node.end_lineno])
+        for node in ast.parse(source).body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+    }
+
+
+def _boundary_block(source: str) -> str:
+    """The ``LOAD_BEARING_RELPATHS`` tuple's exact bytes in ``source``."""
+    assert source.count("LOAD_BEARING_RELPATHS = (") == 1
+    block = source[source.index("LOAD_BEARING_RELPATHS = ("):]
+    return block[: block.index("\n)\n")]
+
+
+def _boundary_members(source: str) -> tuple[str, ...]:
+    """``LOAD_BEARING_RELPATHS`` as it stood in ``source``, PARSED and never executed.
+
+    Historical revisions are read from the object store, so they must never be imported or run.
+    Name members resolve against the live module only for constants this unit does not touch.
+    """
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Assign) and any(
+            isinstance(t, ast.Name) and t.id == "LOAD_BEARING_RELPATHS" for t in node.targets
+        ):
+            assert isinstance(node.value, ast.Tuple)
+            resolved: list[str] = []
+            for element in node.value.elts:
+                if isinstance(element, ast.Constant):
+                    resolved.append(element.value)
+                elif isinstance(element, ast.Name):
+                    resolved.append(getattr(AUTH, element.id))
+                else:  # pragma: no cover - defensive
+                    raise AssertionError(f"unexpected member: {ast.dump(element)}")
+            return tuple(resolved)
+    raise AssertionError("LOAD_BEARING_RELPATHS not found")
+
+
+def _changed_paths(base: str, head: str) -> list[str]:
+    return subprocess.run(
+        ["git", "diff", "--name-only", base, head],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout.split()
+
+
+def _text_at(commit: str, relpath: str) -> str:
+    return subprocess.run(
+        ["git", "show", f"{commit}:{relpath}"],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout
+
+
 def _blob_at(commit: str, relpath: str) -> str:
     return subprocess.run(
         ["git", "rev-parse", f"{commit}:{relpath}"],
@@ -1780,18 +1925,24 @@ class TestStageOneRemainsFailClosed:
         assert not (ROOT / "research/level1_endpoint_evidence/stage1_results.yaml").exists()
 
     def test_the_load_bearing_boundary_is_unchanged_at_eighteen(self):
-        assert len(AUTH.LOAD_BEARING_RELPATHS) == 18
-        base = subprocess.run(
-            ["git", "show", f"{AUTHORIZATION_MERGE_SHA}:{MODULE_RELPATH}"],
-            cwd=ROOT, capture_output=True, text=True, check=True,
-        ).stdout
-        assert base.count("LOAD_BEARING_RELPATHS = (") == 1
+        """THIS unit touched the boundary in no way at all -- byte-identical across its range."""
+        base = _module_source_at(AUTHORIZATION_MERGE_SHA)
+        merged = _module_source_at(IMPLEMENTATION_MERGE_SHA)
         # The MEMBERSHIP is unchanged too, not merely the count.
-        before = base[base.index("LOAD_BEARING_RELPATHS = ("):]
-        before = before[: before.index("\n)\n")]
-        after = _live_source()[_live_source().index("LOAD_BEARING_RELPATHS = ("):]
-        after = after[: after.index("\n)\n")]
-        assert before == after
+        assert _boundary_block(base) == _boundary_block(merged)
+        assert len(_boundary_members(merged)) == LOAD_BEARING_COUNT_AT_IMPLEMENTATION_MERGE
+
+    def test_the_live_boundary_grew_additively_with_the_eighteen_as_an_ordered_prefix(self):
+        """The successor may only EXTEND. An ordered-prefix check is strictly stronger than a
+        subset check: a removal, a reorder, a substitution or a traded-away member each fail.
+        """
+        merged = _boundary_members(_module_source_at(IMPLEMENTATION_MERGE_SHA))
+        live = tuple(AUTH.LOAD_BEARING_RELPATHS)
+        assert len(merged) == LOAD_BEARING_COUNT_AT_IMPLEMENTATION_MERGE
+        assert len(live) == LOAD_BEARING_COUNT_NOW
+        assert live[: len(merged)] == merged
+        assert frozenset(live[len(merged):]) == XASSET_0060_BOUNDARY_ADDITIONS
+        assert len(set(live)) == len(live), "no duplicate member"
 
     def test_this_suite_writes_nothing_during_collection_or_any_test(self):
         """Every filesystem write lives INSIDE the mutation harness, which pytest never calls.
@@ -1845,13 +1996,28 @@ class TestThisUnitsScopeIsExactlyWhatWasAuthorized:
         assert _blob_at("HEAD", relpath) == _blob_at(AUTHORIZATION_MERGE_SHA, relpath), relpath
 
     def test_the_production_module_is_the_ONLY_protected_path_this_unit_changes(self):
-        changed = subprocess.run(
-            ["git", "diff", "--name-only", AUTHORIZATION_MERGE_SHA, "HEAD"],
-            cwd=ROOT, capture_output=True, text=True, check=True,
-        ).stdout.split()
-        bound = set(AUTH.LOAD_BEARING_RELPATHS)
-        touched_bound = sorted(set(changed) & bound)
+        """Measured over this unit's OWN range, against the boundary AS IT STOOD at its merge.
+
+        Reading a later boundary against an earlier range would compare two different things.
+        """
+        changed = _changed_paths(AUTHORIZATION_MERGE_SHA, IMPLEMENTATION_MERGE_SHA)
+        bound_then = set(_boundary_members(_module_source_at(IMPLEMENTATION_MERGE_SHA)))
+        touched_bound = sorted(set(changed) & bound_then)
         assert touched_bound == [MODULE_RELPATH], touched_bound
+
+    def test_the_live_tree_touches_only_the_module_and_the_two_named_decision_files(self):
+        """The live delta against this unit's base, pinned EXHAUSTIVELY by name.
+
+        Five of the successor's seven boundary additions PRE-DATE this unit's base and are
+        therefore unchanged across the range; the two that do not are this unit's own decision
+        and the successor's. A fourth touched protected path -- canonical artifact, runner,
+        result validator, universe validator, targets, holdings, gates or allocator -- fails.
+        """
+        changed = _changed_paths(AUTHORIZATION_MERGE_SHA, "HEAD")
+        touched_bound = sorted(set(changed) & set(AUTH.LOAD_BEARING_RELPATHS))
+        assert touched_bound == sorted(
+            {MODULE_RELPATH, DECISION_RELPATH, SUCCESSOR_DECISION_RELPATH}
+        ), touched_bound
 
     def test_the_vulnerable_identity_survives_as_a_permanent_negative_pin(self):
         """SS-G.3: role 2 is adverse history. It is never rebound, re-pinned or repaired."""
@@ -1863,16 +2029,35 @@ class TestThisUnitsScopeIsExactlyWhatWasAuthorized:
         flat = WORKSTREAMS.read_text(encoding="utf-8").replace("\n", "").replace(" ", "")
         assert VULNERABLE_MODULE_SHA256 in flat
 
-    def test_the_corrected_identity_is_NEVER_PREDICTED_anywhere(self):
+    def test_the_corrected_identity_was_NEVER_PREDICTED_BEFORE_IT_EXISTED(self):
         """SS-G.4 / XASSET-0057 SS-F.3 role 3: derived at merge, stated nowhere in advance.
 
-        This is the operative constraint on THIS unit, so it is enforced mechanically rather
-        than promised: the live digest must appear in no governed record at all.
+        Anchored at this unit's own ACCEPTED HEAD -- the last commit before the merge that
+        created role 3, and the exact point at which predicting it would have been the defect.
+        That is strictly sharper than the live-tree read this previously ran: a live read
+        decays into a claim about whichever identity happens to be current, and role 3 must be
+        RECORDED as history by the successor, so the old form would have had to be relaxed to
+        keep passing. This form never relaxes, and can never be satisfied vacuously.
         """
+        digest = hashlib.sha256(
+            _module_source_at(IMPLEMENTATION_MERGE_SHA).encode("utf-8")
+        ).hexdigest()
+        assert digest == PARSER_CORRECTED_MODULE_SHA256
+        assert digest != VULNERABLE_MODULE_SHA256
+        assert digest != PREVIOUSLY_BOUND_MODULE_SHA256
+        for relpath in (
+            "operations/WORKSTREAMS.yaml",
+            "governance/decisions.yaml",
+            DECISION_RELPATH,
+            Path(__file__).name,
+        ):
+            assert digest not in _text_at(IMPLEMENTATION_ACCEPTED_HEAD, relpath), relpath
+
+    def test_the_live_identity_is_neither_the_vulnerable_nor_the_previously_bound_one(self):
+        """Role 2 stays permanently unbindable, and the register never regresses to role 1."""
         live = hashlib.sha256((ROOT / MODULE_RELPATH).read_bytes()).hexdigest()
         assert live != VULNERABLE_MODULE_SHA256
-        for path in (WORKSTREAMS, CATALOG, ROOT / DECISION_RELPATH, Path(__file__)):
-            assert live not in path.read_text(encoding="utf-8"), str(path)
+        assert live != PREVIOUSLY_BOUND_MODULE_SHA256
 
     def test_the_decision_exists_and_records_its_own_incompleteness(self):
         text = (ROOT / DECISION_RELPATH).read_text(encoding="utf-8")

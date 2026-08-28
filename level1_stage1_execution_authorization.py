@@ -272,7 +272,24 @@ STUDY_ID = "ENDPOINT-0001"
 #: preserved unchanged here: which decision last rebound the canonical bytes, and which decision's
 #: lifecycle the mechanism authenticates against, are DIFFERENT relationships. Overloading them is
 #: the failure mode XASSET-0037 SS-C named.
-AUTHORIZING_DECISION = "XASSET-0049"
+#: REBOUND BY XASSET-0060, the post-parser-correction step-8-equivalent rebinding XASSET-0057 SS-E
+#: authorizes. EXACT CLOSED TRANSITION, per XASSET-0057 SS-F.3: old value ``"XASSET-0049"``, new
+#: value ``"XASSET-0060"``. The old value is PRESERVED rather than overwritten -- it remains bound,
+#: unchanged, as :data:`PRIOR_STEP8_EQUIVALENT_DECISION`, together with XASSET-0049's own pull
+#: request, merge, accepted head and merge base, so the superseded anchor stays reachable from a
+#: constant rather than only from the field this rebinding moves.
+#:
+#: WHY THIS REBINDING EXISTS. XASSET-0056 corrected the formal-disposition parser and deliberately
+#: left the register's bound module digest stale, so ``_verify_git_anchored_identity`` raised
+#: ``enforcement drift`` and Stage 1 stayed NOT EXECUTABLE. XASSET-0057 refused to bind those
+#: bytes: SS-F.0 records the parser defect as a FAMILY, not three code points, and makes
+#: ``12eab05e...604a5`` a PERMANENT NEGATIVE PIN that may never be a bound end. XASSET-0058
+#: (Lifecycle A) then authorized the real correction and XASSET-0059 (Lifecycle B) implemented it;
+#: both lifecycles closed in full. This rebinding reconciles the register with THOSE bytes.
+#:
+#: NOT THE AUTHORITY. XASSET-0057 authorized this unit and performed no rebinding; XASSET-0060 is
+#: the unit. The two are kept in separate constants and a refusal below forbids their collapse.
+AUTHORIZING_DECISION = "XASSET-0060"
 
 #: XASSET-0028, the construction-universe STRUCTURAL CLOSURE predecessor. Deliberately UNCHANGED in
 #: name, meaning, and value: repointing it at XASSET-0029 would overload one field with two
@@ -295,7 +312,19 @@ PREDECESSOR_DECISION = "XASSET-0028"
 #: number still fails closed at ``verify_lifecycle_against_truth``, which fetches this exact pull
 #: request from durable governance metadata; the point of the sentinel is that the failure can
 #: never be a SILENT one.
-AUTHORIZING_PULL_REQUEST = 349
+#: REBOUND BY XASSET-0060. EXACT CLOSED TRANSITION, per XASSET-0057 SS-F.3: old value ``349``
+#: (XASSET-0049's own pull request); new value this unit's own GitHub-issued number. The old value
+#: is PRESERVED rather than overwritten -- see :data:`PRIOR_STEP8_EQUIVALENT_PULL_REQUEST`.
+#:
+#: PROVENANCE, stated exactly rather than flatteringly, and on the same terms XASSET-0049 recorded:
+#: this number was NOT written in advance as the next sequential guess. The first commit on this
+#: branch carried the sentinel ``-3`` -- a NEGATIVE, structurally impossible pull-request number
+#: that can never validate by accident, and deliberately distinct from XASSET-0047's ``0``,
+#: XASSET-0048's ``-1`` and XASSET-0049's ``-2`` so this unit's sentinel can never be mistaken for
+#: a predecessor's. The draft pull request was then opened, GitHub issued its own number, that
+#: number was read back from live GitHub, and only then was it bound here and re-verified against
+#: the live pull request's own head, base and state.
+AUTHORIZING_PULL_REQUEST = 361
 
 #: The single Stage-1 execution lane XASSET-0027 SS-P.1 permits. Derived from repository
 #: truth, not invented: no Stage-1 attempt has ever been executed or authorized. UNCHANGED by the
@@ -320,7 +349,28 @@ EXECUTION_ATTEMPT_ID = "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 #: leaving it to prose. Descent stays NECESSARY HISTORY and is explicitly INSUFFICIENT AUTHORITY:
 #: under a descent-only rule any later commit on main would qualify while carrying bytes no review
 #: of the grant ever saw. Reproduced through the real mechanism before this rebinding was written.
-REVIEWED_BASE_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+#: REBOUND BY XASSET-0060. EXACT CLOSED TRANSITION, per XASSET-0057 SS-F.3: old value
+#: ``"f052efad38e3d57e3e5615799ac3bcbebe83ff5f"`` (the XASSET-0048 merge, XASSET-0049's own
+#: authority); new value ``"301e79334876a4bda6e7b89a6156b34e8d38a605"``. The old value is
+#: PRESERVED rather than overwritten -- it remains bound, unchanged, as
+#: :data:`STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA` and as
+#: :data:`PRIOR_STEP8_EQUIVALENT_MERGE_BASE`.
+#:
+#: THE NEW BASE IS NOT THIS UNIT'S AUTHORIZING MERGE, and that is deliberate. XASSET-0057 SS-F.2
+#: withdrew the "equal your own authorization's merge" rule precisely because SS-F.0 makes an
+#: intervening parser correction MANDATORY, and a mandatory intervening merge cannot coexist with
+#: an absolute equality against the grant's own merge. The single replacement rule names the
+#: commit exactly: the base must EQUAL the Lifecycle B implementation's normal-merge commit at B5
+#: -- the XASSET-0059 merge -- which is also the SHA tested by B7 merge-commit CI and named by B8
+#: closure. :func:`_verify_post_parser_correction_base_equality` decides that as a pure
+#: proposition; :data:`PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA` carries the required value.
+#:
+#: EQUALITY, NOT DESCENT, unchanged in kind from XASSET-0048 SS-F.2. Descent stays NECESSARY
+#: HISTORY and explicitly INSUFFICIENT AUTHORITY. XASSET-0057 SS-F.2 additionally removed every
+#: admission path: if main carries ANY commit between the B5 merge and this unit's base, this
+#: grant does not authorize the unit at all. Verified before this value was written: main was
+#: exactly the B5 merge, with zero intervening commits.
+REVIEWED_BASE_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 
 #: XASSET-0028's exact historical identity. MAJOR 1: the canonical contract promises this
 #: is bound, so it is now actually verified against the local git object store.
@@ -511,6 +561,128 @@ PRIOR_RECONCILIATION_PULL_REQUEST = 347
 PRIOR_RECONCILIATION_MERGE_SHA = "bb95ed26964b1bc7a2e230c76060fec82752efa1"
 PRIOR_RECONCILIATION_ACCEPTED_HEAD = "8ae0988d4c1ffc551e7fa0a1d1ee1edfa7a49a9e"
 PRIOR_RECONCILIATION_MERGE_BASE = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+
+# --------------------------------------------------------------------------------------
+# XASSET-0060 / XASSET-0057 SS-F.3 — three further families, plus the module identity chain
+# --------------------------------------------------------------------------------------
+#
+# XASSET-0037 SS-C's failure mode is unchanged: overloading one identity across relationships that
+# are not the same relationship. XASSET-0049 added a seventh family and its prior anchor; this
+# rebinding adds three more, because three genuinely distinct relationships exist that no existing
+# constant carries.
+#
+# WHY THE PRIOR-ANCHOR FAMILY IS MANDATORY RATHER THAN DECORATIVE, reproduced against the live
+# module BEFORE this rebinding was written, exactly as XASSET-0049 reproduced it for XASSET-0047:
+# XASSET-0049's own merge ``a9414554...`` and accepted head ``b2059e80...`` appeared under NO
+# constant anywhere. They were reachable only through AUTHORIZING_DECISION /
+# AUTHORIZING_PULL_REQUEST / REVIEWED_BASE_SHA -- the three values this rebinding moves. Moving
+# them without this family would not have weakened XASSET-0049's identity; it would have DESTROYED
+# it, and XASSET-0057 SS-F.10 requires every preserved predecessor identity family to be carried
+# forward intact. (XASSET-0049's own reviewed base ``f052efad...`` is the one member that was
+# already reachable, as :data:`STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA`; it is carried here too so
+# the family is complete at both ends rather than partly inferred.)
+
+#: XASSET-0049 (PR #349) -- the PRIOR lifecycle anchor this rebinding supersedes. Its own complete
+#: seven-condition lifecycle really closed and is NOT invalidated: it is a CLOSED PREDECESSOR, on
+#: exactly the footing XASSET-0029, XASSET-0037 and XASSET-0047 occupy, and emphatically NOT on the
+#: footing of the two STOPPED lifecycles below. It stopped being the EFFECTIVE structural
+#: authorization source only because XASSET-0057 authorized a successor and this unit is that
+#: successor.
+PRIOR_STEP8_EQUIVALENT_DECISION = "XASSET-0049"
+PRIOR_STEP8_EQUIVALENT_PULL_REQUEST = 349
+PRIOR_STEP8_EQUIVALENT_MERGE_SHA = "a941455491cc5e4d3d868775fb6b4b88f0fe2ce3"
+PRIOR_STEP8_EQUIVALENT_ACCEPTED_HEAD = "b2059e80101fc6457f4004939d7d12886e6feedf"
+PRIOR_STEP8_EQUIVALENT_MERGE_BASE = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+
+#: XASSET-0057 (PR #358), which AUTHORIZED this post-parser-correction rebinding. Its complete
+#: seven-condition SS-J lifecycle closing is a NECESSARY condition for this unit to begin -- but,
+#: unlike every predecessor rebinding, it is NOT sufficient and its merge is NOT this unit's base.
+#: XASSET-0057 SS-E makes the grant conditional on SS-F.0's conjunctive parser-correction
+#: prerequisite as well, and SS-F.2 fixes the base on the Lifecycle B merge instead.
+POST_PARSER_CORRECTION_AUTHORIZING_DECISION = "XASSET-0057"
+POST_PARSER_CORRECTION_AUTHORIZING_PULL_REQUEST = 358
+POST_PARSER_CORRECTION_AUTHORIZING_MERGE_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+POST_PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD = "53d2d3d770f379393a1a3fde4408915c9fcf81f0"
+POST_PARSER_CORRECTION_AUTHORIZING_MERGE_BASE = "583022a5f2106d61f82d270edadd3520d8b0c55d"
+
+#: XASSET-0058 (PR #359) -- LIFECYCLE A of XASSET-0057 SS-F.0.3: the decision that authorized the
+#: parser correction and decided its recognition boundary. Distinct from the implementation below:
+#: authority over a unit and the unit's own merged tree are different relationships, and this
+#: module already keeps that distinction for XASSET-0036/PR #336 and XASSET-0041/XASSET-0042.
+PARSER_CORRECTION_AUTHORIZING_DECISION = "XASSET-0058"
+PARSER_CORRECTION_AUTHORIZING_PULL_REQUEST = 359
+PARSER_CORRECTION_AUTHORIZING_MERGE_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD = "e8d53c184a7612ab6e38ba8d7ae1e348f7046de2"
+PARSER_CORRECTION_AUTHORIZING_MERGE_BASE = "556a43cf91679d3e8ca95703c8d49e672b662b73"
+
+#: XASSET-0059 (PR #360) -- LIFECYCLE B of XASSET-0057 SS-F.0.3: the parser correction ITSELF.
+#: Its B5 normal-merge commit is the single commit XASSET-0057 SS-F.2 permits as this unit's base,
+#: and it is also the exact SHA tested by B7 merge-commit CI (run 33112432925, job 98658423867,
+#: attempt 1, completed/success) and named by the B8 closure record (issuecomment-5444905083).
+#: XASSET-0057 SS-F.2 requires those three to be the SAME commit and requires this unit to prove
+#: it; the proof is in the supporting artifact and the decision record, not asserted here.
+PARSER_CORRECTION_IMPLEMENTATION_DECISION = "XASSET-0059"
+PARSER_CORRECTION_IMPLEMENTATION_PULL_REQUEST = 360
+PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+PARSER_CORRECTION_IMPLEMENTATION_ACCEPTED_HEAD = "90b829863875223d56b8da2c62ba0bfc06fbcd7e"
+PARSER_CORRECTION_IMPLEMENTATION_MERGE_BASE = "34c45900ce23742d04d80cf12471c34aabe9682d"
+
+# --------------------------------------------------------------------------------------
+# The module identity chain — XASSET-0057 SS-F.3's FOUR ROLES, in one ordered statement
+# --------------------------------------------------------------------------------------
+#
+# XASSET-0057 SS-F.3 withdrew the "two ends, already known" formulation as self-contradictory: it
+# named ``12eab05e...604a5`` as the transition's NEW end while SS-F.0 simultaneously forbids that
+# identity from ever being bound. There are not two ends; there are FOUR ROLES in one ordered
+# chain, and ONLY THE LAST IS EVER BOUND.
+#
+#   1  previously bound        4ff28941...  blob f71b08b4...  the register's superseded bound end
+#   2  vulnerable intermediate 12eab05e...  blob b5622f9e...  PERMANENT NEGATIVE PIN, never bound
+#   3  parser-corrected        1283a2d4...  blob b8414a69...  intermediate, never bound directly
+#   4  final stabilized        derived, after every authorized byte stabilized -- THE bound end
+#
+# Role 4 is NOT a constant here, and cannot be: a module cannot carry its own post-edit SHA-256
+# without changing that SHA-256 by carrying it. It is derived from the MERGED TREE at validation
+# time by :func:`_verify_git_anchored_identity`, which is why that function reads
+# ``blob_sha256_at`` rather than comparing against a literal. Role 4's measured value is recorded
+# ONCE, LAST, in the XASSET-0060 decision record -- a file whose bytes are not the module's.
+#
+# Roles 1-3 ARE constants, because each must remain provable after the register moves. Role 2 in
+# particular is load-bearing in the negative: it is the state that EXISTED and was REFUSED, and
+# :func:`_verify_module_identity_is_not_the_vulnerable_intermediate` turns SS-F.0's "may never be
+# rebound" from prose into a refusal.
+
+#: Role 1 -- the identity the register bound before this rebinding, retained, never discarded.
+PREVIOUSLY_BOUND_MODULE_SHA256 = (
+    "4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541"
+)
+PREVIOUSLY_BOUND_MODULE_BLOB = "f71b08b4ebe95f161c57cdbb2a924748f13af02d"
+
+#: Role 2 -- the VULNERABLE intermediate. PERMANENT ADVERSE HISTORY. Never a bound end, at any
+#: point in the chain, under any reading, however unchanged main may be (XASSET-0057 SS-F.0).
+VULNERABLE_MODULE_SHA256 = (
+    "12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5"
+)
+VULNERABLE_MODULE_BLOB = "b5622f9e412afd604a11cde04317b79c5e57920a"
+
+#: Role 3 -- the PARSER-CORRECTED intermediate, DERIVED from the XASSET-0059 B5 merge rather than
+#: predicted (XASSET-0057 SS-F.0.4). Never bound directly; it reaches the register only through
+#: role 4's own derivation and proof.
+PARSER_CORRECTED_MODULE_SHA256 = (
+    "1283a2d4ccc3794fd37b81d4e5e23ac6f67a0b87b911ef3861c724d636fabd00"
+)
+PARSER_CORRECTED_MODULE_BLOB = "b8414a69f41e37f8fdd5c18dae13176fd847170e"
+
+#: Identities that may NEVER be a bound end of the load-bearing module, whatever the merged tree
+#: says. A frozenset rather than a bare comparison so a future addition cannot silently drop one.
+NEVER_BINDABLE_MODULE_SHA256 = frozenset({VULNERABLE_MODULE_SHA256})
+
+#: This module's own path inside the repository. Introduced by XASSET-0060 so the negative pin can
+#: be applied to the RIGHT load-bearing file by name rather than by position. Deliberately NOT
+#: substituted into :data:`LOAD_BEARING_RELPATHS`, whose first member stays the literal it has
+#: always been: rewriting an existing member's textual form would be churn inside the one tuple
+#: XASSET-0057 SS-F.7 permits only to be EXTENDED. The supporting artifact pins the two as equal.
+AUTHORIZATION_MODULE_RELPATH = "level1_stage1_execution_authorization.py"
 
 #: Decisions whose own effectivity condition named an exact merge SHA whose merge-commit CI failed.
 #: For each, that condition is PERMANENTLY unsatisfiable -- a green run at any other commit is
@@ -992,6 +1164,61 @@ LOAD_BEARING_RELPATHS = (
     "XASSET-0048-endpoint-0001-stage-1-step-8-equivalent-rebinding-authorization.md",
     "governance/decisions/"
     "XASSET-0049-endpoint-0001-stage-1-step-8-equivalent-successor-operational-rebinding.md",
+    # EXTENDED AGAIN BY XASSET-0060 / XASSET-0057 SS-F.7, 18 -> 25. ADDITIVE ONLY: NOTHING IS
+    # REMOVED, no existing member is altered or reordered, no path is swapped or traded away, and
+    # no exact-byte check is weakened. Every one of the eighteen members above is retained at its
+    # own index.
+    #
+    # XASSET-0057 SS-F.7 states the requirement directly, and it is BROADER than the
+    # XASSET-0037 SS-E principle the previous four extensions applied. That principle reaches the
+    # decision supplying the effective structural authorization; SS-F.7 reaches EVERY decision that
+    # makes the newly bound BYTES lawful -- because binding the parser-corrected implementation
+    # while leaving the decisions that authorized and DEFINED the parser semantics outside the
+    # byte-identity boundary would protect the code and not the authority that says what the code
+    # must do. Reproduced before extending, exactly as SS-F.7 records: XASSET-0053, XASSET-0055,
+    # XASSET-0056 and XASSET-0057 were ALL absent from this tuple, so all four sat OUTSIDE the
+    # identity they make lawful and were editable after attestation. XASSET-0058 and XASSET-0059
+    # -- which did not yet exist when SS-F.7 was written -- are in the same position, and SS-F.7
+    # anticipates them in terms: "every future accepted decision that authorizes or implements the
+    # SS-F.0 prerequisite parser correction -- however many that turns out to be".
+    #
+    # The seven additions, each named for the relationship it protects:
+    #
+    #   * XASSET-0053 -- the accepted authorization for the parser-contract correction;
+    #   * XASSET-0055 -- the accepted verdict-boundary governance;
+    #   * XASSET-0056 -- the accepted parser correction as implemented;
+    #   * XASSET-0057 -- the authority for THIS rebinding;
+    #   * XASSET-0058 -- Lifecycle A, the parser-correction authorization (SS-F.0.3);
+    #   * XASSET-0059 -- Lifecycle B, the parser correction itself, whose bytes this unit binds;
+    #   * XASSET-0060 -- this decision, the effective structural authorization source after it.
+    #
+    # XASSET-0044's and XASSET-0047's own decision files STAY, exactly where they were put, and so
+    # does XASSET-0049's. A stopped lifecycle is not an invalidated one, a superseded anchor is not
+    # a retired one, and a path traded away is the defect this boundary exists to catch.
+    #
+    # XASSET-0054 REMAINS EXCLUDED. XASSET-0057 SS-F.7 permits its admission ONLY on independent
+    # evidence that it is operative, "never on the strength of appearing in a narrative, a
+    # related-decisions list, or this enumeration". That evidence was sought and NOT found: its
+    # identifier is consumed, its pull request closed unmerged, and no XASSET-0054 decision file
+    # exists anywhere on main -- verified directly against the merged tree, not inferred.
+    # XASSET-0045's decision file likewise remains deliberately ABSENT for the reason XASSET-0047
+    # gave: it authorizes nothing, so binding it would assert a relationship that does not exist.
+    #
+    # CITATION IS NOT MEMBERSHIP (SS-F.7). Naming a decision in ``related_decisions``, quoting it,
+    # deriving from it or asserting equivalence with it is not a substitute for direct membership;
+    # only a path present in THIS tuple is inside the byte-identity boundary.
+    "governance/decisions/"
+    "XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+    "governance/decisions/"
+    "XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+    "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+    "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md",
 )
 
 # ======================================================================================
@@ -3113,6 +3340,116 @@ def _verify_step8_equivalent_base_equality(
     return errors
 
 
+def _verify_post_parser_correction_base_equality(
+    reviewed_base: Any,
+    implementation_merge: Any,
+    descends_from_implementation_merge: bool | None,
+) -> list[str]:
+    """XASSET-0057 SS-F.2: the base must EQUAL the Lifecycle B implementation's B5 merge.
+
+    A SEPARATE function from :func:`_verify_step8_equivalent_base_equality`, deliberately, and not
+    a rename of it. The two decide DIFFERENT propositions about DIFFERENT commits:
+
+      * XASSET-0048 SS-F.2 required the base to equal the AUTHORIZING decision's own merge, and
+        :func:`_verify_step8_equivalent_base_equality` still decides exactly that -- unchanged in
+        name, signature, purity and message, and still exercised by its own tests.
+      * XASSET-0057 SS-F.2 WITHDREW that rule for this unit and replaced it, because SS-F.0 makes
+        an intervening parser correction MANDATORY. An absolute "equal your own authorization's
+        merge" rule and a mandatory intervening merge cannot both hold. The single replacement
+        names the commit exactly: the B5 normal-merge commit of the Lifecycle B implementation.
+
+    Reusing the step-8 function here would have produced a correct verdict under a message that
+    misattributes the governing rule to XASSET-0048 SS-F.2 and calls the XASSET-0059 merge a
+    "step-8-equivalent authorization merge", which it is not. The proposition is decided in its own
+    terms instead.
+
+    Three conditions, and nothing else:
+
+      1. both identities are well-formed 40-hex commit names -- an unobtainable or malformed
+         identity is an ERROR, never silent agreement (XASSET-0057 SS-I);
+      2. the reviewed base EQUALS the Lifecycle B implementation merge exactly;
+      3. ancestry into this rebinding's own merge is RETAINED as necessary history -- a ``False``
+         here is still a failure, so equality never becomes a licence to drop the ancestry
+         requirement every predecessor rule carried.
+
+    XASSET-0057 SS-F.2 additionally removed every ADMISSION PATH: if main carries any commit
+    between the B5 merge and this unit's base, the grant does not authorize the unit at all. That
+    is enforced by the equality in condition 2 rather than by a separate clause -- once an
+    intervening commit exists the base cannot equal the B5 merge, so no ``unless`` is reachable.
+
+    ``descends_from_implementation_merge`` is ``None`` when the rebinding merge is not yet a
+    resolvable commit (the pre-merge case), which is not itself a failure of THIS proposition.
+
+    Pure and offline by construction: it reads no git, no GitHub, no network and no clock, and it
+    takes its inputs as PARAMETERS rather than reading module globals -- which is what lets the
+    test module drive it against known-good and known-bad values, including a real synthetic later
+    descendant, without monkeypatching anything.
+    """
+    errors: list[str] = []
+    if not _is_commit_sha(reviewed_base):
+        errors.append(
+            f"authority: the reviewed base {reviewed_base!r} is not a well-formed commit name, so "
+            "its equality with the parser-correction implementation merge cannot be decided; this "
+            "fails closed"
+        )
+    if not _is_commit_sha(implementation_merge):
+        errors.append(
+            f"authority: the parser-correction implementation merge {implementation_merge!r} is "
+            "not a well-formed commit name, so the base-equality rule cannot be decided; this "
+            "fails closed"
+        )
+    if errors:
+        return errors
+    if str(reviewed_base) != str(implementation_merge):
+        errors.append(
+            f"authority: the reviewed base {reviewed_base} is not the Lifecycle B parser-correction "
+            f"implementation merge {implementation_merge}; XASSET-0057 SS-F.2 makes EQUALITY "
+            "operative and names that commit exactly, descent alone never qualifies a base, and no "
+            "admission path exists for an intervening commit"
+        )
+    if descends_from_implementation_merge is False:
+        errors.append(
+            f"git truth: the rebinding merge does not descend from the parser-correction "
+            f"implementation merge {implementation_merge}; ancestry remains NECESSARY history even "
+            "though it is insufficient authority"
+        )
+    return errors
+
+
+def _verify_module_identity_is_not_the_vulnerable_intermediate(
+    merged_module_sha256: Any,
+    never_bindable: Any = NEVER_BINDABLE_MODULE_SHA256,
+) -> list[str]:
+    """XASSET-0057 SS-F.0/SS-F.3: role 2 may NEVER become a bound end.
+
+    SS-F.0 records ``12eab05e...604a5`` as a PERMANENT NEGATIVE PIN -- "no rebinding under this
+    grant may bind it as any bound end, at any time, under any reading, however unchanged main may
+    be" -- and SS-F.3 repeats that a rebinding whose bound module identity equals role 2 "fails
+    outright". Those are refusals, so they are implemented as one, not left as prose.
+
+    This is NOT redundant with the merged-tree comparison in
+    :func:`_verify_git_anchored_identity`. That function asks whether the recorded, merged and
+    working-tree bytes AGREE; this one asks whether the identity they agree on is one the
+    programme has permanently refused. A rebinding that bound the vulnerable module perfectly
+    consistently would satisfy the first check completely and still install a known fail-open
+    parser as the accepted enforcement anchor.
+
+    Pure, offline and parameterised for exactly the reason the sibling rules are: a rule that read
+    the module global directly could not be driven against a known-bad input at all.
+    """
+    errors: list[str] = []
+    if merged_module_sha256 is None:
+        return errors
+    if str(merged_module_sha256) in {str(x) for x in never_bindable}:
+        errors.append(
+            f"authority: the load-bearing module identity {merged_module_sha256} is a PERMANENTLY "
+            "REFUSED identity (XASSET-0057 SS-F.0's negative pin); binding it would install a "
+            "known fail-open formal-disposition parser as the accepted enforcement anchor, and no "
+            "reading of any grant permits it"
+        )
+    return errors
+
+
 def _verify_recovery_lifecycle_anchor(merge_sha: Any) -> list[str]:
     """XASSET-0046 SS-G.6/SS-G.7/SS-G.9: refuse an anchor that cannot lawfully authorize.
 
@@ -3207,6 +3544,55 @@ def _verify_recovery_lifecycle_anchor(merge_sha: Any) -> list[str]:
         errors.append(
             f"authority: pull request #{AUTHORIZING_PULL_REQUEST} is the AUTHORIZING pull request, "
             "not this rebinding's own"
+        )
+    # XASSET-0060. The same two classes, re-stated against THIS unit's own predecessor and its own
+    # authority. Refusals 5 and 6 above still name XASSET-0047 and XASSET-0048 and are NOT
+    # weakened; they simply no longer describe the anchor's current neighbours, and a refusal that
+    # has stopped naming the live pair has stopped refusing anything.
+    #
+    # 7. the superseded anchor may not silently REMAIN the anchor.
+    if AUTHORIZING_DECISION == PRIOR_STEP8_EQUIVALENT_DECISION:
+        errors.append(
+            f"authority: {AUTHORIZING_DECISION} is the PRIOR anchor this rebinding supersedes; a "
+            "rebinding whose anchor still names its own predecessor has not rebound anything"
+        )
+    if AUTHORIZING_PULL_REQUEST == PRIOR_STEP8_EQUIVALENT_PULL_REQUEST:
+        errors.append(
+            f"authority: pull request #{AUTHORIZING_PULL_REQUEST} is the PRIOR anchor's own pull "
+            "request; the successor must name its own"
+        )
+    # 8. the AUTHORITY may not be mistaken for the UNIT. XASSET-0057 SS-A says in terms that
+    #    merging it "performs no rebinding"; an anchor naming it would collapse authority into the
+    #    thing authorized.
+    if AUTHORIZING_DECISION == POST_PARSER_CORRECTION_AUTHORIZING_DECISION:
+        errors.append(
+            f"authority: {AUTHORIZING_DECISION} is the decision that AUTHORIZED this rebinding, "
+            "not the rebinding itself; XASSET-0057 SS-A performs no rebinding and cannot be the "
+            "effective structural authorization source its own grant produces"
+        )
+    if AUTHORIZING_PULL_REQUEST == POST_PARSER_CORRECTION_AUTHORIZING_PULL_REQUEST:
+        errors.append(
+            f"authority: pull request #{AUTHORIZING_PULL_REQUEST} is the AUTHORIZING pull request, "
+            "not this rebinding's own"
+        )
+    # 9. neither PREREQUISITE lifecycle may be mistaken for this unit either. XASSET-0058 and
+    #    XASSET-0059 corrected the parser; XASSET-0057 SS-G forbids this unit from correcting it,
+    #    and an anchor naming either would claim their work as this rebinding's own.
+    if AUTHORIZING_DECISION in (
+        PARSER_CORRECTION_AUTHORIZING_DECISION,
+        PARSER_CORRECTION_IMPLEMENTATION_DECISION,
+    ):
+        errors.append(
+            f"authority: {AUTHORIZING_DECISION} is a PREREQUISITE parser-correction lifecycle "
+            "(XASSET-0057 SS-F.0.3), not the rebinding this anchor names"
+        )
+    if AUTHORIZING_PULL_REQUEST in (
+        PARSER_CORRECTION_AUTHORIZING_PULL_REQUEST,
+        PARSER_CORRECTION_IMPLEMENTATION_PULL_REQUEST,
+    ):
+        errors.append(
+            f"authority: pull request #{AUTHORIZING_PULL_REQUEST} is a PREREQUISITE "
+            "parser-correction pull request, not this rebinding's own"
         )
     return errors
 
@@ -3524,6 +3910,37 @@ def _verify_successor_rebinding_identity(
             STEP8_EQUIVALENT_AUTHORIZING_MERGE_BASE,
             STEP8_EQUIVALENT_AUTHORIZING_ACCEPTED_HEAD,
         ),
+        # XASSET-0060 appends four more, on exactly the same terms and with exactly the same
+        # rigour: exact ordered parents, merge tree byte-identical to the accepted head's tree, and
+        # ancestry into this rebinding's own merge. The first is the PRIOR ANCHOR this rebinding
+        # supersedes -- a CLOSED predecessor, on XASSET-0037's footing and NOT on the two stopped
+        # lifecycles'. The remaining three are this unit's authority (XASSET-0057) and the two
+        # lifecycles XASSET-0057 SS-F.0.3 makes a conjunctive prerequisite: Lifecycle A
+        # (XASSET-0058) and Lifecycle B (XASSET-0059), whose B5 merge this unit's base must equal.
+        (
+            "prior step-8-equivalent anchor (XASSET-0049 / PR #349)",
+            PRIOR_STEP8_EQUIVALENT_MERGE_SHA,
+            PRIOR_STEP8_EQUIVALENT_MERGE_BASE,
+            PRIOR_STEP8_EQUIVALENT_ACCEPTED_HEAD,
+        ),
+        (
+            "post-parser-correction rebinding authorization (XASSET-0057 / PR #358)",
+            POST_PARSER_CORRECTION_AUTHORIZING_MERGE_SHA,
+            POST_PARSER_CORRECTION_AUTHORIZING_MERGE_BASE,
+            POST_PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+        ),
+        (
+            "parser-correction authorization, Lifecycle A (XASSET-0058 / PR #359)",
+            PARSER_CORRECTION_AUTHORIZING_MERGE_SHA,
+            PARSER_CORRECTION_AUTHORIZING_MERGE_BASE,
+            PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+        ),
+        (
+            "parser correction, Lifecycle B (XASSET-0059 / PR #360)",
+            PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA,
+            PARSER_CORRECTION_IMPLEMENTATION_MERGE_BASE,
+            PARSER_CORRECTION_IMPLEMENTATION_ACCEPTED_HEAD,
+        ),
     )
     for label, inherited_merge, inherited_base, inherited_head in inherited:
         # MAJOR 1 (review 4986931575): an absent anchor is a REFUSAL, never a skip. Previously a
@@ -3582,11 +3999,20 @@ def _verify_successor_rebinding_identity(
     # descent explicitly insufficient, so the check below delegates to a PURE function that
     # decides the whole proposition -- equality AND retained ancestry AND well-formedness -- and
     # refuses a later descendant even when ancestry is granted unconditionally.
+    #
+    # RE-ANCHORED BY XASSET-0060, and NOT merely moved. XASSET-0049 compared this unit's base
+    # against XASSET-0048's merge because XASSET-0048 was both its authority AND -- under the rule
+    # in force then -- the commit its base had to equal. XASSET-0057 SS-F.2 split those two facts
+    # apart for this unit: XASSET-0057 is the AUTHORITY, but SS-F.0 makes an intervening parser
+    # correction mandatory, so the base must equal the LIFECYCLE B IMPLEMENTATION merge instead.
+    # Both relationships are now checked, each by the rule that actually governs it, and neither
+    # is dropped: the XASSET-0057 grant's own merge is verified in the inherited-merge table above
+    # -- exact parents, zero drift, ancestry -- exactly as XASSET-0048's still is.
     errors.extend(
-        _verify_step8_equivalent_base_equality(
+        _verify_post_parser_correction_base_equality(
             REVIEWED_BASE_SHA,
-            STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA,
-            git.is_ancestor(STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA, str(merge_sha))
+            PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA,
+            git.is_ancestor(PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA, str(merge_sha))
             if _is_commit_sha(merge_sha)
             else None,
         )
@@ -3965,6 +4391,14 @@ def _verify_git_anchored_identity(
                 f"git truth: {relative} is absent from the authorized merged tree {merge_sha}"
             )
             continue
+        # XASSET-0060 / XASSET-0057 SS-F.0's PERMANENT NEGATIVE PIN, made operative. The checks
+        # below ask whether the recorded, merged and working-tree bytes AGREE; this asks whether
+        # the identity they agree on is one the programme has permanently REFUSED. A rebinding
+        # that bound the vulnerable module perfectly consistently would pass every agreement check
+        # and still install a known fail-open formal-disposition parser as the accepted
+        # enforcement anchor.
+        if relative == AUTHORIZATION_MODULE_RELPATH:
+            errors.extend(_verify_module_identity_is_not_the_vulnerable_intermediate(merged))
         # MAJOR 2: the merged tree may not become its own source of truth. Every load-bearing
         # blob must ALSO equal the same blob in the independently reviewed head.
         if _is_commit_sha(accepted_head):

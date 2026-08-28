@@ -147,6 +147,87 @@ DEAD_PREREG_PIN_PREFIX = "768b013c"
 
 EXPECTED_LOAD_BEARING_COUNT = 18
 
+
+# ── RE-ANCHORED BY XASSET-0060 ──────────────────────────────────────────────────────────────
+#
+# XASSET-0060 is the ONE post-parser-correction rebinding XASSET-0057 SS-E authorizes. Under
+# XASSET-0057 SS-F.7 it extends LOAD_BEARING_RELPATHS ADDITIVELY, 18 -> 25, adding the six
+# decisions that authorized and defined the formal-disposition parser plus its own decision file.
+#
+# This suite's claims are about the merge THIS unit bound, which is IMMUTABLE. A later unit
+# lawfully adding paths does not falsify any of them -- but comparing the LIVE tuple against that
+# historical merge silently turned "my paths are unchanged" into "no successor may ever add one",
+# which is a claim this suite never had the authority to make and which the anchoring-to-a-moving-
+# reference defect (the one that stopped PRs #344 and #345) is exactly about.
+#
+# The re-anchor is STRICTLY STRENGTHENING, never a relaxation:
+#   * the historical membership is DERIVED BY AST from the bound merge, not restated;
+#   * its COUNT is still pinned at exactly EXPECTED_LOAD_BEARING_COUNT;
+#   * the live tuple must contain the historical set as an ORDERED PREFIX -- so nothing may be
+#     removed, reordered, swapped or traded away, which the old equality could not distinguish
+#     from a wholesale replacement of equal length;
+#   * the live count is pinned EXACTLY at SUCCESSOR_LOAD_BEARING_COUNT, so a further silent
+#     addition still fails here.
+SUCCESSOR_LOAD_BEARING_COUNT = 25
+SUCCESSOR_DECISION_ID = "XASSET-0060"
+SUCCESSOR_REVIEWED_BASE_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+
+
+def _load_bearing_declared_at_bound_merge() -> tuple[str, ...]:
+    """The exact tuple the production module DECLARED at ``BOUND_MERGE_SHA``.
+
+    Parsed with ``ast`` and never imported or executed, so a historical module's code cannot run.
+    Module-level string aliases and implicit concatenation are resolved from the SAME historical
+    source, never from the live module.
+    """
+    source = subprocess.run(
+        ["git", "show", f"{BOUND_MERGE_SHA}:level1_stage1_execution_authorization.py"],
+        cwd=ROOT, capture_output=True, check=True, text=True,
+    ).stdout
+    tree = ast.parse(source)
+    consts: dict[str, str] = {}
+
+    def _literal(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if isinstance(node, ast.Name) and node.id in consts:
+            return consts[node.id]
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            left, right = _literal(node.left), _literal(node.right)
+            if left is not None and right is not None:
+                return left + right
+        return None
+
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if not isinstance(target, ast.Name):
+                continue
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                consts[target.id] = node.value.value
+            if target.id == "LOAD_BEARING_RELPATHS" and isinstance(node.value, ast.Tuple):
+                items = [_literal(e) for e in node.value.elts]
+                assert all(i is not None for i in items), "unresolved element"
+                return tuple(items)
+    raise AssertionError("LOAD_BEARING_RELPATHS is not declared at the bound merge")
+
+
+HISTORICAL_LOAD_BEARING = _load_bearing_declared_at_bound_merge()
+
+
+def _assert_boundary_is_the_bound_set_plus_authorized_additions() -> None:
+    """Shared by every re-anchored claim in this suite, so one weakening cannot slip into one."""
+    live = tuple(A.LOAD_BEARING_RELPATHS)
+    assert len(HISTORICAL_LOAD_BEARING) == EXPECTED_LOAD_BEARING_COUNT
+    assert len(set(HISTORICAL_LOAD_BEARING)) == EXPECTED_LOAD_BEARING_COUNT
+    # ORDERED PREFIX: nothing removed, reordered, swapped or traded away.
+    assert live[:EXPECTED_LOAD_BEARING_COUNT] == HISTORICAL_LOAD_BEARING
+    assert set(HISTORICAL_LOAD_BEARING) <= set(live)
+    # The successor's own count, pinned exactly -- a further silent addition still fails.
+    assert len(live) == SUCCESSOR_LOAD_BEARING_COUNT
+    assert len(set(live)) == SUCCESSOR_LOAD_BEARING_COUNT
+
 #: C3 -- the five outcome-capable modules, recorded here as the filing-time WITNESS. §G.1 makes the
 #: value DERIVED from the bound merge tree operative; this table exists so a drift between the two
 #: fails in CI instead of waiting to be noticed at verification time.
@@ -509,11 +590,16 @@ class TestChecklistPinsMatchTheLiveSystem:
     """Every recorded pin must equal the value derived from the bound merge tree."""
 
     def test_load_bearing_count_and_uniqueness(self):
-        assert len(A.LOAD_BEARING_RELPATHS) == EXPECTED_LOAD_BEARING_COUNT
-        assert len(set(A.LOAD_BEARING_RELPATHS)) == EXPECTED_LOAD_BEARING_COUNT
+        """RE-ANCHORED BY XASSET-0060: proved against the AST-derived historical set, so removal,
+        reordering and substitution still fail while an authorized addition does not."""
+        _assert_boundary_is_the_bound_set_plus_authorized_additions()
 
     def test_every_load_bearing_path_matches_the_bound_merge(self):
-        for relpath in A.LOAD_BEARING_RELPATHS:
+        # RE-ANCHORED AGAIN BY XASSET-0060: iterated over the HISTORICAL set this unit actually
+        # bound, derived by AST from the immutable bound merge. The seven paths XASSET-0060
+        # lawfully ADDED did not exist in this merge, so the question was unanswerable for them
+        # rather than merely weaker; their identity is bound by XASSET-0060's own suite.
+        for relpath in HISTORICAL_LOAD_BEARING:
             worktree = hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
             # RE-ANCHORED BY XASSET-0056: the single replacement parser-correction
             # implementation XASSET-0055 §H authorized lawfully changes exactly ONE
@@ -671,9 +757,17 @@ class TestThisFilingMutatesNothingLoadBearing:
         assert _blob_sha256_at("level1_stage1_execution_authorization.py") == AUTH_MODULE_SHA
 
     def test_the_rebinding_constants_are_untouched(self):
-        assert A.AUTHORIZING_DECISION == BOUND_AUTHORIZING_DECISION
-        assert A.AUTHORIZING_PULL_REQUEST == BOUND_AUTHORIZING_PULL_REQUEST
-        assert A.REVIEWED_BASE_SHA == BOUND_REVIEWED_BASE_SHA
+        """RE-ANCHORED BY XASSET-0060, bound at BOTH ends. The values THIS unit bound are retained
+        as NEGATIVE PINS and the successor's own values pinned positively, so an unauthorized move
+        to any third value fails both halves."""
+        assert A.AUTHORIZING_DECISION == SUCCESSOR_DECISION_ID
+        assert A.AUTHORIZING_DECISION != BOUND_AUTHORIZING_DECISION
+        assert A.PRIOR_STEP8_EQUIVALENT_DECISION == BOUND_AUTHORIZING_DECISION
+        assert A.AUTHORIZING_PULL_REQUEST != BOUND_AUTHORIZING_PULL_REQUEST
+        assert A.PRIOR_STEP8_EQUIVALENT_PULL_REQUEST == BOUND_AUTHORIZING_PULL_REQUEST
+        assert A.REVIEWED_BASE_SHA == SUCCESSOR_REVIEWED_BASE_SHA
+        assert A.REVIEWED_BASE_SHA != BOUND_REVIEWED_BASE_SHA
+        assert A.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == BOUND_REVIEWED_BASE_SHA
 
     def test_reviewed_base_sha_is_the_rebinding_base_not_current_main(self):
         """NEGATIVE pin: REVIEWED_BASE_SHA must not drift onto the merge that carried XASSET-0049."""

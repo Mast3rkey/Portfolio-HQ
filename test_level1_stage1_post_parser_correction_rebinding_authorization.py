@@ -19,6 +19,7 @@ The suite deliberately proves four different kinds of thing:
 from __future__ import annotations
 
 import datetime
+import ast
 import hashlib
 import re
 import subprocess
@@ -131,6 +132,43 @@ def _commit_exists(sha: str) -> bool:
         ).returncode
         == 0
     )
+
+
+def _load_bearing_declared_at(commit: str) -> tuple[str, ...]:
+    """The exact ``LOAD_BEARING_RELPATHS`` the production module DECLARED at a given commit.
+
+    Parsed with ``ast`` and never imported or executed, so a historical module's code cannot run.
+    Module-level string aliases and implicit concatenation are resolved from the SAME historical
+    source, never from the live module.
+    """
+    source = _git("show", f"{commit}:{MODULE_RELPATH}")
+    tree = ast.parse(source)
+    consts: dict[str, str] = {}
+
+    def _literal(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if isinstance(node, ast.Name) and node.id in consts:
+            return consts[node.id]
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            left, right = _literal(node.left), _literal(node.right)
+            if left is not None and right is not None:
+                return left + right
+        return None
+
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if not isinstance(target, ast.Name):
+                continue
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                consts[target.id] = node.value.value
+            if target.id == "LOAD_BEARING_RELPATHS" and isinstance(node.value, ast.Tuple):
+                items = [_literal(e) for e in node.value.elts]
+                assert all(i is not None for i in items), "unresolved element"
+                return tuple(items)
+    raise AssertionError(f"LOAD_BEARING_RELPATHS is not declared at {commit}")
 
 
 def _blob_at(commit: str, relpath: str) -> str | None:
@@ -573,12 +611,33 @@ class TestThisFilingChangesNoProductionByte:
         assert merged == MERGED_MODULE_SHA256
 
     def test_the_structural_bindings_are_unmoved(self):
-        assert AUTH.AUTHORIZING_DECISION == AUTHORIZING_DECISION
-        assert AUTH.AUTHORIZING_PULL_REQUEST == AUTHORIZING_PULL_REQUEST
-        assert AUTH.REVIEWED_BASE_SHA == REVIEWED_BASE_SHA
+        # RE-ANCHORED BY XASSET-0060, the ONE rebinding THIS decision authorized. What this test
+        # protects is that THIS FILING moved no anchor -- not that the anchor may never move,
+        # which would contradict §E of the very decision it pins. The claim is therefore proved
+        # over this filing's own IMMUTABLE range, and the values it saw are retained as NEGATIVE
+        # pins on the constants that now carry them, so a silent revert still fails here.
+        assert _blob_at(THIS_UNIT_BASE_SHA, MODULE_RELPATH) == _blob_at(
+            XASSET_0058_MERGE_SHA, MODULE_RELPATH
+        ), "this filing changed the module"
+        assert AUTH.AUTHORIZING_DECISION == "XASSET-0060"
+        assert AUTH.AUTHORIZING_DECISION != AUTHORIZING_DECISION
+        assert AUTH.PRIOR_STEP8_EQUIVALENT_DECISION == AUTHORIZING_DECISION
+        assert AUTH.AUTHORIZING_PULL_REQUEST != AUTHORIZING_PULL_REQUEST
+        assert AUTH.PRIOR_STEP8_EQUIVALENT_PULL_REQUEST == AUTHORIZING_PULL_REQUEST
+        assert AUTH.REVIEWED_BASE_SHA != REVIEWED_BASE_SHA
+        assert AUTH.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == REVIEWED_BASE_SHA
 
     def test_the_trust_boundary_is_unchanged_at_eighteen(self):
-        assert len(AUTH.LOAD_BEARING_RELPATHS) == LOAD_BEARING_COUNT
+        # RE-ANCHORED BY XASSET-0060. THIS filing left the boundary at eighteen, which is
+        # immutable and is proved over its own range below; §F.7 of this very decision then
+        # required the successor to EXTEND it, so pinning the live count at eighteen asserted the
+        # opposite of what this decision says. Both ends are bound: eighteen at this filing's own
+        # merge, twenty-five now, and every one of the eighteen still present in order.
+        historical = _load_bearing_declared_at(XASSET_0058_MERGE_SHA)
+        assert len(historical) == LOAD_BEARING_COUNT
+        assert tuple(AUTH.LOAD_BEARING_RELPATHS)[:LOAD_BEARING_COUNT] == historical
+        assert len(AUTH.LOAD_BEARING_RELPATHS) == 25
+        assert len(set(AUTH.LOAD_BEARING_RELPATHS)) == 25
 
     def test_the_bound_digest_is_still_the_stale_one(self):
         """The whole safety property: bound != merged, deliberately.
@@ -623,7 +682,11 @@ class TestThisFilingChangesNoProductionByte:
         # RE-ANCHORED: proved over THIS filing's own immutable range. XASSET-0058 §F then
         # authorizes exactly ONE later unit to change exactly ONE of these paths, so every
         # OTHER load-bearing path is additionally still pinned against the working tree.
-        for relpath in AUTH.LOAD_BEARING_RELPATHS:
+        # RE-ANCHORED AGAIN BY XASSET-0060: iterated over the boundary AS IT WAS at this
+        # filing's own merge. The seven paths XASSET-0060 lawfully ADDED were not load-bearing
+        # then -- one of them is this decision's own file -- so asking whether this filing changed
+        # them is a question about a set it never bound. Coverage of the eighteen is unchanged.
+        for relpath in _load_bearing_declared_at(XASSET_0058_MERGE_SHA):
             base_blob = _blob_at(THIS_UNIT_BASE_SHA, relpath)
             merged_blob = _blob_at(XASSET_0058_MERGE_SHA, relpath)
             assert base_blob == merged_blob, f"load-bearing path changed: {relpath}"
@@ -1032,10 +1095,22 @@ class TestTheLoadBearingDecisionBoundaryIsClosed:
     REQUIRED = ("XASSET-0053", "XASSET-0055", "XASSET-0056", "XASSET-0057")
 
     def test_the_gap_this_correction_closes_is_real(self):
-        """Non-vacuity: these decisions really are absent from the live boundary today."""
+        """Non-vacuity: these decisions really were absent from the boundary this filing saw.
+
+        RE-ANCHORED BY XASSET-0060, and STRENGTHENED into a two-ended claim. The gap §F.7 named
+        was real -- proved here against the boundary as it stood at this filing's own merge, which
+        is immutable -- and it has since been CLOSED by the one rebinding §E authorizes. Asserting
+        the gap still exists today would assert that the correction this decision demanded may
+        never happen, which is the opposite of what it says.
+        """
+        historical = _load_bearing_declared_at(XASSET_0058_MERGE_SHA)
+        assert len(historical) == LOAD_BEARING_COUNT
         for d in self.REQUIRED:
-            assert not [p for p in AUTH.LOAD_BEARING_RELPATHS if d in p], d
-        assert len(AUTH.LOAD_BEARING_RELPATHS) == LOAD_BEARING_COUNT
+            assert not [p for p in historical if d in p], d
+        # ... and the gap is now closed, by direct membership rather than citation.
+        for d in self.REQUIRED:
+            assert [p for p in AUTH.LOAD_BEARING_RELPATHS if d in p], d
+        assert len(AUTH.LOAD_BEARING_RELPATHS) == 25
 
     @pytest.mark.parametrize("decision", REQUIRED)
     def test_each_governing_decision_is_required_by_name(self, decision_text, decision):
@@ -2425,8 +2500,11 @@ class TestTheRegisterIsSynchronized:
     #: really protecting.
     #: ADVANCED BY XASSET-0059: the shared fields moved again, onto the Lifecycle B unit.
     #: The XASSET-0058 generation is retained beside it as a NEGATIVE pin.
-    SUCCESSOR_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
-    SUCCESSOR_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
+    # ADVANCED BY XASSET-0060; XASSET-0059's values are retained below as NEGATIVE pins.
+    SUCCESSOR_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
+    SUCCESSOR_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+    XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
+    XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
     XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
     XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 
@@ -2434,6 +2512,8 @@ class TestTheRegisterIsSynchronized:
         assert register["active_branch"] == self.SUCCESSOR_BRANCH
         assert register["last_verified_main_sha"] == self.SUCCESSOR_MAIN_SHA
         assert register["active_branch"] != BRANCH
+        assert register["active_branch"] != self.XASSET0059_BRANCH
+        assert register["last_verified_main_sha"] != self.XASSET0059_MAIN_SHA
         assert register["active_branch"] != self.XASSET0058_BRANCH
         assert register["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
         assert register["last_verified_main_sha"] != self.XASSET0058_MAIN_SHA

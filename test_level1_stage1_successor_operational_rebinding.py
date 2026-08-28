@@ -202,6 +202,30 @@ class FakeGit:
                 A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_BASE,
                 A.STEP8_EQUIVALENT_AUTHORIZING_ACCEPTED_HEAD,
             ),
+            # EXTENDED BY XASSET-0060. The post-parser-correction rebinding verifies FOUR further
+            # merges from git -- the PRIOR ANCHOR it supersedes (XASSET-0049 / PR #349, a CLOSED
+            # predecessor, not a stopped one), its own AUTHORITY (XASSET-0057 / PR #358), and the
+            # TWO prerequisite lifecycles XASSET-0057 SS-F.0.3 makes conjunctive: Lifecycle A
+            # (XASSET-0058 / PR #359) and Lifecycle B (XASSET-0059 / PR #360), whose B5 merge this
+            # unit's base must EQUAL. An honest stand-in vouches for each separately rather than
+            # letting an unknown anchor pass. These are the REAL identities, so the fixture agrees
+            # with the object store.
+            A.PRIOR_STEP8_EQUIVALENT_MERGE_SHA: (
+                A.PRIOR_STEP8_EQUIVALENT_MERGE_BASE,
+                A.PRIOR_STEP8_EQUIVALENT_ACCEPTED_HEAD,
+            ),
+            A.POST_PARSER_CORRECTION_AUTHORIZING_MERGE_SHA: (
+                A.POST_PARSER_CORRECTION_AUTHORIZING_MERGE_BASE,
+                A.POST_PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+            ),
+            A.PARSER_CORRECTION_AUTHORIZING_MERGE_SHA: (
+                A.PARSER_CORRECTION_AUTHORIZING_MERGE_BASE,
+                A.PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+            ),
+            A.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA: (
+                A.PARSER_CORRECTION_IMPLEMENTATION_MERGE_BASE,
+                A.PARSER_CORRECTION_IMPLEMENTATION_ACCEPTED_HEAD,
+            ),
         }
         self.blobs = {}
         for rel in A.LOAD_BEARING_RELPATHS:
@@ -244,6 +268,17 @@ class FakeGit:
             A.PRIOR_RECONCILIATION_ACCEPTED_HEAD: "9" * 40,
             A.STEP8_EQUIVALENT_AUTHORIZING_MERGE_SHA: "b" * 40,
             A.STEP8_EQUIVALENT_AUTHORIZING_ACCEPTED_HEAD: "b" * 40,
+            # XASSET-0060: each added merge's tree equals its accepted head's tree, which is the
+            # zero-merge-drift property the module PROVES rather than assumes. FOUR DISTINCT
+            # synthetic trees, so a swap between any two of the four new entries is still caught.
+            A.PRIOR_STEP8_EQUIVALENT_MERGE_SHA: "d" * 40,
+            A.PRIOR_STEP8_EQUIVALENT_ACCEPTED_HEAD: "d" * 40,
+            A.POST_PARSER_CORRECTION_AUTHORIZING_MERGE_SHA: "e" * 40,
+            A.POST_PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD: "e" * 40,
+            A.PARSER_CORRECTION_AUTHORIZING_MERGE_SHA: "f" * 40,
+            A.PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD: "f" * 40,
+            A.PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA: "5" * 40,
+            A.PARSER_CORRECTION_IMPLEMENTATION_ACCEPTED_HEAD: "5" * 40,
         }
         # The exact transition needs blob TEXT, not a digest, and distinguishes the anchors: the
         # two PACKAGE anchors carry the accepted package bytes and the successor anchors carry

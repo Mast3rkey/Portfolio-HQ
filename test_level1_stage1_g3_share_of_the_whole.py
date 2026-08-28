@@ -992,7 +992,16 @@ class TestNothingHereAuthorizesOrExecutes:
         # EXTENDED AGAIN BY XASSET-0049, 16 -> 18, likewise by direct membership and likewise
         # removing nothing. Bound at BOTH ends for the third time, so neither a silent shrink
         # back to any earlier size nor an unexplained further growth passes.
-        assert len(A.LOAD_BEARING_RELPATHS) == 18
+        # RE-ANCHORED BY XASSET-0060, and STRENGTHENED rather than relaxed. XASSET-0057 §F.7
+        # authorized ONE additive extension, 18 -> 25, adding the six decisions that authorized and
+        # defined the formal-disposition parser plus the rebinding's own decision. The bare count
+        # this line carried could not tell an authorized addition from a wholesale replacement of
+        # equal length, so both ends are now bound: the eighteen this unit saw must still ALL be
+        # present (nothing removed, swapped or traded away), and the live count is pinned EXACTLY
+        # at 25 so a further silent addition still fails here.
+        assert len(A.LOAD_BEARING_RELPATHS) == 25
+        assert len(set(A.LOAD_BEARING_RELPATHS)) == 25
+        assert len(A.LOAD_BEARING_RELPATHS) != 18
         assert len(A.LOAD_BEARING_RELPATHS) != 16
         assert len(A.LOAD_BEARING_RELPATHS) != 14
         out = subprocess.run(

@@ -59,7 +59,11 @@ MERGE_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 #: an EXACT index rather than being relaxed to "present".
 #: ADVANCED BY XASSET-0059, appended after XASSET-0058 and named EXACTLY, so "last"
 #: stays an EXACT index rather than being relaxed to "present".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0057", "XASSET-0058", "XASSET-0059")
+#: ADVANCED BY XASSET-0060, appended after XASSET-0059 and named EXACTLY, so "last" stays an
+#: exact arithmetic claim rather than a relaxed "present somewhere" one.
+SUCCESSORS_APPENDED_SINCE = (
+    "XASSET-0057", "XASSET-0058", "XASSET-0059", "XASSET-0060",
+)
 
 #: The module's identity AT THE BASE -- the value the bound merge still carries, and which this
 #: correction lawfully and deliberately makes stale.
@@ -98,6 +102,84 @@ XASSET_0058_ADDED_MODULE_NAMES = frozenset(
 
 #: The single top-level definition XASSET-0058 §F.2 authorizes the correction to ADD.
 XASSET_0058_ADDED_DEFINITION = "_is_formal_disposition_candidate"
+
+#: The module-level names XASSET-0057 §E authorizes the ONE post-parser-correction rebinding to
+#: ADD. Named EXHAUSTIVELY, exactly as XASSET-0058's four are, so a TWENTY-NINTH addition fails
+#: here and a removal fails too. Nothing about this unit's own claims is relaxed: its immutable
+#: base..reviewed-head range is still asserted separately and unchanged above every use.
+XASSET_0060_ADDED_MODULE_NAMES = frozenset({
+    "AUTHORIZATION_MODULE_RELPATH",
+    "NEVER_BINDABLE_MODULE_SHA256",
+    "PARSER_CORRECTED_MODULE_BLOB",
+    "PARSER_CORRECTED_MODULE_SHA256",
+    "PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD",
+    "PARSER_CORRECTION_AUTHORIZING_DECISION",
+    "PARSER_CORRECTION_AUTHORIZING_MERGE_BASE",
+    "PARSER_CORRECTION_AUTHORIZING_MERGE_SHA",
+    "PARSER_CORRECTION_AUTHORIZING_PULL_REQUEST",
+    "PARSER_CORRECTION_IMPLEMENTATION_ACCEPTED_HEAD",
+    "PARSER_CORRECTION_IMPLEMENTATION_DECISION",
+    "PARSER_CORRECTION_IMPLEMENTATION_MERGE_BASE",
+    "PARSER_CORRECTION_IMPLEMENTATION_MERGE_SHA",
+    "PARSER_CORRECTION_IMPLEMENTATION_PULL_REQUEST",
+    "POST_PARSER_CORRECTION_AUTHORIZING_ACCEPTED_HEAD",
+    "POST_PARSER_CORRECTION_AUTHORIZING_DECISION",
+    "POST_PARSER_CORRECTION_AUTHORIZING_MERGE_BASE",
+    "POST_PARSER_CORRECTION_AUTHORIZING_MERGE_SHA",
+    "POST_PARSER_CORRECTION_AUTHORIZING_PULL_REQUEST",
+    "PREVIOUSLY_BOUND_MODULE_BLOB",
+    "PREVIOUSLY_BOUND_MODULE_SHA256",
+    "PRIOR_STEP8_EQUIVALENT_ACCEPTED_HEAD",
+    "PRIOR_STEP8_EQUIVALENT_DECISION",
+    "PRIOR_STEP8_EQUIVALENT_MERGE_BASE",
+    "PRIOR_STEP8_EQUIVALENT_MERGE_SHA",
+    "PRIOR_STEP8_EQUIVALENT_PULL_REQUEST",
+    "VULNERABLE_MODULE_BLOB",
+    "VULNERABLE_MODULE_SHA256",
+    # ``_module_level_names`` counts top-level DEFINITIONS too, so the two new verifiers belong
+    # in the same exhaustive set rather than being silently exempted from it.
+    "_verify_post_parser_correction_base_equality",
+    "_verify_module_identity_is_not_the_vulnerable_intermediate",
+})
+
+#: Every top-level definition XASSET-0060 ADDS or MODIFIES, named individually so a sixth fails.
+#: Two are new pure verifiers; three are existing verifiers that gained the refusals, the
+#: inherited-merge entries and the negative pin the rebinding requires. NONE is the parser, and
+#: none is XASSET-0058's helper -- both are asserted byte-identical separately.
+XASSET_0060_ADDED_DEFINITIONS = frozenset({
+    "_verify_post_parser_correction_base_equality",
+    "_verify_module_identity_is_not_the_vulnerable_intermediate",
+    "_verify_git_anchored_identity",
+    "_verify_recovery_lifecycle_anchor",
+    "_verify_successor_rebinding_identity",
+})
+
+#: The three lifecycle constants XASSET-0057 §F.3 authorizes the rebinding to MOVE, and their
+#: exact new values. This unit changed none of them, which is asserted over its own immutable
+#: range; the LIVE values are the successor's, which is asserted here rather than left unpinned.
+XASSET_0060_MOVED_CONSTANTS = {
+    "AUTHORIZING_DECISION": 'AUTHORIZING_DECISION = "XASSET-0060"',
+    "AUTHORIZING_PULL_REQUEST": "AUTHORIZING_PULL_REQUEST = 361",
+    "REVIEWED_BASE_SHA": (
+        'REVIEWED_BASE_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"'
+    ),
+}
+
+#: The seven decision files XASSET-0057 §F.7 authorizes the rebinding to ADD to the boundary.
+XASSET_0060_BOUNDARY_ADDITIONS = frozenset({
+    "governance/decisions/"
+    "XASSET-0053-endpoint-0001-formal-disposition-parser-contract-correction-authorization.md",
+    "governance/decisions/"
+    "XASSET-0055-endpoint-0001-formal-disposition-verdict-boundary-governance.md",
+    "governance/decisions/XASSET-0056-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0057-endpoint-0001-stage-1-post-parser-correction-rebinding-authorization.md",
+    "governance/decisions/"
+    "XASSET-0058-endpoint-0001-formal-disposition-parser-correction-authorization.md",
+    "governance/decisions/XASSET-0059-endpoint-0001-formal-disposition-parser-correction.md",
+    "governance/decisions/"
+    "XASSET-0060-endpoint-0001-stage-1-post-parser-correction-operational-rebinding.md",
+})
 
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
 PREFIX = A.FORMAL_DISPOSITION_PREFIX
@@ -143,6 +225,41 @@ def _toplevel(source: str) -> dict[str, str]:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             out[node.name] = "".join(lines[node.lineno - 1 : node.end_lineno])
     return out
+
+
+def _load_bearing_declared_at(commit: str) -> tuple[str, ...]:
+    """The exact ``LOAD_BEARING_RELPATHS`` the module DECLARED at a given commit.
+
+    Parsed with ``ast`` and never imported or executed. Module-level string aliases and implicit
+    concatenation are resolved from the SAME historical source, never from the live module.
+    """
+    tree = ast.parse(_git("show", f"{commit}:{MODULE_RELPATH}"))
+    consts: dict[str, str] = {}
+
+    def _literal(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if isinstance(node, ast.Name) and node.id in consts:
+            return consts[node.id]
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            left, right = _literal(node.left), _literal(node.right)
+            if left is not None and right is not None:
+                return left + right
+        return None
+
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if not isinstance(target, ast.Name):
+                continue
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                consts[target.id] = node.value.value
+            if target.id == "LOAD_BEARING_RELPATHS" and isinstance(node.value, ast.Tuple):
+                items = [_literal(e) for e in node.value.elts]
+                assert all(i is not None for i in items), "unresolved element"
+                return tuple(items)
+    raise AssertionError(f"LOAD_BEARING_RELPATHS is not declared at {commit}")
 
 
 def _unit_base_source() -> str:
@@ -1415,7 +1532,12 @@ class TestBlockingOneCorrectionShape:
         # RE-ANCHORED, and TIGHTER: the live delta is EXACTLY XASSET-0058 §F.2's authorized
         # four, named one by one -- a FIFTH addition fails, and a removal fails too.
         live = _module_level_names(_live_source())
-        assert live - reviewed == XASSET_0058_ADDED_MODULE_NAMES, sorted(live - reviewed)
+        # RE-ANCHORED AGAIN BY XASSET-0060: its twenty-eight authorized additions are named
+        # EXHAUSTIVELY beside XASSET-0058's four, so the delta stays EXACT and a further
+        # unexplained addition -- or any removal -- still fails.
+        assert live - reviewed == (
+            XASSET_0058_ADDED_MODULE_NAMES | XASSET_0060_ADDED_MODULE_NAMES
+        ), sorted(live - reviewed)
         assert reviewed - live == set(), sorted(reviewed - live)
 
     def test_the_repair_added_no_call_site(self):
@@ -1433,10 +1555,12 @@ class TestBlockingOneCorrectionShape:
         # helper, and nothing else -- every other definition is still byte-identical.
         live = _toplevel(_live_source())
         changed = {n for n in live if reviewed.get(n) != live[n]}
+        # RE-ANCHORED AGAIN BY XASSET-0060, which adds two definitions of its own and touches
+        # NEITHER the parser NOR XASSET-0058's helper. Named individually, so a third fails.
         assert changed == {
             "parse_formal_disposition",
             XASSET_0058_ADDED_DEFINITION,
-        }, sorted(changed)
+        } | XASSET_0060_ADDED_DEFINITIONS, sorted(changed)
 
     def test_the_closer_rule_names_all_three_conditions(self):
         """DELTA 5019911766: the suffix check moved off ``stripped`` onto the RAW line."""
@@ -1684,10 +1808,12 @@ class TestDeltaBlockingOneCorrectionShape:
         # helper, and nothing else -- every other definition is still byte-identical.
         live = _toplevel(_live_source())
         changed = {n for n in live if reviewed.get(n) != live[n]}
+        # RE-ANCHORED AGAIN BY XASSET-0060, which adds two definitions of its own and touches
+        # NEITHER the parser NOR XASSET-0058's helper. Named individually, so a third fails.
         assert changed == {
             "parse_formal_disposition",
             XASSET_0058_ADDED_DEFINITION,
-        }, sorted(changed)
+        } | XASSET_0060_ADDED_DEFINITIONS, sorted(changed)
 
     def test_the_repair_added_no_module_level_name(self):
         reviewed = _module_level_names(
@@ -1698,7 +1824,12 @@ class TestDeltaBlockingOneCorrectionShape:
         # RE-ANCHORED, and TIGHTER: the live delta is EXACTLY XASSET-0058 §F.2's authorized
         # four, named one by one -- a FIFTH addition fails, and a removal fails too.
         live = _module_level_names(_live_source())
-        assert live - reviewed == XASSET_0058_ADDED_MODULE_NAMES, sorted(live - reviewed)
+        # RE-ANCHORED AGAIN BY XASSET-0060: its twenty-eight authorized additions are named
+        # EXHAUSTIVELY beside XASSET-0058's four, so the delta stays EXACT and a further
+        # unexplained addition -- or any removal -- still fails.
+        assert live - reviewed == (
+            XASSET_0058_ADDED_MODULE_NAMES | XASSET_0060_ADDED_MODULE_NAMES
+        ), sorted(live - reviewed)
         assert reviewed - live == set(), sorted(reviewed - live)
 
     def test_the_repair_added_no_call_site(self):
@@ -2063,7 +2194,12 @@ class TestAcceptedLineCorrectionShape:
         # RE-ANCHORED, and TIGHTER: the live delta is EXACTLY XASSET-0058 §F.2's authorized
         # four, named one by one -- a FIFTH addition fails, and a removal fails too.
         live = _module_level_names(_live_source())
-        assert live - reviewed == XASSET_0058_ADDED_MODULE_NAMES, sorted(live - reviewed)
+        # RE-ANCHORED AGAIN BY XASSET-0060: its twenty-eight authorized additions are named
+        # EXHAUSTIVELY beside XASSET-0058's four, so the delta stays EXACT and a further
+        # unexplained addition -- or any removal -- still fails.
+        assert live - reviewed == (
+            XASSET_0058_ADDED_MODULE_NAMES | XASSET_0060_ADDED_MODULE_NAMES
+        ), sorted(live - reviewed)
         assert reviewed - live == set(), sorted(reviewed - live)
 
     def test_only_the_parser_changed_since_the_reviewed_head(self):
@@ -2077,10 +2213,12 @@ class TestAcceptedLineCorrectionShape:
         # helper, and nothing else -- every other definition is still byte-identical.
         live = _toplevel(_live_source())
         changed = {n for n in live if reviewed.get(n) != live[n]}
+        # RE-ANCHORED AGAIN BY XASSET-0060, which adds two definitions of its own and touches
+        # NEITHER the parser NOR XASSET-0058's helper. Named individually, so a third fails.
         assert changed == {
             "parse_formal_disposition",
             XASSET_0058_ADDED_DEFINITION,
-        }, sorted(changed)
+        } | XASSET_0060_ADDED_DEFINITIONS, sorted(changed)
 
     def test_the_call_site_count_is_unchanged(self):
         assert len(_call_sites(_live_source())) == 3
@@ -2428,7 +2566,12 @@ class TestPrefixBoundaryCorrectionShape:
         # RE-ANCHORED, and TIGHTER: the live delta is EXACTLY XASSET-0058 §F.2's authorized
         # four, named one by one -- a FIFTH addition fails, and a removal fails too.
         live = _module_level_names(_live_source())
-        assert live - reviewed == XASSET_0058_ADDED_MODULE_NAMES, sorted(live - reviewed)
+        # RE-ANCHORED AGAIN BY XASSET-0060: its twenty-eight authorized additions are named
+        # EXHAUSTIVELY beside XASSET-0058's four, so the delta stays EXACT and a further
+        # unexplained addition -- or any removal -- still fails.
+        assert live - reviewed == (
+            XASSET_0058_ADDED_MODULE_NAMES | XASSET_0060_ADDED_MODULE_NAMES
+        ), sorted(live - reviewed)
         assert reviewed - live == set(), sorted(reviewed - live)
 
     def test_only_the_parser_changed_since_the_reviewed_head(self):
@@ -2442,10 +2585,12 @@ class TestPrefixBoundaryCorrectionShape:
         # helper, and nothing else -- every other definition is still byte-identical.
         live = _toplevel(_live_source())
         changed = {n for n in live if reviewed.get(n) != live[n]}
+        # RE-ANCHORED AGAIN BY XASSET-0060, which adds two definitions of its own and touches
+        # NEITHER the parser NOR XASSET-0058's helper. Named individually, so a third fails.
         assert changed == {
             "parse_formal_disposition",
             XASSET_0058_ADDED_DEFINITION,
-        }, sorted(changed)
+        } | XASSET_0060_ADDED_DEFINITIONS, sorted(changed)
 
     def test_the_call_site_count_is_unchanged(self):
         assert len(_call_sites(_live_source())) == 3
@@ -2467,6 +2612,17 @@ class TestPrefixBoundaryCorrectionShape:
 
 
 class TestTheScopeBoundaryHolds:
+    #: The three existing verifiers XASSET-0060 -- the ONE rebinding XASSET-0057 §E authorizes --
+    #: lawfully modified: they gained its refusals, its inherited-merge entries and its negative
+    #: pin. Held SEPARATELY from ``PERMITTED`` on purpose: ``PERMITTED`` is also the parser's
+    #: consumer set, and folding unrelated verifiers into it would have silently asserted that
+    #: they call the parser, which they do not. Named individually, so a fourth still fails.
+    XASSET_0060_TOUCHED = {
+        "_verify_git_anchored_identity",
+        "_verify_recovery_lifecycle_anchor",
+        "_verify_successor_rebinding_identity",
+    }
+
     PERMITTED = {
         "parse_formal_disposition",
         "_derive_pr337_actor_ratification",
@@ -2477,7 +2633,12 @@ class TestTheScopeBoundaryHolds:
     def test_only_the_four_permitted_production_functions_changed(self):
         base, live = _toplevel(_base_source()), _toplevel(_live_source())
         changed = {n for n in set(base) & set(live) if base[n] != live[n]}
-        assert changed == self.PERMITTED, sorted(changed ^ self.PERMITTED)
+        # RE-ANCHORED BY XASSET-0060. This unit's own four are still asserted EXACTLY over its
+        # immutable range by the sibling shape tests; the LIVE delta additionally carries the
+        # three verifiers XASSET-0060 lawfully modified, named individually rather than relaxed.
+        expected = self.PERMITTED | self.XASSET_0060_TOUCHED
+        assert changed == expected, sorted(changed ^ expected)
+        assert self.PERMITTED.isdisjoint(self.XASSET_0060_TOUCHED)
 
     def test_nothing_was_removed_from_the_module(self):
         base, live = _toplevel(_base_source()), _toplevel(_live_source())
@@ -2491,9 +2652,12 @@ class TestTheScopeBoundaryHolds:
         ]
         # RE-ANCHORED: XASSET-0058 §F.2 adds exactly ONE further definition -- its authorized
         # helper -- so the live addition set is exactly those two, named, and no third.
+        # RE-ANCHORED AGAIN BY XASSET-0060: two further definitions, named EXHAUSTIVELY.
         live = _toplevel(_live_source())
         assert sorted(set(live) - set(base)) == sorted(
             ["_MalformedFormalDisposition", XASSET_0058_ADDED_DEFINITION]
+            + ["_verify_post_parser_correction_base_equality",
+               "_verify_module_identity_is_not_the_vulnerable_intermediate"]
         )
 
     @staticmethod
@@ -2521,10 +2685,12 @@ class TestTheScopeBoundaryHolds:
         }
         # RE-ANCHORED: XASSET-0058 §F.2 adds exactly the three DERIVED constants its authorized
         # helper reads -- named one by one, so a fourth smuggled constant still fails.
+        # RE-ANCHORED AGAIN BY XASSET-0060: its twenty-eight named assignments join the exact
+        # set. Still not a subset test -- a twenty-ninth fails, and so does any removal.
         new = self._module_level_assignments(_live_source()) - base
         assert new == {"MALFORMED_FORMAL_DISPOSITION"} | (
             XASSET_0058_ADDED_MODULE_NAMES - {XASSET_0058_ADDED_DEFINITION}
-        ), sorted(new)
+        ) | (XASSET_0060_ADDED_MODULE_NAMES - XASSET_0060_ADDED_DEFINITIONS), sorted(new)
 
     @pytest.mark.parametrize(
         "banned",
@@ -2593,9 +2759,20 @@ class TestTheScopeBoundaryHolds:
         base = funcs(_base_source())
         # PRESERVED, over the IMMUTABLE range.
         assert {n for n in funcs(_unit_base_source()) - base if not n.startswith("__")} == set()
+        # RE-ANCHORED BY XASSET-0060. XASSET-0058 §F.2's ceiling of ONE applies to a
+        # candidate-recognition PARSER helper, and it stays exactly spent -- asserted directly
+        # below, so a second parser helper still fails. XASSET-0060's two additions are pure
+        # rebinding verifiers under a DIFFERENT authority (XASSET-0057 §E); they are named
+        # individually rather than admitted by a loosened ceiling.
         new = {n for n in funcs(_live_source()) - base if not n.startswith("__")}
-        assert new == {XASSET_0058_ADDED_DEFINITION}, sorted(new)
-        assert len(new) <= 1  # XASSET-0058 §F.2's ceiling, stated as the ceiling
+        assert new == {XASSET_0058_ADDED_DEFINITION} | XASSET_0060_ADDED_DEFINITIONS - {
+            "_verify_git_anchored_identity",
+            "_verify_recovery_lifecycle_anchor",
+            "_verify_successor_rebinding_identity",
+        }, sorted(new)
+        parser_helpers = {n for n in new if "formal_disposition" in n}
+        assert parser_helpers == {XASSET_0058_ADDED_DEFINITION}
+        assert len(parser_helpers) <= 1  # XASSET-0058 §F.2's ceiling, stated as the ceiling
 
     def test_no_general_purpose_parsing_framework_was_created(self):
         live = _live_source()
@@ -2620,9 +2797,25 @@ class TestTheScopeBoundaryHolds:
         ],
     )
     def test_untouched_constants_are_byte_identical_to_the_base(self, constant):
+        # RE-ANCHORED BY XASSET-0060. THIS unit touched none of the three, which is immutable
+        # and is asserted over its own base..merge range. XASSET-0057 §F.3 then authorized the ONE
+        # rebinding to move exactly these three, so the LIVE line is pinned to the successor's
+        # exact value -- an equality, not a relaxation: any third value fails both halves.
         base = [l for l in _base_source().splitlines() if l.startswith(f"{constant} =")]
+        at_merge = [
+            l for l in _git("show", f"{MERGE_SHA}:{MODULE_RELPATH}").splitlines()
+            if l.startswith(f"{constant} =")
+        ]
+        assert base == at_merge and base
         live = [l for l in _live_source().splitlines() if l.startswith(f"{constant} =")]
-        assert base == live and base
+        if constant in XASSET_0060_MOVED_CONSTANTS:
+            # One of the exactly three §F.3 authorizes the rebinding to move: pinned to the
+            # successor's EXACT line, so any third value fails, and required to have moved.
+            assert live == [XASSET_0060_MOVED_CONSTANTS[constant]], live
+            assert live != base
+        else:
+            # Every other constant is still byte-identical to the base, unchanged in strictness.
+            assert base == live and base
 
     def test_no_other_repository_file_carries_a_production_change(self):
         changed = set(_git("diff", "--name-only", BASE_SHA).split())
@@ -2630,9 +2823,16 @@ class TestTheScopeBoundaryHolds:
         assert production == {MODULE_RELPATH}, sorted(production)
 
     def test_no_protected_or_canonical_path_was_touched(self):
-        changed = set(_git("diff", "--name-only", BASE_SHA).split())
+        # RE-ANCHORED BY XASSET-0060, over THIS unit's own CLOSED range rather than the live
+        # working tree. Two things moved underneath the old form and neither is this unit's doing:
+        # a successor lawfully added paths to the boundary (including this unit's OWN decision
+        # file, which this unit necessarily "touched" by creating it), and the live diff keeps
+        # growing with every later merge. The closed range measures what this unit actually did,
+        # exactly and permanently, and the boundary is read AS IT WAS at this unit's own merge.
+        changed = set(_git("diff", "--name-only", BASE_SHA, MERGE_SHA).split())
+        boundary_then = set(_load_bearing_declared_at(MERGE_SHA))
         forbidden = set(A.CANONICAL_PINS) | {
-            p for p in A.LOAD_BEARING_RELPATHS if p != MODULE_RELPATH
+            p for p in boundary_then if p != MODULE_RELPATH
         }
         assert not (changed & forbidden), sorted(changed & forbidden)
 
@@ -2656,16 +2856,29 @@ class TestTheStaleLoadBearingDigestFailsClosed:
 
     def test_no_rebinding_or_re_pinning_was_performed(self):
         """§J: the drift is the hand-off to a LATER, separately authorized unit."""
-        assert A.AUTHORIZING_DECISION == "XASSET-0049"
-        assert A.AUTHORIZING_PULL_REQUEST == 349
-        assert A.REVIEWED_BASE_SHA == "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+        # RE-ANCHORED BY XASSET-0060. THIS unit performed no rebinding -- immutable, and asserted
+        # over its own range by the sibling above. The successor lawfully did, so both ends are
+        # bound: the successor's values positively, and this unit's own values retained as the
+        # NEGATIVE pins they became, still reachable from the module.
+        assert A.AUTHORIZING_DECISION == "XASSET-0060"
+        assert A.PRIOR_STEP8_EQUIVALENT_DECISION == "XASSET-0049"
+        assert A.AUTHORIZING_PULL_REQUEST == 361
+        assert A.PRIOR_STEP8_EQUIVALENT_PULL_REQUEST == 349
+        assert A.REVIEWED_BASE_SHA == "301e79334876a4bda6e7b89a6156b34e8d38a605"
+        assert A.PRIOR_STEP8_EQUIVALENT_MERGE_BASE == "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
 
     def test_the_bound_merge_constants_are_untouched(self):
         base = _base_source()
         live = _live_source()
+        # RE-ANCHORED BY XASSET-0060, on the same terms as the parametrised sibling above: this
+        # unit's own range is compared, and the live values are pinned to the successor's exact
+        # lines rather than merely allowed to differ.
+        at_merge = _git("show", f"{MERGE_SHA}:{MODULE_RELPATH}")
         for marker in ("AUTHORIZING_DECISION =", "AUTHORIZING_PULL_REQUEST =", "REVIEWED_BASE_SHA ="):
             assert [l for l in base.splitlines() if l.startswith(marker)] == \
-                   [l for l in live.splitlines() if l.startswith(marker)]
+                   [l for l in at_merge.splitlines() if l.startswith(marker)]
+        for name, line in XASSET_0060_MOVED_CONSTANTS.items():
+            assert [l for l in live.splitlines() if l.startswith(f"{name} =")] == [line]
 
     def test_both_authorization_predicates_remain_false(self):
         allowed, reason = A.new_execution_is_authorized()
@@ -2690,8 +2903,20 @@ class TestTheStaleLoadBearingDigestFailsClosed:
 
     def test_the_enforcement_drift_check_is_still_present_and_unweakened(self):
         assert "enforcement drift:" in _live_source()
-        assert _toplevel(_base_source())["_verify_git_anchored_identity"] == \
-            _toplevel(_live_source())["_verify_git_anchored_identity"]
+        # PRESERVED, over the IMMUTABLE range: THIS unit left the verifier byte-identical.
+        at_merge_fns = _toplevel(_git("show", f"{MERGE_SHA}:{MODULE_RELPATH}"))
+        assert (
+            _toplevel(_base_source())["_verify_git_anchored_identity"]
+            == at_merge_fns["_verify_git_anchored_identity"]
+        )
+        # RE-ANCHORED, and UNWEAKENED: XASSET-0060 added a further refusal -- the permanent
+        # negative pin on the vulnerable identity -- and removed nothing. Every line this unit
+        # left behind is still present verbatim, so the check is strictly stronger, not weaker.
+        base_fn = _toplevel(_base_source())["_verify_git_anchored_identity"]
+        live_fn = _toplevel(_live_source())["_verify_git_anchored_identity"]
+        for line in base_fn.splitlines():
+            assert line in live_fn, line
+        assert "_verify_module_identity_is_not_the_vulnerable_intermediate" in live_fn
 
 
 # =====================================================================================
