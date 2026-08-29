@@ -824,6 +824,25 @@ class TestThisFilingMutatesNothingLoadBearing:
             self._changed_set() & PROTECTED_RELPATHS
         )
 
+    def test_no_load_bearing_path_differs_from_the_bound_merge(self):
+        """RESTORED. A direct git-blob comparison, independent of the changed-set derivation.
+
+        The changed-set checks above would also catch a modified bound path, but they depend on
+        ``git diff --name-only`` reporting it. This compares the object-store blob at the bound
+        merge against the working tree byte-for-byte, so a bound path cannot drift even if the
+        changed-set derivation were wrong. Removing it while closing the scope guard would have
+        traded one form of coverage for another; both are kept.
+        """
+        for rel in LIVE_LOAD_BEARING:
+            assert _git("rev-parse", f"{BOUND_MERGE_SHA}:{rel}") == _git(
+                "hash-object", rel
+            ), rel
+
+    @pytest.mark.parametrize("rel", sorted(PROTECTED_RELPATHS))
+    def test_protected_path_is_byte_identical_to_the_bound_merge(self, rel):
+        """RESTORED, and widened from nine paths to all fourteen in ``PROTECTED_RELPATHS``."""
+        assert _git("rev-parse", f"{BOUND_MERGE_SHA}:{rel}") == _git("hash-object", rel), rel
+
     def test_every_pinned_predecessor_suite_matches_its_exact_hash(self):
         """The load-bearing check. A semantically weakened file cannot match its pin."""
         mismatched = {
