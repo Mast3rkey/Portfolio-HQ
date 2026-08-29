@@ -128,6 +128,99 @@ AUTHORIZATION_PREDICATES = (
 #: The prior link-3/4/5 authorizations, none of which is inside the trust boundary.
 PRIOR_LINK_AUTHORIZATIONS = ("XASSET-0038", "XASSET-0050", "XASSET-0051", "XASSET-0052")
 
+#: The EXACT, CLOSED set of files this authorization changes against ``BOUND_MERGE_SHA``.
+#: Independent review found the superseded open ``test_*.py`` class widened the accepted boundary,
+#: so the manifest is pinned by name and asserted for EXACT equality -- an unexpected file fails,
+#: and a silently reverted expected file fails too.
+EXPECTED_CHANGED_FILES = {
+    "governance/decisions.yaml",
+    "governance/decisions/XASSET-0061-endpoint-0001-stage-1-post-parser-correction-renewed-readiness-verification-authorization.md",
+    "operations/WORKSTREAMS.yaml",
+    "test_level1_stage1_activation_authorization.py",
+    "test_level1_stage1_formal_disposition_parser_correction.py",
+    "test_level1_stage1_formal_disposition_parser_correction_authorization.py",
+    "test_level1_stage1_parser_contract_correction_authorization.py",
+    "test_level1_stage1_post_correction_rebinding.py",
+    "test_level1_stage1_post_correction_rebinding_authorization.py",
+    "test_level1_stage1_post_merge_ci_recovery_authorization.py",
+    "test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
+    "test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
+    "test_level1_stage1_post_parser_correction_operational_rebinding.py",
+    "test_level1_stage1_post_parser_correction_rebinding_authorization.py",
+    "test_level1_stage1_post_parser_correction_renewed_readiness_verification_authorization.py",
+    "test_level1_stage1_post_rebinding_drift_authorization.py",
+    "test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+    "test_level1_stage1_readiness_verification_authorization.py",
+    "test_level1_stage1_verdict_boundary_governance.py",
+    "test_portfolio_hq_dashboard_decisions.py",
+}
+
+#: Production, canonical and portfolio paths this filing must never touch.
+PROTECTED_RELPATHS = {
+    "level1_stage1_execution_authorization.py",
+    "level1_stage1_runner.py",
+    "level1_stage1_result_validator.py",
+    "level1_endpoint_evidence_preregistration_validator.py",
+    "level1_construction_universe_closure_validator.py",
+    "research/level1_endpoint_evidence/PROTOCOL_V1.md",
+    "research/level1_endpoint_evidence/pre_registration.yaml",
+    "holdings.yaml",
+    "targets.yaml",
+    "gates.yaml",
+    "issuer_lookthrough.yaml",
+    "allocate.py",
+    "margin_state.py",
+    "levels.py",
+}
+
+#: The one changed test that is NOT a predecessor re-anchoring. Its only change is this filing's
+#: own catalog-count assertion (161 -> 162); it never carried XASSET-0060's value and never should,
+#: so the re-anchoring narrative check below does not apply to it. It IS still hash-pinned, because
+#: integrity coverage must not have a hole.
+NON_REANCHORING_CHANGED_TESTS = {
+    "test_portfolio_hq_dashboard_decisions.py",
+}
+
+#: EXACT content identity of every changed predecessor/dashboard suite, excluding THIS artifact --
+#: which cannot pin its own hash without self-reference. This is the check that actually forecloses
+#: a semantic weakening: a file with a required negative-pin assertion replaced by ``assert True``
+#: keeps the predecessor SHA string and RAISES its assert count, but cannot keep this hash.
+PINNED_TEST_HASHES = {
+    "test_level1_stage1_activation_authorization.py":
+        "e71e3fc477c636ed8b98b917d5d4167064e7f4b453b56a5b3aac1f76a94dd635",
+    "test_level1_stage1_formal_disposition_parser_correction.py":
+        "8a1e15bbab5be928292e7a5931fc8f63d47e270b52d91f39cc0c75c98e0fe355",
+    "test_level1_stage1_formal_disposition_parser_correction_authorization.py":
+        "653ae8fcfd37dcaf188e9a1a53b467ea7d9b52ede6000ea3d5bd1b2f8b2ca8d8",
+    "test_level1_stage1_parser_contract_correction_authorization.py":
+        "3df490ce5682224406db604e5f3ce3cc1f6b1f5f38b8ae7e7ffd0e25f0ab7b27",
+    "test_level1_stage1_post_correction_rebinding.py":
+        "0e49bf40d56491bef05f782bc1c6f663fe496ea9a9e3aa0f70b260ef5e77dbe7",
+    "test_level1_stage1_post_correction_rebinding_authorization.py":
+        "9b415f0255c77c4c11e19e70363c659112720ad98fb0d4aac5f4b01e5f176ff6",
+    "test_level1_stage1_post_merge_ci_recovery_authorization.py":
+        "4f2145554bba39af90d838a8f08b5c325e223deec1ec125892cf5e18c99e17fe",
+    "test_level1_stage1_post_merge_ci_recovery_reauthorization.py":
+        "0dbf090f846728a9677bdd719d138284dde46bda5fa51a110c7bd3311aa3bc9e",
+    "test_level1_stage1_post_merge_ci_recovery_reconciliation.py":
+        "0ac485eb39a661b7cee2148804d3c5f1fae652e2a35f21964c34e65fb74ca07f",
+    "test_level1_stage1_post_parser_correction_operational_rebinding.py":
+        "79bd10f9a839d42067990c7a8d5ff5af28486b297718fd73d9cc9b9eb18d59fa",
+    "test_level1_stage1_post_parser_correction_rebinding_authorization.py":
+        "55001f942030242f165a1b01b4c5fd4180f71ce0cb4b4825db05d74ae71bf306",
+    "test_level1_stage1_post_rebinding_drift_authorization.py":
+        "a427cb719e180aeca54001e3dc1f3f19d621a24f6e0a2fe337d5ac4030d11963",
+    "test_level1_stage1_pr337_actor_evidence_correction_authorization.py":
+        "21e73766b2bf762d7f565a3eefce24eea18cb487844f51139d2c156c38f20a59",
+    "test_level1_stage1_readiness_verification_authorization.py":
+        "c8993d7e2ad15ea297f985c2128c790d7b5b6130306cfe7e6cd565f5ac2c256c",
+    "test_level1_stage1_verdict_boundary_governance.py":
+        "904d5ab289121a39bbc53e7036aba9a3f85610ef4450d3c7440b79e7d44083a6",
+    "test_portfolio_hq_dashboard_decisions.py":
+        "b09e51927092cf9ccc202f575e426186a101f43ef82a2324042fc37ec422279d",
+}
+
+
 EXPECTED_DECISION_SECTIONS = (
     "### A. Determination",
     "#### A.1",
@@ -686,25 +779,24 @@ class TestStage1SafetyPostureIsUnchangedByThisFiling:
 
 
 class TestThisFilingMutatesNothingLoadBearing:
-    """The authored delta must be governance-only."""
+    """The authored delta must be governance-only, and CLOSED rather than class-admitted.
 
-    def test_no_load_bearing_path_differs_from_the_bound_merge(self):
-        for rel in LIVE_LOAD_BEARING:
-            assert _git("rev-parse", f"{BOUND_MERGE_SHA}:{rel}") == _git("hash-object", rel), rel
+    An earlier form of this guard admitted any path matching ``test_*.py`` and called a changed
+    predecessor suite a genuine re-anchoring when three shallow textual conditions held: the file
+    differed from base, the XASSET-0060 SHA string still appeared somewhere, and the count of
+    lines beginning with ``assert`` had not fallen. Independent review demonstrated that those
+    conditions do NOT prove a predecessor assertion was preserved or relocated: replacing
 
-    @pytest.mark.parametrize("rel", [
-        "level1_stage1_execution_authorization.py",
-        "level1_stage1_runner.py",
-        "level1_stage1_result_validator.py",
-        "research/level1_endpoint_evidence/PROTOCOL_V1.md",
-        "research/level1_endpoint_evidence/pre_registration.yaml",
-        "holdings.yaml",
-        "targets.yaml",
-        "gates.yaml",
-        "allocate.py",
-    ])
-    def test_protected_path_is_byte_identical_to_the_bound_merge(self, rel):
-        assert _git("rev-parse", f"{BOUND_MERGE_SHA}:{rel}") == _git("hash-object", rel), rel
+        assert workstream["active_pr"] != XASSET0060_ACTIVE_PR
+
+    with ``assert True`` satisfies all three -- the file still differs from base, still contains
+    the SHA as inert text, and its assert count RISES from 231 to 233 -- while the meaningful
+    negative pin is gone. An arbitrary unrelated test file could enter scope on the same terms.
+
+    The guard is therefore closed on both axes: the changed set is pinned to an EXACT manifest,
+    and every changed predecessor suite is pinned to an EXACT content hash. A weakened file has a
+    different hash and fails, whatever its assert count or SHA-string content says.
+    """
 
     @staticmethod
     def _changed_set() -> set[str]:
@@ -714,62 +806,56 @@ class TestThisFilingMutatesNothingLoadBearing:
             | set(_git("ls-files", "--others", "--exclude-standard").split())
         )
 
-    def test_the_changed_set_touches_no_load_bearing_path(self):
-        """The real safety property, stated directly rather than via an allow-list.
+    def test_the_changed_set_is_exactly_the_expected_manifest(self):
+        """Closed on both sides: no unexpected file, and no expected file silently dropped."""
+        assert self._changed_set() == EXPECTED_CHANGED_FILES, {
+            "unexpected": sorted(self._changed_set() - EXPECTED_CHANGED_FILES),
+            "missing": sorted(EXPECTED_CHANGED_FILES - self._changed_set()),
+        }
 
-        An allow-list of filenames degrades into a rubber stamp the moment it is extended.
-        What actually matters is that this filing changed NONE of the twenty-five bound
-        paths -- derived from the live module, never from a literal list here.
-        """
+    def test_the_changed_set_touches_no_load_bearing_path(self):
+        """Derived from the live module, never from a literal list here."""
         assert not (self._changed_set() & set(LIVE_LOAD_BEARING)), sorted(
             self._changed_set() & set(LIVE_LOAD_BEARING)
         )
 
     def test_the_changed_set_touches_no_production_or_portfolio_path(self):
-        protected = {
-            "level1_stage1_execution_authorization.py",
-            "level1_stage1_runner.py",
-            "level1_stage1_result_validator.py",
-            "level1_endpoint_evidence_preregistration_validator.py",
-            "level1_construction_universe_closure_validator.py",
-            "research/level1_endpoint_evidence/PROTOCOL_V1.md",
-            "research/level1_endpoint_evidence/pre_registration.yaml",
-            "holdings.yaml", "targets.yaml", "gates.yaml",
-            "issuer_lookthrough.yaml", "allocate.py", "margin_state.py", "levels.py",
+        assert not (self._changed_set() & PROTECTED_RELPATHS), sorted(
+            self._changed_set() & PROTECTED_RELPATHS
+        )
+
+    def test_every_pinned_predecessor_suite_matches_its_exact_hash(self):
+        """The load-bearing check. A semantically weakened file cannot match its pin."""
+        mismatched = {
+            rel: _sha256(ROOT / rel)
+            for rel, expected in PINNED_TEST_HASHES.items()
+            if _sha256(ROOT / rel) != expected
         }
-        assert not (self._changed_set() & protected), sorted(self._changed_set() & protected)
+        assert not mismatched, mismatched
 
-    def test_every_changed_file_is_a_governance_record_or_a_test(self):
-        """Nothing outside this filing's own three governance records and test files.
-
-        Test files cannot affect production behaviour, so they are admitted as a CLASS --
-        but only as a class, and each one is separately proved to be a genuine re-anchoring
-        by ``test_every_changed_predecessor_suite_is_a_real_re_anchoring`` below.
-        """
-        own = {
-            str(DECISION.relative_to(ROOT)),
-            "governance/decisions.yaml",
-            "operations/WORKSTREAMS.yaml",
-        }
-        for rel in sorted(self._changed_set()):
-            assert rel in own or (
-                rel.startswith("test_") and rel.endswith(".py")
-            ), rel
-
-    def test_every_changed_predecessor_suite_is_a_real_re_anchoring(self):
-        """A changed predecessor suite must be ADVANCED, never gutted.
-
-        Each must still DEFINE XASSET-0060's exact value -- retained, never deleted -- so the
-        generation chain stays bound at both ends. A suite emptied of its predecessor pin
-        would satisfy a filename allow-list and fails here instead.
-        """
-        exempt = {Path(__file__).name, "test_portfolio_hq_dashboard_decisions.py"}
-        suites = [
+    def test_the_pinned_set_is_exactly_the_changed_tests_less_this_artifact(self):
+        """No changed test may escape pinning, and no pin may name an unchanged file."""
+        changed_tests = {
             r for r in self._changed_set()
-            if r.startswith("test_") and r.endswith(".py") and r not in exempt
-        ]
-        assert suites, "the re-anchoring set must not be silently empty"
-        for rel in sorted(suites):
+            if r.startswith("test_") and r.endswith(".py")
+        }
+        assert set(PINNED_TEST_HASHES) == changed_tests - {Path(__file__).name}, {
+            "unpinned": sorted(changed_tests - {Path(__file__).name} - set(PINNED_TEST_HASHES)),
+            "over_pinned": sorted(set(PINNED_TEST_HASHES) - changed_tests),
+        }
+
+    def test_every_changed_predecessor_suite_retains_its_predecessor_pin(self):
+        """Retained as a SUPPORTING check, no longer as the proof.
+
+        Hash equality above is what actually forecloses a weakening. This check remains because
+        it states, in readable terms, the property the re-anchoring had to preserve: XASSET-0060's
+        exact value survives, the file really changed, and no assertion was dropped. It is
+        explicitly NOT claimed to prove a genuine re-anchoring on its own -- the reproduced
+        ``assert True`` bypass satisfies every condition here.
+        """
+        reanchored = set(PINNED_TEST_HASHES) - NON_REANCHORING_CHANGED_TESTS
+        assert reanchored, "the re-anchoring set must not be silently empty"
+        for rel in sorted(reanchored):
             live = (ROOT / rel).read_text()
             base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
             assert live != base, f"{rel} is a no-op edit"
@@ -779,6 +865,63 @@ class TestThisFilingMutatesNothingLoadBearing:
             assert len(re.findall(r"^\s+assert ", live, re.M)) >= len(
                 re.findall(r"^\s+assert ", base, re.M)
             ), f"{rel} lost assertions"
+
+
+class TestTheScopeGuardCatchesTheReviewedBypasses:
+    """Adversarial regressions for the exact constructions independent review demonstrated.
+
+    Each runs entirely in memory against a copy of the real corpus; no tracked file is written.
+    """
+
+    @staticmethod
+    def _hash_text(text: str) -> str:
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    def test_replacing_a_negative_pin_with_assert_true_is_caught(self):
+        """The reviewer's construction, reproduced and required to FAIL.
+
+        Preserves the predecessor SHA and RAISES the assert count, so the superseded
+        three-condition check accepts it. The content pin must reject it.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        live = (ROOT / rel).read_text()
+        needle = '        assert workstream["active_pr"] != XASSET0060_ACTIVE_PR\n'
+        assert needle in live, "the reproduced construction must target a real assertion"
+        weakened = live.replace(needle, "        assert True\n", 1)
+
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        # The superseded conditions ALL still hold on the weakened text ...
+        assert weakened != base
+        assert BOUND_MERGE_BASE in weakened
+        assert len(re.findall(r"^\s+assert ", weakened, re.M)) >= len(
+            re.findall(r"^\s+assert ", base, re.M)
+        )
+        # ... and the meaningful guard is nevertheless gone ...
+        assert "!= XASSET0060_ACTIVE_PR" not in weakened
+        # ... so only the exact content pin catches it.
+        assert self._hash_text(weakened) != PINNED_TEST_HASHES[rel]
+
+    def test_any_single_character_edit_to_a_pinned_suite_is_caught(self):
+        """Generalises the above: the pin admits exactly one byte sequence per file."""
+        for rel in sorted(PINNED_TEST_HASHES):
+            mutated = (ROOT / rel).read_text() + "\n"
+            assert self._hash_text(mutated) != PINNED_TEST_HASHES[rel], rel
+
+    def test_an_unrelated_test_file_cannot_enter_the_changed_set(self):
+        """The open ``test_*.py`` class is gone; the manifest is closed."""
+        intruder = "test_allocate_integration.py"
+        assert (ROOT / intruder).exists(), "probe must name a real, unrelated suite"
+        assert intruder not in EXPECTED_CHANGED_FILES
+        assert intruder not in PINNED_TEST_HASHES
+        polluted = TestThisFilingMutatesNothingLoadBearing._changed_set() | {intruder}
+        assert polluted != EXPECTED_CHANGED_FILES
+
+    def test_dropping_an_expected_file_is_caught(self):
+        """Closed on the other side too -- a silently reverted file fails."""
+        for victim in sorted(EXPECTED_CHANGED_FILES):
+            assert (
+                TestThisFilingMutatesNothingLoadBearing._changed_set() - {victim}
+            ) != EXPECTED_CHANGED_FILES, victim
 
 
 class TestThisDecisionIsNotAddedToTheTrustBoundary:
