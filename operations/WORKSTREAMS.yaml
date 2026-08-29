@@ -18096,6 +18096,165 @@ workstreams:
           each of those requires its own separate authority and its own complete lifecycle.
           Stage 1 remains UNARMED and NOT EXECUTABLE; the lane is ABSENT; ATTEMPT_1 is intact,
           unclaimed and unconsumed. The XASSET-0057 grant is SPENT by this unit.
+      - gate: xasset0060-post-merge-verification
+        status: complete
+        pr: 361
+        description: >-
+          LANE M FACTUAL SYNCHRONIZATION, folded forward by XASSET-0061 rather than filed as a
+          dedicated reconciliation PR, per the convention OPS-0008 SS-4(a) established and this
+          programme has followed since. The preceding
+          xasset0060-post-parser-correction-operational-rebinding gate's own text is left
+          BYTE-UNEDITED: it was accurate when written by a session that could not mark its own
+          unmerged work complete, and this repository does not silently rewrite a prior gate's
+          record.
+          PR #361 (XASSET-0060, the one post-parser-correction rebinding XASSET-0057 SS-E
+          authorizes) is independently re-confirmed MERGED and CLOSED, merged_by Mast3rkey at
+          2026-08-28T07:34:37Z. Every identity below was re-resolved this session from live git
+          and the live GitHub API, not from any brief. Accepted head
+          eac06700e9ca72c30e704899f6b761a7e07717f7. Base and merge FIRST parent
+          301e79334876a4bda6e7b89a6156b34e8d38a605. MERGE COMMIT
+          413e033ac33741829168762ab24d73327c047d4b, carrying exactly two ordered parents --
+          301e79334876a4bda6e7b89a6156b34e8d38a605 then eac06700e9ca72c30e704899f6b761a7e07717f7
+          -- with NO THIRD PARENT. Merge tree 998c28a3c7f349cd36796255854924fa7473dfae is
+          BYTE-IDENTICAL to the accepted head's own tree: ZERO MERGE DRIFT.
+          All seven XASSET-0060 SS-M conditions are CLOSED and the decision is EFFECTIVE.
+          Independent FULL exact-head review 5047221802 at the accepted head, disposition
+          APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE,
+          so no bounded correction round was required. Principal exact-head acceptance
+          issuecomment-5449752973 (Mast3rkey, OWNER) at that exact head. Normal merge, no squash,
+          rebase, amend or force-push. Immediate post-merge verification issuecomment-5449783195.
+          EXACT MERGE-COMMIT CI run 33151977375, job 98785832731, attempt 1, event push, run
+          head_sha exactly the merge SHA 413e033ac33741829168762ab24d73327c047d4b,
+          completed/success -- the PR-head run was NOT substituted. Final post-CI lifecycle
+          closure issuecomment-5449912049.
+          STATE RE-DERIVED FROM THE MERGED TREE THIS SESSION: LOAD_BEARING_RELPATHS is exactly
+          TWENTY-FIVE paths, all unique, every one present on disk, with the inherited eighteen
+          still an ORDERED PREFIX and XASSET-0054 still EXCLUDED. The authorization module
+          level1_stage1_execution_authorization.py carries its ROLE-4 identity, the sole new
+          bound end, DERIVED at verification time from the merged tree and DELIBERATELY NOT
+          RESTATED HERE: XASSET-0057 SS-F.3 and XASSET-0058 SS-G.4 govern, and the live
+          corrected digest "is stated nowhere in advance" and reaches the register only through
+          role 4's own derivation and proof. Writing it into this register would violate that
+          rule, so it is named by ROLE, never by value. The role-2 VULNERABLE intermediate
+          12eab05e64dec5113ab16383ad0fb5423f843dba0070e345652387d25be604a5 remains in
+          NEVER_BINDABLE_MODULE_SHA256 as a PERMANENT NEGATIVE PIN and is never a bound end.
+          Authorization constants: AUTHORIZING_DECISION XASSET-0060, AUTHORIZING_PULL_REQUEST
+          361, REVIEWED_BASE_SHA 301e79334876a4bda6e7b89a6156b34e8d38a605.
+          STAGE-1 POSTURE UNCHANGED BY THIS MERGE, independently re-verified read-only: Stage 1
+          UNARMED and NOT EXECUTABLE, stage_1_executability.executable false; execution lane
+          ABSENT; AUTHORIZATION_ROOT, AUTHORIZATION_PATH, CLAIM_PATH and COMPLETION_PATH all
+          absent; no stage1_results.yaml anywhere; new_execution_is_authorized(),
+          claimed_execution_is_authorized() and active_execution_is_authorized() all False; and
+          ENDPOINT-0001::STAGE_1::ATTEMPT_1 INTACT, UNCLAIMED and UNCONSUMED. XASSET-0027 SS-P.1
+          remains ONE, UNSPENT.
+          LINKS 3, 4 AND 5 EACH REQUIRE THEIR OWN SEPARATE AUTHORITY AND THEIR OWN COMPLETE
+          LIFECYCLE (XASSET-0060 SS-K). Completing this rebinding authorized none of them.
+      - gate: xasset0061-post-parser-correction-renewed-readiness-verification-authorization
+        status: in_progress
+        pr: 362
+        description: >-
+          POST-PARSER-CORRECTION RENEWED LINK-3 / STEP-9 READINESS-VERIFICATION AUTHORIZATION,
+          filed as XASSET-0061. DESIGN-ONLY LANE G GOVERNANCE AUTHORIZATION: it AUTHORIZES
+          exactly one future, separate, STRICTLY READ-ONLY XASSET-0041 SS-I link-3 /
+          XASSET-0030 SS-G.B step-9 readiness verification against the CURRENT TWENTY-FIVE-PATH
+          BINDING, and THIS FILING PERFORMS NO PART OF IT -- it runs no readiness checklist,
+          issues no PASS and no FAIL, and CONSUMES NONE OF THE AUTHORITY IT CREATES.
+          THE DISTINCTION ANY SUMMARY MUST PRESERVE (XASSET-0061 SS-A.1, quoted verbatim):
+          "XASSET-0061 AUTHORIZES exactly one future, separate link-3 readiness verification
+          against the current twenty-five-path binding, but PERFORMS NO PART OF IT. LINKS 4 AND
+          5 -- and attestation, lane creation, arming, claim, gate evaluation, execution,
+          results, allocation work, and protected RISK access -- remain NEITHER PERFORMED NOR
+          AUTHORIZED." LINK 3 NEVER BELONGS INSIDE A "NOT AUTHORIZED" LIST: it is the one thing
+          this decision grants, and it sits on the AUTHORIZED-BUT-UNPERFORMED side of that line.
+          WHY A NEW AUTHORIZATION IS REQUIRED, on TWO INDEPENDENT GROUNDS (XASSET-0061 SS-B).
+          GROUND 1: XASSET-0050 is SPENT -- its "exactly one" grant was exercised by the link-3
+          unit that returned STEP_9_READINESS_VERIFICATION_PASS at issuecomment-5384453102.
+          GROUND 2: XASSET-0050's ANCHOR IS DEAD -- that PASS verified the EIGHTEEN-path boundary
+          bound by XASSET-0049 / PR #349 at merge a941455491cc5e4d3d868775fb6b4b88f0fe2ce3,
+          observing tree e0ee2d4c25066cdc3d1c936015c3ada62bed74e8, with the module at role-1
+          identity 4ff289416b9a95614fb3c05b6b0ac432382c63d7464d00f0ff16af12b39d4541. All four
+          values have moved: the binding is now TWENTY-FIVE paths under XASSET-0060 / PR #361 at
+          merge 413e033ac33741829168762ab24d73327c047d4b, tree
+          998c28a3c7f349cd36796255854924fa7473dfae, and the module at its ROLE-4 identity, named
+          by role rather than by value for the same XASSET-0057 SS-F.3 / XASSET-0058 SS-G.4
+          reason recorded in the gate above. XASSET-0050 SS-B
+          applied exactly this reasoning to retire XASSET-0038's anchor; that reasoning now
+          applies to XASSET-0050 itself. XASSET-0051 and XASSET-0052 are retired on the same two
+          grounds and are NOT revived.
+          THIS IS NOT A RERUN AND NOT A RE-ADJUDICATION (XASSET-0061 SS-B.1). The instruction
+          that LINK 3 MUST NOT BE RERUN OR RE-ADJUDICATED is respected in full and narrowed by
+          not one word: it governs THAT determination about THOSE bytes -- the PASS at
+          issuecomment-5384453102 over the eighteen paths -- which is not reopened, not
+          contradicted, not re-examined, not weighed against anything, and remains TRUE OF WHAT
+          IT VERIFIED, as does the separately preserved duplicate-exercise stop evidence at
+          issuecomment-5384471997. What XASSET-0061 authorizes is a DIFFERENT QUESTION ABOUT
+          DIFFERENT BYTES. XASSET-0040 SS-J and XASSET-0041 SS-I already fix the rule: corrected
+          bytes "are no longer the bytes the single step-8 rebinding bound", so a correction
+          requires a rebinding AND any renewed readiness verification and drift check that
+          correction and rebinding make necessary. XASSET-0060 SS-K, filed AFTER the discharge,
+          is the current controlling statement and treats links 3, 4 and 5 as FORWARD
+          obligations each requiring their own separate authority.
+          THE CLOSED THIRTEEN-CONDITION CHECKLIST (XASSET-0061 SS-G), which the future unit
+          verifies and may NOT extend by any condition of its own invention -- a condition it
+          believes is missing is a FINDING TO REPORT, not a checklist item to add: C1 the
+          complete PR #361 lifecycle and exact identities; C2 ZERO MERGE DRIFT; C3 all
+          TWENTY-FIVE load-bearing paths DERIVED FROM THE MERGED TREE at verification time,
+          never from a constant restated in a decision record; C4 the five outcome-capable
+          Python module identities, each named individually; C5 the complete FOUR-ROLE
+          module-identity chain and the PERMANENT VULNERABLE NEGATIVE PIN; C6 current canonical
+          pins; C7 frozen universe identity 680 constructions / 48 cells / aggregate
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224; C8 current
+          authorization constants; C9 parser-correction and rebinding lifecycle continuity
+          across XASSET-0057 / XASSET-0058 / XASSET-0059 / XASSET-0060; C10 validators and
+          non-executing ENDPOINT CLI checks clean and the runner FAIL-CLOSED while no
+          attestation exists; C11 lane ABSENT and AUTHORIZATION_ROOT / AUTHORIZATION_PATH /
+          CLAIM_PATH / COMPLETION_PATH absent and NO stage1_results.yaml; C12 ALL THREE
+          authorization predicates False, stage_1_executability.executable false, and ATTEMPT_1
+          intact, unclaimed and unconsumed; C13 no output and no persistent execution artifact,
+          determination recorded as durable EXTERNAL evidence WITHOUT a repository mutation.
+          RECORDED VERSUS DERIVED, PRECEDENCE FIXED IN ADVANCE (XASSET-0061 SS-G.1): THE DERIVED
+          VALUE IS OPERATIVE AND THE RECORDED VALUE IS A WITNESS. A disagreement is DRIFT and a
+          STOP -- the unit may not prefer the decision record, and may not prefer the live tree
+          in order to pass.
+          ON THE PREDICATE COUNT (XASSET-0061 SS-G.2): C12 names THREE predicates, not two. The
+          live module defines new_execution_is_authorized, claimed_execution_is_authorized and
+          active_execution_is_authorized, all three independently evaluated False in this
+          session's read-only preflight. Where any brief or summary says "both", the live module
+          governs and the count is THREE; the unit may not satisfy C12 by checking fewer.
+          FAIL-CLOSED (XASSET-0061 SS-H): ANY drift, missing identity, missing evidence,
+          mismatch, ambiguity, validation failure, unexpected lane state, or fact the unit cannot
+          re-derive with certainty STOPS the unit, which must then stop, report the exact
+          condition as a STOP REPORT in its external evidence, CHANGE NOTHING -- NO REPAIR OF ANY
+          KIND IS AUTHORIZED -- and NOT issue a PASS. UNCERTAINTY IS FAILURE.
+          NO REPOSITORY MUTATION (XASSET-0061 SS-I): the authorized unit creates NO BRANCH, NO
+          COMMIT and NO PULL REQUEST, so it does not contend for the OPS-0014 SS-D single
+          mutation lane and may run in a clean isolated clone. Its determination is durable,
+          externally posted evidence only; a repository mutation to record the result is NEITHER
+          REQUIRED NOR AUTHORIZED, and a contrary conclusion is a SS-H finding, not assumable
+          scope.
+          LINKS 4 AND 5 RETAIN THEIR OWN SEPARATE-AUTHORITY REQUIREMENT (XASSET-0061 SS-K): NO
+          renewed drift-check authority, NO Step-11 authority, NO attestation, NO arming, NO
+          claim, NO execution, NO result production is created here. A PASS, however clean,
+          AUTHORIZES NOTHING FURTHER. XASSET-0040 stays spent as a stop and XASSET-0052's
+          operational grant stays spent as a stop; neither is revived. XASSET-0027 SS-P.1 remains
+          ONE, UNSPENT.
+          EFFECTIVITY IS CONJUNCTIVE across all seven XASSET-0061 SS-J conditions -- independent
+          FULL exact-head review; any bounded correction and exact-head re-review; principal
+          exact-head acceptance at the final head; normal merge; immediate post-merge
+          verification; SUCCESSFUL MERGE-COMMIT CI WHOSE head_sha IS THE EXACT MERGE SHA, not the
+          PR head's own run; and final post-CI verification and lifecycle closure. NONE IS
+          INDIVIDUALLY SUFFICIENT. XASSET-0044 and XASSET-0045 each merged and neither became
+          effective because condition 6 failed.
+          THIS FILING MUTATES NOTHING LOAD-BEARING: level1_stage1_execution_authorization.py, all
+          twenty-five load-bearing paths, PROTOCOL_V1.md, pre_registration.yaml, the runner, the
+          result validator, the construction universe, holdings.yaml, targets.yaml, gates.yaml
+          and allocate.py are each BYTE-UNCHANGED. XASSET-0061 is deliberately NOT added to
+          LOAD_BEARING_RELPATHS: it supplies no attestation-enabling structural authority, and
+          the four prior link-3/4/5 authorizations -- XASSET-0038, XASSET-0050, XASSET-0051 and
+          XASSET-0052 -- are each independently confirmed ABSENT from the boundary today.
+          MERGING XASSET-0061 LEAVES STAGE 1 UNARMED AND NOT EXECUTABLE, the lane ABSENT,
+          AUTHORIZATION_ROOT absent, no stage1_results.yaml, all three authorization predicates
+          False, and ATTEMPT_1 INTACT, UNCLAIMED and UNCONSUMED.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -19787,10 +19946,10 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/xasset-0057-rebinding-gqtg9o
-    active_pr: 361
-    last_verified_main_sha: 301e79334876a4bda6e7b89a6156b34e8d38a605
-    last_verified_date: 2026-08-27
+    active_branch: claude/xasset-0061-authorization-jux8p9
+    active_pr: 362
+    last_verified_main_sha: 413e033ac33741829168762ab24d73327c047d4b
+    last_verified_date: 2026-08-28
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively

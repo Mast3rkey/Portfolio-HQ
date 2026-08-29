@@ -217,6 +217,10 @@ XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
 #: self-reference names the currently-live unit; XASSET-0059's own constant is RETAINED with its
 #: exact value as a NEGATIVE pin below -- never deleted -- so a silent revert still fails here.
 XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+#: ADVANCED BY XASSET-0061. The shared live field moved onto the successor; the prior
+#: generation's value joins the NEGATIVE PINS rather than being deleted, so the field
+#: stays bound at BOTH ends and a silent revert to finished work still fails.
+XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
 #: Read back from the live pull request AFTER GitHub issued it, never predicted. The
 #: branch's first commit carried the impossible sentinel -56 (negative, so structurally
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
@@ -239,6 +243,7 @@ XASSET0059_ACTIVE_PR = 360
 #: ADVANCED BY XASSET-0060: WS-0014's SHARED live active_pr names the currently-live unit, and
 #: XASSET-0059's own number is retained below as a NEGATIVE pin rather than deleted.
 XASSET0060_ACTIVE_PR = 361
+XASSET0061_ACTIVE_PR = 362
 
 XASSET0043_ACTIVE_PR = 343
 #: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number
@@ -1305,7 +1310,10 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
         # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
         # pin, so a silent revert to finished work still fails here.
-        assert workstream["last_verified_main_sha"] == XASSET0060_MAIN_SHA
+        assert workstream["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
+        # NEGATIVE PIN, so a silent revert to that finished generation still fails.
+        assert workstream["last_verified_main_sha"] != XASSET0060_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0058_MAIN_SHA
         assert workstream["last_verified_main_sha"] != XASSET0057_MAIN_SHA
@@ -1331,7 +1339,7 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0059, with the shared fields above: the register's single
         # shared verification date moved to this unit's own live preflight date. Every
         # prior generation stays a NEGATIVE pin, so the field is bound at BOTH ends.
-        assert str(workstream["last_verified_date"]).startswith("2026-08-27")
+        assert str(workstream["last_verified_date"]).startswith("2026-08-28")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-26")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-24")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-23")
@@ -1339,7 +1347,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0060_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0061_ACTIVE_PR
+        assert workstream["active_pr"] != XASSET0060_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0059_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0058_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0057_ACTIVE_PR
