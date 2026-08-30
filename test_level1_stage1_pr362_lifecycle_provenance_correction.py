@@ -1161,6 +1161,59 @@ class TestThisFilingMutatesNothingLoadBearing:
                     raise AssertionError("or-fallback assertion")
 
 
+def _decision_section(heading: str) -> str:
+    """The text of one `#### <heading>` section of the decision, up to the next `#### `."""
+    text = _read(DECISION_RELPATH)
+    start = text.index(f"#### {heading}")
+    rest = text[start + 1 :]
+    end = rest.find("\n#### ")
+    return rest if end == -1 else rest[:end]
+
+
+class TestTheMechanismConstantsAreAnchoredInTheDecision:
+    """Constants used by BOTH the predicate and its fixtures cannot verify themselves.
+
+    Found by re-running this filing's own mutation proof at the corrected head: repointing
+    `REPO_API` at another repository, and dropping a member of `INDEPENDENT_REVIEW_IDS`, both
+    survived, because each constant is the single source for the mechanism AND for the fixtures
+    it is checked against -- structurally the same "both sides derived from one source" defect
+    the BLOCKING finding identified, one level down. Each is therefore anchored to the governing
+    decision's own committed text, the independent source that already catches the scope pins.
+    """
+
+    def test_the_canonical_repository_is_anchored_in_the_decision(self):
+        """SS-G.1 items 1-3 name the canonical URLs verbatim; the constants must reproduce them."""
+        section = _flat(_decision_section("G.1"))
+        for built in (
+            RATIFICATION_ISSUE_URL,
+            f"{RATIFICATION_URL_PREFIX}<id>",
+            f"{RATIFICATION_HTML_PREFIX}<id>",
+        ):
+            assert built in section, built
+
+    def test_the_independent_review_ids_are_exactly_those_the_decision_names(self):
+        """SS-G.7 names them. Dropping or adding one must fail, not silently resize a parametrize."""
+        section = _decision_section("G.7")
+        named = {int(m) for m in re.findall(r"\b(50607\d{5})\b", section)}
+        assert named == set(INDEPENDENT_REVIEW_IDS)
+        assert len(INDEPENDENT_REVIEW_IDS) == 2
+        assert len(set(INDEPENDENT_REVIEW_IDS)) == 2
+
+    def test_the_foreign_record_kind_fields_are_exactly_those_the_decision_names(self):
+        """SS-G.1 item 5 enumerates them. Emptying the tuple must fail, not vacate a parametrize."""
+        section = _flat(_decision_section("G.1"))
+        item5 = section[section.index("the record carries **none** of") :]
+        item5 = item5[: item5.index(".")]
+        named = set(re.findall(r"`([a-z_]+)`", item5))
+        assert named == set(FOREIGN_RECORD_KIND_FIELDS)
+        assert len(FOREIGN_RECORD_KIND_FIELDS) == 6
+
+    def test_the_scope_pins_remain_exactly_seven(self):
+        """SS-G.3 fixes seven. A shortened tuple must fail rather than weaken the scope check."""
+        assert len(RATIFIED_SCOPE_PINS) == 7
+        assert len(set(RATIFIED_SCOPE_PINS)) == 7
+
+
 class TestDecisionRecordIntegrity:
     def test_decision_declares_the_correct_supporting_artifact(self):
         assert f"supporting_artifact: {THIS_ARTIFACT}" in _read(DECISION_RELPATH)
