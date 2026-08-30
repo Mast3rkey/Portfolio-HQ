@@ -97,7 +97,7 @@ SUCCESSOR_BRANCH_NAME = "claude/xasset-0062-lifecycle-correction"
 #: ADVANCED BY XASSET-0062: the shared field names whichever unit is live -- `None`
 #: before GitHub issues the successor's number, and exactly that number afterwards.
 #: Never predicted. XASSET-0061's own number is retained just below as a NEGATIVE pin.
-SUCCESSOR_ACTIVE_PR: int | None = None
+SUCCESSOR_ACTIVE_PR: int | None = 363
 XASSET0061_ACTIVE_PR_PIN = 362
 #: ADVANCED BY XASSET-0062: this names whichever unit is LIVE, and PR #362 has merged.
 SUCCESSOR_MAIN_SHA_VALUE = "3db918530b10ffc1423ba0b749b086e349a4901d"

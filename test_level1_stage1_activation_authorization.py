@@ -254,7 +254,7 @@ XASSET0061_ACTIVE_PR = 362
 #: whichever unit is live: `None` before GitHub issues the successor's number and exactly
 #: that number afterwards. It is BOUND, never predicted -- set from GitHub's own response.
 #: XASSET-0061's own number is retained below as a NEGATIVE pin.
-XASSET0062_ACTIVE_PR: int | None = None
+XASSET0062_ACTIVE_PR: int | None = 363
 
 XASSET0043_ACTIVE_PR = 343
 #: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number

@@ -43,6 +43,11 @@ THIS_ARTIFACT = Path(__file__).name
 # re-derived from live git and live GitHub during the authoring session.
 # --------------------------------------------------------------------------------------
 RATIFIED_PULL_REQUEST = 362
+#: This corrective filing's OWN pull request, BOUND after GitHub issued it -- never
+#: predicted. Kept distinct from RATIFIED_PULL_REQUEST above: one is the history being
+#: ratified, the other is the unit doing the ratifying, and conflating them would let a
+#: scope pin be satisfied by the wrong pull request.
+THIS_CORRECTIVE_PULL_REQUEST = 363
 RATIFIED_ACCEPTED_HEAD = "ccc7f433b06d5114eb7616347ce773ae4f80392c"
 RATIFIED_BASE = "413e033ac33741829168762ab24d73327c047d4b"
 RATIFIED_MERGE = "3db918530b10ffc1423ba0b749b086e349a4901d"
@@ -401,6 +406,17 @@ class TestTheDerivedTripleAloneIsNotSufficient:
 
 class TestRatificationIsExactlyBounded:
     """Exact-ID, exact-actor, exact-PR, exact-head, exact-review, exact-merge."""
+
+    def test_the_corrective_pull_request_is_never_the_ratified_one(self):
+        """The unit doing the ratifying is not the history being ratified."""
+        assert THIS_CORRECTIVE_PULL_REQUEST != RATIFIED_PULL_REQUEST
+        assert (
+            ratifies_pr362_acceptance(
+                GENUINE_RATIFICATION,
+                _valid_scope(pull_request=THIS_CORRECTIVE_PULL_REQUEST),
+            )
+            is False
+        )
 
     def test_the_genuine_shape_ratifies(self):
         assert ratifies_pr362_acceptance(GENUINE_RATIFICATION, _valid_scope()) is True
