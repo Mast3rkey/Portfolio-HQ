@@ -933,7 +933,16 @@ class TestRegisterStructuredFieldsAdvanced:
         active = ws0014["active_pr"]
         assert active != THIS_PULL_REQUEST
         assert active != BOUND_AUTHORIZING_PULL_REQUEST
-        if active < 0:
+        if active is None:
+            # EXTENDED BY XASSET-0062: ``None`` is the same UN-BOUND window the sentinel branch
+            # below describes, in the spelling this register uses. A successor's number does not
+            # exist until GitHub issues it and is never predicted, so the ordering cannot be
+            # evaluated. As in that branch, the state is checked for CONSISTENCY rather than
+            # skipped: a gate must EXPLICITLY claim the un-bound marker and still be in_progress.
+            live = [g for g in ws0014["milestones"] if "pr" in g and g["pr"] is None]
+            assert live, "the register carries an unbound active_pr that no gate claims"
+            assert all(g.get("status") == "in_progress" for g in live), live
+        elif active < 0:
             live = [g for g in ws0014["milestones"] if g.get("pr") == active]
             assert live, "the register carries a sentinel active_pr that no gate claims"
             assert all(g["status"] == "in_progress" for g in live), live

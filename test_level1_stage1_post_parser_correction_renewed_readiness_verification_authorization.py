@@ -53,6 +53,18 @@ FOLD_FORWARD_GATE = "xasset0060-post-merge-verification"
 # --------------------------------------------------------------------------------------------
 
 BOUND_MERGE_SHA = "413e033ac33741829168762ab24d73327c047d4b"
+
+#: ANCHORED BY XASSET-0062. This filing's own delta is now CLOSED HISTORY: PR #362 merged
+#: at the SHA below, so the range BOUND_MERGE_SHA..XASSET0061_MERGE_SHA is fixed forever and
+#: no longer moves when a lawful successor lands on top. Measuring this unit's manifest and
+#: content hashes against a MOVING ``HEAD`` would make every future filing appear to be part
+#: of this one -- which is exactly what began to happen when XASSET-0062 was authored.
+#: XASSET-0062 records that PR #362's LIFECYCLE EVIDENCE was defective; it does not dispute
+#: the merge, whose two ordered parents and zero-drift tree are independently re-derivable.
+XASSET0061_MERGE_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
+
+#: BOUND BY XASSET-0062 after GitHub issued it. ``None`` until then -- never predicted.
+SUCCESSOR_PULL_REQUEST: int | None = None
 BOUND_ACCEPTED_HEAD = "eac06700e9ca72c30e704899f6b761a7e07717f7"
 BOUND_MERGE_BASE = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 BOUND_MERGE_TREE = "998c28a3c7f349cd36796255854924fa7473dfae"
@@ -257,6 +269,13 @@ def _git(*args: str) -> str:
     ).stdout.strip()
 
 
+def _git_bytes(spec: str) -> bytes:
+    """Exact object bytes. Hashing must never round-trip through text decoding."""
+    return subprocess.run(
+        ["git", "cat-file", "blob", spec], cwd=ROOT, capture_output=True, check=True
+    ).stdout
+
+
 def _live_load_bearing() -> tuple[str, ...]:
     """Resolve ``LOAD_BEARING_RELPATHS`` by parsing the module with ``ast``, never executing it.
 
@@ -392,8 +411,22 @@ class TestTheFilingExistsAndIsWellFormed:
         assert gates[GATE]["pr"] in (None, THIS_PULL_REQUEST), gates[GATE]["pr"]
 
     def test_ws0014_self_reference_fields_point_at_the_current_binding(self):
-        assert WS0014["last_verified_main_sha"] == BOUND_MERGE_SHA
-        assert WS0014["active_pr"] in (None, THIS_PULL_REQUEST), WS0014["active_pr"]
+        """ADVANCED BY XASSET-0062.
+
+        ``last_verified_main_sha`` is WS-0014's SINGLE SHARED live field, not this filing's
+        own. PR #362 merged at ``XASSET0061_MERGE_SHA``, so under ``OPS-0001``'s
+        Active-GitHub-fields rule it lawfully advances to the corrective unit now live. The
+        superseded value is retained as a NEGATIVE pin, so the field is bound at BOTH ends and
+        a silent revert still fails here.
+        """
+        assert WS0014["last_verified_main_sha"] == XASSET0061_MERGE_SHA
+        assert WS0014["last_verified_main_sha"] != BOUND_MERGE_SHA
+        # ADVANCED BY XASSET-0062: ``active_pr`` is WS-0014's SINGLE SHARED live field. It
+        # names whichever unit is live -- ``None`` before GitHub issues the successor's number
+        # and exactly that number afterwards. THIS_PULL_REQUEST (#362) is retained as a
+        # NEGATIVE pin, so a silent revert to the merged unit still fails here.
+        assert WS0014["active_pr"] in (None, SUCCESSOR_PULL_REQUEST), WS0014["active_pr"]
+        assert WS0014["active_pr"] != THIS_PULL_REQUEST
 
     def test_binding_the_pull_request_number_touched_no_other_workstream(self):
         """Reading back GitHub's issued number must not clobber a sibling workstream.
@@ -800,10 +833,15 @@ class TestThisFilingMutatesNothingLoadBearing:
 
     @staticmethod
     def _changed_set() -> set[str]:
-        return (
-            set(_git("diff", "--name-only", BOUND_MERGE_SHA).split())
-            | set(_git("diff", "--name-only", "--cached", BOUND_MERGE_SHA).split())
-            | set(_git("ls-files", "--others", "--exclude-standard").split())
+        """ANCHORED BY XASSET-0062 to this unit's own CLOSED merge range.
+
+        Before PR #362 merged this compared the bound merge against the live working tree,
+        which was correct while this unit was the live one. It is wrong afterwards: a lawful
+        successor's files would be counted as this unit's own. The range is now fixed at both
+        ends and describes exactly what PR #362 changed, forever.
+        """
+        return set(
+            _git("diff", "--name-only", BOUND_MERGE_SHA, XASSET0061_MERGE_SHA).split()
         )
 
     def test_the_changed_set_is_exactly_the_expected_manifest(self):
@@ -845,11 +883,18 @@ class TestThisFilingMutatesNothingLoadBearing:
 
     def test_every_pinned_predecessor_suite_matches_its_exact_hash(self):
         """The load-bearing check. A semantically weakened file cannot match its pin."""
-        mismatched = {
-            rel: _sha256(ROOT / rel)
-            for rel, expected in PINNED_TEST_HASHES.items()
-            if _sha256(ROOT / rel) != expected
-        }
+        # ANCHORED BY XASSET-0062: hash each file AS IT STOOD AT THIS UNIT'S OWN MERGE.
+        # Reading the live working tree would make a lawful successor's edit to a predecessor
+        # suite look like a weakening of this unit's delta. The pins still foreclose exactly
+        # what they were added to foreclose -- a semantically weakened file cannot match its
+        # hash in the merged tree either.
+        mismatched = {}
+        for rel, expected in PINNED_TEST_HASHES.items():
+            actual = hashlib.sha256(
+                _git_bytes(f"{XASSET0061_MERGE_SHA}:{rel}")
+            ).hexdigest()
+            if actual != expected:
+                mismatched[rel] = actual
         assert not mismatched, mismatched
 
     def test_the_pinned_set_is_exactly_the_changed_tests_less_this_artifact(self):

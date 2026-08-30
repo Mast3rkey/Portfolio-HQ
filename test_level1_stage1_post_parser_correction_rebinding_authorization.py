@@ -2503,10 +2503,16 @@ class TestTheRegisterIsSynchronized:
     # ADVANCED BY XASSET-0060; XASSET-0059's values are retained below as NEGATIVE pins.
     XASSET0060_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
     #: ADVANCED BY XASSET-0061; the predecessor is retained above as a negative pin.
-    SUCCESSOR_BRANCH = "claude/xasset-0061-authorization-jux8p9"
+    #: ADVANCED BY XASSET-0062, the PR #362 lifecycle provenance correction. These name
+    #: whichever unit is LIVE, not this filing's own; PR #362 has merged, so they move on.
+    #: XASSET-0061's own values are retained just below as NEGATIVE pins, so each field
+    #: stays bound at BOTH ends and a silent revert to finished work still fails.
+    SUCCESSOR_BRANCH = "claude/xasset-0062-lifecycle-correction"
+    XASSET0061_BRANCH_PIN = "claude/xasset-0061-authorization-jux8p9"
     XASSET0060_MAIN_SHA_PIN = "301e79334876a4bda6e7b89a6156b34e8d38a605"
     #: ADVANCED BY XASSET-0061; the predecessor is retained above as a NEGATIVE pin.
-    SUCCESSOR_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
+    SUCCESSOR_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
+    XASSET0061_MAIN_SHA_PIN = "413e033ac33741829168762ab24d73327c047d4b"
     XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
     XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
     XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
@@ -2515,6 +2521,9 @@ class TestTheRegisterIsSynchronized:
     def test_the_shared_live_fields_name_this_unit(self, register):
         assert register["active_branch"] == self.SUCCESSOR_BRANCH
         assert register["last_verified_main_sha"] == self.SUCCESSOR_MAIN_SHA
+        # ADVANCED BY XASSET-0062: the superseded generation stays bound as a NEGATIVE pin.
+        assert register["active_branch"] != self.XASSET0061_BRANCH_PIN
+        assert register["last_verified_main_sha"] != self.XASSET0061_MAIN_SHA_PIN
         assert register["last_verified_main_sha"] != self.XASSET0060_MAIN_SHA_PIN
         assert register["active_branch"] != BRANCH
         assert register["active_branch"] != self.XASSET0059_BRANCH

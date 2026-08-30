@@ -750,7 +750,17 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0060; the predecessor branch joins the NEGATIVE pins below.
         # ADVANCED BY XASSET-0061; XASSET-0060's branch now joins them too, retained
         # rather than deleted, so the field stays bound at BOTH ends.
+        # ADVANCED BY XASSET-0062, the PR #362 lifecycle provenance correction, on exactly the
+        # same terms: PR #362 merged at `3db91853`, so WS-0014's SINGLE SHARED live fields
+        # advance once more to the corrective unit that is now live. XASSET-0061's own branch
+        # joins the NEGATIVE pins below, retained exactly rather than deleted, so the field
+        # stays bound at BOTH ends. Note that PR #362's merge is not in question here -- what
+        # XASSET-0062 records is that its LIFECYCLE EVIDENCE was defective, which does not
+        # change which unit is live.
         assert ws0014["active_branch"] == (
+            "claude/xasset-0062-lifecycle-correction"
+        )
+        assert ws0014["active_branch"] != (
             "claude/xasset-0061-authorization-jux8p9"
         )
         assert ws0014["active_branch"] != (
@@ -775,7 +785,11 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0061, the renewed link-3 readiness-verification authorization;
         # XASSET-0060's value joins the NEGATIVE pins below, retained exactly, never deleted.
         XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
-        assert ws0014["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        # ADVANCED BY XASSET-0062; XASSET-0061's value joins the NEGATIVE pins below,
+        # retained exactly, never deleted.
+        XASSET0062_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
+        assert ws0014["last_verified_main_sha"] == XASSET0062_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0061_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0060_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != (
@@ -835,7 +849,9 @@ class TestCatalogAndRegisterSynchronisation:
         )
         # ADVANCED BY XASSET-0053, with the shared fields above. Bound at BOTH ends.
         # ADVANCED BY XASSET-0059; the predecessor date joins the NEGATIVE pins.
-        assert str(ws0014["last_verified_date"]) == "2026-08-28"
+        # ADVANCED BY XASSET-0062, on the same terms; XASSET-0061's date joins them too.
+        assert str(ws0014["last_verified_date"]) == "2026-08-30"
+        assert str(ws0014["last_verified_date"]) != "2026-08-28"
         assert str(ws0014["last_verified_date"]) != "2026-08-26"
         assert str(ws0014["last_verified_date"]) != "2026-08-25"
         assert str(ws0014["last_verified_date"]) != "2026-08-24"

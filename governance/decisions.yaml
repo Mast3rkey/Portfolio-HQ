@@ -1187,3 +1187,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0027, XASSET-0028, XASSET-0029, XASSET-0030, XASSET-0036, XASSET-0037, XASSET-0038, XASSET-0040, XASSET-0041, XASSET-0042, XASSET-0043, XASSET-0044, XASSET-0045, XASSET-0046, XASSET-0047, XASSET-0048, XASSET-0049, XASSET-0050, XASSET-0051, XASSET-0052, XASSET-0053, XASSET-0055, XASSET-0056, XASSET-0057, XASSET-0058, XASSET-0059, XASSET-0060, LEVEL2-0001, RISK-0001]
     supporting_artifact: test_level1_stage1_post_parser_correction_renewed_readiness_verification_authorization.py
     file: governance/decisions/XASSET-0061-endpoint-0001-stage-1-post-parser-correction-renewed-readiness-verification-authorization.md
+  - decision_id: XASSET-0062
+    date: 2026-08-30
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0004, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0027, XASSET-0029, XASSET-0030, XASSET-0041, XASSET-0042, XASSET-0044, XASSET-0045, XASSET-0049, XASSET-0050, XASSET-0053, XASSET-0060, XASSET-0061]
+    supporting_artifact: test_level1_stage1_pr362_lifecycle_provenance_correction.py
+    file: governance/decisions/XASSET-0062-endpoint-0001-pr362-lifecycle-provenance-correction.md

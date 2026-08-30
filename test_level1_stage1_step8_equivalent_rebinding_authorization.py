@@ -1749,8 +1749,17 @@ def _assert_shared_active_pr_is_ahead_of(ws, finished_pr):
     states.
     """
     active = ws["active_pr"]
-    assert isinstance(active, int)
-    if active < 0:
+    # EXTENDED BY XASSET-0062: ``None`` is the un-bound window -- a successor's number does
+    # not exist until GitHub issues it and is never predicted. Like the sentinel window
+    # below it is checked for CONSISTENCY rather than skipped: a gate must EXPLICITLY carry
+    # the un-bound marker and still be in_progress, so a half-written register still fails.
+    assert type(active) in (int, type(None)), active
+    if active is None:
+        _live_unbound = [g for g in ws["milestones"]
+                         if "pr" in g and g["pr"] is None]
+        assert _live_unbound, "unbound active_pr that no gate claims"
+        assert all(g.get("status") == "in_progress" for g in _live_unbound)
+    elif active < 0:
         live = [g for g in ws["milestones"] if g.get("pr") == active]
         assert live, "the register carries a sentinel active_pr that no gate claims"
         assert all(g["status"] == "in_progress" for g in live), live

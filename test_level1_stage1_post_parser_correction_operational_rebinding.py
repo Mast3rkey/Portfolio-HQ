@@ -83,14 +83,24 @@ THIS_PULL_REQUEST = 361
 
 #: ADVANCED BY XASSET-0061. Every decision appended to the catalog AFTER this one,
 #: named EXACTLY, so "last" stays an exact index rather than being relaxed to "present".
-SUCCESSORS_APPENDED_SINCE = ("XASSET-0061",)
+#: ADVANCED BY XASSET-0062, appended after XASSET-0061 and named EXACTLY.
+SUCCESSORS_APPENDED_SINCE = ("XASSET-0061", "XASSET-0062")
 #: Gates this unit's successors added to WS-0014 after this unit's own two.
-SUCCESSOR_GATES_ADDED_SINCE = 2
+#: ADVANCED BY XASSET-0062, which added exactly two additive WS-0014 gates of its own
+#: (the PR #362 lifecycle audit record, and its own in-progress correction gate).
+#: Stated as an EXACT count so this unit's own growth stays an exact arithmetic claim.
+SUCCESSOR_GATES_ADDED_SINCE = 4
 #: The shared live fields lawfully moved onto the successor; this unit's own values
 #: are retained as NEGATIVE pins so a silent revert to finished work still fails.
-SUCCESSOR_BRANCH_NAME = "claude/xasset-0061-authorization-jux8p9"
-SUCCESSOR_ACTIVE_PR = 362
-SUCCESSOR_MAIN_SHA_VALUE = "413e033ac33741829168762ab24d73327c047d4b"
+#: ADVANCED BY XASSET-0062: this names whichever unit is LIVE, and PR #362 has merged.
+SUCCESSOR_BRANCH_NAME = "claude/xasset-0062-lifecycle-correction"
+#: ADVANCED BY XASSET-0062: the shared field names whichever unit is live -- `None`
+#: before GitHub issues the successor's number, and exactly that number afterwards.
+#: Never predicted. XASSET-0061's own number is retained just below as a NEGATIVE pin.
+SUCCESSOR_ACTIVE_PR: int | None = None
+XASSET0061_ACTIVE_PR_PIN = 362
+#: ADVANCED BY XASSET-0062: this names whichever unit is LIVE, and PR #362 has merged.
+SUCCESSOR_MAIN_SHA_VALUE = "3db918530b10ffc1423ba0b749b086e349a4901d"
 
 # ── XASSET-0057 / PR #358 — this unit's AUTHORITY (not its base) ────────────────────────────
 PR358_BASE_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
@@ -1293,7 +1303,9 @@ class TestTheBoundPullRequestNumber:
         # ADVANCED BY XASSET-0061. What this protects -- that THIS unit bound the number
         # GitHub really issued -- is immutable history and is asserted against this unit's
         # OWN gate, which does not move.
-        assert ws0014["active_pr"] == SUCCESSOR_ACTIVE_PR
+        assert ws0014["active_pr"] in (None, SUCCESSOR_ACTIVE_PR)
+        # ADVANCED BY XASSET-0062: XASSET-0061's number stays a NEGATIVE pin.
+        assert ws0014["active_pr"] != XASSET0061_ACTIVE_PR_PIN
         assert ws0014["active_pr"] != THIS_PULL_REQUEST
         assert any(
             g.get("pr") == THIS_PULL_REQUEST for g in ws0014["milestones"]

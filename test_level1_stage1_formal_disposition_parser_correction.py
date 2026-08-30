@@ -64,6 +64,9 @@ MERGE_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
 SUCCESSORS_APPENDED_SINCE = (
     "XASSET-0057", "XASSET-0058", "XASSET-0059", "XASSET-0060",
     "XASSET-0061",
+    # ADVANCED BY XASSET-0062, appended after XASSET-0061 and named EXACTLY,
+    # so "last" stays an exact index rather than a relaxed "present somewhere".
+    "XASSET-0062",
 )
 
 #: The module's identity AT THE BASE -- the value the bound merge still carries, and which this

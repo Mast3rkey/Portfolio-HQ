@@ -1107,8 +1107,17 @@ class TestCatalogAndRegisterSynchronisation:
             # shared field must have moved off this unit's BASE and onto something later.
             assert ws0014["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
             active = ws0014["active_pr"]
-            assert isinstance(active, int)
-            if active < 0:
+            # EXTENDED BY XASSET-0062: ``None`` is the un-bound window -- a successor's number does
+            # not exist until GitHub issues it and is never predicted. Like the sentinel window
+            # below it is checked for CONSISTENCY rather than skipped: a gate must EXPLICITLY carry
+            # the un-bound marker and still be in_progress, so a half-written register still fails.
+            assert type(active) in (int, type(None)), active
+            if active is None:
+                _live_unbound = [g for g in ws0014["milestones"]
+                                 if "pr" in g and g["pr"] is None]
+                assert _live_unbound, "unbound active_pr that no gate claims"
+                assert all(g.get("status") == "in_progress" for g in _live_unbound)
+            elif active < 0:
                 live = [g for g in ws0014["milestones"] if g.get("pr") == active]
                 assert live, "the register carries a sentinel active_pr that no gate claims"
                 assert all(g["status"] == "in_progress" for g in live), live
@@ -1438,8 +1447,17 @@ class TestTheBoundPullRequestNumber:
         sentinel window checked for consistency instead of skipped.
         """
         active = ws0014["active_pr"]
-        assert isinstance(active, int)
-        if active < 0:
+        # EXTENDED BY XASSET-0062: ``None`` is the un-bound window -- a successor's number does
+        # not exist until GitHub issues it and is never predicted. Like the sentinel window
+        # below it is checked for CONSISTENCY rather than skipped: a gate must EXPLICITLY carry
+        # the un-bound marker and still be in_progress, so a half-written register still fails.
+        assert type(active) in (int, type(None)), active
+        if active is None:
+            _live_unbound = [g for g in ws0014["milestones"]
+                             if "pr" in g and g["pr"] is None]
+            assert _live_unbound, "unbound active_pr that no gate claims"
+            assert all(g.get("status") == "in_progress" for g in _live_unbound)
+        elif active < 0:
             live = [g for g in ws0014["milestones"] if g.get("pr") == active]
             assert live, "the register carries a sentinel active_pr that no gate claims"
             assert all(g["status"] == "in_progress" for g in live), live

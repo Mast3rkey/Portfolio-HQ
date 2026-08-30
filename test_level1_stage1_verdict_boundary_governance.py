@@ -102,7 +102,8 @@ SUCCESSOR_DECISION = "XASSET-0056"
 # live unit becomes the positive pin, exactly as every prior generation was handled.
 #: ADVANCED BY XASSET-0061. XASSET-0060's branch is retained as a NEGATIVE pin.
 XASSET0060_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
-SUCCESSOR_BRANCH = "claude/xasset-0061-authorization-jux8p9"
+#: ADVANCED BY XASSET-0062: this names whichever unit is LIVE, and PR #362 has merged.
+SUCCESSOR_BRANCH = "claude/xasset-0062-lifecycle-correction"
 XASSET0061_BRANCH = "claude/xasset-0061-authorization-jux8p9"
 XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 #: ADVANCED BY XASSET-0061. The shared live field moved onto the successor; the prior
@@ -112,7 +113,11 @@ XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
 #: ADVANCED BY XASSET-0061. WS-0014's single shared live field lawfully moved onto
 #: the successor. XASSET-0060's own value is RETAINED above and becomes a NEGATIVE
 #: pin, so the chain stays bound at BOTH ends rather than only the newest.
-SUCCESSOR_MAIN_SHA = XASSET0061_MAIN_SHA
+#: ADVANCED BY XASSET-0062, following the generational convention: the newly live
+#: generation gets its own named constant and is the POSITIVE pin; XASSET-0061's
+#: constant above is retained, with its exact value, as a NEGATIVE pin.
+XASSET0062_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
+SUCCESSOR_MAIN_SHA = XASSET0062_MAIN_SHA
 XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
 XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
 XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
@@ -129,6 +134,8 @@ THIS_GATE = "xasset0055-verdict-boundary-governance"
 SUCCESSORS_APPENDED_SINCE = (
     "XASSET-0056", "XASSET-0057", "XASSET-0058", "XASSET-0059", "XASSET-0060",
     "XASSET-0061",
+    # ADVANCED BY XASSET-0062, appended after XASSET-0061 and named EXACTLY.
+    "XASSET-0062",
 )
 
 APPROVE = A.APPROVING_REVIEW_DISPOSITION
@@ -886,7 +893,10 @@ class TestCatalogAndRegisterSynchronisation:
         live = _ws0014()
         assert live["active_branch"] == SUCCESSOR_BRANCH
         assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
-        assert live["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        # ADVANCED BY XASSET-0062: the positive pin is the newly live generation, and
+        # XASSET-0061's value becomes a NEGATIVE pin, retained exactly, never deleted.
+        assert live["last_verified_main_sha"] == XASSET0062_MAIN_SHA
+        assert live["last_verified_main_sha"] != XASSET0061_MAIN_SHA
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert live["last_verified_main_sha"] != XASSET0060_MAIN_SHA
@@ -1063,9 +1073,13 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             # value, never deleted -- and the newly named successor is the positive pin.
             assert f'XASSET0060_MAIN_SHA = "{XASSET0060_MAIN_SHA}"' in live, name
             assert "!= XASSET0060_MAIN_SHA" in live, name
-            assert f'XASSET0061_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
-            # ADVANCED BY XASSET-0061: the POSITIVE pin is now the newest generation.
-            assert "== XASSET0061_MAIN_SHA" in live, name
+            # ADVANCED BY XASSET-0062, on exactly the terms this docstring already states.
+            # XASSET-0061's own constant becomes a NEGATIVE pin -- retained with its exact
+            # value, never deleted -- and the newly named successor is the positive pin.
+            assert 'XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"' in live, name
+            assert "!= XASSET0061_MAIN_SHA" in live, name
+            assert f'XASSET0062_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            assert "== XASSET0062_MAIN_SHA" in live, name
             # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
             # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
             # itself in the third person -- so the constant is asserted exactly where it is

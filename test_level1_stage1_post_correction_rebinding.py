@@ -136,6 +136,12 @@ XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 #: generation's value joins the NEGATIVE PINS rather than being deleted, so the field
 #: stays bound at BOTH ends and a silent revert to finished work still fails.
 XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
+#: ADVANCED BY XASSET-0062, the PR #362 lifecycle provenance correction. WS-0014's
+#: `last_verified_main_sha` is a SINGLE SHARED live field naming whichever unit is live,
+#: not any one filing's own. PR #362 merged at the value below, so the field lawfully
+#: advances. The predecessor value is retained immediately above as a NEGATIVE pin, so the
+#: field stays bound at BOTH ends and a silent revert still fails here.
+XASSET0062_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
 #: The authorization module's exact bytes at XASSET-0047's own merge -- the identity THAT unit
 #: recorded, immutable, and therefore still true after a lawful successor rebinding.
 XASSET_0047_FINAL_MODULE_SHA256 = (
@@ -1442,7 +1448,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0049. This is WS-0014's SINGLE SHARED live self-reference and moves
         # with every unit; each generation's own value is retained as a NEGATIVE pin so a silent
         # revert to any finished unit's state still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0062_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0061_MAIN_SHA
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert ws0014["last_verified_main_sha"] != XASSET0060_MAIN_SHA

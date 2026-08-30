@@ -18255,6 +18255,63 @@ workstreams:
           MERGING XASSET-0061 LEAVES STAGE 1 UNARMED AND NOT EXECUTABLE, the lane ABSENT,
           AUTHORIZATION_ROOT absent, no stage1_results.yaml, all three authorization predicates
           False, and ATTEMPT_1 INTACT, UNCLAIMED and UNCONSUMED.
+      - gate: xasset0061-pr362-lifecycle-audit-two-blocking-defects
+        status: complete
+        pr: 362
+        description: >-
+          INDEPENDENT POST-MERGE LIFECYCLE AUDIT OF PR #362 -- STOP. Retained as
+          issuecomment-5466422998 (derived Mast3rkey / User / OWNER, via the
+          chatgpt-codex-connector application), 2026-08-30. FORMAL DISPOSITION: XASSET-0061
+          EFFECTIVITY NOT ESTABLISHED, 2 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE. BLOCKING 1: the
+          retained principal-acceptance comment 5463146940 derives as claude[bot] / Bot /
+          CONTRIBUTOR, posted through the claude application; its body claims to quote the
+          principal, but body text cannot replace derived actor evidence, and no pre-merge
+          Mast3rkey / User / OWNER acceptance exists. BLOCKING 2: no retained immediate
+          post-merge verification record exists -- PR #362 merged 2026-08-29T15:07:49Z and the
+          first post-merge issue comment is final closure 5463232454 at 15:24:01Z, after
+          merge-commit CI; a later claim that an immediate check occurred cannot independently
+          establish its timing. THE MERGE ITSELF IS CLEAN AND IS NOT DISPUTED: two ordered
+          parents 413e033a... then ccc7f433..., merge tree 1ccbecec... byte-identical to the
+          accepted-head tree, merge-commit CI run 33259403778 / job 99118637390 completed and
+          successful at the exact merge SHA. THE PRIOR GATE ENTRY IMMEDIATELY ABOVE IS LEFT
+          BYTE-UNEDITED and its status: in_progress remains ACCURATE -- the XASSET-0061 SS-J
+          lifecycle did NOT close.
+      - gate: xasset0062-pr362-lifecycle-provenance-correction
+        status: in_progress
+        pr: null
+        description: >-
+          PR #362 LIFECYCLE PROVENANCE CORRECTION, filed as XASSET-0062. LANE G GOVERNANCE
+          CORRECTION responding to the audit above. It RECORDS both defects exactly without
+          rewriting or sanitizing history; DETERMINES that defect 1 (bot-attributed acceptance)
+          is curable in principle by a ratification narrowly modelled on XASSET-0042, and that
+          defect 2 (unretained immediate-verification evidence) is NOT CURABLE, because
+          OPS-0004 holds that missing retroactive evidence cannot be manufactured and
+          XASSET-0061 SS-H makes uncertainty a failure; and therefore DETERMINES THAT
+          XASSET-0061 IS NOT EFFECTIVE and cannot be made effective for its own lifecycle. Its
+          one-shot link-3 authority is UNAVAILABLE and UNCONSUMED, and a future link-3 unit
+          needs a NEW authorization that this filing does NOT grant. XASSET-0061 is NOT voided
+          and its reasoning is NOT disputed; its status remains Proposed, unchanged. NEW
+          FINDING BEYOND THE AUDIT (SS-C): the derived Mast3rkey / User / OWNER triple is NOT
+          sufficient to establish principal authorship in this repository -- Claude-posted
+          records have derived as exactly that triple throughout this chain, including
+          XASSET-0060's own acceptance 5449752973 and XASSET-0042's own ratification
+          5345229177, and the independent reviewer derives as that triple too; only
+          performed_via_github_app separates them, so SS-G requires it to be ABSENT. That
+          finding is recorded as fact and reopens, re-adjudicates and reclassifies NO closed
+          unit. REQUIRES a separate, directly attributable Mast3rkey / User / OWNER principal
+          ratification on the corrective PR, which Claude must not write or post, pinned to
+          this exact history only: PR #362, accepted head ccc7f433..., review 5058418382, bot
+          record 5463146940, merge 3db91853..., closure 5463232454, stop 5466422998. Creates NO
+          standing authority for claude[bot], the claude application, ChatGPT/Codex, the
+          chatgpt-codex-connector application, or any other automation. THIS FILING MUTATES
+          NOTHING LOAD-BEARING: level1_stage1_execution_authorization.py, all twenty-five
+          load-bearing paths, PROTOCOL_V1.md, pre_registration.yaml, the runner, the result
+          validator, the construction universe, holdings.yaml, targets.yaml, gates.yaml,
+          issuer_lookthrough.yaml, allocate.py, margin_state.py and levels.py are each
+          BYTE-UNCHANGED. MERGING XASSET-0062 LEAVES STAGE 1 UNARMED AND NOT EXECUTABLE, the
+          lane ABSENT, AUTHORIZATION_ROOT absent, no stage1_results.yaml, all three
+          authorization predicates False, ATTEMPT_1 INTACT, UNCLAIMED and UNCONSUMED, and does
+          NOT make XASSET-0061 effective.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -19946,10 +20003,10 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/xasset-0061-authorization-jux8p9
-    active_pr: 362
-    last_verified_main_sha: 413e033ac33741829168762ab24d73327c047d4b
-    last_verified_date: 2026-08-28
+    active_branch: claude/xasset-0062-lifecycle-correction
+    active_pr: null
+    last_verified_main_sha: 3db918530b10ffc1423ba0b749b086e349a4901d
+    last_verified_date: 2026-08-30
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively

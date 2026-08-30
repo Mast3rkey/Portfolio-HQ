@@ -197,6 +197,12 @@ XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 #: generation's value joins the NEGATIVE PINS rather than being deleted, so the field
 #: stays bound at BOTH ends and a silent revert to finished work still fails.
 XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
+#: ADVANCED BY XASSET-0062, the PR #362 lifecycle provenance correction. WS-0014's
+#: `last_verified_main_sha` is a SINGLE SHARED live field naming whichever unit is live,
+#: not any one filing's own. PR #362 merged at the value below, so the field lawfully
+#: advances. The predecessor value is retained immediately above as a NEGATIVE pin, so the
+#: field stays bound at BOTH ends and a silent revert still fails here.
+XASSET0062_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
 #: Read back from the live pull request AFTER GitHub issued it, never predicted. The
 #: branch's first commit carried the impossible sentinel -56 (negative, so structurally
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
@@ -220,6 +226,11 @@ XASSET0059_ACTIVE_PR = 360
 #: names the currently-live unit, and every prior generation stays a NEGATIVE pin below.
 XASSET0060_ACTIVE_PR = 361
 XASSET0061_ACTIVE_PR = 362
+#: ADVANCED BY XASSET-0062. `active_pr` is WS-0014's SINGLE SHARED live field, naming
+#: whichever unit is live: `None` before GitHub issues the successor's number and exactly
+#: that number afterwards. It is BOUND, never predicted -- set from GitHub's own response.
+#: XASSET-0061's own number is retained below as a NEGATIVE pin.
+XASSET0062_ACTIVE_PR: int | None = None
 
 PR346_MERGE_TREE = "a2a05c8308b3d6efe27e2517d0859934c65660a6"
 
@@ -1783,7 +1794,21 @@ def _assert_shared_active_pr_is_not_behind_the_bound_rebinding(ws):
     a half-bound register still fails.
     """
     active = ws["active_pr"]
-    if active < 0:
+    if active is None:
+        # EXTENDED BY XASSET-0062. ``None`` is the same UN-BOUND window the negative sentinel
+        # below describes, in the spelling this register actually uses: the successor's number
+        # does not exist until GitHub issues it, and it is never predicted. The ordering cannot
+        # be evaluated, so -- exactly as in the sentinel branch -- the state is checked for
+        # CONSISTENCY rather than skipped, which would make the guard vacuous precisely when the
+        # register is half-written. The live gate must carry the same un-bound marker and must
+        # still be in_progress, so a half-bound register fails here.
+        # Only gates that EXPLICITLY carry ``pr: null`` count. A gate with no ``pr`` key at all
+        # is older bookkeeping that never claimed a number, and matching it would both weaken
+        # the check and read a ``status`` those entries need not have.
+        live = [g for g in ws["milestones"] if "pr" in g and g["pr"] is None]
+        assert live, "the register carries an unbound active_pr that no gate claims"
+        assert all(g.get("status") == "in_progress" for g in live), live
+    elif active < 0:
         live = [g for g in ws["milestones"] if g.get("pr") == active]
         assert live, "the register carries a sentinel active_pr that no gate claims"
         assert all(g["status"] == "in_progress" for g in live), live
@@ -1851,7 +1876,8 @@ class TestCatalogAndRegisterSynchronisation:
         # onto its own base and its own number. Bound at BOTH ends, with every prior generation's
         # value retained as a negative pin -- and the module/register agreement is now an
         # EQUALITY, because the live unit is a REBINDING and therefore does bind its own number.
-        assert ws["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        assert ws["last_verified_main_sha"] == XASSET0062_MAIN_SHA
+        assert ws["last_verified_main_sha"] != XASSET0061_MAIN_SHA
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert ws["last_verified_main_sha"] != XASSET0060_MAIN_SHA
@@ -1869,7 +1895,8 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws["last_verified_main_sha"] != PR346_MERGE_SHA
         assert ws["last_verified_main_sha"] != PR346_BASE_SHA
         assert ws["last_verified_main_sha"] != PR345_BASE_SHA
-        assert ws["active_pr"] == XASSET0061_ACTIVE_PR
+        assert ws["active_pr"] in (None, XASSET0062_ACTIVE_PR)
+        assert ws["active_pr"] != XASSET0061_ACTIVE_PR
         assert ws["active_pr"] != XASSET0060_ACTIVE_PR
         assert ws["active_pr"] != XASSET0059_ACTIVE_PR
         assert ws["active_pr"] != XASSET0058_ACTIVE_PR
@@ -2242,7 +2269,8 @@ class TestTheBoundPullRequestNumber:
         assert gate["pr"] == THIS_PULL_REQUEST
         # ADVANCED BY XASSET-0049: the register's shared active_pr now names the LIVE unit, and
         # the live unit is a rebinding, so it and the module agree exactly.
-        assert ws["active_pr"] == XASSET0061_ACTIVE_PR
+        assert ws["active_pr"] in (None, XASSET0062_ACTIVE_PR)
+        assert ws["active_pr"] != XASSET0061_ACTIVE_PR
         assert ws["active_pr"] != XASSET0060_ACTIVE_PR
         assert ws["active_pr"] != XASSET0059_ACTIVE_PR
         assert ws["active_pr"] != XASSET0058_ACTIVE_PR
