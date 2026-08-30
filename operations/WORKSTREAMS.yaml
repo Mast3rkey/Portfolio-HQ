@@ -18313,7 +18313,41 @@ workstreams:
           unit. REQUIRES a separate, directly attributable Mast3rkey / User / OWNER principal
           ratification on the corrective PR, which Claude must not write or post, pinned to
           this exact history only: PR #362, accepted head ccc7f433..., review 5058418382, bot
-          record 5463146940, merge 3db91853..., closure 5463232454, stop 5466422998. Creates NO
+          record 5463146940, merge 3db91853..., closure 5463232454, stop 5466422998.
+          CORRECTED AGAIN under independent exact-head DELTA review 5061031729 (2 BLOCKING /
+          1 MAJOR / 1 MINOR), each reproduced before editing. BLOCKING 1, the lifecycle was
+          CIRCULAR: SS-G.4 required the binding to be retained in a further commit on this PR
+          while SS-J required the ratification at the FINAL accepted head, so the binding
+          commit moved the head the ratification had just accepted. The binding commit is
+          WITHDRAWN; new SS-G.9 states one closed sequence -- final clean reviewed head, then
+          ONE principal comment that BOTH accepts that exact head (named in its own
+          pr363_accepted_head field) AND ratifies the pinned PR #362 history, then independent
+          coordinator API readback retained as GitHub lifecycle evidence with NO repository
+          commit and NO change to the accepted head. BOUND_RATIFICATION_ID and
+          BOUND_RATIFICATION_FINGERPRINT stay None permanently and the in-repository predicate
+          returns False for every input by design. BLOCKING 2, the predicate AUTHENTICATED AN
+          EXPLICIT REFUSAL: scope was an unordered substring scan, so a canonical
+          principal-shaped comment beginning "I do NOT ratify or accept anything. References
+          only:" that listed all seven pins and was bound to its OWN id and OWN fingerprint
+          returned True. A fingerprint authenticates an already-valid record against LATER
+          EDITS and can never make an INITIALLY BOUND refusal affirmative. SS-G.3 now requires
+          the body to PARSE as an exact affirmative declaration -- header plus nine key: value
+          pairs, each key once, every fixed value exact -- and ANY other line rejects the whole
+          body; refusal, VOID, reference-only, negated/aliased action, truncated or extended
+          pin, unknown or duplicated key, and valid-schema-wrapped-in-contradicting-prose all
+          fail. Caller-selectable bound_id/bound_fingerprint are REMOVED from the operational
+          predicate, which now takes only the record; the injection seam is private and
+          test-only. The false SS-G.1 claim that canonical fields reject "any synthetic record
+          a caller assembles" is WITHDRAWN -- this filing's own fixtures are caller-assembled
+          and pass every structural clause; live origin comes from SS-G.9 readback, never from
+          record shape. MAJOR 1, SS-I.2 was prose-only: a positive post_merge_verification_is_valid
+          predicate now implements OPS-0009 SS-8/SS-9 -- principal OR the designated coordinator
+          that ACTUALLY performed the merge, honest retained application provenance, and STRICT
+          merged_at < verification_at < closure_at with equality failing at either boundary; an
+          app-attributed coordinator PASSES post-merge verification and can NEVER pass principal
+          acceptance or SS-G ratification. MINOR 1, the is_direct_principal_record docstring
+          claimed review 5060791095 satisfied it; the corrected function REJECTS that review on
+          the absent application key, and the docstring now says so. Creates NO
           standing authority for claude[bot], the claude application, ChatGPT/Codex, the
           chatgpt-codex-connector application, or any other automation. THIS FILING MUTATES
           NOTHING LOAD-BEARING: level1_stage1_execution_authorization.py, all twenty-five

@@ -261,8 +261,15 @@ def is_canonical_top_level_issue_comment(record: dict) -> bool:
 def is_direct_principal_record(record: dict) -> bool:
     """SS-G.2 -- the four actor/provenance conjuncts.
 
-    NECESSARY, NOT SUFFICIENT. Must be conjoined with SS-G.1: review 5060791095 satisfies this
-    function and fails the record-kind test. Body text is never consulted.
+    NECESSARY, NOT SUFFICIENT; must be conjoined with SS-G.1.
+
+    Review 5060791095 FAILS this function, on the app conjunct: ``performed_via_github_app``
+    is ABSENT on a pull-request review, and this function requires it PRESENT and null. It
+    fails SS-G.1 independently, on record kind. Corrected under DELTA review 5061031729
+    MINOR 1 -- an earlier docstring claimed this function accepted that review, which the
+    corrected implementation and its tests both contradict.
+
+    Body text is never consulted here.
     """
     if not isinstance(record, dict):
         return False
@@ -307,47 +314,95 @@ def canonical_ratification_fingerprint(record: dict) -> str:
     ).hexdigest()
 
 
-def body_names_every_scope_pin(record: dict) -> bool:
-    """SS-G.3 -- the body carries the scope, and ONLY the scope.
+#: SS-G.3 -- the EXACT affirmative declaration schema. Corrected under DELTA review
+#: 5061031729 BLOCKING 2: unordered substring presence let an explicit REFUSAL that merely
+#: mentioned every pin satisfy the scope test. A fingerprint authenticates an already-valid
+#: record against later edits; it can never make an initially-bound refusal affirmative.
+RATIFICATION_HEADER = "XASSET-0062 RATIFICATION"
+RATIFICATION_ACTION = "RATIFY-AND-ACCEPT"
 
-    Body text never establishes actor identity or record kind; those come solely from the
-    canonical fields above.
+#: Exact key -> exact required value. ``pr363_accepted_head`` is validated by FORM only; the
+#: repository cannot know its own future final head, so that value's correctness against the
+#: real final head is established by independent GitHub readback (SS-G.6), never from here.
+RATIFICATION_SCHEMA: dict[str, str | None] = {
+    "action": RATIFICATION_ACTION,
+    "pr363_accepted_head": None,                      # 40 lowercase hex, form-checked
+    "pr362_pull_request": str(RATIFIED_PULL_REQUEST),
+    "pr362_accepted_head": RATIFIED_ACCEPTED_HEAD,
+    "pr362_independent_review": str(RATIFIED_REVIEW_ID),
+    "pr362_bot_acceptance": str(RATIFIED_BOT_ACCEPTANCE_ID),
+    "pr362_merge": RATIFIED_MERGE,
+    "pr362_closure": str(RATIFIED_CLOSURE_ID),
+    "pr362_independent_stop": str(INDEPENDENT_STOP_ID),
+}
+
+_SHA40 = re.compile(r"\A[0-9a-f]{40}\Z")
+_KEY_VALUE = re.compile(r"\A([a-z0-9_]+):[ ](.*)\Z")
+
+
+def parse_ratification_body(body: object) -> dict[str, str] | None:
+    """Parse the COMPLETE body under the strict schema, or return ``None``.
+
+    Deterministic and total. Every non-blank line must be either the exact header or one
+    ``key: value`` pair drawn from :data:`RATIFICATION_SCHEMA`; every key must appear exactly
+    once; every fixed value must match exactly. ANY other line -- prose, a disclaimer, a
+    ``VOID`` marker, a reference list, trailing contradictory material -- rejects the whole
+    body. There is no substring matching anywhere in this function.
     """
-    body = record.get("body")
     if not isinstance(body, str):
-        return False
-    return all(pin in body for pin in RATIFIED_SCOPE_PINS)
+        return None
+    lines = [ln.rstrip() for ln in body.strip().splitlines()]
+    lines = [ln for ln in lines if ln != ""]
+    if not lines or lines[0] != RATIFICATION_HEADER:
+        return None
+    parsed: dict[str, str] = {}
+    for line in lines[1:]:
+        match = _KEY_VALUE.match(line)
+        if match is None:
+            return None                      # prose, VOID marker, or malformed pair
+        key, value = match.group(1), match.group(2)
+        if key not in RATIFICATION_SCHEMA:
+            return None                      # unknown key
+        if key in parsed:
+            return None                      # duplicated key
+        required = RATIFICATION_SCHEMA[key]
+        if required is None:
+            if not _SHA40.match(value):
+                return None                  # form check only
+        elif value != required:
+            return None                      # exact value required
+        parsed[key] = value
+    if set(parsed) != set(RATIFICATION_SCHEMA):
+        return None                          # a missing key
+    return parsed
 
 
-def ratifies_pr362_acceptance(
-    record: dict,
-    bound_id: int | None = None,
-    bound_fingerprint: str | None = None,
-) -> bool:
-    """The complete SS-G predicate. Conjunctive over every independent evidence family.
+def body_declares_ratification(record: dict) -> bool:
+    """SS-G.3 -- the body carries an EXACT affirmative declaration, and nothing else.
 
-    Yields the all-false result for every record that is not the one canonical, principal-
-    authored, fingerprint-bound top-level issue comment on this corrective pull request.
-
-    ``bound_id``/``bound_fingerprint`` default to the module-level binding, which is ``None``
-    until the principal actually posts and the operator reads it back (SS-G.4).
+    Replaces the withdrawn ``body_names_every_scope_pin``, which asked only whether each pin
+    appeared as a substring somewhere. Body text still never establishes actor identity or
+    record kind; those come solely from the canonical fields above.
     """
-    if bound_id is None:
-        bound_id = BOUND_RATIFICATION_ID
-    if bound_fingerprint is None:
-        bound_fingerprint = BOUND_RATIFICATION_FINGERPRINT
-    # Nothing is bound yet -> nothing ratifies.
-    if bound_id is None or bound_fingerprint is None:
+    if not isinstance(record, dict):
         return False
+    return parse_ratification_body(record.get("body")) is not None
+
+
+def _ratification_is_structurally_complete(record: dict) -> bool:
+    """Every SS-G structural conjunct EXCEPT the live-origin binding.
+
+    Structural only. Passing this proves the record has the right SHAPE; it proves NOTHING
+    about live GitHub origin. A caller can assemble a dictionary that satisfies every clause
+    here -- the suite's own fixtures do exactly that. Live origin is established solely by
+    independent GitHub API readback and the retained evidence of SS-G.6, never from here.
+    Corrected under DELTA review 5061031729 BLOCKING 2.
+    """
     if not is_canonical_top_level_issue_comment(record):
         return False
     if not is_direct_principal_record(record):
         return False
-    if record.get("id") != bound_id:
-        return False
-    if canonical_ratification_fingerprint(record) != bound_fingerprint:
-        return False
-    if not body_names_every_scope_pin(record):
+    if not body_declares_ratification(record):
         return False
     # SS-G.5 retrospection: strictly after the PR #362 merge. Equality is not "after".
     created = record.get("created_at")
@@ -360,6 +415,149 @@ def ratifies_pr362_acceptance(
     return True
 
 
+def _ratifies_with_binding(
+    record: dict, _bound_id: int | None, _bound_fingerprint: str | None
+) -> bool:
+    """PRIVATE injection seam. TEST-ONLY -- never the operational entry point.
+
+    Exists so the suite can exercise the bound path without exposing a caller-selectable
+    binding on the operational predicate, which DELTA review 5061031729 BLOCKING 2 required
+    removed: a caller who may choose both the record and its binding can always self-bind.
+    """
+    if _bound_id is None or _bound_fingerprint is None:
+        return False
+    if not _ratification_is_structurally_complete(record):
+        return False
+    if record.get("id") != _bound_id:
+        return False
+    if canonical_ratification_fingerprint(record) != _bound_fingerprint:
+        return False
+    return True
+
+
+def ratifies_pr362_acceptance(record: dict) -> bool:
+    """The complete SS-G predicate. ONE argument -- the record. Nothing else is selectable.
+
+    The binding is read from the module constants, which are ``None`` and, under the corrected
+    SS-G.6 lifecycle, STAY ``None``: the live id and fingerprint are retained as GitHub
+    lifecycle evidence by independent coordinator readback, never committed to this repository,
+    because a binding commit would change the very head the ratification accepts (DELTA review
+    5061031729 BLOCKING 1). This predicate therefore yields ``False`` in-repository for every
+    input, by design, and is never the thing that certifies a live record.
+    """
+    return _ratifies_with_binding(
+        record, BOUND_RATIFICATION_ID, BOUND_RATIFICATION_FINGERPRINT
+    )
+
+
+# ======================================================================================
+# SS-I.2 -- the immediate post-merge-verification (PMV) evidence predicate.
+#
+# Added under DELTA review 5061031729 MAJOR 1. SS-I.2's role split was previously asserted in
+# prose and pinned only by prose-presence tests plus a single negative case, so the operative
+# three-condition rule -- exact designation, the SAME coordinator/session that merged, honest
+# provenance, and strict merge < verification < closure ordering -- was never mechanised and
+# its failure modes were never provable.
+#
+# This predicate is deliberately SEPARATE from the SS-G ratification predicate. The two answer
+# different questions and must never be satisfiable by one another: an app-attributed
+# coordinator record PASSES here and can NEVER pass SS-G.
+# ======================================================================================
+def _app_slug(record: dict) -> str | None:
+    """The application slug, or ``None`` for a directly attributed record.
+
+    Distinguishes PRESENT-and-null (honest direct attribution) from a present application
+    object. Absence is handled separately by :func:`_app_provenance_is_retained`.
+    """
+    app = record.get("performed_via_github_app")
+    if not isinstance(app, dict):
+        return None
+    slug = app.get("slug")
+    return slug if isinstance(slug, str) else None
+
+
+def _app_provenance_is_retained(record: dict) -> bool:
+    """SS-I.2 condition 2 -- provenance must be RETAINED, honestly, either way.
+
+    An ABSENT key is not honest direct attribution; it is unretained provenance, and it is the
+    signature of a record kind that carries none. Either a null (direct) or an application
+    object (app-attributed) is acceptable, because SS-I.2 permits both -- what it forbids is a
+    record that does not say.
+    """
+    if "performed_via_github_app" not in record:
+        return False
+    app = record["performed_via_github_app"]
+    if app is None:
+        return True
+    return isinstance(app, dict) and isinstance(app.get("slug"), str) and app["slug"] != ""
+
+
+def _is_iso_z(value: object) -> bool:
+    return isinstance(value, str) and bool(
+        re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", value)
+    )
+
+
+def post_merge_verification_is_valid(
+    record: dict,
+    *,
+    designated_coordinator: str | None,
+    merge_performed_by: str | None,
+    merged_at: str,
+    closure_at: str,
+) -> bool:
+    """SS-I.2 -- is this record valid immediate post-merge-verification evidence?
+
+    Conjunctive over the three operative conditions, plus record kind:
+
+    1. the verifier is the principal, **or** the designated merge coordinator that ACTUALLY
+       performed the merge -- designation alone is insufficient, and a coordinator who did not
+       perform this merge fails (``OPS-0009`` ``SS-9``: the same session that merges verifies);
+    2. derived actor and application provenance are honestly retained -- an app-attributed
+       coordinator reads back as what it is;
+    3. ``merged_at < record.created_at < closure_at``, STRICTLY at both boundaries.
+
+    Never principal acceptance and never an ``SS-G`` ratification, whatever it returns.
+    """
+    if not isinstance(record, dict):
+        return False
+    if not is_canonical_top_level_issue_comment(record):
+        return False
+
+    login = _actor_login(record)
+    if login is None or _actor_type(record) is None:
+        return False
+    if record.get("author_association") is None:
+        return False
+
+    # Condition 1 -- who may verify.
+    if login == PRINCIPAL_LOGIN:
+        pass
+    else:
+        # ``login`` is a non-empty ``str`` here, so these two equalities alone already exclude
+        # every absent, empty, wrong-typed, and mismatched designation or merger. Separate
+        # type-guards were tried and PROVEN unreachable -- no input can satisfy them without
+        # also satisfying these -- so they are removed rather than kept as untestable
+        # defence-in-depth. Every line below is load-bearing and independently mutation-proved.
+        if login != designated_coordinator:
+            return False
+        # OPS-0009 SS-9: the SAME session that merged must verify.
+        if login != merge_performed_by:
+            return False
+
+    # Condition 2 -- honest, retained provenance.
+    if not _app_provenance_is_retained(record):
+        return False
+
+    # Condition 3 -- strict chronology, from GitHub's own timestamps.
+    created = record.get("created_at")
+    if not (_is_iso_z(created) and _is_iso_z(merged_at) and _is_iso_z(closure_at)):
+        return False
+    if not (merged_at < created < closure_at):
+        return False
+    return True
+
+
 # --------------------------------------------------------------------------------------
 # Record fixtures modelled on the real, live-derived record SHAPES.
 #
@@ -368,15 +566,32 @@ def ratifies_pr362_acceptance(
 # --------------------------------------------------------------------------------------
 GENUINE_RATIFICATION_ID = 9_999_999_999  # a synthetic id for fixtures ONLY; never a claim.
 
-SCOPE_BODY = (
-    "I ratify PR #{pr} at accepted head {head}, independent review {review}, "
-    "bot-attributed acceptance {acc}, merge {merge}, final closure {closure}, "
-    "independent stop {stop}."
-).format(
-    pr=RATIFIED_PULL_REQUEST, head=RATIFIED_ACCEPTED_HEAD, review=RATIFIED_REVIEW_ID,
-    acc=RATIFIED_BOT_ACCEPTANCE_ID, merge=RATIFIED_MERGE, closure=RATIFIED_CLOSURE_ID,
-    stop=INDEPENDENT_STOP_ID,
-)
+#: A schema-conformant affirmative declaration. The PR #363 head here is a FIXTURE value --
+#: 40 hex, deliberately not any real commit -- because the repository cannot know its own
+#: future final head; SS-G.6 readback establishes the real one.
+FIXTURE_PR363_HEAD = "0" * 40
+
+SCOPE_BODY = "\n".join([
+    RATIFICATION_HEADER,
+    f"action: {RATIFICATION_ACTION}",
+    f"pr363_accepted_head: {FIXTURE_PR363_HEAD}",
+    f"pr362_pull_request: {RATIFIED_PULL_REQUEST}",
+    f"pr362_accepted_head: {RATIFIED_ACCEPTED_HEAD}",
+    f"pr362_independent_review: {RATIFIED_REVIEW_ID}",
+    f"pr362_bot_acceptance: {RATIFIED_BOT_ACCEPTANCE_ID}",
+    f"pr362_merge: {RATIFIED_MERGE}",
+    f"pr362_closure: {RATIFIED_CLOSURE_ID}",
+    f"pr362_independent_stop: {INDEPENDENT_STOP_ID}",
+])
+
+
+def _refusal_body(prefix="I do NOT ratify or accept anything. References only:"):
+    """The DELTA review 5061031729 BLOCKING 2 counterexample: a REFUSAL naming every pin."""
+    return prefix + " PR #{pr}; accepted head {head}; review {rev}; acceptance {acc}; " \
+        "merge {merge}; closure {close}; stop {stop}.".format(
+            pr=RATIFIED_PULL_REQUEST, head=RATIFIED_ACCEPTED_HEAD, rev=RATIFIED_REVIEW_ID,
+            acc=RATIFIED_BOT_ACCEPTANCE_ID, merge=RATIFIED_MERGE,
+            close=RATIFIED_CLOSURE_ID, stop=INDEPENDENT_STOP_ID)
 
 
 def _issue_comment(
@@ -465,11 +680,11 @@ GENUINE_FINGERPRINT = canonical_ratification_fingerprint(GENUINE_RATIFICATION)
 
 
 def _bound(record=None):
-    """Bind the fixture's own id and fingerprint, as SS-G.4 requires of the real one."""
+    """TEST-ONLY binding kwargs for the private seam. Never available operationally."""
     record = GENUINE_RATIFICATION if record is None else record
     return dict(
-        bound_id=record["id"],
-        bound_fingerprint=canonical_ratification_fingerprint(record),
+        _bound_id=record["id"],
+        _bound_fingerprint=canonical_ratification_fingerprint(record),
     )
 
 
@@ -492,18 +707,18 @@ class TestTheReviewerRecordIsRejected:
         assert is_canonical_top_level_issue_comment(_pull_request_review()) is False
 
     def test_the_real_review_shape_is_rejected_by_the_complete_predicate(self):
-        assert ratifies_pr362_acceptance(_pull_request_review(), **_bound()) is False
+        assert _ratifies_with_binding(_pull_request_review(), **_bound()) is False
 
     def test_the_review_is_rejected_even_carrying_the_full_scope_body(self):
         """A review quoting every pin verbatim still fails -- body is never record-kind proof."""
         review = _pull_request_review(body=SCOPE_BODY)
-        assert body_names_every_scope_pin(review) is True
-        assert ratifies_pr362_acceptance(review, **_bound()) is False
+        assert body_declares_ratification(review) is True
+        assert _ratifies_with_binding(review, **_bound()) is False
 
     @pytest.mark.parametrize("review_id", INDEPENDENT_REVIEW_IDS)
     def test_neither_independent_review_can_ever_ratify(self, review_id):
         """SS-G.7: 5060791095 and 5060793954 are review evidence only."""
-        assert ratifies_pr362_acceptance(_pull_request_review(ident=review_id), **_bound()) is False
+        assert _ratifies_with_binding(_pull_request_review(ident=review_id), **_bound()) is False
 
     def test_an_absent_app_key_is_not_the_same_as_a_null_one(self):
         """The precise defect: ``.get()`` cannot tell them apart, so the test must not use it."""
@@ -520,26 +735,26 @@ class TestOtherRecordKindsAreRejected:
     def test_an_inline_review_comment_is_rejected(self):
         rc = _review_comment()
         assert is_canonical_top_level_issue_comment(rc) is False
-        assert ratifies_pr362_acceptance(rc, **_bound()) is False
+        assert _ratifies_with_binding(rc, **_bound()) is False
 
     def test_a_commit_comment_is_rejected(self):
         cc = _commit_comment()
         assert is_canonical_top_level_issue_comment(cc) is False
         # It even satisfies the actor conjuncts, which is exactly why kind must be checked.
         assert is_direct_principal_record(cc) is True
-        assert ratifies_pr362_acceptance(cc, **_bound()) is False
+        assert _ratifies_with_binding(cc, **_bound()) is False
 
     @pytest.mark.parametrize("field", FOREIGN_RECORD_KIND_FIELDS)
     def test_any_foreign_record_kind_field_is_decisive(self, field):
         rec = _issue_comment(**{field: "anything"})
         assert is_canonical_top_level_issue_comment(rec) is False
-        assert ratifies_pr362_acceptance(rec, **_bound()) is False
+        assert _ratifies_with_binding(rec, **_bound()) is False
 
     def test_a_top_level_comment_on_the_wrong_pull_request_is_rejected(self):
         for wrong in (RATIFIED_PULL_REQUEST, 1, THIS_CORRECTIVE_PULL_REQUEST + 1):
             rec = _issue_comment(pr=wrong)
             assert is_canonical_top_level_issue_comment(rec) is False, wrong
-            assert ratifies_pr362_acceptance(rec, **_bound(rec)) is False, wrong
+            assert _ratifies_with_binding(rec, **_bound(rec)) is False, wrong
 
 
 class TestCanonicalUrlsAndIdMustAgree:
@@ -562,7 +777,7 @@ class TestCanonicalUrlsAndIdMustAgree:
     def test_a_malformed_or_mismatched_canonical_url_is_rejected(self, field, value):
         rec = _issue_comment(**{field: value})
         assert is_canonical_top_level_issue_comment(rec) is False
-        assert ratifies_pr362_acceptance(rec, **_bound(rec)) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
 
     @pytest.mark.parametrize("ident", [None, "9999999999", 3.0, True])
     def test_a_missing_or_wrongly_typed_id_is_rejected(self, ident):
@@ -583,20 +798,20 @@ class TestCanonicalUrlsAndIdMustAgree:
         assert isinstance(True, int)          # the trap the exact-type check exists to close
         assert type(rec["id"]) is not int
         assert is_canonical_top_level_issue_comment(rec) is False
-        assert ratifies_pr362_acceptance(rec, **_bound(rec)) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
 
     def test_an_id_that_disagrees_with_its_urls_is_rejected(self):
         rec = _issue_comment()
         rec["id"] = GENUINE_RATIFICATION_ID + 1  # urls still name the old id
         assert is_canonical_top_level_issue_comment(rec) is False
-        assert ratifies_pr362_acceptance(rec, **_bound()) is False
+        assert _ratifies_with_binding(rec, **_bound()) is False
 
     def test_a_record_whose_id_is_not_the_bound_one_is_rejected(self):
         other = _issue_comment(ident=GENUINE_RATIFICATION_ID + 7)
         # Structurally valid, correctly attributed, correct scope -- but NOT the bound record.
         assert is_canonical_top_level_issue_comment(other) is True
         assert is_direct_principal_record(other) is True
-        assert ratifies_pr362_acceptance(other, **_bound()) is False
+        assert _ratifies_with_binding(other, **_bound()) is False
 
     def test_the_bound_id_check_is_not_masked_by_the_fingerprint(self):
         """The id lives INSIDE the fingerprint payload, so a naive test cannot separate them.
@@ -608,14 +823,14 @@ class TestCanonicalUrlsAndIdMustAgree:
         rec = _issue_comment()
         correct_fingerprint = canonical_ratification_fingerprint(rec)
         assert (
-            ratifies_pr362_acceptance(
-                rec, bound_id=rec["id"], bound_fingerprint=correct_fingerprint
+            _ratifies_with_binding(
+                rec, _bound_id=rec["id"], _bound_fingerprint=correct_fingerprint
             )
             is True
         )
         assert (
-            ratifies_pr362_acceptance(
-                rec, bound_id=rec["id"] + 1, bound_fingerprint=correct_fingerprint
+            _ratifies_with_binding(
+                rec, _bound_id=rec["id"] + 1, _bound_fingerprint=correct_fingerprint
             )
             is False
         )
@@ -623,7 +838,7 @@ class TestCanonicalUrlsAndIdMustAgree:
 
 class TestTheFingerprintAuthenticatesTheRecord:
     def test_the_genuine_record_ratifies_when_bound(self):
-        assert ratifies_pr362_acceptance(GENUINE_RATIFICATION, **_bound()) is True
+        assert _ratifies_with_binding(GENUINE_RATIFICATION, **_bound()) is True
 
     @pytest.mark.parametrize(
         "field,value",
@@ -636,12 +851,12 @@ class TestTheFingerprintAuthenticatesTheRecord:
     def test_any_edit_changes_the_fingerprint_and_relocks(self, field, value):
         edited = _issue_comment(**{field: value})
         assert canonical_ratification_fingerprint(edited) != GENUINE_FINGERPRINT
-        assert ratifies_pr362_acceptance(edited, **_bound()) is False
+        assert _ratifies_with_binding(edited, **_bound()) is False
 
     def test_a_changed_actor_changes_the_fingerprint(self):
         edited = _issue_comment(login="claude[bot]", type_="Bot", assoc="CONTRIBUTOR")
         assert canonical_ratification_fingerprint(edited) != GENUINE_FINGERPRINT
-        assert ratifies_pr362_acceptance(edited, **_bound()) is False
+        assert _ratifies_with_binding(edited, **_bound()) is False
 
     def test_the_fingerprint_is_deterministic_and_canonical(self):
         a = canonical_ratification_fingerprint(GENUINE_RATIFICATION)
@@ -673,45 +888,60 @@ class TestTheFingerprintAuthenticatesTheRecord:
         """
         import inspect
 
-        src = inspect.getsource(ratifies_pr362_acceptance)
-        assert "if bound_id is None or bound_fingerprint is None:" in src
+        src = inspect.getsource(_ratifies_with_binding)
+        assert "if _bound_id is None or _bound_fingerprint is None:" in src
         # And the redundancy is real, not assumed -- both downstream checks reject on their own.
         rec = _issue_comment()
         fp = canonical_ratification_fingerprint(rec)
-        assert ratifies_pr362_acceptance(rec, bound_id=None, bound_fingerprint=fp) is False
-        assert ratifies_pr362_acceptance(rec, bound_id=rec["id"], bound_fingerprint=None) is False
+        assert _ratifies_with_binding(rec, _bound_id=None, _bound_fingerprint=fp) is False
+        assert _ratifies_with_binding(rec, _bound_id=rec["id"], _bound_fingerprint=None) is False
 
     @pytest.mark.parametrize("bad", ["", "0" * 64, "not-a-hash", None])
     def test_a_wrong_bound_fingerprint_rejects(self, bad):
         assert (
-            ratifies_pr362_acceptance(
+            _ratifies_with_binding(
                 GENUINE_RATIFICATION,
-                bound_id=GENUINE_RATIFICATION_ID,
-                bound_fingerprint=bad,
+                _bound_id=GENUINE_RATIFICATION_ID,
+                _bound_fingerprint=bad,
             )
             is False
         )
 
 
 class TestScopeIsAuthenticatedByTheRecordNotTheCaller:
-    def test_the_scope_pins_are_module_constants_not_a_parameter(self):
-        """The caller-supplied scope dictionary is GONE (SS-G.3)."""
+    def test_the_operational_predicate_takes_only_the_record(self):
+        """SS-G.3 -- no caller-selectable scope, id, or fingerprint (BLOCKING 2).
+
+        A caller who may choose the record AND its binding can always self-bind. The
+        operational entry point therefore exposes neither.
+        """
         import inspect
 
         params = set(inspect.signature(ratifies_pr362_acceptance).parameters)
-        assert "scope" not in params
-        assert params == {"record", "bound_id", "bound_fingerprint"}
+        assert params == {"record"}
+        for forbidden in ("scope", "bound_id", "bound_fingerprint"):
+            assert forbidden not in params
 
-    def test_every_pin_must_appear_in_the_body(self):
+    def test_the_injection_seam_is_private_and_test_only(self):
+        """The seam exists, is underscore-private, and its kwargs are underscore-private."""
+        import inspect
+
+        assert _ratifies_with_binding.__name__.startswith("_")
+        params = set(inspect.signature(_ratifies_with_binding).parameters)
+        assert params == {"record", "_bound_id", "_bound_fingerprint"}
+        assert "TEST-ONLY" in inspect.getdoc(_ratifies_with_binding)
+
+    def test_every_pin_must_appear_with_its_exact_value(self):
         for pin in RATIFIED_SCOPE_PINS:
             rec = _issue_comment(body=SCOPE_BODY.replace(pin, "REDACTED"))
-            assert body_names_every_scope_pin(rec) is False, pin
-            assert ratifies_pr362_acceptance(rec, **_bound(rec)) is False, pin
+            assert body_declares_ratification(rec) is False, pin
+            assert _ratifies_with_binding(rec, **_bound(rec)) is False, pin
 
     def test_an_empty_or_non_string_body_fails(self):
         for body in ("", None, 123, {"text": SCOPE_BODY}):
             rec = _issue_comment(body=body)
-            assert body_names_every_scope_pin(rec) is False
+            assert body_declares_ratification(rec) is False
+            assert parse_ratification_body(body) is None
 
     def test_the_seven_pins_are_exactly_the_pr362_history(self):
         assert set(RATIFIED_SCOPE_PINS) == {
@@ -719,6 +949,207 @@ class TestScopeIsAuthenticatedByTheRecordNotTheCaller:
             str(RATIFIED_BOT_ACCEPTANCE_ID), RATIFIED_MERGE, str(RATIFIED_CLOSURE_ID),
             str(INDEPENDENT_STOP_ID),
         }
+
+
+class TestAnInitiallyBoundRefusalNeverRatifies:
+    """DELTA review 5061031729 BLOCKING 2 -- the reproduced defect, and its closure.
+
+    The withdrawn scope test asked only whether each pin appeared as a SUBSTRING somewhere in
+    the body. The reviewer built a canonical principal-shaped issue comment whose body began
+    "I do NOT ratify or accept anything. References only:", listed all seven pins, and bound
+    it to its OWN id and its OWN freshly computed fingerprint -- and the complete predicate
+    returned True.
+
+    A fingerprint authenticates an already-valid record AGAINST LATER EDITS. It can never make
+    an initially-bound refusal affirmative, because it is computed over whatever the body said
+    at binding time. The fix is upstream of the fingerprint: the body must PARSE as an exact
+    affirmative declaration.
+    """
+
+    def test_the_reviewers_exact_refusal_is_rejected_though_self_bound(self):
+        rec = _issue_comment(body=_refusal_body())
+        # It really does name every pin -- that is why substring presence was insufficient.
+        for pin in RATIFIED_SCOPE_PINS:
+            assert pin in rec["body"], pin
+        # And it really is a canonical principal record on the right pull request.
+        assert is_canonical_top_level_issue_comment(rec) is True
+        assert is_direct_principal_record(rec) is True
+        # It is nonetheless not a declaration, and self-binding cannot rescue it.
+        assert body_declares_ratification(rec) is False
+        assert parse_ratification_body(rec["body"]) is None
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    @pytest.mark.parametrize(
+        "label,body",
+        [
+            ("void_prefix", "VOID. " + _refusal_body()),
+            ("reference_only", _refusal_body("References only:")),
+            ("trailing_contradiction",
+             SCOPE_BODY + "\nHowever I do NOT actually ratify this."),
+            ("trailing_void_marker", SCOPE_BODY + "\nVOID"),
+            ("leading_prose", "Context follows.\n" + SCOPE_BODY),
+            ("negated_action",
+             SCOPE_BODY.replace("action: RATIFY-AND-ACCEPT", "action: DO-NOT-RATIFY")),
+            ("alias_action_wrong_case",
+             SCOPE_BODY.replace("action: RATIFY-AND-ACCEPT", "action: ratify-and-accept")),
+            ("action_with_suffix",
+             SCOPE_BODY.replace("action: RATIFY-AND-ACCEPT",
+                                "action: RATIFY-AND-ACCEPT (VOID)")),
+            ("unknown_key", SCOPE_BODY + "\nvoid: true"),
+            ("duplicated_key", SCOPE_BODY + "\npr362_merge: " + RATIFIED_MERGE),
+            ("missing_header", "\n".join(SCOPE_BODY.splitlines()[1:])),
+            ("header_only", RATIFICATION_HEADER),
+            ("substring_alias_pin",
+             SCOPE_BODY.replace("pr362_merge: " + RATIFIED_MERGE,
+                                "pr362_merge: " + RATIFIED_MERGE[:12])),
+            ("pin_embedded_in_longer_value",
+             SCOPE_BODY.replace("pr362_closure: " + str(RATIFIED_CLOSURE_ID),
+                                "pr362_closure: " + str(RATIFIED_CLOSURE_ID) + "0")),
+            ("malformed_pr363_head",
+             SCOPE_BODY.replace("pr363_accepted_head: " + FIXTURE_PR363_HEAD,
+                                "pr363_accepted_head: TBD")),
+            ("uppercase_pr363_head",
+             SCOPE_BODY.replace("pr363_accepted_head: " + FIXTURE_PR363_HEAD,
+                                "pr363_accepted_head: " + "A" * 40)),
+        ],
+    )
+    def test_no_self_bound_variant_ratifies(self, label, body):
+        """Each names every pin where applicable, and each is bound to its own fingerprint."""
+        rec = _issue_comment(body=body)
+        assert parse_ratification_body(body) is None, label
+        assert body_declares_ratification(rec) is False, label
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False, label
+
+    def test_a_junk_first_line_before_a_complete_schema_is_rejected(self):
+        """The header check is load-bearing, and ONLY this shape proves it.
+
+        A headerless body is already rejected for a different reason -- the parser skips line
+        zero, so ``action`` goes missing. The case that isolates the header requirement is a
+        body whose first line is junk and whose REMAINING lines are the complete schema.
+        """
+        pairs = "\n".join(SCOPE_BODY.splitlines()[1:])
+        assert parse_ratification_body("GARBAGE\n" + pairs) is None
+        assert parse_ratification_body("VOID\n" + pairs) is None
+        assert parse_ratification_body("I do NOT ratify.\n" + pairs) is None
+        rec = _issue_comment(body="GARBAGE\n" + pairs)
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    def test_a_wrong_header_is_rejected(self):
+        for wrong in ("XASSET-0061 RATIFICATION", "xasset-0062 ratification",
+                      "XASSET-0062", "# XASSET-0062 RATIFICATION",
+                      "XASSET-0062  RATIFICATION", "RATIFICATION XASSET-0062"):
+            body = "\n".join([wrong] + SCOPE_BODY.splitlines()[1:])
+            assert parse_ratification_body(body) is None, wrong
+
+    def test_trailing_whitespace_on_the_header_is_tolerated_not_a_loophole(self):
+        """Deliberate formatting slack: rstrip() normalises it, and nothing else changes."""
+        body = "\n".join(["XASSET-0062 RATIFICATION   "] + SCOPE_BODY.splitlines()[1:])
+        assert parse_ratification_body(body) is not None
+        # The tolerance is whitespace ONLY -- a non-space character still rejects.
+        assert parse_ratification_body(body.replace("RATIFICATION   ", "RATIFICATION .")) is None
+
+    def test_the_affirmative_declaration_is_what_distinguishes_them(self):
+        """Control: the ONLY difference is the body, and it is decisive."""
+        genuine = _issue_comment(body=SCOPE_BODY)
+        refusal = _issue_comment(body=_refusal_body())
+        assert genuine["id"] == refusal["id"]
+        assert genuine["user"] == refusal["user"]
+        assert _ratifies_with_binding(genuine, **_bound(genuine)) is True
+        assert _ratifies_with_binding(refusal, **_bound(refusal)) is False
+
+    def test_parse_returns_the_exact_declared_values(self):
+        parsed = parse_ratification_body(SCOPE_BODY)
+        assert parsed is not None
+        assert set(parsed) == set(RATIFICATION_SCHEMA)
+        assert parsed["action"] == RATIFICATION_ACTION
+        assert parsed["pr362_merge"] == RATIFIED_MERGE
+        assert parsed["pr362_accepted_head"] == RATIFIED_ACCEPTED_HEAD
+
+    def test_parse_is_total_and_never_raises(self):
+        for junk in (None, 123, b"bytes", [], {}, object(), "", "\n\n\n"):
+            assert parse_ratification_body(junk) is None
+
+    def test_blank_lines_and_trailing_space_are_tolerated_but_prose_is_not(self):
+        """Formatting slack must not become a content loophole."""
+        padded = "\n\n" + SCOPE_BODY.replace("\n", "  \n") + "\n\n"
+        assert parse_ratification_body(padded) is not None
+        assert parse_ratification_body(padded + "\nnot really though") is None
+
+
+class TestTheDocumentationMatchesTheMechanism:
+    """DELTA review 5061031729 MINOR 1 -- the docstring contradicted the implementation.
+
+    ``is_direct_principal_record`` claimed review 5060791095 "satisfies this function". The
+    corrected function REJECTS it, on the absent application key. Documentation drift of this
+    kind is exactly what a reader relies on, so it is pinned behaviorally here rather than left
+    to review.
+    """
+
+    def test_the_docstring_says_the_review_fails_and_the_code_agrees(self):
+        import inspect
+
+        doc = _flat(inspect.getdoc(is_direct_principal_record))
+        assert "Review 5060791095 FAILS this function" in doc
+        assert "satisfies this function" not in doc
+        # And the code actually does what the docstring now says.
+        assert is_direct_principal_record(_pull_request_review(ident=5060791095)) is False
+
+    def test_the_docstring_names_the_correct_reason(self):
+        import inspect
+
+        doc = _flat(inspect.getdoc(is_direct_principal_record))
+        assert "is ABSENT on a pull-request review" in doc
+        assert "requires it PRESENT and null" in doc
+        review = _pull_request_review(ident=5060791095)
+        assert "performed_via_github_app" not in review          # the stated reason, verified
+        assert is_canonical_top_level_issue_comment(review) is False   # and the independent one
+
+    def test_the_docstring_records_which_review_corrected_it(self):
+        import inspect
+
+        doc = _flat(inspect.getdoc(is_direct_principal_record))
+        assert "DELTA review 5061031729" in doc
+        assert "MINOR 1" in doc
+
+
+class TestStructuralShapeIsNotProofOfLiveOrigin:
+    """DELTA review 5061031729 BLOCKING 2 -- the withdrawn SS-G.1 over-claim.
+
+    The old SS-G.1 text said canonical fields reject "any synthetic record a caller assembles."
+    That was false, and this suite's own fixtures are the counterexample: they are assembled in
+    Python and they pass. A dictionary-shape predicate cannot prove a record came from GitHub.
+    """
+
+    def test_a_caller_assembled_record_passes_every_structural_clause(self):
+        rec = _issue_comment()
+        assert is_canonical_top_level_issue_comment(rec) is True
+        assert is_direct_principal_record(rec) is True
+        assert body_declares_ratification(rec) is True
+        assert _ratification_is_structurally_complete(rec) is True
+
+    def test_that_same_record_is_not_operationally_ratified(self):
+        """Structural completeness is explicitly NOT ratification."""
+        assert ratifies_pr362_acceptance(_issue_comment()) is False
+
+    def test_the_helper_documents_that_it_proves_no_origin(self):
+        import inspect
+
+        doc = _flat(inspect.getdoc(_ratification_is_structurally_complete))
+        assert "proves NOTHING about live GitHub origin" in doc
+        assert "independent GitHub API readback" in doc
+
+    def test_a_self_bound_synthetic_record_is_not_final_evidence(self):
+        """Self-binding is exactly what the operational predicate refuses to accept."""
+        rec = _issue_comment()
+        fingerprint = canonical_ratification_fingerprint(rec)
+        # The seam accepts it -- that is what the seam is FOR, and why it is test-only.
+        assert _ratifies_with_binding(rec, _bound_id=rec["id"],
+                                      _bound_fingerprint=fingerprint) is True
+        # The operational predicate offers no way to supply that binding.
+        import inspect
+
+        assert set(inspect.signature(ratifies_pr362_acceptance).parameters) == {"record"}
+        assert ratifies_pr362_acceptance(rec) is False
 
 
 class TestBodyTextNeverOverridesDerivedActorIdentity:
@@ -730,7 +1161,7 @@ class TestBodyTextNeverOverridesDerivedActorIdentity:
             body="The acceptance below is the principal's. Quoted verbatim. " + SCOPE_BODY,
         )
         assert is_direct_principal_record(rec) is False
-        assert ratifies_pr362_acceptance(rec, **_bound(rec)) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
 
     @pytest.mark.parametrize(
         "body",
@@ -816,20 +1247,20 @@ class TestRetrospectionAndMalformedShapes:
     @pytest.mark.parametrize("created", ["2026-08-29T15:00:00Z", MERGED_AT])
     def test_a_ratification_at_or_before_the_merge_is_refused(self, created):
         rec = _issue_comment(created=created)
-        assert ratifies_pr362_acceptance(rec, **_bound(rec)) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
 
     @pytest.mark.parametrize(
         "created", ["", "2026-08-30", "not-a-date", "2026-08-30T18:00:00", None, 12345]
     )
     def test_malformed_instants_fail_closed(self, created):
         rec = _issue_comment(created=created)
-        assert ratifies_pr362_acceptance(rec, **_bound(rec)) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
 
     def test_malformed_shapes_fail_closed(self):
         for bad in ({}, None, {"user": "Mast3rkey"}, [], "a string"):
             assert is_canonical_top_level_issue_comment(bad) is False
             assert is_direct_principal_record(bad) is False
-            assert ratifies_pr362_acceptance(bad, **_bound()) is False
+            assert _ratifies_with_binding(bad, **_bound()) is False
 
 
 class TestTheVerificationRoleSplitIsPreserved:
@@ -886,7 +1317,7 @@ class TestTheVerificationRoleSplitIsPreserved:
         coordinator = _issue_comment(login="claude[bot]", type_="Bot",
                                      assoc="CONTRIBUTOR", app=CLAUDE_APP_SLUG)
         assert is_direct_principal_record(coordinator) is False
-        assert ratifies_pr362_acceptance(coordinator, **_bound(coordinator)) is False
+        assert _ratifies_with_binding(coordinator, **_bound(coordinator)) is False
 
     def test_the_verification_timestamp_window_is_required(self):
         flat = _flat(_read(DECISION_RELPATH))
@@ -895,6 +1326,272 @@ class TestTheVerificationRoleSplitIsPreserved:
     def test_ops0009_is_neither_narrowed_nor_superseded(self):
         flat = _flat(_read(DECISION_RELPATH))
         assert "`OPS-0009` is neither narrowed nor superseded" in flat
+
+
+class TestPostMergeVerificationEvidenceIsMechanised:
+    """DELTA review 5061031729 MAJOR 1 -- SS-I.2 as a predicate, not prose.
+
+    Every clause below is behavioral. The prose-presence tests in the sibling class remain, but
+    they are no longer the only thing standing behind SS-I.2.
+    """
+
+    COORDINATOR = "merge-coordinator"
+    MERGED = "2026-08-31T10:00:00Z"
+    VERIFIED = "2026-08-31T10:05:00Z"
+    CLOSED = "2026-08-31T10:30:00Z"
+
+    def _pmv(self, **over):
+        """A PMV context with the honest defaults; override one thing per test."""
+        ctx = dict(
+            designated_coordinator=self.COORDINATOR,
+            merge_performed_by=self.COORDINATOR,
+            merged_at=self.MERGED,
+            closure_at=self.CLOSED,
+        )
+        ctx.update(over)
+        return ctx
+
+    def _coordinator_record(self, app="claude", **over):
+        kwargs = dict(
+            login=self.COORDINATOR, type_="Bot", assoc="CONTRIBUTOR",
+            app=app, created=self.VERIFIED, ident=8_100_000_001,
+            body="Post-merge verification: scope, validators, CI.",
+        )
+        kwargs.update(over)
+        return _issue_comment(**kwargs)
+
+    # -------------------------------------------------------------- positive cases
+    def test_the_principal_may_verify_directly(self):
+        rec = _issue_comment(created=self.VERIFIED, ident=8_100_000_002,
+                             body="Post-merge verification.")
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is True
+
+    def test_an_app_attributed_coordinator_may_verify(self):
+        """The whole point of SS-I.2: this must PASS."""
+        assert post_merge_verification_is_valid(
+            self._coordinator_record(), **self._pmv()) is True
+
+    def test_a_directly_attributed_coordinator_may_verify(self):
+        rec = self._coordinator_record(app=None, type_="User")
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is True
+
+    # ------------------------------------------------- the two roles never overlap
+    def test_the_passing_coordinator_record_can_never_ratify_or_be_acceptance(self):
+        """The load-bearing separation: PMV-valid, but never SS-G, never SS-I.1."""
+        rec = self._coordinator_record()
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is True
+        assert is_direct_principal_record(rec) is False
+        assert ratifies_pr362_acceptance(rec) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    def test_even_carrying_a_perfect_declaration_the_coordinator_cannot_ratify(self):
+        rec = self._coordinator_record(body=SCOPE_BODY)
+        assert body_declares_ratification(rec) is True
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is True
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    def test_a_principal_shaped_app_null_record_is_still_not_pmv_out_of_order(self):
+        """Being the principal does not exempt a record from the chronology rule."""
+        rec = _issue_comment(created=self.CLOSED, ident=8_100_000_003)
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is False
+
+    # -------------------------------------------------------------- negative: WHO
+    def test_an_unrelated_actor_fails(self):
+        rec = self._coordinator_record(login="somebody-else")
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is False
+
+    def test_a_coordinator_who_did_not_perform_this_merge_fails(self):
+        """OPS-0009 SS-9 -- the SAME session that merges verifies."""
+        rec = self._coordinator_record()
+        assert post_merge_verification_is_valid(
+            rec, **self._pmv(merge_performed_by="a-different-coordinator")) is False
+
+    def test_a_wrongly_designated_coordinator_fails(self):
+        rec = self._coordinator_record(login="not-the-designated-one")
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is False
+
+    @pytest.mark.parametrize("designation", [None, "", 123])
+    def test_a_missing_or_malformed_designation_fails(self, designation):
+        rec = self._coordinator_record()
+        assert post_merge_verification_is_valid(
+            rec, **self._pmv(designated_coordinator=designation)) is False
+
+    @pytest.mark.parametrize("merger", [None, "", 123])
+    def test_an_unrecorded_merger_fails(self, merger):
+        rec = self._coordinator_record()
+        assert post_merge_verification_is_valid(
+            rec, **self._pmv(merge_performed_by=merger)) is False
+
+    def test_the_principal_path_does_not_need_a_designation(self):
+        """A principal verifier is authorized by SS-I.2 independently of any coordinator."""
+        rec = _issue_comment(created=self.VERIFIED, ident=8_100_000_004)
+        assert post_merge_verification_is_valid(
+            rec, **self._pmv(designated_coordinator=None,
+                             merge_performed_by=None)) is True
+
+    # ------------------------------------------------------ negative: PROVENANCE
+    def test_absent_application_provenance_fails(self):
+        """Unretained provenance is not honest direct attribution."""
+        rec = self._coordinator_record(app_key_present=False)
+        assert "performed_via_github_app" not in rec
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is False
+
+    @pytest.mark.parametrize("app", [{}, {"slug": ""}, {"slug": None}, {"name": "x"}, "claude", 7])
+    def test_malformed_application_provenance_fails(self, app):
+        rec = self._coordinator_record()
+        rec["performed_via_github_app"] = app
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is False
+
+    def test_a_pull_request_review_is_never_pmv_evidence(self):
+        assert post_merge_verification_is_valid(
+            _pull_request_review(), **self._pmv()) is False
+
+    @pytest.mark.parametrize("foreign", FOREIGN_RECORD_KIND_FIELDS)
+    def test_the_record_kind_gate_is_isolated_and_decisive(self, foreign):
+        """A record perfect on EVERY other clause, failing only on record kind.
+
+        The plain review fixture does not isolate this gate -- it also lacks the application
+        key and carries the wrong actor, so it would be rejected even with the gate removed.
+        This starts from a record that PASSES, injects one foreign record-kind field, and
+        shows the verdict flips. Without it, deleting the gate is invisible.
+        """
+        good = self._coordinator_record()
+        assert post_merge_verification_is_valid(good, **self._pmv()) is True
+        bad = dict(good)
+        bad[foreign] = "x"
+        assert post_merge_verification_is_valid(bad, **self._pmv()) is False, foreign
+
+    def test_a_verification_on_another_pull_request_is_rejected(self):
+        """Same reasoning for the PR association half of the record-kind gate."""
+        elsewhere = self._coordinator_record(pr=999)
+        assert post_merge_verification_is_valid(elsewhere, **self._pmv()) is False
+
+    # ------------------------------------------------------- negative: CHRONOLOGY
+    def test_verification_equal_to_the_merge_fails(self):
+        """Equality is not 'after'."""
+        rec = self._coordinator_record(created=self.MERGED)
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is False
+
+    def test_verification_equal_to_the_closure_fails(self):
+        """Equality is not 'before'."""
+        rec = self._coordinator_record(created=self.CLOSED)
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is False
+
+    def test_verification_before_the_merge_fails(self):
+        rec = self._coordinator_record(created="2026-08-31T09:59:59Z")
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is False
+
+    def test_verification_after_the_closure_fails(self):
+        rec = self._coordinator_record(created="2026-08-31T10:30:01Z")
+        assert post_merge_verification_is_valid(rec, **self._pmv()) is False
+
+    def test_one_second_inside_each_boundary_passes(self):
+        """The boundaries are strict, and adjacent seconds are the proof."""
+        for created in ("2026-08-31T10:00:01Z", "2026-08-31T10:29:59Z"):
+            rec = self._coordinator_record(created=created)
+            assert post_merge_verification_is_valid(rec, **self._pmv()) is True, created
+
+    @pytest.mark.parametrize("bad", ["", "not-a-time", "2026-08-31", None, 20260831])
+    def test_malformed_timestamps_fail(self, bad):
+        rec = self._coordinator_record()
+        assert post_merge_verification_is_valid(rec, **self._pmv(merged_at=bad)) is False
+        assert post_merge_verification_is_valid(rec, **self._pmv(closure_at=bad)) is False
+        assert post_merge_verification_is_valid(
+            self._coordinator_record(created=bad), **self._pmv()) is False
+
+    def test_the_predicate_is_total_and_never_raises(self):
+        for junk in (None, 123, "text", [], {}, object()):
+            assert post_merge_verification_is_valid(junk, **self._pmv()) is False
+
+    def test_pmv_and_ratification_are_separate_functions(self):
+        """They must not be aliases, and neither may delegate to the other."""
+        import inspect
+
+        assert post_merge_verification_is_valid is not ratifies_pr362_acceptance
+        src = inspect.getsource(post_merge_verification_is_valid)
+        assert "ratifies_pr362_acceptance" not in src
+        assert "_ratifies_with_binding" not in src
+        assert "body_declares_ratification" not in src
+
+
+class TestTheLifecycleIsClosedAndNonCircular:
+    """DELTA review 5061031729 BLOCKING 1 -- the circularity, and its removal.
+
+    The withdrawn SS-G.4 required the binding to be retained "in a further ordinary fast-forward
+    correction commit on this pull request", while SS-J required the ratification to sit at the
+    FINAL accepted head. Both cannot hold: the binding commit changes the head the ratification
+    just accepted, reopening the exact-head requirement; binding the replacement changes it
+    again. The corrected design retains the binding as GitHub lifecycle evidence instead, so no
+    commit follows the accepted head.
+    """
+
+    def test_the_binding_commit_requirement_is_withdrawn(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        phrase = "further ordinary fast-forward correction commit on this pull request"
+        # The phrase survives exactly once, and ONLY as a quotation of the withdrawn rule.
+        assert flat.count(phrase) == 1
+        quoted = 'An earlier draft required the operator to retain that binding "in a ' + phrase + '"'
+        assert quoted in flat
+        assert "**The binding commit is withdrawn.**" in flat
+        assert "The binding is never committed to this repository." in flat
+        # And it is nowhere stated as something still to be done.
+        assert "retains, in a further ordinary fast-forward" not in flat
+
+    def test_the_module_binding_stays_none_permanently(self):
+        """Not 'unset until later' -- unset by design, forever."""
+        assert BOUND_RATIFICATION_ID is None
+        assert BOUND_RATIFICATION_FINGERPRINT is None
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "are `None` and **stay** `None`" in flat
+
+    def test_the_lifecycle_sequence_is_stated_explicitly_not_left_to_inference(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "#### G.9 — The closed lifecycle sequence" in flat
+        for step in (
+            "final clean reviewed head",
+            "**one** canonical top-level issue comment on PR #363 that **both** accepts that "
+            "exact head",
+            "independently reads that comment back from the GitHub API",
+            "requires no repository commit and does not change the accepted head",
+        ):
+            assert step in flat, step
+
+    def test_acceptance_and_ratification_are_one_record_not_two_acts(self):
+        """The single-act construction is what makes the sequence closed."""
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "a single act, not two" in flat
+        assert "no question arises about whether a" in flat
+        assert "there is no later head change" in flat
+
+    def test_the_record_carries_its_own_pr363_head_anchor(self):
+        """The reviewer's specific objection: the old record anchored no PR #363 head."""
+        assert "pr363_accepted_head" in RATIFICATION_SCHEMA
+        assert RATIFICATION_SCHEMA["pr363_accepted_head"] is None  # form-checked
+        parsed = parse_ratification_body(SCOPE_BODY)
+        assert parsed is not None and len(parsed["pr363_accepted_head"]) == 40
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "carries its own PR #363 head anchor" in flat
+
+    def test_effectivity_condition_three_matches_the_corrected_lifecycle(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "with no repository commit and no change to the accepted head" in flat
+
+    def test_the_pr363_head_is_form_checked_not_value_checked_in_repository(self):
+        """Honest about what the repository can and cannot know about its own future head."""
+        for good in ("a" * 40, "0" * 40, "0123456789abcdef" * 2 + "01234567"):
+            body = SCOPE_BODY.replace(f"pr363_accepted_head: {FIXTURE_PR363_HEAD}",
+                                      f"pr363_accepted_head: {good}")
+            assert parse_ratification_body(body) is not None, good
+        for bad in ("A" * 40, "a" * 39, "a" * 41, "g" * 40, "", "HEAD"):
+            body = SCOPE_BODY.replace(f"pr363_accepted_head: {FIXTURE_PR363_HEAD}",
+                                      f"pr363_accepted_head: {bad}")
+            assert parse_ratification_body(body) is None, bad
+
+    def test_the_withdrawn_synthetic_record_claim_is_recorded_as_withdrawn(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "any synthetic record a caller assembles" in flat        # quoted as withdrawn
+        assert "that claim was **false and is withdrawn**" in flat
+        assert "These fields do not, and cannot, prove live GitHub origin." in flat
 
 
 class TestNoStandingAuthorityIsCreated:
@@ -1034,7 +1731,7 @@ class TestXasset0061RemainsUnavailable:
         for needle in (
             "independent **FULL** exact-head review",
             "exact-head re-review",
-            "ratification**, satisfying `§G.1`",
+            "ratifies the pinned PR #362 history**, satisfying `§G.1`",
             "normal merge",
             "**actually retained** immediate post-merge verification",
             "successful merge-commit CI whose `head_sha` is the exact merge SHA",

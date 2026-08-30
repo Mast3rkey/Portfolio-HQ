@@ -283,8 +283,14 @@ its repository/PR association are validated from canonical API fields, never inf
    `diff_hunk`, `path`, or `position`.
 
 **Rejected outright by these fields:** pull-request reviews, inline review comments, commit comments,
-comments on any other issue or pull request, records whose canonical URLs are malformed or disagree
-with each other or with `id`, and any synthetic record a caller assembles.
+comments on any other issue or pull request, and records whose canonical URLs are malformed or
+disagree with each other or with `id`.
+
+**These fields do not, and cannot, prove live GitHub origin.** A caller can assemble a dictionary that
+satisfies every clause above — this filing's own fixtures do exactly that. An earlier draft claimed
+these fields reject "any synthetic record a caller assembles"; that claim was **false and is withdrawn**
+under DELTA review `5061031729` BLOCKING 2. Origin is established by `§G.9` readback and retained
+evidence, never by record shape.
 
 #### G.2 — Actor and provenance: four conjuncts, each necessary, none sufficient alone
 
@@ -297,7 +303,7 @@ with each other or with `id`, and any synthetic record a caller assembles.
 `§G.1` and `§G.2` are **conjunctive**. Neither alone is sufficient: `§C`'s counterexample satisfies
 `§G.2` and fails `§G.1`.
 
-#### G.3 — Scope: authenticated by the record, never supplied by a caller
+#### G.3 — Scope: an exact affirmative declaration, parsed, never a substring scan
 
 The ratification governs this exact history and nothing else, pinned to: PR **#362**; accepted head
 `ccc7f433b06d5114eb7616347ce773ae4f80392c`; independent review `5058418382`; bot-attributed acceptance
@@ -306,11 +312,46 @@ independent stop `5466422998`.
 
 These pins are **fixed constants of this decision**. An earlier draft passed them in a caller-supplied
 dictionary the record never authenticated, so any record could be paired with any scope; that is
-removed. The ratification's **own body must name every one of the seven pins**, and the body is read
-**only** for that purpose. **Body text never establishes actor identity or record kind** — those come
-solely from the canonical fields in `§G.1`/`§G.2`.
+removed, and no scope, id, or fingerprint is selectable by a caller of the operational predicate.
 
-#### G.4 — Identity binding: the live id and fingerprint, read back after posting
+**Corrected under DELTA review `5061031729` BLOCKING 2.** An intermediate draft asked only whether each
+pin appeared as a **substring** somewhere in the body. The reviewer built a canonical, principal-shaped
+issue comment whose body began *"I do NOT ratify or accept anything. References only:"*, listed all
+seven pins, and bound it to its own id and its own freshly computed fingerprint — and the complete
+predicate returned `True`. A fingerprint authenticates an already-valid record **against later edits**;
+it can never make an **initially bound** refusal affirmative, because it is computed over whatever the
+body said at binding time. The defect was upstream of the fingerprint, and so is the fix.
+
+The body must now **parse**, in full, as this exact declaration — a header line followed by nine
+`key: value` pairs, each key exactly once, every fixed value exact:
+
+```
+XASSET-0062 RATIFICATION
+action: RATIFY-AND-ACCEPT
+pr363_accepted_head: <the exact final PR #363 head, 40 lowercase hex>
+pr362_pull_request: 362
+pr362_accepted_head: ccc7f433b06d5114eb7616347ce773ae4f80392c
+pr362_independent_review: 5058418382
+pr362_bot_acceptance: 5463146940
+pr362_merge: 3db918530b10ffc1423ba0b749b086e349a4901d
+pr362_closure: 5463232454
+pr362_independent_stop: 5466422998
+```
+
+**Any other line rejects the whole body** — prose, a preamble, a `VOID` marker, a reference list, an
+unknown key, a duplicated key, or trailing contradictory material. There is no substring matching
+anywhere in the parser. A refusal, a reference-only record, a negated or aliased `action`, a truncated
+or extended pin value, and a valid declaration wrapped in contradicting prose **all fail**, and each is
+pinned by its own regression.
+
+`pr363_accepted_head` is validated **by form only** — 40 lowercase hex. The repository cannot know its
+own future final head, so that value's correctness against the real final head is established by the
+`§G.9` readback, never from inside this repository.
+
+**Body text still never establishes actor identity or record kind** — those come solely from the
+canonical fields in `§G.1`/`§G.2`.
+
+#### G.4 — Identity binding: read back from GitHub, never committed to this repository
 
 Following the `XASSET-0042` `§J` safeguard this decision reuses — where token presence alone
 authenticated a record that explicitly voided itself — the ratification is authenticated by a
@@ -318,17 +359,25 @@ authenticated a record that explicitly voided itself — the ratification is aut
 `issue_url`, `user.login`, `user.type`, `author_association`, `performed_via_github_app`, `created_at`,
 and the SHA-256 of the body — sorted keys, fixed separators, never a `repr` of a mapping.
 
-**The ratification comment does not yet exist, so its id and fingerprint are not known and are not
-predicted here.** After the principal posts it, the operator reads the comment back from the GitHub
-API and retains, in a further ordinary fast-forward correction commit on this pull request:
+**Corrected under DELTA review `5061031729` BLOCKING 1.** An earlier draft required the operator to
+retain that binding "in a further ordinary fast-forward correction commit on this pull request", while
+`§J` simultaneously required the ratification to sit at the **final accepted head**. Those two
+requirements cannot both hold: the binding commit *changes* the head the ratification just accepted,
+which reopens the exact-head requirement, and binding the replacement record changes it again. The
+lifecycle could not close. **The binding commit is withdrawn.**
 
-- the live comment `id`;
-- the canonical-JSON fingerprint computed from the read-back record;
-- the exact `created_at` GitHub recorded.
+**The binding is never committed to this repository.** `BOUND_RATIFICATION_ID` and
+`BOUND_RATIFICATION_FINGERPRINT` are `None` and **stay** `None`; the fingerprint is computed and
+compared **outside** the repository, against the record read back from the GitHub API, and retained as
+GitHub lifecycle evidence under `§G.9`. The in-repository predicate therefore returns `False` for every
+input **by design, permanently** — it establishes the required *shape* and rejects the refusal,
+substring, alias, and self-binding classes, and it is never the thing that certifies a live record.
 
-Until that binding is retained, the mechanism has **no** ratification bound and yields the all-false
-result. Any later edit to the body, actor, timestamp, or canonical URLs changes the fingerprint and
-relocks the gate.
+**A dictionary-shape predicate cannot prove live GitHub origin.** This filing's own fixtures are
+caller-assembled and satisfy every structural clause, which is precisely why structural completeness is
+separated from origin in the mechanism (`_ratification_is_structurally_complete` versus `§G.9`
+readback). An earlier `§G.1` sentence claiming canonical fields reject "any synthetic record a caller
+assembles" was **false and is withdrawn**.
 
 #### G.5 — Retrospection
 
@@ -352,6 +401,29 @@ principal. The same holds for every future review on this pull request.
 It establishes that the principal affirms, on the record and under their own attribution, that the
 acceptance recorded at `5463146940` reflects their decision at the accepted head. It establishes
 **nothing** about defect 2, and it does **not** make `XASSET-0061` effective (`§F`).
+
+#### G.9 — The closed lifecycle sequence
+
+Stated explicitly so nothing is left to inference:
+
+1. The repository reaches its **final clean reviewed head** `H`, with independent exact-head review
+   satisfied at `H` and **no further repository commit** contemplated.
+2. The principal posts **one** canonical top-level issue comment on PR #363 that **both** accepts that
+   exact head `H` **and** ratifies the pinned PR #362 history — a single act, not two. Its body is the
+   exact `§G.3` declaration, whose `pr363_accepted_head` field names `H` itself, so the record carries
+   its own PR #363 head anchor and the acceptance is auditable against a specific commit.
+3. A coordinator **independently reads that comment back from the GitHub API** and retains, as a
+   separate GitHub lifecycle-evidence comment: its `id`, `created_at`, canonical-JSON fingerprint,
+   record kind, derived actor, `author_association`, and application provenance.
+4. **That readback requires no repository commit and does not change the accepted head.** `H` is still
+   the head that was reviewed, still the head that was accepted, and still the head that merges.
+5. Normal merge, immediate post-merge verification under `§I.2`, merge-commit CI at the exact merge
+   SHA, and closure then proceed.
+
+Because acceptance and ratification are **one** record naming `H`, no question arises about whether a
+pre-binding ratification survives a later head change: there is no later head change. The single-act
+construction is what makes the sequence closed, and it is why the two-act alternative was rejected
+rather than merely left undescribed.
 
 ### H. No standing authority is created for any actor, bot, or application
 
@@ -421,10 +493,13 @@ resulting merge:
 1. independent **FULL** exact-head review under `OPS-0007` `§1`;
 2. any required bounded correction and exact-head re-review, so condition 1 holds at the **final**
    accepted head;
-3. **genuine principal exact-head acceptance and `§G` ratification**, satisfying `§G.1` (canonical
-   top-level issue-comment record kind on PR #363) and `§G.2` (all four actor/provenance conjuncts,
-   including an app key present and null) in full, at that final head, with `§G.4`'s live id and
-   canonical-JSON fingerprint read back and retained;
+3. **one genuine principal record that both accepts the exact final head and ratifies the pinned
+   PR #362 history**, satisfying `§G.1` (canonical top-level issue-comment record kind on PR #363),
+   `§G.2` (all four actor/provenance conjuncts, including an app key present and null), and `§G.3`
+   (the exact affirmative declaration, whose `pr363_accepted_head` names that final head) in full —
+   with its live id, timestamp, canonical-JSON fingerprint and provenance **read back from the GitHub
+   API by a coordinator and retained as GitHub lifecycle evidence under `§G.9`, with no repository
+   commit and no change to the accepted head**;
 4. normal merge;
 5. an **actually retained** immediate post-merge verification, satisfying `§I.2` — retained by the
    principal **or** the designated merge coordinator that performed the merge, with honest derived
