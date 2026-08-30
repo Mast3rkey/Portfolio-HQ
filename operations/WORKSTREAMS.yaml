@@ -18295,8 +18295,20 @@ workstreams:
           sufficient to establish principal authorship in this repository -- Claude-posted
           records have derived as exactly that triple throughout this chain, including
           XASSET-0060's own acceptance 5449752973 and XASSET-0042's own ratification
-          5345229177, and the independent reviewer derives as that triple too; only
-          performed_via_github_app separates them, so SS-G requires it to be ABSENT. That
+          5345229177, and the independent reviewer derives as that triple too. CORRECTED
+          under independent supplement 5060793954: performed_via_github_app is NECESSARY but
+          NOT SUFFICIENT -- the reviewer's own PULL REQUEST REVIEW 5060791095 reads back
+          Mast3rkey / User / OWNER with that key null, because the key is ABSENT ENTIRELY on
+          reviews and review comments and .get() cannot tell absent from null. SS-G therefore
+          requires the key PRESENT and null, AND validates RECORD KIND, canonical
+          repository/PR association, record id, and a canonical-JSON fingerprint: the
+          ratification must be ONE canonical top-level ISSUE COMMENT on PR #363, whose live id
+          and fingerprint are read back and retained after the principal posts it. Reviews
+          5060791095 and 5060793954 are review evidence ONLY and can never ratify. SS-I is
+          SPLIT under review 5060791095 MAJOR 1: SS-I.1 principal-acceptance/ratification stays
+          principal-only; SS-I.2 immediate post-merge verification may be retained by the
+          principal OR the designated merge coordinator that performed the merge, preserving
+          OPS-0009 SS-8/SS-9 intact rather than silently superseding them. That
           finding is recorded as fact and reopens, re-adjudicates and reclassifies NO closed
           unit. REQUIRES a separate, directly attributable Mast3rkey / User / OWNER principal
           ratification on the corrective PR, which Claude must not write or post, pinned to

@@ -121,8 +121,29 @@ Three consequences follow, and each is load-bearing.
    would let the independent reviewer's own comment satisfy a principal-ratification gate, collapsing
    two roles `OPS-0007` `§1`.1 requires to stay separate.
 
-`performed_via_github_app` is therefore **not optional colour**; it is the only field that separates
-these actors. `§G` requires it.
+`performed_via_github_app` is therefore **not optional colour** — it is necessary evidence, and `§G`
+requires it. **It is not, by itself, sufficient.**
+
+**Corrected by the independent supplement `5060793954`, from a counterexample that did not exist until
+the review did.** Review [`5060791095`](https://github.com/Mast3rkey/Portfolio-HQ/pull/363#pullrequestreview-5060791095)
+— authored and posted by ChatGPT/Codex — reads back as `Mast3rkey` / `User` / `OWNER` with
+`performed_via_github_app` **null**, on `commit_id` `ca099915…`. Those are exactly the four fields an
+earlier draft of `§G` required, so that draft's predicate **accepted the independent reviewer**. That
+is the very reviewer/principal collapse this filing exists to close.
+
+The root cause is structural, and re-deriving it from live GitHub gives the fix:
+
+| Record type | `performed_via_github_app` key | `issue_url` | `pull_request_url` | `pull_request_review_id` | canonical `url` |
+|---|---|---|---|---|---|
+| **issue comment** | **present** (null for a direct principal act) | present | absent | absent | `…/issues/comments/<id>` |
+| pull-request review | **absent entirely** | absent | present | absent | none |
+| review comment | **absent entirely** | absent | present | present | `…/pulls/comments/<id>` |
+
+A `.get()` on an **absent** key returns `None`, so an "app is null" test is **vacuous for every review
+and every review comment**. The discriminator is therefore not the app field alone but the **record
+kind**, read from canonical API fields. `§G` now requires the app key to be **explicitly present and
+null**, and validates the record kind, the repository/PR association, the record id, and a canonical
+fingerprint besides.
 
 **The required standard is this repository's own earlier practice, since abandoned.** A first draft of
 this section recorded that no comment in the last hundred carried no application, and inferred that a
@@ -249,32 +270,88 @@ Therefore, and this is the operative holding:
 
 One ratification is required **on this corrective pull request**, and it may cure **only** defect 1.
 
-**Actor and provenance — all four conjuncts, each independently necessary:**
+#### G.1 — Record kind: one canonical top-level issue comment on PR #363
+
+The ratification is **exactly one top-level GitHub issue comment on pull request #363**. Its kind and
+its repository/PR association are validated from canonical API fields, never inferred from prose:
+
+1. `issue_url` is exactly `https://api.github.com/repos/Mast3rkey/Portfolio-HQ/issues/363`;
+2. `url` is exactly `https://api.github.com/repos/Mast3rkey/Portfolio-HQ/issues/comments/<id>`;
+3. `html_url` is exactly `https://github.com/Mast3rkey/Portfolio-HQ/pull/363#issuecomment-<id>`;
+4. `id` is an integer, and the **same** `<id>` appears in both `url` and `html_url`;
+5. the record carries **none** of `pull_request_url`, `pull_request_review_id`, `commit_id`,
+   `diff_hunk`, `path`, or `position`.
+
+**Rejected outright by these fields:** pull-request reviews, inline review comments, commit comments,
+comments on any other issue or pull request, records whose canonical URLs are malformed or disagree
+with each other or with `id`, and any synthetic record a caller assembles.
+
+#### G.2 — Actor and provenance: four conjuncts, each necessary, none sufficient alone
 
 1. derived `user.login` is exactly `Mast3rkey`;
 2. derived `user.type` is exactly `User`;
 3. derived `author_association` is exactly `OWNER`;
-4. `performed_via_github_app` is **absent** — establishing a direct principal act rather than one
-   posted through the `claude` application (which would be Claude, `§C`) or through the
-   `chatgpt-codex-connector` application (which would be the independent reviewer, `§C`).
+4. the `performed_via_github_app` key is **present and null** — not merely absent. An absent key is
+   the signature of a review or review comment (`§C`), so absence must fail rather than pass.
 
-**Claude must not write or post this ratification.** This filing's authoring session does not compose
-it, does not post it, and does not post any text intended to be adopted as it.
+`§G.1` and `§G.2` are **conjunctive**. Neither alone is sufficient: `§C`'s counterexample satisfies
+`§G.2` and fails `§G.1`.
 
-**Scope — the ratification governs this exact history and nothing else.** It is pinned to, and yields
-no effect whatsoever outside, exactly: PR **#362**; accepted head
+#### G.3 — Scope: authenticated by the record, never supplied by a caller
+
+The ratification governs this exact history and nothing else, pinned to: PR **#362**; accepted head
 `ccc7f433b06d5114eb7616347ce773ae4f80392c`; independent review `5058418382`; bot-attributed acceptance
 `5463146940`; merge `3db918530b10ffc1423ba0b749b086e349a4901d`; final closure `5463232454`; and the
-independent stop `5466422998`. Any document not matching **every** pin yields the all-false result and
-the ordinary behaviour.
+independent stop `5466422998`.
 
-**Retrospection.** The ratification must strictly postdate the PR #362 merge. It ratifies history; it
-does not manufacture a pre-merge event, and nothing here weakens any chronology rule.
+These pins are **fixed constants of this decision**. An earlier draft passed them in a caller-supplied
+dictionary the record never authenticated, so any record could be paired with any scope; that is
+removed. The ratification's **own body must name every one of the seven pins**, and the body is read
+**only** for that purpose. **Body text never establishes actor identity or record kind** — those come
+solely from the canonical fields in `§G.1`/`§G.2`.
 
-**What it does and does not establish.** It establishes that the principal affirms, on the record and
-under their own attribution, that the acceptance recorded at `5463146940` reflects their decision at
-the accepted head. It establishes **nothing** about defect 2, and it does **not** make `XASSET-0061`
-effective (`§F`).
+#### G.4 — Identity binding: the live id and fingerprint, read back after posting
+
+Following the `XASSET-0042` `§J` safeguard this decision reuses — where token presence alone
+authenticated a record that explicitly voided itself — the ratification is authenticated by a
+**canonical-JSON SHA-256 fingerprint** over its own identity-bearing fields: `id`, `url`, `html_url`,
+`issue_url`, `user.login`, `user.type`, `author_association`, `performed_via_github_app`, `created_at`,
+and the SHA-256 of the body — sorted keys, fixed separators, never a `repr` of a mapping.
+
+**The ratification comment does not yet exist, so its id and fingerprint are not known and are not
+predicted here.** After the principal posts it, the operator reads the comment back from the GitHub
+API and retains, in a further ordinary fast-forward correction commit on this pull request:
+
+- the live comment `id`;
+- the canonical-JSON fingerprint computed from the read-back record;
+- the exact `created_at` GitHub recorded.
+
+Until that binding is retained, the mechanism has **no** ratification bound and yields the all-false
+result. Any later edit to the body, actor, timestamp, or canonical URLs changes the fingerprint and
+relocks the gate.
+
+#### G.5 — Retrospection
+
+The ratification must strictly postdate the PR #362 merge. It ratifies history; it does not manufacture
+a pre-merge event, and nothing here weakens any chronology rule.
+
+#### G.6 — Claude must not write or post it
+
+This filing's authoring session does not compose it, does not post it, and posts no text intended to be
+adopted as it.
+
+#### G.7 — The independent reviews are review evidence only
+
+`5060791095` and `5060793954` are **independent review evidence and nothing else**. They are **not**
+principal acceptance, **not** ratification, and **not** capable of becoming either — under `§G.1` a
+pull-request review is a rejected record kind, and under `OPS-0007` `§1`.1 the reviewer is not the
+principal. The same holds for every future review on this pull request.
+
+#### G.8 — What it does and does not establish
+
+It establishes that the principal affirms, on the record and under their own attribution, that the
+acceptance recorded at `5463146940` reflects their decision at the accepted head. It establishes
+**nothing** about defect 2, and it does **not** make `XASSET-0061` effective (`§F`).
 
 ### H. No standing authority is created for any actor, bot, or application
 
@@ -285,21 +362,56 @@ bot class, and no trusted-automation category is created. `PRINCIPAL_ACCOUNT_LOG
 `LIFECYCLE_OPERATOR_LOGIN` are unchanged. The `§G` mechanism is a **conjunction pinned to one closed
 history**; it admits no future document, and it may not be cited as precedent for admitting one.
 
-### I. Forward evidentiary rule
+### I. Forward evidentiary rule — two gates, two roles
 
-Modelled on `OPS-0004` item 5, and prospective only.
+Modelled on `OPS-0004` item 5, and prospective only. **Corrected under independent review
+`5060791095` MAJOR 1**, which found that an earlier draft applied one direct-principal predicate to
+both gates and thereby collapsed two roles `OPS-0009` `§8` keeps distinct.
 
-From this decision's merge forward, a lifecycle record satisfying a **principal exact-head acceptance**
-gate or an **immediate post-merge verification** gate is complete only when:
+#### I.1 — Principal exact-head acceptance and the `§G` ratification: principal-only
 
-1. the record derives with `user.login` `Mast3rkey`, `user.type` `User`, `author_association` `OWNER`,
-   **and no `performed_via_github_app`** — the `§C` triple-insufficiency finding, applied forward; and
-2. for post-merge verification, the record is **actually posted between the merge and the closure**,
-   so its timing is established by GitHub's own timestamp rather than by later narrative.
+From this decision's merge forward, a record satisfying a **principal exact-head acceptance** gate, or
+the `§G` ratification, is complete only when it satisfies **`§G.1` and `§G.2` in full** — the canonical
+top-level issue-comment record kind, and the four actor/provenance conjuncts including a
+`performed_via_github_app` key that is **present and null**.
 
-A record posted through an application, or a claim of verification made only in a later comment, does
-not by itself satisfy either gate from this decision forward. **This rule is prospective.** It
-reopens, re-adjudicates, and reclassifies no closed unit.
+**No application-attributed record can satisfy this gate**, and neither can a pull-request review,
+however its actor derives.
+
+#### I.2 — Immediate post-merge verification: principal *or* designated merge coordinator
+
+`OPS-0009` `§8` expressly authorizes "**the principal or a designated merge coordinator**" to mark
+ready, merge, and perform post-merge verification, and `§9` requires that verification to be performed
+**immediately, by the same session that performs the merge**. Those provisions are **preserved intact
+and are not superseded here.**
+
+A record satisfying the **immediate post-merge verification** gate is therefore complete when:
+
+1. it is retained by **either** the principal **or** the designated merge coordinator that actually
+   performed the merge;
+2. its derived actor and application provenance are **honest** — an application-attributed coordinator
+   record must read back as what it is, and must be disclosed as such, never dressed as a principal
+   act; and
+3. its **GitHub timestamp is strictly after the merge and strictly before final closure**, so its
+   timing is established by GitHub's own record rather than by later narrative.
+
+**An application-attributed coordinator record satisfies the verification-evidence role only.** It is
+**never** principal acceptance and **never** a `§G` ratification — `§I.1` governs those, exclusively.
+
+**This creates no permanent direct-principal requirement for mechanical post-merge verification.** An
+earlier draft did, which would have forced a second synchronous principal record after every merge even
+where the authorized coordinator had performed and retained the check — a cross-cutting workflow
+restriction outside this unit's scope. Removing a coordinator's authority would require its own
+separately authorized amendment expressly superseding `OPS-0009` `§8`; **this filing is not that
+amendment.**
+
+#### I.3 — What the rule does not do
+
+Item 2 of the earlier draft — a verification claim made only in a later comment does not by itself
+satisfy the gate — is **retained**, and is exactly the PR #362 defect. **This rule is prospective.** It
+reopens, re-adjudicates, and reclassifies no closed unit, and the nine historical direct-principal
+records in `§C` are cited as evidence of prior practice, never as a demotion of the coordinator role
+`OPS-0009` `§8` grants.
 
 ### J. Effectivity
 
@@ -309,11 +421,15 @@ resulting merge:
 1. independent **FULL** exact-head review under `OPS-0007` `§1`;
 2. any required bounded correction and exact-head re-review, so condition 1 holds at the **final**
    accepted head;
-3. **genuine principal exact-head acceptance and `§G` ratification**, satisfying all four `§G`
-   conjuncts, at that final head;
+3. **genuine principal exact-head acceptance and `§G` ratification**, satisfying `§G.1` (canonical
+   top-level issue-comment record kind on PR #363) and `§G.2` (all four actor/provenance conjuncts,
+   including an app key present and null) in full, at that final head, with `§G.4`'s live id and
+   canonical-JSON fingerprint read back and retained;
 4. normal merge;
-5. an **actually retained** immediate post-merge verification — posted between the merge and the
-   closure, so its timing is established by GitHub's timestamp and not by narrative;
+5. an **actually retained** immediate post-merge verification, satisfying `§I.2` — retained by the
+   principal **or** the designated merge coordinator that performed the merge, with honest derived
+   provenance, and posted strictly between the merge and the closure so its timing is established by
+   GitHub's timestamp and not by narrative;
 6. **successful merge-commit CI whose `head_sha` is the exact merge SHA**;
 7. final post-CI verification and lifecycle closure.
 
@@ -378,8 +494,16 @@ That section also carries a correction to this filing's own first draft, kept vi
 quietly amended. The draft inferred, from a hundred-comment scan, that a direct principal comment had
 never occurred here — and a three-hundred-comment scan disproved it. The nine records in `§C`'s table
 show the opposite: this repository met the `§G` standard on both gates through 2026-08-15 and then
-drifted away from it with no decision authorizing the drift. That reframes `§I` from imposing a new
+drifted away from it with no decision authorizing the drift. That reframes `§I.1` from imposing a new
 burden to restoring a lapsed one, and it is a better answer than the one the draft would have shipped.
+
+`§I`'s split follows the same discipline in the opposite direction. An earlier draft applied one
+direct-principal predicate to both gates, which would have forced a second synchronous principal record
+after every merge even where `OPS-0009` `§8`'s designated merge coordinator had performed and retained
+the check `§9` requires of it. Tightening the principal gate is this unit's business; silently removing
+a coordinator role granted by a different accepted decision is not. The two gates are therefore
+separated: `§I.1` stays principal-only and gets stricter, `§I.2` preserves the coordinator role and
+constrains it by honest provenance and a GitHub-established timestamp instead.
 
 ## Alternatives considered
 
@@ -397,6 +521,18 @@ required not to perform.
 
 **Require only `Mast3rkey` / `User` / `OWNER` for the ratification, matching `XASSET-0042`.** Rejected
 on evidence — `§C` shows that predicate is satisfiable by Claude and by the independent reviewer.
+
+**Add the app conjunct and stop there.** Rejected on a live counterexample: the independent review
+`5060791095` satisfies exactly that predicate. Record kind, canonical repository/PR association, record
+id, and a canonical fingerprint are all required besides.
+
+**Keep the caller-supplied scope dictionary.** Rejected — the record never authenticated it, so any
+record could be paired with any scope. The pins are now fixed constants of this decision, and the
+ratification's own body must name them.
+
+**Apply the direct-principal predicate to post-merge verification too, for consistency.** Rejected —
+`OPS-0009` `§8` grants a designated merge coordinator that role and `§9` requires it of whoever merges.
+Removing it needs an amendment expressly superseding `OPS-0009`, which this filing is not.
 
 **Void `XASSET-0061`, or mark it `Accepted` on the strength of its clean review and green CI.**
 Both rejected. The first overreaches: independent review found its substance sound, and no finding
@@ -419,10 +555,13 @@ incurable rather than quietly assumed closed. `XASSET-0061` remains `Proposed` a
 its link-3 authority remains unavailable and unconsumed; the readiness verification remains unperformed
 and unauthorized. A future link-3 unit needs a new authorization, which this filing does not grant.
 
-Going forward, `§I` requires principal-acceptance and post-merge-verification records to carry direct
-principal attribution with no application, and requires verification records to be posted where their
-timing is established by GitHub rather than asserted afterwards. No closed unit is reopened,
-reclassified, or disputed by that rule.
+Going forward, `§I.1` requires principal-acceptance and `§G` ratification records to be canonical
+top-level issue comments on the pull request in question, carrying direct principal attribution with a
+`performed_via_github_app` key present and null — a pull-request review can never satisfy it. `§I.2`
+leaves `OPS-0009` `§8`'s designated-merge-coordinator role intact for immediate post-merge
+verification, subject to honest provenance and a GitHub-established timestamp strictly between merge
+and closure. No closed unit is reopened, reclassified, or disputed by either rule, and `OPS-0009` is
+neither narrowed nor superseded.
 
 Stage 1 remains `UNARMED` and `NOT EXECUTABLE`. Lane state remains `ABSENT`. All three authorization
 predicates remain `False`. `ATTEMPT_1` remains intact, unclaimed, and unconsumed. `XASSET-0027` `§P.1`
