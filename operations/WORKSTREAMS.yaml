@@ -18347,7 +18347,48 @@ workstreams:
           app-attributed coordinator PASSES post-merge verification and can NEVER pass principal
           acceptance or SS-G ratification. MINOR 1, the is_direct_principal_record docstring
           claimed review 5060791095 satisfied it; the corrected function REJECTS that review on
-          the absent application key, and the docstring now says so. Creates NO
+          the absent application key, and the docstring now says so.
+          CORRECTED A THIRD TIME under independent exact-head DELTA review 5061240650
+          (2 BLOCKING / 2 MAJOR / 1 MINOR), each reproduced before editing. BLOCKING 1, PMV
+          TRUSTED CALLER-SUPPLIED ROLES: post_merge_verification_is_valid took
+          designated_coordinator and merge_performed_by as bare strings and authenticated
+          neither, so any actor could self-designate by passing their own login for both; a
+          mallory / Bot / NONE / app evil record carrying "I did NOT perform post-merge
+          verification." returned True, and this session independently reproduced 72 of 96
+          identity combinations passing with that same refusal body -- the function never read
+          the body. It is rebuilt on three independently validated evidence families: a
+          PRINCIPAL DESIGNATION record that must itself be a complete direct principal act; the
+          CANONICAL MERGED-PR record supplying merged status, PR number, accepted head, merge
+          SHA, merger login and merge timestamp; and the verification comment itself. A new
+          exact PMV declaration schema (header plus action, pull_request, accepted_head,
+          merge_sha, scope, results, session_claim) must PARSE, and the declared head and SHA
+          must equal the merge record's. HONEST LIMITATION STATED, NOT PAPERED OVER: GitHub
+          exposes NO runtime session identity, so matching logins prove the same ACCOUNT and
+          never the same session; the designation carries a principal-authorized session claim
+          the declaration must quote, and what is proven is possession of that claim only.
+          Actor fields are strictly validated (the withdrawn code asserted login was non-empty
+          when _actor_login returns "" too), and parse_utc_instant replaces the shape-only
+          _is_iso_z so 2026-08-31T10:05:99Z, 2026-13-45T99:99:99Z and 2026-02-30 all fail.
+          BLOCKING 2, AN APP-ATTRIBUTED PRINCIPAL-LOGIN RECORD BYPASSED THE COORDINATOR GATE:
+          the principal branch was selected on login == Mast3rkey alone, so a
+          Mast3rkey / User / OWNER / app claude record -- the exact shape this decision says is
+          NOT a direct principal act -- verified with no designation at all. A principal
+          verifier must now satisfy the COMPLETE is_direct_principal_record predicate; every
+          other record, that shape included, must satisfy the authenticated coordinator path in
+          full. MAJOR 1, THE PROMISED EXACT-HEAD READBACK WAS NEVER IMPLEMENTED: the parser
+          accepts any 40-hex declared head by design, but no validator proved declared head ==
+          live PR head == independently reviewed final head. external_ratification_readback now
+          consumes independently sourced live comment, live PR #363 and final-review evidence,
+          validates every SS-G structural clause first, proves that three-way equality, and
+          returns retained evidence including the parsed declaration, declared head, comment id,
+          timestamp, body fingerprint, record kind and actor/application provenance; SS-G.9 step
+          3 names the comparison. A well-formed but WRONG 40-hex head is regression-tested.
+          MAJOR 2, SS-D said performed_via_github_app must be "absent", contradicting SS-G.2 and
+          SS-J where an absent key FAILS -- corrected to present-and-null. MINOR 1, the
+          is_canonical_top_level_issue_comment docstring still claimed it rejects synthetic
+          records (it cannot; the suite's own fixtures pass) and four source comments cited
+          SS-G.6 for readback when SS-G.6 is the Claude non-composition rule and SS-G.9 is the
+          readback rule -- both corrected and pinned. Creates NO
           standing authority for claude[bot], the claude application, ChatGPT/Codex, the
           chatgpt-codex-connector application, or any other automation. THIS FILING MUTATES
           NOTHING LOAD-BEARING: level1_stage1_execution_authorization.py, all twenty-five

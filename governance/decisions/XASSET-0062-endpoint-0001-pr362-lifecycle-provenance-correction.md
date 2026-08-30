@@ -194,8 +194,14 @@ What it holds, and what this filing reuses:
   class (`§D` row 2).
 
 What this filing **adds**, because `§C` shows the precedent is insufficient as written: the
-ratification's `performed_via_github_app` must be **absent**. Without that conjunct the predicate is
-satisfiable by the very author whose attribution is in question.
+ratification must carry **no application attribution**, expressed as a `performed_via_github_app` key
+that is **present and null** — never merely absent. Without that conjunct the predicate is satisfiable
+by the very author whose attribution is in question.
+
+**Corrected under DELTA review `5061240650` MAJOR 2.** An earlier draft of this paragraph said the key
+"must be **absent**", which contradicts `§G.2` and `§J`, where an **absent** key explicitly **fails**.
+That exact distinction — absent versus present-and-null — is the root of the review-resource bypass
+`§C` records, so "absent" must never be used here as shorthand for "no application attribution".
 
 What this filing **does not** take from the precedent: `XASSET-0042` cured records that **existed**
 with the wrong actor. That is defect 1's shape. It is **not** defect 2's shape, and `§E` explains why
@@ -414,7 +420,20 @@ Stated explicitly so nothing is left to inference:
    its own PR #363 head anchor and the acceptance is auditable against a specific commit.
 3. A coordinator **independently reads that comment back from the GitHub API** and retains, as a
    separate GitHub lifecycle-evidence comment: its `id`, `created_at`, canonical-JSON fingerprint,
-   record kind, derived actor, `author_association`, and application provenance.
+   record kind, derived actor, `author_association`, application provenance, **the parsed `§G.3`
+   declaration, the declared `pr363_accepted_head`, and the result of the equality below**.
+
+   **The comparison that makes the readback meaningful**, corrected under DELTA review
+   `5061240650` MAJOR 1 — an earlier draft required the retention but never named the test, so the
+   rule asserted that readback established correctness without defining what was compared. The
+   readback must prove, from three independently sourced records:
+
+   > declared `pr363_accepted_head` == live PR #363 head == independently reviewed final head
+
+   Every `§G` structural clause is validated first; the equality is only reached by a record that
+   already passes them. A **well-formed but wrong** 40-hex head — which the parser accepts by
+   design, since the repository cannot know its own future final head — fails here, and that is the
+   only place it can fail.
 4. **That readback requires no repository commit and does not change the accepted head.** `H` is still
    the head that was reviewed, still the head that was accepted, and still the head that merges.
 5. Normal merge, immediate post-merge verification under `§I.2`, merge-commit CI at the exact merge
