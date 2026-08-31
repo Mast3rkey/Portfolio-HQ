@@ -31,6 +31,8 @@ from pathlib import Path
 
 import pytest
 
+import level1_stage1_execution_authorization as _auth
+
 ROOT = Path(__file__).resolve().parent
 
 DECISION_RELPATH = (
@@ -206,10 +208,13 @@ RATIFIED_SCOPE_PINS = (
     str(INDEPENDENT_STOP_ID),
 )
 
-#: SS-G.4: the ratification comment DOES NOT EXIST YET. Its id and fingerprint are read back
-#: from GitHub after the principal posts it and retained in a further fast-forward commit on
-#: this pull request. They are NEVER predicted. Until then, no ratification is bound and the
-#: complete predicate yields the all-false result for every input.
+#: SS-G.9: these constants are ``None`` and STAY ``None``. The ratification's live id and
+#: fingerprint are read back from the GitHub API and retained as GitHub lifecycle evidence --
+#: NEVER committed here, because a binding commit would change the very head the ratification
+#: accepts. The in-repository predicates therefore yield the all-false result for every input,
+#: permanently and by design. An earlier comment here promised retention "in a further
+#: fast-forward commit on this pull request"; that circular design was withdrawn under DELTA
+#: review 5061031729 and the stale sentence is removed under 5062156189 MINOR 1.
 BOUND_RATIFICATION_ID: int | None = None
 BOUND_RATIFICATION_FINGERPRINT: str | None = None
 
@@ -412,14 +417,14 @@ def _ratification_is_structurally_complete(record: dict) -> bool:
     if not body_declares_ratification(record):
         return False
     # SS-G.5 retrospection: strictly after the PR #362 merge. Equality is not "after".
-    created = record.get("created_at")
-    if not isinstance(created, str) or not re.fullmatch(
-        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", created
-    ):
+    # DELTA review 5062156189 MAJOR 3: this used a SHAPE regex and a LEXICOGRAPHIC string
+    # comparison, so created_at = "9999-99-99T99:99:99Z" passed both here and through the
+    # complete external readback. Both are now parsed, timezone-aware UTC instants.
+    created = parse_utc_instant(record.get("created_at"))
+    merged = parse_utc_instant(MERGED_AT)
+    if created is None or merged is None:
         return False
-    if created <= MERGED_AT:
-        return False
-    return True
+    return created > merged
 
 
 def _ratifies_with_binding(
@@ -556,34 +561,110 @@ def _actor_fields_are_well_formed(record: dict) -> bool:
 # operator's readback discipline, and this function's own inputs are dictionaries like any
 # other. What it establishes is that IF those records are the live ones, the equality holds.
 # ======================================================================================
+APPROVING_REVIEW_DISPOSITION = _auth.APPROVING_REVIEW_DISPOSITION
+
+
+def canonical_final_review_is_approving(review: object, final_head: str) -> tuple[bool, dict]:
+    """SS-G.9 -- authenticate the RAW pull-request-review resource, and its disposition.
+
+    DELTA review 5062156189 MAJOR 1: the withdrawn readback read only
+    ``final_review_evidence["reviewed_head"]``, so ``{"reviewed_head": H}``, the same mapping
+    carrying ``verdict: CHANGES_REQUIRED``, and one naming an author actor with a null id all
+    proved the equality. Three strings were compared; the third was never authenticated.
+
+    The disposition is parsed by the repository's OWN ``parse_formal_disposition`` in the
+    load-bearing module -- not a second parser written here, which would authenticate the
+    mechanism with its own source of truth.
+
+    Returns ``(approving, evidence)``. Never raises.
+    """
+    ev: dict = {
+        "review_id": None, "commit_id": None, "submitted_at": None, "state": None,
+        "actor_login": None, "actor_type": None, "author_association": None,
+        "application_provenance": "NOT_EXPOSED_ON_REVIEWS",
+        "parsed_disposition": None, "commit_matches_final_head": False,
+        "independence": "PROCEDURAL_NOT_PLATFORM_PROVABLE", "failure_reason": None,
+    }
+    if not isinstance(review, dict):
+        ev["failure_reason"] = "review resource is not a mapping"
+        return False, ev
+
+    ev["review_id"] = review.get("id")
+    ev["commit_id"] = review.get("commit_id")
+    ev["submitted_at"] = review.get("submitted_at")
+    ev["state"] = review.get("state")
+    identity = _actor_identity(review)
+    if identity is not None:
+        ev["actor_login"], ev["actor_type"] = identity["login"], identity["type"]
+    ev["author_association"] = review.get("author_association")
+
+    if type(review.get("id")) is not int:
+        ev["failure_reason"] = "review id is missing or not an integer"
+        return False, ev
+    if review.get("pull_request_url") != f"{REPO_API}/pulls/{THIS_CORRECTIVE_PULL_REQUEST}":
+        ev["failure_reason"] = "review is not on PR #363"
+        return False, ev
+    expected_html = (f"{REPO_HTML}/pull/{THIS_CORRECTIVE_PULL_REQUEST}"
+                     f"#pullrequestreview-{review['id']}")
+    if review.get("html_url") != expected_html:
+        ev["failure_reason"] = "review canonical URLs disagree with its id"
+        return False, ev
+    if identity is None:
+        ev["failure_reason"] = "review actor identity is missing or malformed"
+        return False, ev
+    if not _nonempty_str(review.get("author_association")):
+        ev["failure_reason"] = "review author_association is missing or malformed"
+        return False, ev
+    if parse_utc_instant(review.get("submitted_at")) is None:
+        ev["failure_reason"] = "review submitted_at is missing or not a real UTC instant"
+        return False, ev
+    if not (isinstance(final_head, str) and _SHA40.match(final_head)):
+        ev["failure_reason"] = "final head is missing or malformed"
+        return False, ev
+    if review.get("commit_id") != final_head:
+        ev["failure_reason"] = "review commit_id is not the final reviewed head"
+        return False, ev
+    ev["commit_matches_final_head"] = True
+    if str(review.get("state") or "").upper() in _auth.NATIVE_ADVERSE_REVIEW_STATES:
+        ev["failure_reason"] = "review state is natively adverse"
+        return False, ev
+
+    verdict = _auth.parse_formal_disposition(review.get("body"))
+    if verdict is _auth.MALFORMED_FORMAL_DISPOSITION:
+        ev["parsed_disposition"] = "MALFORMED"
+        ev["failure_reason"] = "formal disposition is malformed"
+        return False, ev
+    if verdict is None:
+        ev["failure_reason"] = "no formal disposition"
+        return False, ev
+    ev["parsed_disposition"] = verdict
+    if verdict != APPROVING_REVIEW_DISPOSITION:
+        ev["failure_reason"] = "formal disposition is not approving"
+        return False, ev
+    return True, ev
+
+
 def external_ratification_readback(
     ratification_record: object,
     live_pull_request: object,
-    final_review_evidence: object,
+    final_review: object,
+    later_reviews: object = (),
 ) -> dict:
     """SS-G.9 -- validate the readback and return the evidence to retain.
 
-    Returns a mapping whose ``equality_proven`` key is the verdict. Never raises. Every other
-    key is retained evidence: the parsed declaration, the declared head, the live PR head, the
-    independently reviewed head, the comment id, its timestamp, its canonical fingerprint, its
-    record kind, and the actor/application provenance.
+    ``equality_proven`` is the verdict. Never raises. Proves
+
+        declared head == live PR head == independently approved final-review ``commit_id``
+
+    with the third value now authenticated as a real, approving, exact-head review resource.
     """
     out: dict = {
-        "equality_proven": False,
-        "structural_clauses_pass": False,
-        "declaration": None,
-        "declared_pr363_accepted_head": None,
-        "live_pr_head": None,
-        "independently_reviewed_head": None,
-        "comment_id": None,
-        "comment_created_at": None,
-        "body_fingerprint": None,
-        "record_kind": None,
-        "actor_login": None,
-        "actor_type": None,
-        "author_association": None,
-        "application_provenance": None,
-        "failure_reason": None,
+        "equality_proven": False, "structural_clauses_pass": False, "declaration": None,
+        "declared_pr363_accepted_head": None, "live_pr_head": None,
+        "independently_reviewed_head": None, "comment_id": None, "comment_created_at": None,
+        "body_fingerprint": None, "record_kind": None, "actor_login": None, "actor_type": None,
+        "author_association": None, "application_provenance": None, "review_evidence": None,
+        "later_adverse_review_exists": None, "failure_reason": None,
     }
     if not isinstance(ratification_record, dict):
         out["failure_reason"] = "ratification record is not a mapping"
@@ -608,7 +689,6 @@ def external_ratification_readback(
     except Exception:                                    # pragma: no cover - defensive
         out["body_fingerprint"] = None
 
-    # Every SS-G structural clause must hold before any equality is even considered.
     if not _ratification_is_structurally_complete(ratification_record):
         out["failure_reason"] = "record fails an SS-G structural clause"
         return out
@@ -627,24 +707,43 @@ def external_ratification_readback(
     if live_pull_request.get("number") != THIS_CORRECTIVE_PULL_REQUEST:
         out["failure_reason"] = "live pull-request record is not PR #363"
         return out
-    live_head = (live_pull_request.get("head") or {}).get("sha") \
-        if isinstance(live_pull_request.get("head"), dict) else None
-    if not isinstance(live_head, str) or not _SHA40.match(live_head):
+    head = live_pull_request.get("head")
+    live_head = head.get("sha") if isinstance(head, dict) else None
+    if not (isinstance(live_head, str) and _SHA40.match(live_head)):
         out["failure_reason"] = "live pull-request head is missing or malformed"
         return out
     out["live_pr_head"] = live_head
 
-    if not isinstance(final_review_evidence, dict):
-        out["failure_reason"] = "final-review evidence is not a mapping"
+    approving, review_evidence = canonical_final_review_is_approving(final_review, live_head)
+    out["review_evidence"] = review_evidence
+    out["independently_reviewed_head"] = review_evidence["commit_id"]
+    if not approving:
+        out["failure_reason"] = f"final review not approving: {review_evidence['failure_reason']}"
         return out
-    reviewed_head = final_review_evidence.get("reviewed_head")
-    if not isinstance(reviewed_head, str) or not _SHA40.match(reviewed_head):
-        out["failure_reason"] = "independently reviewed head is missing or malformed"
-        return out
-    out["independently_reviewed_head"] = reviewed_head
 
-    # The three-way equality SS-G.9 promises, stated as one comparison.
-    if not (out["declared_pr363_accepted_head"] == live_head == reviewed_head):
+    # A later adverse exact-head review defeats an earlier approval.
+    adverse = []
+    if isinstance(later_reviews, (list, tuple)):
+        for candidate in later_reviews:
+            if not isinstance(candidate, dict):
+                continue
+            if candidate.get("commit_id") != live_head:
+                continue
+            if str(candidate.get("state") or "").upper() in _auth.NATIVE_ADVERSE_REVIEW_STATES:
+                adverse.append(candidate.get("id"))
+                continue
+            later_verdict = _auth.parse_formal_disposition(candidate.get("body"))
+            if later_verdict is _auth.MALFORMED_FORMAL_DISPOSITION or (
+                isinstance(later_verdict, str)
+                and later_verdict != APPROVING_REVIEW_DISPOSITION
+            ):
+                adverse.append(candidate.get("id"))
+    out["later_adverse_review_exists"] = bool(adverse)
+    if adverse:
+        out["failure_reason"] = "a later adverse exact-head review exists"
+        return out
+
+    if not (out["declared_pr363_accepted_head"] == live_head == review_evidence["commit_id"]):
         out["failure_reason"] = "three-way exact-head equality failed"
         return out
 
@@ -653,57 +752,73 @@ def external_ratification_readback(
 
 
 # ======================================================================================
-# SS-I.2 -- post-merge-verification (PMV) evidence, derived from RETAINED EVIDENCE.
+# SS-I.2 / SS-I.2.1 -- the evidence model, rebuilt under DELTA review 5062156189.
 #
-# Rebuilt under DELTA review 5061240650 BLOCKING 1 and BLOCKING 2. The withdrawn predicate
-# took ``designated_coordinator`` and ``merge_performed_by`` as bare caller-supplied strings
-# and authenticated neither, so any actor could self-designate by passing their own login for
-# both; the reviewer demonstrated a mallory/Bot/NONE/app-evil record carrying an explicit
-# REFUSAL body returning True, and this session independently reproduced 72 of 96 identity
-# combinations passing with that same refusal body. The function never read the body at all.
+# Every literal in this section is GOVERNING TEXT taken from the decision's SS-I.2.1, and
+# TestTheProtocolIsAnchoredInTheDecision proves each one appears there verbatim. The reviewer
+# renamed PMV_HEADER and PMV_ACTION at the previous head and all 327 focused tests still
+# passed, because the parser and its fixtures derived the protocol from one another.
 #
-# Nothing is taken on a caller's word here. Three independent evidence families are supplied
-# as structured records and each is validated in its own right:
-#
-#   1. a PRINCIPAL DESIGNATION record -- who the principal designated as merge coordinator;
-#   2. the CANONICAL MERGED-PR record -- GitHub's own merge facts;
-#   3. the VERIFICATION COMMENT itself -- actor, provenance, body, timestamp.
-#
-# HONEST LIMITATION, stated rather than papered over: the GitHub REST API exposes NO runtime
-# session identity. Two records bearing the same login prove the same ACCOUNT, never the same
-# session. Equating logins would be manufacturing evidence. Instead the designation record
-# carries a session claim (a nonce the principal authorized in advance), the verification
-# declaration must quote that same nonce, and what is proven is exactly that -- possession of
-# a previously authorized session claim -- never runtime session identity.
+# Canonical resource shapes below use the REAL GitHub field names, confirmed by reading the
+# live resources for PR #362, review 5062156189 and comment 5463232454 during the design
+# audit -- not invented projections.
 # ======================================================================================
+#: The one canonical repository, taken from the load-bearing module rather than restated.
+CANONICAL_REPOSITORY = _auth.REPOSITORY_IDENTITY
+
+DESIGNATION_HEADER = "XASSET-0062 COORDINATOR DESIGNATION"
+DESIGNATION_ACTION = "DESIGNATE-MERGE-COORDINATOR"
 PMV_HEADER = "XASSET-0062 POST-MERGE VERIFICATION"
 PMV_ACTION = "POST-MERGE-VERIFICATION-PERFORMED"
 
-#: Exact key -> exact required value; ``None`` means "validated by form, checked elsewhere".
+_SHA256_HEX = re.compile(r"\A[0-9a-f]{64}\Z")
+_COORDINATOR_TYPES = ("User", "Bot")
+_COORDINATOR_ASSOCIATIONS = ("OWNER", "MEMBER", "COLLABORATOR", "CONTRIBUTOR")
+
+#: SS-I.2.1 A. ``None`` means "validated by form, not by a fixed literal".
+DESIGNATION_SCHEMA: dict[str, str | None] = {
+    "action": DESIGNATION_ACTION,
+    "pull_request": str(THIS_CORRECTIVE_PULL_REQUEST),
+    "accepted_head": None,
+    "coordinator_login": None,
+    "coordinator_type": None,
+    "coordinator_association": None,
+    "coordinator_app": None,
+    "session_commitment": None,
+}
+
+#: SS-I.2.1 B. The ten result fields admit ONLY these literals -- free text carries no
+#: authority anywhere in this schema. ``merge_commit_ci`` alone admits a second literal.
+PMV_RESULT_FIELDS: dict[str, tuple[str, ...]] = {
+    "accepted_head_ancestry": ("PASS",),
+    "authorized_scope": ("PASS",),
+    "merge_tree_identity": ("IDENTICAL",),
+    "protected_path_identity": ("IDENTICAL",),
+    "head_agreement": ("IDENTICAL",),
+    "main_clean": ("TRUE",),
+    "validators_result": ("PASS",),
+    "tests_result": ("PASS",),
+    "merge_commit_ci": ("SUCCESS", "NOT_APPLICABLE"),
+    "overall_result": ("PASS",),
+}
+
 PMV_SCHEMA: dict[str, str | None] = {
     "action": PMV_ACTION,
     "pull_request": str(THIS_CORRECTIVE_PULL_REQUEST),
-    "accepted_head": None,        # 40 lowercase hex; must equal the merge record's head
-    "merge_sha": None,            # 40 lowercase hex; must equal the merge record's SHA
-    "scope": None,                # non-empty free text
-    "results": None,              # non-empty free text
-    "session_claim": None,        # must equal the designation record's authorized nonce
+    "accepted_head": None,
+    "merge_commit_sha": None,
+    "session_reveal": None,
+    **{k: None for k in PMV_RESULT_FIELDS},
 }
 
 
-def parse_pmv_body(body: object) -> dict[str, str] | None:
-    """Parse the COMPLETE verification body under the strict schema, or return ``None``.
-
-    Same discipline as :func:`parse_ratification_body`: header plus exact keys, each once,
-    every fixed value exact, ANY other line rejecting the whole body. A refusal, an unrelated
-    comment, an author report, an empty body, contradictory trailing text, a duplicate or
-    unknown field, an alias, or a malformed value all fail.
-    """
+def _parse_declaration(body: object, header: str, schema: dict) -> dict[str, str] | None:
+    """Shared exact-declaration parser. Header, then one ``key: value`` per line, each once."""
     if not isinstance(body, str):
         return None
     lines = [ln.rstrip() for ln in body.strip().splitlines()]
     lines = [ln for ln in lines if ln != ""]
-    if not lines or lines[0] != PMV_HEADER:
+    if not lines or lines[0] != header:
         return None
     parsed: dict[str, str] = {}
     for line in lines[1:]:
@@ -711,91 +826,175 @@ def parse_pmv_body(body: object) -> dict[str, str] | None:
         if match is None:
             return None
         key, value = match.group(1), match.group(2)
-        if key not in PMV_SCHEMA or key in parsed:
+        if key not in schema or key in parsed:
             return None
-        required = PMV_SCHEMA[key]
-        if required is None:
-            if key in ("accepted_head", "merge_sha") and not _SHA40.match(value):
-                return None
-            # No separate empty-value branch: ``ln.rstrip()`` collapses an all-whitespace
-            # value to ``"key:"``, which _KEY_VALUE rejects before this point. A branch for it
-            # was written, PROVEN unreachable, and removed rather than kept untestable.
-        elif value != required:
+        required = schema[key]
+        if required is not None and value != required:
             return None
         parsed[key] = value
-    if set(parsed) != set(PMV_SCHEMA):
+    if set(parsed) != set(schema):
         return None
     return parsed
 
 
-def principal_designation_is_valid(designation: object) -> bool:
-    """Evidence family 1 -- the principal designated this coordinator, in advance.
+def parse_designation_body(body: object) -> dict[str, str] | None:
+    """SS-I.2.1 A -- the principal's own designation declaration, or ``None``.
 
-    Must itself be a canonical top-level issue comment on PR #363 authored under the COMPLETE
-    direct-principal predicate, naming a coordinator login and an authorized session claim.
-    A designation that is not itself a direct principal act designates nobody.
+    The designation is what the principal's BODY says. An unrelated principal comment, or one
+    reading "I designate nobody", designates nobody -- DELTA review 5062156189 BLOCKING 1.
     """
-    if not isinstance(designation, dict):
-        return False
-    record = designation.get("record")
+    parsed = _parse_declaration(body, DESIGNATION_HEADER, DESIGNATION_SCHEMA)
+    if parsed is None:
+        return None
+    if not _SHA40.match(parsed["accepted_head"]):
+        return None
+    if not _nonempty_str(parsed["coordinator_login"]):
+        return None
+    if parsed["coordinator_type"] not in _COORDINATOR_TYPES:
+        return None
+    if parsed["coordinator_association"] not in _COORDINATOR_ASSOCIATIONS:
+        return None
+    if not _nonempty_str(parsed["coordinator_app"]):
+        return None
+    if not _SHA256_HEX.match(parsed["session_commitment"]):
+        return None
+    return parsed
+
+
+def parse_pmv_body(body: object) -> dict[str, str] | None:
+    """SS-I.2.1 B -- the verification declaration, or ``None``.
+
+    Every result field is a closed literal. The withdrawn schema's free-text ``scope`` and
+    ``results`` let a declaration reading "I performed no verification." verify -- DELTA
+    review 5062156189 BLOCKING 2.
+    """
+    parsed = _parse_declaration(body, PMV_HEADER, PMV_SCHEMA)
+    if parsed is None:
+        return None
+    for field in ("accepted_head", "merge_commit_sha"):
+        if not _SHA40.match(parsed[field]):
+            return None
+    if not _nonempty_str(parsed["session_reveal"]):
+        return None
+    for field, permitted in PMV_RESULT_FIELDS.items():
+        if parsed[field] not in permitted:
+            return None
+    return parsed
+
+
+def _actor_identity(record: dict) -> dict | None:
+    """The complete identity a record exposes -- never reduced to a login string."""
+    user = record.get("user")
+    if not isinstance(user, dict):
+        return None
+    login, type_ = user.get("login"), user.get("type")
+    if not (_nonempty_str(login) and _nonempty_str(type_)):
+        return None
+    return {"login": login, "type": type_, "id": user.get("id")}
+
+
+def _record_app_identity(record: dict) -> str | None:
+    """``DIRECT`` for a present-and-null key, the slug for an application, else ``None``."""
+    if "performed_via_github_app" not in record:
+        return None
+    app = record["performed_via_github_app"]
+    if app is None:
+        return "DIRECT"
+    if isinstance(app, dict) and _nonempty_str(app.get("slug")):
+        return app["slug"]
+    return None
+
+
+def principal_designation_is_valid(record: object) -> bool:
+    """SS-I.2.1 A -- a designation is one principal-authored comment whose BODY designates.
+
+    Takes ONE argument. There is no adjacent ``coordinator_login`` or ``session_claim``: an
+    authority field placed beside an authenticated record by the caller is not authority.
+    """
     if not isinstance(record, dict):
         return False
     if not is_canonical_top_level_issue_comment(record):
         return False
     if not is_direct_principal_record(record):
         return False
-    if not _actor_fields_are_well_formed(record):
+    if _actor_identity(record) is None:
         return False
-    if not _nonempty_str(designation.get("coordinator_login")):
+    if parse_utc_instant(record.get("created_at")) is None:
         return False
-    if not _nonempty_str(designation.get("session_claim")):
+    return parse_designation_body(record.get("body")) is not None
+
+
+def canonical_merged_pull_request_is_valid(pull: object) -> bool:
+    """SS-I.2.1 D -- the RAW merged-PR resource, by its real field names."""
+    if not isinstance(pull, dict):
+        return False
+    if pull.get("merged") is not True:
+        return False
+    if pull.get("number") != THIS_CORRECTIVE_PULL_REQUEST:
+        return False
+    if pull.get("url") != f"{REPO_API}/pulls/{THIS_CORRECTIVE_PULL_REQUEST}":
+        return False
+    if pull.get("html_url") != f"{REPO_HTML}/pull/{THIS_CORRECTIVE_PULL_REQUEST}":
+        return False
+    base = pull.get("base")
+    repo = base.get("repo") if isinstance(base, dict) else None
+    if not isinstance(repo, dict) or repo.get("full_name") != CANONICAL_REPOSITORY:
+        return False
+    head = pull.get("head")
+    if not isinstance(head, dict):
+        return False
+    if not (isinstance(head.get("sha"), str) and _SHA40.match(head["sha"])):
+        return False
+    merge_sha = pull.get("merge_commit_sha")
+    if not (isinstance(merge_sha, str) and _SHA40.match(merge_sha)):
+        return False
+    merged_by = pull.get("merged_by")
+    if not isinstance(merged_by, dict):
+        return False
+    if not (_nonempty_str(merged_by.get("login")) and _nonempty_str(merged_by.get("type"))):
+        return False
+    return parse_utc_instant(pull.get("merged_at")) is not None
+
+
+def canonical_closure_record_is_valid(record: object) -> bool:
+    """SS-I.2.1 D -- closure is a RESOURCE, never a caller-supplied timestamp."""
+    if not isinstance(record, dict):
+        return False
+    if not is_canonical_top_level_issue_comment(record):
+        return False
+    if _actor_identity(record) is None:
+        return False
+    if not _nonempty_str(record.get("author_association")):
+        return False
+    if _record_app_identity(record) is None:
         return False
     return parse_utc_instant(record.get("created_at")) is not None
 
 
-def merge_record_is_valid(merge_record: object) -> bool:
-    """Evidence family 2 -- GitHub's own canonical merged-PR facts.
+def session_reveal_matches_commitment(reveal: object, commitment: object) -> bool:
+    """SS-I.2.1 C -- SHA-256 of the revealed value must equal the committed digest.
 
-    ``merged`` must be true, the pull request must be THIS one, and the head, merge SHA,
-    merger login and merge timestamp must all be well formed. Nothing here is caller opinion;
-    every field is read back from the merged-PR record.
+    Establishes continuity of possession of a value committed before the merge and never
+    published. NOT GitHub runtime-session identity, which GitHub does not expose.
     """
-    if not isinstance(merge_record, dict):
+    if not (_nonempty_str(reveal) and isinstance(commitment, str)):
         return False
-    if merge_record.get("merged") is not True:
+    if not _SHA256_HEX.match(commitment):
         return False
-    if merge_record.get("number") != THIS_CORRECTIVE_PULL_REQUEST:
-        return False
-    for key in ("accepted_head", "merge_sha"):
-        value = merge_record.get(key)
-        if not isinstance(value, str) or not _SHA40.match(value):
-            return False
-    if not _nonempty_str(merge_record.get("merged_by_login")):
-        return False
-    return parse_utc_instant(merge_record.get("merged_at")) is not None
+    return hashlib.sha256(reveal.encode("utf-8")).hexdigest() == commitment
 
 
 def post_merge_verification_is_valid(
     record: dict,
     *,
-    designation: object,
-    merge_record: object,
-    closure_at: object,
+    designation_record: object,
+    merged_pull_request: object,
+    closure_record: object,
 ) -> bool:
-    """SS-I.2 -- is this record valid immediate post-merge-verification evidence?
+    """SS-I.2 -- valid immediate post-merge-verification evidence?
 
-    Conjunctive over independently validated evidence, and over the record's own declaration.
-    No caller-supplied role string is trusted anywhere.
-
-    A PRINCIPAL verifier must satisfy the COMPLETE :func:`is_direct_principal_record`
-    predicate -- record kind, actor triple, and a present-and-null application key. Selecting
-    the principal branch on ``login == PRINCIPAL_LOGIN`` alone was DELTA review 5061240650
-    BLOCKING 2: it let a ``Mast3rkey / User / OWNER / app claude`` record -- the exact shape
-    this decision says is NOT a direct principal act -- route around designation entirely.
-    Any record that is not a complete direct principal act, INCLUDING an app-attributed record
-    under the principal account, must satisfy the authenticated coordinator path in full.
-
-    Never principal acceptance and never an SS-G ratification, whatever it returns.
+    Conjunctive over independently validated CANONICAL resources and the record's own typed
+    declaration. No caller-supplied role string, projection, or timestamp is trusted anywhere.
     """
     if not isinstance(record, dict):
         return False
@@ -803,46 +1002,61 @@ def post_merge_verification_is_valid(
         return False
     if not _actor_fields_are_well_formed(record):
         return False
-    if not merge_record_is_valid(merge_record):
+    if not canonical_merged_pull_request_is_valid(merged_pull_request):
+        return False
+    if not canonical_closure_record_is_valid(closure_record):
         return False
 
     declaration = parse_pmv_body(record.get("body"))
     if declaration is None:
         return False
-    if declaration["accepted_head"] != merge_record["accepted_head"]:
+    if declaration["accepted_head"] != merged_pull_request["head"]["sha"]:
         return False
-    if declaration["merge_sha"] != merge_record["merge_sha"]:
+    if declaration["merge_commit_sha"] != merged_pull_request["merge_commit_sha"]:
+        return False
+
+    merged_at = parse_utc_instant(merged_pull_request["merged_at"])
+    verified_at = parse_utc_instant(record.get("created_at"))
+    closed_at = parse_utc_instant(closure_record["created_at"])
+    if verified_at is None:
         return False
 
     if is_direct_principal_record(record):
-        # The principal path. A session claim is still required and must match a valid
-        # designation when one is supplied, but the principal needs no designation to verify.
-        if designation is not None:
-            if not principal_designation_is_valid(designation):
-                return False
-            if declaration["session_claim"] != designation["session_claim"]:
-                return False
+        # SS-I.2.1 F -- the principal-operated path this filing uses.
+        designation_at = merged_at
     else:
-        # The authenticated coordinator path -- the ONLY other route.
-        if not principal_designation_is_valid(designation):
+        # The authenticated coordinator path. Everything comes from the principal's own body.
+        if not principal_designation_is_valid(designation_record):
             return False
-        login = _actor_login(record)
-        if login != designation["coordinator_login"]:
+        designated = parse_designation_body(designation_record["body"])
+        designation_at = parse_utc_instant(designation_record["created_at"])
+        if designated["accepted_head"] != merged_pull_request["head"]["sha"]:
             return False
-        # GitHub exposes no session identity, so this proves possession of a session claim the
-        # principal authorized in advance -- NOT that the same runtime session merged.
-        if declaration["session_claim"] != designation["session_claim"]:
+        identity = _actor_identity(record)
+        if identity["login"] != designated["coordinator_login"]:
             return False
-        # The account that GitHub records as having merged must be this same account.
-        if login != merge_record["merged_by_login"]:
+        if identity["type"] != designated["coordinator_type"]:
+            return False
+        if record.get("author_association") != designated["coordinator_association"]:
+            return False
+        if _record_app_identity(record) != designated["coordinator_app"]:
+            return False
+        # SS-I.2.1 D: the merge resource exposes NO application provenance, so the merger is
+        # compared on the identity it does expose, and nothing more is claimed.
+        merger = merged_pull_request["merged_by"]
+        if merger.get("login") != designated["coordinator_login"]:
+            return False
+        if merger.get("type") != designated["coordinator_type"]:
+            return False
+        if not session_reveal_matches_commitment(
+            declaration["session_reveal"], designated["session_commitment"]
+        ):
             return False
 
-    merged_at = parse_utc_instant(merge_record["merged_at"])
-    verified_at = parse_utc_instant(record.get("created_at"))
-    closed_at = parse_utc_instant(closure_at)
-    if verified_at is None or closed_at is None:
+    # SS-I.2.1 E -- parsed instants, never strings.
+    if designation_at is None or merged_at is None or closed_at is None:
         return False
-    return merged_at < verified_at < closed_at
+    return designation_at <= merged_at < verified_at < closed_at
 
 
 # --------------------------------------------------------------------------------------
@@ -1669,266 +1883,415 @@ class TestTheVerificationRoleSplitIsPreserved:
         assert "`OPS-0009` is neither narrowed nor superseded" in flat
 
 
-#: Shared PMV fixtures. Deliberately module-level so the adversarial classes below cannot
-#: quietly diverge from the honest baseline they are supposed to be attacking.
+#: Shared evidence fixtures. Shapes mirror the REAL canonical GitHub resources, whose field
+#: names were read from the live API for PR #362, review 5062156189 and comment 5463232454
+#: during the DELTA review 5062156189 design audit -- not invented projections.
 COORDINATOR_LOGIN = "merge-coordinator"
-AUTHORIZED_SESSION_CLAIM = "sc-7f3a91e4c2"
+COORDINATOR_TYPE = "Bot"
+COORDINATOR_ASSOCIATION = "CONTRIBUTOR"
+COORDINATOR_APP = "claude"
+
+#: The coordinator session's private value, and the digest the principal commits to.
+SESSION_REVEAL = "coordinator-session-secret-7f3a91e4c2"
+SESSION_COMMITMENT = hashlib.sha256(SESSION_REVEAL.encode("utf-8")).hexdigest()
+
 PMV_MERGE_HEAD = "b" * 40
-PMV_MERGE_SHA = "c" * 40
+PMV_MERGE_COMMIT_SHA = "c" * 40
+PMV_DESIGNATED_AT = "2026-08-31T09:00:00Z"
 PMV_MERGED_AT = "2026-08-31T10:00:00Z"
 PMV_VERIFIED_AT = "2026-08-31T10:05:00Z"
 PMV_CLOSED_AT = "2026-08-31T10:30:00Z"
 
 
-def _pmv_body(action=PMV_ACTION, pull_request=THIS_CORRECTIVE_PULL_REQUEST,
-              accepted_head=PMV_MERGE_HEAD, merge_sha=PMV_MERGE_SHA,
-              scope="scope isolation, validators, parsing, CI",
-              results="all green; no protected-path drift",
-              session_claim=AUTHORIZED_SESSION_CLAIM, header=PMV_HEADER):
+def _designation_body(action=DESIGNATION_ACTION, pull_request=THIS_CORRECTIVE_PULL_REQUEST,
+                      accepted_head=PMV_MERGE_HEAD, coordinator_login=COORDINATOR_LOGIN,
+                      coordinator_type=COORDINATOR_TYPE,
+                      coordinator_association=COORDINATOR_ASSOCIATION,
+                      coordinator_app=COORDINATOR_APP,
+                      session_commitment=SESSION_COMMITMENT, header=DESIGNATION_HEADER):
     return "\n".join([
         header,
         f"action: {action}",
         f"pull_request: {pull_request}",
         f"accepted_head: {accepted_head}",
-        f"merge_sha: {merge_sha}",
-        f"scope: {scope}",
-        f"results: {results}",
-        f"session_claim: {session_claim}",
+        f"coordinator_login: {coordinator_login}",
+        f"coordinator_type: {coordinator_type}",
+        f"coordinator_association: {coordinator_association}",
+        f"coordinator_app: {coordinator_app}",
+        f"session_commitment: {session_commitment}",
     ])
 
 
-def _designation(coordinator_login=COORDINATOR_LOGIN,
-                 session_claim=AUTHORIZED_SESSION_CLAIM, record=None, **over):
-    """Evidence family 1 -- a principal-authored designation naming a coordinator."""
-    if record is None:
-        record = _issue_comment(ident=8_300_000_001, created="2026-08-31T09:00:00Z",
-                                body="Designating the merge coordinator for PR #363.")
-    out = dict(record=record, coordinator_login=coordinator_login,
-               session_claim=session_claim)
+def _pmv_body(action=PMV_ACTION, pull_request=THIS_CORRECTIVE_PULL_REQUEST,
+              accepted_head=PMV_MERGE_HEAD, merge_commit_sha=PMV_MERGE_COMMIT_SHA,
+              session_reveal=SESSION_REVEAL, header=PMV_HEADER, **results):
+    fields = {k: v[0] for k, v in PMV_RESULT_FIELDS.items()}
+    fields.update(results)
+    lines = [header, f"action: {action}", f"pull_request: {pull_request}",
+             f"accepted_head: {accepted_head}", f"merge_commit_sha: {merge_commit_sha}",
+             f"session_reveal: {session_reveal}"]
+    lines += [f"{k}: {fields[k]}" for k in PMV_RESULT_FIELDS]
+    return "\n".join(lines)
+
+
+def _designation_record(created=PMV_DESIGNATED_AT, ident=8_300_000_001, body=None, **over):
+    """A principal-authored designation whose BODY does the designating."""
+    return _issue_comment(created=created, ident=ident,
+                          body=_designation_body() if body is None else body, **over)
+
+
+def _merged_pull_request(**over):
+    """The RAW merged-PR resource, by GitHub's own field names."""
+    pr = THIS_CORRECTIVE_PULL_REQUEST
+    out = {
+        "url": f"{REPO_API}/pulls/{pr}",
+        "html_url": f"{REPO_HTML}/pull/{pr}",
+        "number": pr,
+        "state": "closed",
+        "merged": True,
+        "draft": False,
+        "merge_commit_sha": PMV_MERGE_COMMIT_SHA,
+        "merged_at": PMV_MERGED_AT,
+        "head": {"sha": PMV_MERGE_HEAD, "repo": {"full_name": CANONICAL_REPOSITORY}},
+        "base": {"repo": {"full_name": CANONICAL_REPOSITORY}},
+        "merged_by": {"login": COORDINATOR_LOGIN, "type": COORDINATOR_TYPE,
+                      "id": 209825114, "node_id": "U_kgDOMhq3Wg"},
+    }
     out.update(over)
     return out
 
 
-def _merge_record(**over):
-    """Evidence family 2 -- GitHub's own canonical merged-PR facts."""
-    out = dict(merged=True, number=THIS_CORRECTIVE_PULL_REQUEST,
-               accepted_head=PMV_MERGE_HEAD, merge_sha=PMV_MERGE_SHA,
-               merged_by_login=COORDINATOR_LOGIN, merged_at=PMV_MERGED_AT)
-    out.update(over)
-    return out
+def _closure_record(created=PMV_CLOSED_AT, ident=8_300_000_002, login=COORDINATOR_LOGIN,
+                    type_=COORDINATOR_TYPE, assoc=COORDINATOR_ASSOCIATION,
+                    app=COORDINATOR_APP, **over):
+    """Closure is a canonical resource, never a bare caller timestamp."""
+    return _issue_comment(login=login, type_=type_, assoc=assoc, app=app,
+                          created=created, ident=ident,
+                          body="Final post-CI verification and lifecycle closure.", **over)
 
 
 _DEFAULT = object()   # distinct from None, which is itself a body under test
 
 
-def _coordinator_record(login=COORDINATOR_LOGIN, type_="Bot", assoc="CONTRIBUTOR",
-                        app="claude", created=PMV_VERIFIED_AT, body=_DEFAULT,
-                        ident=8_300_000_010, **over):
+def _coordinator_record(login=COORDINATOR_LOGIN, type_=COORDINATOR_TYPE,
+                        assoc=COORDINATOR_ASSOCIATION, app=COORDINATOR_APP,
+                        created=PMV_VERIFIED_AT, body=_DEFAULT, ident=8_300_000_010, **over):
     return _issue_comment(login=login, type_=type_, assoc=assoc, app=app, created=created,
-                          body=_pmv_body() if body is _DEFAULT else body,
-                          ident=ident, **over)
+                          body=_pmv_body() if body is _DEFAULT else body, ident=ident, **over)
+
+
+REAL_FINAL_HEAD = "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"
+APPROVING_BODY = f"FORMAL DISPOSITION: {APPROVING_REVIEW_DISPOSITION}\n\nIndependent review."
+
+
+def _final_review(head=REAL_FINAL_HEAD, ident=5_062_156_189, state="COMMENTED",
+                  body=_DEFAULT, **over):
+    """The RAW pull-request-review resource. Note: reviews carry NO application provenance."""
+    pr = THIS_CORRECTIVE_PULL_REQUEST
+    out = {
+        "id": ident,
+        "node_id": "PRR_synthetic",
+        "state": state,
+        "commit_id": head,
+        "submitted_at": "2026-08-31T12:00:00Z",
+        "author_association": "OWNER",
+        "html_url": f"{REPO_HTML}/pull/{pr}#pullrequestreview-{ident}",
+        "pull_request_url": f"{REPO_API}/pulls/{pr}",
+        "user": {"login": PRINCIPAL_LOGIN, "type": PRINCIPAL_TYPE, "id": 218449187},
+        "body": APPROVING_BODY if body is _DEFAULT else body,
+    }
+    out.update(over)
+    return out
+
+
+def _ratification_naming(head, **over):
+    body = SCOPE_BODY.replace(f"pr363_accepted_head: {FIXTURE_PR363_HEAD}",
+                              f"pr363_accepted_head: {head}")
+    return _issue_comment(body=body, ident=8_400_000_001, **over)
+
+
+def _live_pr(head=REAL_FINAL_HEAD, number=THIS_CORRECTIVE_PULL_REQUEST):
+    return {"number": number, "head": {"sha": head}, "draft": True, "merged": False}
 
 
 class TestPostMergeVerificationEvidenceIsMechanised:
-    """DELTA review 5061240650 BLOCKING 1 and BLOCKING 2 -- PMV on retained evidence.
+    """DELTA review 5062156189 BLOCKING 1 and BLOCKING 2 -- authority from evidence, not callers.
 
-    The withdrawn predicate took the coordinator designation and the merge performer as bare
-    caller-supplied strings. Every test below either exercises a genuine evidence family or
-    attacks one; none of them can be satisfied by a caller asserting a role.
+    The withdrawn model validated a principal-SHAPED comment but never parsed its body, and took
+    the coordinator login and session claim as fields the caller attached BESIDE it. An unrelated
+    principal comment reading "I designate nobody", created AFTER the verification, designated
+    mallory. Its result fields were free text, so a declaration saying "I performed no
+    verification." verified. Both are reproduced below and both now fail.
     """
 
     def _ctx(self, **over):
-        ctx = dict(designation=_designation(), merge_record=_merge_record(),
-                   closure_at=PMV_CLOSED_AT)
+        ctx = dict(designation_record=_designation_record(),
+                   merged_pull_request=_merged_pull_request(),
+                   closure_record=_closure_record())
         ctx.update(over)
         return ctx
 
     # ------------------------------------------------------------------ positive
     def test_an_authenticated_coordinator_verifies(self):
-        assert post_merge_verification_is_valid(
-            _coordinator_record(), **self._ctx()) is True
+        assert post_merge_verification_is_valid(_coordinator_record(), **self._ctx()) is True
 
     def test_the_principal_verifies_without_any_designation(self):
         rec = _issue_comment(created=PMV_VERIFIED_AT, ident=8_300_000_011, body=_pmv_body())
         assert is_direct_principal_record(rec) is True
         assert post_merge_verification_is_valid(
-            rec, **self._ctx(designation=None)) is True
+            rec, **self._ctx(designation_record=None)) is True
 
     def test_one_second_inside_each_boundary_passes(self):
         for created in ("2026-08-31T10:00:01Z", "2026-08-31T10:29:59Z"):
             assert post_merge_verification_is_valid(
                 _coordinator_record(created=created), **self._ctx()) is True, created
 
-    # ---------------------------------------- BLOCKING 1: self-designation is dead
-    def test_mallory_cannot_self_designate_as_coordinator_and_merger(self):
-        """The reviewer's exact reproduction: mallory/Bot/NONE/app evil, refusal body."""
-        mallory = _coordinator_record(
-            login="mallory", assoc="NONE", app="evil",
-            body="I did NOT perform post-merge verification.")
-        # Even handing the whole evidence surface to mallory changes nothing: the designation
-        # record must itself be a direct principal act, and mallory cannot author one.
-        forged = _designation(
-            coordinator_login="mallory", session_claim=AUTHORIZED_SESSION_CLAIM,
-            record=_issue_comment(login="mallory", type_="Bot", assoc="NONE", app="evil",
-                                  ident=8_300_000_020, created="2026-08-31T09:00:00Z",
-                                  body="I designate myself."))
-        assert principal_designation_is_valid(forged) is False
+    # -------------------------------- BLOCKING 1: the designation must DESIGNATE
+    def test_an_unrelated_principal_comment_designates_nobody(self):
+        """The reviewer's exact reproduction, now closed."""
+        unrelated = _issue_comment(ident=7_000_000_001, created="2026-08-31T10:20:00Z",
+                                   body="I accept the reviewed head. I designate nobody.")
+        # It really is a canonical direct-principal record -- that is why body parsing matters.
+        assert is_canonical_top_level_issue_comment(unrelated) is True
+        assert is_direct_principal_record(unrelated) is True
+        assert parse_designation_body(unrelated["body"]) is None
+        assert principal_designation_is_valid(unrelated) is False
+        mallory = _coordinator_record(login="mallory", assoc="NONE", app="evil")
         assert post_merge_verification_is_valid(
-            mallory, **self._ctx(designation=forged,
-                                 merge_record=_merge_record(merged_by_login="mallory"))) is False
+            mallory, **self._ctx(designation_record=unrelated,
+                                 merged_pull_request=_merged_pull_request(
+                                     merged_by={"login": "mallory", "type": "Bot", "id": 1}))
+        ) is False
 
-    def test_the_reproduced_96_combination_sweep_is_now_fully_closed(self):
-        """Bounded representative matrix over the identity space, each self-designating.
+    def test_no_adjacent_field_can_create_authority(self):
+        """The withdrawn signature took coordinator_login/session_claim beside the record."""
+        import inspect
 
-        The withdrawn predicate passed 72 of these 96 while the body said the opposite.
-        """
-        import itertools
+        params = set(inspect.signature(post_merge_verification_is_valid).parameters)
+        assert params == {"record", "designation_record", "merged_pull_request",
+                          "closure_record"}
+        for withdrawn in ("designated_coordinator", "merge_performed_by", "merged_at",
+                          "closure_at", "designation", "merge_record"):
+            assert withdrawn not in params, withdrawn
+        assert set(inspect.signature(principal_designation_is_valid).parameters) == {"record"}
 
-        passed = 0
-        total = 0
-        for login, type_, assoc, app in itertools.product(
-            ["mallory", "", COORDINATOR_LOGIN, PRINCIPAL_LOGIN],
-            ["Bot", "User", "", None],
-            ["NONE", "OWNER", 123],
-            ["evil", None],
-        ):
-            total += 1
-            rec = _issue_comment(login=login, type_=type_, assoc=assoc, app=app,
-                                 created=PMV_VERIFIED_AT, ident=8_300_000_030,
-                                 body="I did NOT perform post-merge verification.")
-            forged = _designation(coordinator_login=login,
-                                  record=_issue_comment(login=login, type_=type_, assoc=assoc,
-                                                        app=app, ident=8_300_000_031,
-                                                        created="2026-08-31T09:00:00Z"))
-            if post_merge_verification_is_valid(
-                rec, **self._ctx(designation=forged,
-                                 merge_record=_merge_record(merged_by_login=login))):
-                passed += 1
-        assert total == 96
-        assert passed == 0
-
-    def test_a_refusal_body_never_passes_even_with_perfect_evidence(self):
-        for body in ("I did NOT perform post-merge verification.",
-                     "VOID. " + _pmv_body(),
-                     _pmv_body() + "\nActually I did not verify anything.",
-                     "Author correction report. See above.",
-                     "", "   ", None, 123):
-            assert post_merge_verification_is_valid(
-                _coordinator_record(body=body), **self._ctx()) is False, repr(body)[:40]
-
-    # ------------------------------ BLOCKING 2: the principal-login short-circuit
-    def test_an_app_attributed_principal_record_does_not_get_the_principal_path(self):
-        """The reviewer's exact reproduction: Mast3rkey / User / OWNER / app claude."""
-        rec = _issue_comment(app="claude", created=PMV_VERIFIED_AT, ident=8_300_000_040,
-                             body=_pmv_body())
-        assert _actor_login(rec) == PRINCIPAL_LOGIN
-        assert is_direct_principal_record(rec) is False       # app is not present-and-null
-        # With no designation it has no route at all.
+    @pytest.mark.parametrize("field,value", [
+        ("coordinator_login", "mallory"),
+        ("coordinator_type", "User"),
+        ("coordinator_association", "OWNER"),
+        ("coordinator_app", "DIRECT"),
+        ("accepted_head", "d" * 40),
+    ])
+    def test_the_verifier_must_match_every_designated_identity_field(self, field, value):
+        """The complete tuple, never a login string alone."""
+        body = _designation_body(**{field: value})
         assert post_merge_verification_is_valid(
-            rec, **self._ctx(designation=None)) is False
-        # And it cannot borrow the coordinator's designation either.
-        assert post_merge_verification_is_valid(rec, **self._ctx()) is False
+            _coordinator_record(),
+            **self._ctx(designation_record=_designation_record(body=body))) is False, field
 
-    def test_an_app_attributed_principal_record_may_verify_only_as_a_designated_coordinator(self):
-        """If it is eligible at all, it is eligible through the authenticated path."""
-        rec = _issue_comment(app="claude", created=PMV_VERIFIED_AT, ident=8_300_000_041,
-                             body=_pmv_body())
-        ctx = self._ctx(
-            designation=_designation(coordinator_login=PRINCIPAL_LOGIN),
-            merge_record=_merge_record(merged_by_login=PRINCIPAL_LOGIN))
-        assert post_merge_verification_is_valid(rec, **ctx) is True
-        # Still never a direct principal act, and never a ratification.
-        assert is_direct_principal_record(rec) is False
-        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+    @pytest.mark.parametrize("over", [
+        {"coordinator_type": "Owner"}, {"coordinator_type": ""}, {"coordinator_type": "bot"},
+        {"coordinator_association": "STRANGER"}, {"coordinator_association": ""},
+        {"coordinator_login": ""}, {"coordinator_app": ""},
+        {"accepted_head": "TBD"}, {"accepted_head": "A" * 40},
+        {"session_commitment": "not-a-digest"}, {"session_commitment": "a" * 63},
+        {"action": "DESIGNATE-NOBODY"}, {"pull_request": 362},
+        {"header": "XASSET-0062 RATIFICATION"},
+    ])
+    def test_a_malformed_designation_declaration_designates_nobody(self, over):
+        body = _designation_body(**over)
+        assert parse_designation_body(body) is None, over
+        assert principal_designation_is_valid(_designation_record(body=body)) is False, over
 
-    # ------------------------------------------------- designation evidence gates
-    def test_a_designation_not_authored_by_the_principal_designates_nobody(self):
-        for over in ({"app": "claude"}, {"type_": "Bot"}, {"assoc": "CONTRIBUTOR"},
-                     {"login": "someone-else"}, {"app_key_present": False}):
-            bad = _designation(record=_issue_comment(
-                ident=8_300_000_050, created="2026-08-31T09:00:00Z", **over))
-            assert principal_designation_is_valid(bad) is False, over
-            assert post_merge_verification_is_valid(
-                _coordinator_record(), **self._ctx(designation=bad)) is False, over
-
-    def test_a_designation_that_is_not_a_canonical_issue_comment_fails(self):
-        bad = _designation(record=_pull_request_review())
-        assert principal_designation_is_valid(bad) is False
+    @pytest.mark.parametrize("over", [
+        {"app": "claude"}, {"type_": "Bot"}, {"assoc": "CONTRIBUTOR"},
+        {"login": "someone-else"}, {"app_key_present": False},
+    ])
+    def test_a_designation_not_authored_by_the_principal_designates_nobody(self, over):
+        rec = _designation_record(**over)
+        assert principal_designation_is_valid(rec) is False, over
         assert post_merge_verification_is_valid(
-            _coordinator_record(), **self._ctx(designation=bad)) is False
+            _coordinator_record(), **self._ctx(designation_record=rec)) is False, over
 
-    @pytest.mark.parametrize("field", ["coordinator_login", "session_claim"])
-    @pytest.mark.parametrize("value", [None, "", "   ", 123, []])
-    def test_a_malformed_designation_field_fails(self, field, value):
-        bad = _designation(**{field: value})
-        assert principal_designation_is_valid(bad) is False
-        assert post_merge_verification_is_valid(
-            _coordinator_record(), **self._ctx(designation=bad)) is False
+    def test_a_pull_request_review_is_never_a_designation(self):
+        assert principal_designation_is_valid(_pull_request_review()) is False
 
     @pytest.mark.parametrize("designation", [None, "coordinator", 123, [], {}])
     def test_a_missing_or_non_record_designation_fails_the_coordinator_path(self, designation):
         assert post_merge_verification_is_valid(
-            _coordinator_record(), **self._ctx(designation=designation)) is False
+            _coordinator_record(), **self._ctx(designation_record=designation)) is False
 
-    def test_a_coordinator_other_than_the_designated_one_fails(self):
-        assert post_merge_verification_is_valid(
-            _coordinator_record(login="someone-else"), **self._ctx()) is False
-
-    # ---------------------------------------------------- session-claim evidence
-    def test_matching_login_but_a_different_session_claim_fails(self):
-        """Same account, different authorized claim -- and that is all logins can prove."""
-        rec = _coordinator_record(body=_pmv_body(session_claim="sc-DIFFERENT"))
-        assert post_merge_verification_is_valid(rec, **self._ctx()) is False
-
-    def test_matching_login_but_an_absent_session_claim_fails(self):
-        body = "\n".join(l for l in _pmv_body().splitlines()
-                          if not l.startswith("session_claim:"))
-        assert parse_pmv_body(body) is None
-        assert post_merge_verification_is_valid(
-            _coordinator_record(body=body), **self._ctx()) is False
-
-    def test_the_session_claim_limitation_is_stated_not_papered_over(self):
-        import inspect
-
-        doc = _flat(inspect.getdoc(post_merge_verification_is_valid))
-        src = _flat(inspect.getsource(post_merge_verification_is_valid))
-        assert "NOT that the same runtime session merged" in src
-        assert "no caller-supplied role string is trusted" in doc.lower()
-
-    # ------------------------------------------------------ merge-record evidence
-    @pytest.mark.parametrize("over", [
-        {"merged": False}, {"merged": None}, {"merged": "true"},
-        {"number": 362}, {"number": None},
-        {"accepted_head": "not-a-sha"}, {"accepted_head": "A" * 40}, {"accepted_head": None},
-        {"merge_sha": "short"}, {"merge_sha": None},
-        {"merged_by_login": ""}, {"merged_by_login": None}, {"merged_by_login": 123},
-        {"merged_at": "2026-08-31T10:05:99Z"}, {"merged_at": "nope"}, {"merged_at": None},
+    # -------------------------------------------------- BLOCKING 1: chronology
+    @pytest.mark.parametrize("designated_at,label", [
+        ("2026-08-31T10:20:00Z", "after the verification"),
+        ("2026-08-31T10:06:00Z", "after the verification, before closure"),
+        ("2026-08-31T10:00:01Z", "after the merge"),
     ])
-    def test_a_malformed_or_unmerged_merge_record_fails(self, over):
-        mr = _merge_record(**over)
-        assert merge_record_is_valid(mr) is False, over
-        assert post_merge_verification_is_valid(
-            _coordinator_record(), **self._ctx(merge_record=mr)) is False, over
-
-    @pytest.mark.parametrize("merge_record", [None, "merged", 123, [], {}])
-    def test_a_missing_merge_record_fails(self, merge_record):
-        assert post_merge_verification_is_valid(
-            _coordinator_record(), **self._ctx(merge_record=merge_record)) is False
-
-    def test_a_coordinator_who_is_not_the_recorded_merger_fails(self):
-        """GitHub's own merged_by is the authority, not the caller's assertion."""
+    def test_a_designation_issued_too_late_fails(self, designated_at, label):
         assert post_merge_verification_is_valid(
             _coordinator_record(),
-            **self._ctx(merge_record=_merge_record(merged_by_login="a-different-account"))
-        ) is False
+            **self._ctx(designation_record=_designation_record(created=designated_at))
+        ) is False, label
 
-    def test_a_declaration_naming_the_wrong_head_or_sha_fails(self):
+    def test_a_designation_at_the_merge_instant_is_permitted(self):
+        """designation_at <= merge_at, per SS-I.2.1 E."""
+        assert post_merge_verification_is_valid(
+            _coordinator_record(),
+            **self._ctx(designation_record=_designation_record(created=PMV_MERGED_AT))) is True
+
+    # ------------------------------------- BLOCKING 1: canonical merge resource
+    def test_the_withdrawn_projection_shape_is_rejected(self):
+        """The six invented keys the previous design called canonical."""
+        projection = {"merged": True, "number": THIS_CORRECTIVE_PULL_REQUEST,
+                      "accepted_head": PMV_MERGE_HEAD, "merge_sha": PMV_MERGE_COMMIT_SHA,
+                      "merged_by_login": COORDINATOR_LOGIN, "merged_at": PMV_MERGED_AT}
+        assert canonical_merged_pull_request_is_valid(projection) is False
+        assert post_merge_verification_is_valid(
+            _coordinator_record(), **self._ctx(merged_pull_request=projection)) is False
+
+    @pytest.mark.parametrize("over", [
+        {"merged": False}, {"merged": None}, {"merged": "true"},
+        {"number": 362}, {"url": f"{REPO_API}/pulls/999"}, {"html_url": "elsewhere"},
+        {"base": {"repo": {"full_name": "someone/else"}}}, {"base": {}}, {"base": None},
+        {"head": {"sha": "nope"}}, {"head": {}}, {"head": None}, {"head": {"sha": "A" * 40}},
+        {"merge_commit_sha": "short"}, {"merge_commit_sha": None},
+        {"merged_by": {"login": "", "type": "Bot"}}, {"merged_by": {"login": "x"}},
+        {"merged_by": None}, {"merged_at": "2026-08-31T10:05:99Z"}, {"merged_at": None},
+    ])
+    def test_a_malformed_canonical_merge_resource_fails(self, over):
+        pr = _merged_pull_request(**over)
+        assert canonical_merged_pull_request_is_valid(pr) is False, over
+        assert post_merge_verification_is_valid(
+            _coordinator_record(), **self._ctx(merged_pull_request=pr)) is False, over
+
+    def test_a_verifier_whose_own_login_is_not_the_designated_one_fails(self):
+        """Isolates the record-vs-designation login check specifically.
+
+        Varying the DESIGNATION's coordinator_login also changes what ``merged_by`` is
+        compared against, so the merger clause masks it. This varies only the verification
+        record, leaving the designation and the canonical merge resource untouched.
+        """
+        rec = _coordinator_record(login="someone-else")
+        # Everything else about the record still matches the designation exactly.
+        assert _actor_identity(rec)["type"] == COORDINATOR_TYPE
+        assert rec["author_association"] == COORDINATOR_ASSOCIATION
+        assert _record_app_identity(rec) == COORDINATOR_APP
+        assert post_merge_verification_is_valid(rec, **self._ctx()) is False
+
+    def test_a_verifier_whose_type_or_association_differs_fails(self):
+        """The same isolation for the other two identity fields."""
+        assert post_merge_verification_is_valid(
+            _coordinator_record(type_="User"), **self._ctx()) is False
+        assert post_merge_verification_is_valid(
+            _coordinator_record(assoc="OWNER"), **self._ctx()) is False
+
+    @pytest.mark.parametrize("pull", [None, "merged", 123, [], {}, True])
+    def test_a_missing_or_non_resource_merge_record_fails(self, pull):
+        assert canonical_merged_pull_request_is_valid(pull) is False
+        assert post_merge_verification_is_valid(
+            _coordinator_record(), **self._ctx(merged_pull_request=pull)) is False
+
+    def test_a_coordinator_who_is_not_the_recorded_merger_fails(self):
+        assert post_merge_verification_is_valid(
+            _coordinator_record(),
+            **self._ctx(merged_pull_request=_merged_pull_request(
+                merged_by={"login": "another-account", "type": "Bot", "id": 2}))) is False
+
+    def test_the_declaration_must_name_the_canonical_head_and_merge_sha(self):
         assert post_merge_verification_is_valid(
             _coordinator_record(body=_pmv_body(accepted_head="d" * 40)),
             **self._ctx()) is False
         assert post_merge_verification_is_valid(
-            _coordinator_record(body=_pmv_body(merge_sha="e" * 40)),
+            _coordinator_record(body=_pmv_body(merge_commit_sha="e" * 40)),
             **self._ctx()) is False
+
+    # ----------------------------------- BLOCKING 1: canonical closure resource
+    def test_a_caller_cannot_move_closure_to_rescue_a_late_verification(self):
+        """The withdrawn bare closure_at made this trivially bypassable."""
+        late = _coordinator_record(created="2026-08-31T23:00:00Z")
+        assert post_merge_verification_is_valid(late, **self._ctx()) is False
+        # Moving closure requires a real, later closure RESOURCE -- which is itself validated.
+        moved = _closure_record(created="2026-08-31T23:59:00Z")
+        assert post_merge_verification_is_valid(late, **self._ctx(closure_record=moved)) is True
+        # And a malformed one rescues nothing.
+        assert post_merge_verification_is_valid(
+            late, **self._ctx(closure_record="2026-08-31T23:59:00Z")) is False
+
+    @pytest.mark.parametrize("over", [
+        {"created": "2026-08-31T10:05:99Z"}, {"created": None}, {"created": ""},
+        {"app_key_present": False}, {"login": ""}, {"type_": ""}, {"assoc": ""},
+    ])
+    def test_a_malformed_closure_resource_fails(self, over):
+        rec = _closure_record(**over)
+        assert canonical_closure_record_is_valid(rec) is False, over
+        assert post_merge_verification_is_valid(
+            _coordinator_record(), **self._ctx(closure_record=rec)) is False, over
+
+    @pytest.mark.parametrize("closure", [None, "2026-08-31T10:30:00Z", 123, [], {}])
+    def test_a_non_resource_closure_fails(self, closure):
+        assert post_merge_verification_is_valid(
+            _coordinator_record(), **self._ctx(closure_record=closure)) is False
+
+    def test_a_pull_request_review_is_never_closure_evidence(self):
+        assert canonical_closure_record_is_valid(_pull_request_review()) is False
+
+    # ----------------------------------------- BLOCKING 1: commitment and reveal
+    def test_the_commitment_reveal_pair_is_checked(self):
+        assert session_reveal_matches_commitment(SESSION_REVEAL, SESSION_COMMITMENT) is True
+
+    @pytest.mark.parametrize("reveal", ["wrong-value", "", "   ", None, 123,
+                                        SESSION_REVEAL.upper(), SESSION_REVEAL[:-1],
+                                        SESSION_COMMITMENT])
+    def test_a_wrong_reveal_fails(self, reveal):
+        assert session_reveal_matches_commitment(reveal, SESSION_COMMITMENT) is False
+        assert post_merge_verification_is_valid(
+            _coordinator_record(body=_pmv_body(session_reveal=reveal or "x")),
+            **self._ctx()) is False
+
+    def test_publishing_the_commitment_is_not_the_reveal(self):
+        """The withdrawn design published a plaintext nonce and accepted it copied back."""
+        assert post_merge_verification_is_valid(
+            _coordinator_record(body=_pmv_body(session_reveal=SESSION_COMMITMENT)),
+            **self._ctx()) is False
+
+    @pytest.mark.parametrize("commitment", ["not-a-digest", "a" * 63, "A" * 64, "", None, 123])
+    def test_a_malformed_commitment_fails(self, commitment):
+        assert session_reveal_matches_commitment(SESSION_REVEAL, commitment) is False
+
+    def test_the_session_claim_is_not_described_as_runtime_session_identity(self):
+        import inspect
+
+        doc = _flat(inspect.getdoc(session_reveal_matches_commitment))
+        assert "continuity of possession" in doc
+        assert "NOT GitHub runtime-session identity" in doc
+
+    # --------------------------------- BLOCKING 2: the typed affirmative result
+    def test_a_negating_declaration_inside_the_schema_fails(self):
+        """The reviewer's exact reproduction -- free text is gone from the verdict."""
+        for field in ("accepted_head_ancestry", "authorized_scope", "validators_result",
+                      "tests_result", "overall_result"):
+            for value in ("FAIL", "SKIPPED", "UNKNOWN", "N/A", "",
+                          "I performed no verification.", "PASS (not really)", "pass"):
+                body = _pmv_body(**{field: value})
+                assert parse_pmv_body(body) is None, (field, value)
+                assert post_merge_verification_is_valid(
+                    _coordinator_record(body=body), **self._ctx()) is False, (field, value)
+
+    @pytest.mark.parametrize("field", sorted(PMV_RESULT_FIELDS))
+    def test_every_result_field_admits_only_its_closed_literals(self, field):
+        for value in ("FAILED", "no", "0", "TRUE " if field != "main_clean" else "FALSE"):
+            body = _pmv_body(**{field: value})
+            assert parse_pmv_body(body) is None, (field, value)
+        for value in PMV_RESULT_FIELDS[field]:
+            assert parse_pmv_body(_pmv_body(**{field: value})) is not None, (field, value)
+
+    def test_merge_commit_ci_alone_admits_not_applicable(self):
+        assert parse_pmv_body(_pmv_body(merge_commit_ci="NOT_APPLICABLE")) is not None
+        assert parse_pmv_body(_pmv_body(overall_result="NOT_APPLICABLE")) is None
+
+    def test_no_free_text_field_survives_in_the_verdict_schema(self):
+        for withdrawn in ("scope", "results", "session_claim", "notes", "narrative"):
+            assert withdrawn not in PMV_SCHEMA, withdrawn
 
     # ------------------------------------------------------------ actor validation
     @pytest.mark.parametrize("over", [
@@ -1941,13 +2304,6 @@ class TestPostMergeVerificationEvidenceIsMechanised:
         assert _actor_fields_are_well_formed(rec) is False, over
         assert post_merge_verification_is_valid(rec, **self._ctx()) is False, over
 
-    @pytest.mark.parametrize("app", [{}, {"slug": ""}, {"slug": None}, {"name": "x"},
-                                     "claude", 7, []])
-    def test_malformed_application_provenance_fails(self, app):
-        rec = _coordinator_record()
-        rec["performed_via_github_app"] = app
-        assert post_merge_verification_is_valid(rec, **self._ctx()) is False
-
     @pytest.mark.parametrize("foreign", FOREIGN_RECORD_KIND_FIELDS)
     def test_the_record_kind_gate_is_isolated_and_decisive(self, foreign):
         good = _coordinator_record()
@@ -1956,13 +2312,42 @@ class TestPostMergeVerificationEvidenceIsMechanised:
         bad[foreign] = "x"
         assert post_merge_verification_is_valid(bad, **self._ctx()) is False, foreign
 
-    def test_a_pull_request_review_is_never_pmv_evidence(self):
-        assert post_merge_verification_is_valid(
-            _pull_request_review(), **self._ctx()) is False
-
     def test_a_verification_on_another_pull_request_is_rejected(self):
         assert post_merge_verification_is_valid(
             _coordinator_record(pr=999), **self._ctx()) is False
+
+    # -------------------------------------------- the two roles never overlap
+    def test_the_passing_coordinator_record_can_never_ratify_or_be_acceptance(self):
+        rec = _coordinator_record()
+        assert post_merge_verification_is_valid(rec, **self._ctx()) is True
+        assert is_direct_principal_record(rec) is False
+        assert ratifies_pr362_acceptance(rec) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    def test_an_app_attributed_principal_record_takes_the_coordinator_path(self):
+        rec = _issue_comment(app="claude", created=PMV_VERIFIED_AT, ident=8_300_000_041,
+                             body=_pmv_body())
+        assert _actor_login(rec) == PRINCIPAL_LOGIN
+        assert is_direct_principal_record(rec) is False
+        # No designation names it -> no route at all.
+        assert post_merge_verification_is_valid(
+            rec, **self._ctx(designation_record=None)) is False
+        assert post_merge_verification_is_valid(rec, **self._ctx()) is False
+        # Designated explicitly, with the full tuple, it may verify AS A COORDINATOR.
+        body = _designation_body(coordinator_login=PRINCIPAL_LOGIN, coordinator_type="User",
+                                 coordinator_association="OWNER", coordinator_app="claude")
+        ctx = self._ctx(
+            designation_record=_designation_record(body=body),
+            merged_pull_request=_merged_pull_request(
+                merged_by={"login": PRINCIPAL_LOGIN, "type": "User", "id": 218449187}))
+        assert post_merge_verification_is_valid(rec, **ctx) is True
+        assert is_direct_principal_record(rec) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    def test_a_principal_record_out_of_order_is_still_rejected(self):
+        rec = _issue_comment(created=PMV_CLOSED_AT, ident=8_300_000_060, body=_pmv_body())
+        assert post_merge_verification_is_valid(
+            rec, **self._ctx(designation_record=None)) is False
 
     # -------------------------------------------------------------- chronology
     @pytest.mark.parametrize("created,label", [
@@ -1977,15 +2362,13 @@ class TestPostMergeVerificationEvidenceIsMechanised:
 
     @pytest.mark.parametrize("bad", [
         "2026-08-31T10:05:99Z", "2026-13-45T99:99:99Z", "2026-02-30T00:00:00Z",
-        "", "not-a-time", "2026-08-31", None, 20260831,
+        "9999-99-99T99:99:99Z", "", "not-a-time", "2026-08-31", None, 20260831,
+        "2026-08-31T10:05:00+00:00", "2026-08-31 10:05:00Z",
     ])
     def test_impossible_and_malformed_instants_fail(self, bad):
-        """Shape is not validity -- these all passed the withdrawn _is_iso_z."""
         assert parse_utc_instant(bad) is None, bad
         assert post_merge_verification_is_valid(
             _coordinator_record(created=bad), **self._ctx()) is False, bad
-        assert post_merge_verification_is_valid(
-            _coordinator_record(), **self._ctx(closure_at=bad)) is False, bad
 
     def test_a_real_instant_parses_to_utc(self):
         parsed = parse_utc_instant("2026-08-31T10:05:00Z")
@@ -2001,51 +2384,20 @@ class TestPostMergeVerificationEvidenceIsMechanised:
 
         assert post_merge_verification_is_valid is not ratifies_pr362_acceptance
         src = inspect.getsource(post_merge_verification_is_valid)
-        assert "ratifies_pr362_acceptance" not in src
-        assert "_ratifies_with_binding" not in src
-        assert "body_declares_ratification" not in src
-
-    def test_the_passing_coordinator_record_can_never_ratify_or_be_acceptance(self):
-        """The load-bearing separation, restated against the rebuilt predicate."""
-        rec = _coordinator_record()
-        assert post_merge_verification_is_valid(rec, **self._ctx()) is True
-        assert is_direct_principal_record(rec) is False
-        assert ratifies_pr362_acceptance(rec) is False
-        assert _ratifies_with_binding(rec, **_bound(rec)) is False
-
-    def test_even_carrying_a_perfect_ratification_declaration_it_cannot_ratify(self):
-        """A coordinator quoting the SS-G.3 declaration is still only a coordinator."""
-        rec = _coordinator_record(body=SCOPE_BODY)
-        assert body_declares_ratification(rec) is True
-        # It is not PMV evidence either -- a ratification body is not a verification body.
-        assert post_merge_verification_is_valid(rec, **self._ctx()) is False
-        assert _ratifies_with_binding(rec, **_bound(rec)) is False
-
-    def test_a_principal_record_out_of_order_is_still_rejected(self):
-        """Being the principal does not exempt a record from the chronology rule."""
-        rec = _issue_comment(created=PMV_CLOSED_AT, ident=8_300_000_060, body=_pmv_body())
-        assert is_direct_principal_record(rec) is True
-        assert post_merge_verification_is_valid(
-            rec, **self._ctx(designation=None)) is False
-
-    def test_no_caller_supplied_role_string_remains_in_the_signature(self):
-        import inspect
-
-        params = set(inspect.signature(post_merge_verification_is_valid).parameters)
-        assert params == {"record", "designation", "merge_record", "closure_at"}
-        for withdrawn in ("designated_coordinator", "merge_performed_by", "merged_at"):
-            assert withdrawn not in params
+        for forbidden in ("ratifies_pr362_acceptance", "_ratifies_with_binding",
+                          "body_declares_ratification"):
+            assert forbidden not in src, forbidden
 
 
 class TestThePmvDeclarationSchemaIsExact:
-    """The PMV body must PARSE, on the same discipline as the SS-G.3 declaration."""
+    """The verification body must PARSE, and every result field is a closed literal."""
 
     def test_the_honest_declaration_parses_with_exact_values(self):
         parsed = parse_pmv_body(_pmv_body())
         assert parsed is not None
         assert set(parsed) == set(PMV_SCHEMA)
         assert parsed["action"] == PMV_ACTION
-        assert parsed["pull_request"] == str(THIS_CORRECTIVE_PULL_REQUEST)
+        assert parsed["overall_result"] == "PASS"
 
     @pytest.mark.parametrize("label,body", [
         ("refusal", "I did NOT perform post-merge verification."),
@@ -2058,18 +2410,16 @@ class TestThePmvDeclarationSchemaIsExact:
         ("leading_prose", "Context:\n" + _pmv_body()),
         ("missing_header", "\n".join(_pmv_body().splitlines()[1:])),
         ("wrong_header", _pmv_body(header="XASSET-0062 RATIFICATION")),
+        ("designation_header", _pmv_body(header=DESIGNATION_HEADER)),
         ("junk_first_line", "GARBAGE\n" + "\n".join(_pmv_body().splitlines()[1:])),
         ("negated_action", _pmv_body(action="POST-MERGE-VERIFICATION-REFUSED")),
         ("alias_action", _pmv_body(action="post-merge-verification-performed")),
         ("wrong_pr", _pmv_body(pull_request=362)),
         ("malformed_head", _pmv_body(accepted_head="TBD")),
-        ("uppercase_head", _pmv_body(accepted_head="A" * 40)),
-        ("short_sha", _pmv_body(merge_sha="c" * 39)),
-        ("empty_scope", _pmv_body(scope="")),
-        ("empty_results", _pmv_body(results="   ")),
-        ("empty_session_claim", _pmv_body(session_claim="")),
+        ("short_sha", _pmv_body(merge_commit_sha="c" * 39)),
+        ("empty_reveal", _pmv_body(session_reveal="")),
         ("unknown_key", _pmv_body() + "\nvoid: true"),
-        ("duplicate_key", _pmv_body() + "\nmerge_sha: " + PMV_MERGE_SHA),
+        ("duplicate_key", _pmv_body() + "\nmerge_commit_sha: " + PMV_MERGE_COMMIT_SHA),
     ])
     def test_no_non_conforming_body_parses(self, label, body):
         assert parse_pmv_body(body) is None, label
@@ -2077,30 +2427,182 @@ class TestThePmvDeclarationSchemaIsExact:
     def test_parse_is_total_and_never_raises(self):
         for junk in (None, 123, b"bytes", [], {}, object()):
             assert parse_pmv_body(junk) is None
+            assert parse_designation_body(junk) is None
 
-    def test_the_two_declaration_schemas_are_distinct(self):
-        """A ratification body is not a verification body, and vice versa."""
+    def test_the_three_declaration_schemas_are_mutually_exclusive(self):
         assert parse_pmv_body(SCOPE_BODY) is None
+        assert parse_pmv_body(_designation_body()) is None
+        assert parse_designation_body(_pmv_body()) is None
+        assert parse_designation_body(SCOPE_BODY) is None
         assert parse_ratification_body(_pmv_body()) is None
-        assert PMV_HEADER != RATIFICATION_HEADER
+        assert parse_ratification_body(_designation_body()) is None
+        assert len({PMV_HEADER, DESIGNATION_HEADER, RATIFICATION_HEADER}) == 3
 
 
-REAL_FINAL_HEAD = "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"
+class TestTheFinalReviewIsAuthenticatedAsAReview:
+    """DELTA review 5062156189 MAJOR 1 -- three strings were compared; one was never a review.
+
+    ``{"reviewed_head": H}``, the same mapping carrying ``verdict: CHANGES_REQUIRED``, and one
+    naming an author actor with a null id ALL proved the equality at the previous head. The
+    disposition is now parsed by the repository's OWN ``parse_formal_disposition``.
+    """
+
+    def test_the_honest_review_is_approving(self):
+        ok, ev = canonical_final_review_is_approving(_final_review(), REAL_FINAL_HEAD)
+        assert ok is True
+        assert ev["failure_reason"] is None
+        assert ev["parsed_disposition"] == APPROVING_REVIEW_DISPOSITION
+        assert ev["commit_matches_final_head"] is True
+
+    @pytest.mark.parametrize("evidence,label", [
+        ({"reviewed_head": REAL_FINAL_HEAD}, "bare head mapping"),
+        ({"reviewed_head": REAL_FINAL_HEAD, "verdict": "CHANGES_REQUIRED"}, "verdict string"),
+        ({"reviewed_head": REAL_FINAL_HEAD, "review_id": None, "actor": "author"},
+         "author with null id"),
+        ({}, "empty mapping"), (None, "None"), (123, "int"), ("APPROVED", "string"),
+    ])
+    def test_the_withdrawn_mappings_all_fail(self, evidence, label):
+        ok, _ = canonical_final_review_is_approving(evidence, REAL_FINAL_HEAD)
+        assert ok is False, label
+        out = external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(), evidence)
+        assert out["equality_proven"] is False, label
+
+    @pytest.mark.parametrize("over,reason", [
+        ({"id": None}, "review id is missing or not an integer"),
+        ({"id": "5062156189"}, "review id is missing or not an integer"),
+        ({"id": True}, "review id is missing or not an integer"),
+        ({"pull_request_url": f"{REPO_API}/pulls/362"}, "review is not on PR #363"),
+        ({"pull_request_url": None}, "review is not on PR #363"),
+        ({"html_url": "https://example.com/x"}, "review canonical URLs disagree with its id"),
+        ({"user": {"login": "", "type": "User"}},
+         "review actor identity is missing or malformed"),
+        ({"user": None}, "review actor identity is missing or malformed"),
+        ({"author_association": ""}, "review author_association is missing or malformed"),
+        ({"submitted_at": "9999-99-99T99:99:99Z"},
+         "review submitted_at is missing or not a real UTC instant"),
+        ({"submitted_at": None}, "review submitted_at is missing or not a real UTC instant"),
+        ({"commit_id": "f" * 40}, "review commit_id is not the final reviewed head"),
+        ({"commit_id": None}, "review commit_id is not the final reviewed head"),
+        ({"state": "CHANGES_REQUESTED"}, "review state is natively adverse"),
+    ])
+    def test_each_review_clause_is_isolated_and_decisive(self, over, reason):
+        ok, ev = canonical_final_review_is_approving(_final_review(**over), REAL_FINAL_HEAD)
+        assert ok is False, over
+        assert ev["failure_reason"] == reason, (over, ev["failure_reason"])
+
+    @pytest.mark.parametrize("body,reason", [
+        ("FORMAL DISPOSITION: CHANGES REQUIRED", "formal disposition is not approving"),
+        ("Looks good to me.", "no formal disposition"),
+        ("", "no formal disposition"),
+        (None, "no formal disposition"),
+        ("# FORMAL DISPOSITION: " + "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE",
+         "formal disposition is malformed"),
+    ])
+    def test_the_disposition_is_parsed_not_searched(self, body, reason):
+        ok, ev = canonical_final_review_is_approving(
+            _final_review(body=body), REAL_FINAL_HEAD)
+        assert ok is False
+        assert ev["failure_reason"] == reason, (body, ev["failure_reason"])
+
+    def test_an_approving_phrase_after_an_adverse_disposition_cannot_win(self):
+        """The exact defect the repository's own parser was hardened against."""
+        body = ("FORMAL DISPOSITION: CHANGES REQUIRED\n\n"
+                f"Once fixed this would be {APPROVING_REVIEW_DISPOSITION}.")
+        ok, ev = canonical_final_review_is_approving(_final_review(body=body), REAL_FINAL_HEAD)
+        assert ok is False
+        assert ev["parsed_disposition"] == "CHANGES REQUIRED"
+
+    def test_the_repository_parser_is_reused_not_reimplemented(self):
+        import inspect
+
+        src = inspect.getsource(canonical_final_review_is_approving)
+        assert "_auth.parse_formal_disposition" in src
+        assert "_auth.NATIVE_ADVERSE_REVIEW_STATES" in src
+        assert APPROVING_REVIEW_DISPOSITION == _auth.APPROVING_REVIEW_DISPOSITION
+
+    def test_a_later_adverse_exact_head_review_defeats_the_approval(self):
+        later = _final_review(ident=5_099_999_999, body="FORMAL DISPOSITION: CHANGES REQUIRED")
+        out = external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(), _final_review(), [later])
+        assert out["equality_proven"] is False
+        assert out["later_adverse_review_exists"] is True
+        assert out["failure_reason"] == "a later adverse exact-head review exists"
+
+    def test_a_later_adverse_review_on_another_head_does_not_defeat_it(self):
+        later = _final_review(ident=5_099_999_998, head="9" * 40,
+                              body="FORMAL DISPOSITION: CHANGES REQUIRED")
+        out = external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(), _final_review(), [later])
+        assert out["equality_proven"] is True
+        assert out["later_adverse_review_exists"] is False
+
+    def test_a_later_approving_review_is_not_adverse(self):
+        later = _final_review(ident=5_099_999_997)
+        out = external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(), _final_review(), [later])
+        assert out["equality_proven"] is True
+
+    def test_reviewer_independence_is_recorded_as_procedural_not_proven(self):
+        """A review resource carries NO application provenance -- see SS-I.2.1 D."""
+        _, ev = canonical_final_review_is_approving(_final_review(), REAL_FINAL_HEAD)
+        assert ev["independence"] == "PROCEDURAL_NOT_PLATFORM_PROVABLE"
+        assert ev["application_provenance"] == "NOT_EXPOSED_ON_REVIEWS"
+        assert "performed_via_github_app" not in _final_review()
+
+    def test_the_review_evidence_is_retained(self):
+        out = external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(), _final_review())
+        ev = out["review_evidence"]
+        for key in ("review_id", "commit_id", "submitted_at", "state", "actor_login",
+                    "actor_type", "author_association", "parsed_disposition",
+                    "commit_matches_final_head", "independence", "application_provenance"):
+            assert key in ev and ev[key] is not None, key
 
 
-def _ratification_naming(head, **over):
-    """A ratification record whose declaration names ``head`` as the PR #363 accepted head."""
-    body = SCOPE_BODY.replace(f"pr363_accepted_head: {FIXTURE_PR363_HEAD}",
-                              f"pr363_accepted_head: {head}")
-    return _issue_comment(body=body, ident=8_400_000_001, **over)
+class TestRatificationChronologyUsesRealInstants:
+    """DELTA review 5062156189 MAJOR 3 -- a shape regex and a lexicographic string compare."""
 
+    def test_the_reviewers_impossible_timestamp_now_fails(self):
+        bad = _ratification_naming(REAL_FINAL_HEAD, created="9999-99-99T99:99:99Z")
+        assert _ratification_is_structurally_complete(bad) is False
+        assert external_ratification_readback(
+            bad, _live_pr(), _final_review())["equality_proven"] is False
 
-def _live_pr(head=REAL_FINAL_HEAD, number=THIS_CORRECTIVE_PULL_REQUEST):
-    return {"number": number, "head": {"sha": head}, "draft": False, "merged": False}
+    @pytest.mark.parametrize("created,label", [
+        ("2026-13-01T00:00:00Z", "invalid month"),
+        ("2026-08-32T00:00:00Z", "invalid day"),
+        ("2026-02-30T00:00:00Z", "impossible calendar date"),
+        ("2025-02-29T00:00:00Z", "non-leap 29 February"),
+        ("2026-08-31T24:00:00Z", "invalid hour"),
+        ("2026-08-31T10:60:00Z", "invalid minute"),
+        ("2026-08-31T10:05:99Z", "invalid second"),
+        ("9999-99-99T99:99:99Z", "impossible everything"),
+        (MERGED_AT, "equal to the PR #362 merge"),
+        ("2026-08-29T15:07:48Z", "one second before the merge"),
+        ("2026-08-01T00:00:00Z", "well before the merge"),
+        ("2026-08-31T10:05:00+00:00", "non-Z offset form"),
+        ("2026-08-31 10:05:00Z", "space instead of T"),
+        ("", "empty"), (None, "None"), (20260831, "int"),
+    ])
+    def test_impossible_and_out_of_order_ratification_instants_fail(self, created, label):
+        rec = _ratification_naming(REAL_FINAL_HEAD, created=created)
+        assert _ratification_is_structurally_complete(rec) is False, label
+        assert external_ratification_readback(
+            rec, _live_pr(), _final_review())["equality_proven"] is False, label
 
+    def test_one_second_after_the_merge_passes(self):
+        rec = _ratification_naming(REAL_FINAL_HEAD, created="2026-08-29T15:07:50Z")
+        assert _ratification_is_structurally_complete(rec) is True
+        assert external_ratification_readback(
+            rec, _live_pr(), _final_review())["equality_proven"] is True
 
-def _final_review(head=REAL_FINAL_HEAD):
-    return {"reviewed_head": head, "review_id": 5061240650, "verdict": "APPROVED"}
+    def test_the_comparison_is_between_parsed_instants(self):
+        import inspect
+
+        src = inspect.getsource(_ratification_is_structurally_complete)
+        assert "parse_utc_instant" in src
+        assert "created <= MERGED_AT" not in src
 
 
 class TestTheExternalRatificationReadbackIsImplemented:
@@ -2135,16 +2637,21 @@ class TestTheExternalRatificationReadbackIsImplemented:
         assert out["live_pr_head"] == REAL_FINAL_HEAD
 
     def test_a_live_head_that_moved_after_review_fails(self):
+        """Drift is now caught one clause EARLIER, and for a stronger reason:
+        the review is authenticated against the live head before any equality.
+        """
         out = external_ratification_readback(
             _ratification_naming(REAL_FINAL_HEAD), _live_pr(head="9" * 40), _final_review())
         assert out["equality_proven"] is False
-        assert out["failure_reason"] == "three-way exact-head equality failed"
+        assert out["failure_reason"] == (
+            "final review not approving: review commit_id is not the final reviewed head")
 
     def test_a_review_anchored_to_a_different_head_fails(self):
         out = external_ratification_readback(
             _ratification_naming(REAL_FINAL_HEAD), _live_pr(), _final_review(head="8" * 40))
         assert out["equality_proven"] is False
-        assert out["failure_reason"] == "three-way exact-head equality failed"
+        assert out["failure_reason"] == (
+            "final review not approving: review commit_id is not the final reviewed head")
 
     def test_every_required_evidence_field_is_retained(self):
         """SS-G.9 step 3, plus the equality result the review found missing."""
@@ -2263,6 +2770,22 @@ class TestTheLifecycleIsClosedAndNonCircular:
         # And it is nowhere stated as something still to be done.
         assert "retains, in a further ordinary fast-forward" not in flat
 
+    def test_the_source_comment_no_longer_promises_a_binding_commit(self):
+        """DELTA review 5062156189 MINOR 1 -- nothing pinned the SOURCE comment itself.
+
+        The decision text was pinned; the comment above the constants was not, so restoring
+        the withdrawn "retained in a further fast-forward commit" sentence passed every test.
+        """
+        source = _read(THIS_ARTIFACT)
+        assert "#: SS-G.9: these constants are ``None`` and STAY ``None``." in source
+        assert "NEVER committed here" in source
+        # The withdrawn promise survives ONLY inside the comment's own record of what was
+        # withdrawn, and inside this assertion. Count, never membership -- a membership test
+        # here would be unfalsifiable, since this test necessarily names the phrase.
+        withdrawn = "fast-forward commit on this pull request"
+        assert source.count(withdrawn) == 2
+        assert 'promised retention "in a further' in source
+
     def test_the_module_binding_stays_none_permanently(self):
         """Not 'unset until later' -- unset by design, forever."""
         assert BOUND_RATIFICATION_ID is None
@@ -2318,6 +2841,365 @@ class TestTheLifecycleIsClosedAndNonCircular:
         assert "any synthetic record a caller assembles" in flat        # quoted as withdrawn
         assert "that claim was **false and is withdrawn**" in flat
         assert "These fields do not, and cannot, prove live GitHub origin." in flat
+
+
+class TestTheProtocolIsAnchoredInTheDecision:
+    """DELTA review 5062156189 MAJOR 2 -- the protocol authenticated itself.
+
+    ``PMV_HEADER`` and ``PMV_ACTION`` were defined only in this artifact, so the parser and its
+    fixtures derived the protocol from one another. The reviewer renamed them to
+    ``UNAUTHORIZED RENAMED PMV PROTOCOL`` and ``UNAUTHORIZED-RENAMED-ACTION`` and all 327
+    focused tests still passed. This session reproduced that exactly before correcting it.
+
+    Every literal below is now read back from the committed decision text -- an independent
+    source that a rename cannot follow.
+    """
+
+    def test_the_decision_defines_the_protocol_section(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "#### I.2.1 — The operative protocol, defined here before it is implemented" in flat
+
+    @staticmethod
+    def _protocol_block(first_line: str) -> str:
+        """The FENCED protocol block, not the whole decision.
+
+        Anchoring against the whole file was itself defective: the decision's own narrative
+        quotes the reviewer's mutation strings verbatim, so a constant renamed to
+        ``UNAUTHORIZED RENAMED PMV PROTOCOL`` matched that sentence and the rename passed.
+        Found by re-running the reviewer's own mutation against the first anchoring attempt.
+        Only the fenced block is protocol; prose about it is not.
+        """
+        text = _read(DECISION_RELPATH)
+        start = text.index("```\n" + first_line)
+        block = text[start + 4:]
+        return block[:block.index("```")]
+
+    def test_the_designation_block_defines_the_implementation_constants(self):
+        block = self._protocol_block("XASSET-0062 COORDINATOR DESIGNATION")
+        assert block.splitlines()[0] == DESIGNATION_HEADER
+        assert f"action: {DESIGNATION_ACTION}" in block
+
+    def test_the_pmv_block_defines_the_implementation_constants(self):
+        block = self._protocol_block("XASSET-0062 POST-MERGE VERIFICATION")
+        assert block.splitlines()[0] == PMV_HEADER
+        assert f"action: {PMV_ACTION}" in block
+
+    @pytest.mark.parametrize("literal", [
+        "XASSET-0062 COORDINATOR DESIGNATION", "DESIGNATE-MERGE-COORDINATOR",
+        "XASSET-0062 POST-MERGE VERIFICATION", "POST-MERGE-VERIFICATION-PERFORMED",
+    ])
+    def test_every_header_and_action_appears_in_the_decision(self, literal):
+        assert literal in _read(DECISION_RELPATH), literal
+
+    @pytest.mark.parametrize("key", sorted(DESIGNATION_SCHEMA))
+    def test_every_designation_key_appears_in_the_decision_block(self, key):
+        assert f"{key}:" in self._protocol_block("XASSET-0062 COORDINATOR DESIGNATION"), key
+
+    @pytest.mark.parametrize("key", sorted(PMV_SCHEMA))
+    def test_every_pmv_key_appears_in_the_decision_block(self, key):
+        assert f"{key}:" in self._protocol_block("XASSET-0062 POST-MERGE VERIFICATION"), key
+
+    def test_the_decision_names_no_key_the_implementation_lacks(self):
+        """Both directions: the decision's own listed keys must all be implemented."""
+        block = self._protocol_block("XASSET-0062 COORDINATOR DESIGNATION")
+        declared = {ln.split(":", 1)[0].strip() for ln in block.splitlines()
+                    if ":" in ln and not ln.startswith("XASSET")}
+        assert declared == set(DESIGNATION_SCHEMA), declared ^ set(DESIGNATION_SCHEMA)
+
+        block = self._protocol_block("XASSET-0062 POST-MERGE VERIFICATION")
+        declared = {ln.split(":", 1)[0].strip() for ln in block.splitlines()
+                    if ":" in ln and not ln.startswith("XASSET")}
+        assert declared == set(PMV_SCHEMA), declared ^ set(PMV_SCHEMA)
+
+    @pytest.mark.parametrize("field,values", sorted(PMV_RESULT_FIELDS.items()))
+    def test_every_closed_result_literal_appears_in_the_decision_block(self, field, values):
+        block = self._protocol_block("XASSET-0062 POST-MERGE VERIFICATION")
+        assert f"{field}: {values[0]}" in block, (field, values[0])
+        for value in values[1:]:
+            assert value in _read(DECISION_RELPATH), (field, value)
+
+    def test_the_decision_states_the_closed_result_vocabulary(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "The ten result fields above admit **only** the literals shown" in flat
+        assert "`FAIL`, `SKIPPED`, `UNKNOWN`, `N/A`, an empty value, a negated value" in flat
+        assert len(PMV_RESULT_FIELDS) == 10
+
+    def test_the_decision_defines_the_commitment_reveal_construction(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "session_commitment" in flat and "session_reveal" in flat
+        assert "does not publish it" in flat
+        assert "It is not GitHub runtime-session identity, and is never described as such." in flat
+
+    def test_the_decision_defines_the_canonical_resources_by_real_field_names(self):
+        text = _read(DECISION_RELPATH)
+        for field in ("merge_commit_sha", "head.sha", "base.repo.full_name", "merged_by.login",
+                      "pull_request_url", "commit_id", "submitted_at", "issue_url"):
+            assert field in text, field
+
+    def test_the_decision_discloses_both_platform_limits(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "The merged-PR resource exposes **no application provenance**" in flat
+        assert "reviewer **independence is procedural**" in flat
+
+    def test_the_decision_states_the_chronology(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "designation_at **<** merge_at **<** verification_at **<** closure_at" in flat
+
+    def test_the_canonical_repository_comes_from_the_load_bearing_module(self):
+        """Not a second copy written here -- the module is the independent anchor."""
+        import inspect
+
+        assert CANONICAL_REPOSITORY == _auth.REPOSITORY_IDENTITY
+        src = inspect.getsource(canonical_merged_pull_request_is_valid)
+        assert "CANONICAL_REPOSITORY" in src
+        assert '"Mast3rkey/Portfolio-HQ"' not in src
+
+    def test_the_approving_disposition_comes_from_the_load_bearing_module(self):
+        assert APPROVING_REVIEW_DISPOSITION == _auth.APPROVING_REVIEW_DISPOSITION
+        assert "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE" == APPROVING_REVIEW_DISPOSITION
+
+    def test_the_decision_records_this_filings_own_principal_operated_path(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        # _flat collapses the source line break inside "principal-\noperated"; assert on the
+        # halves rather than an or-fallback, which would be unfalsifiable.
+        assert "For PR #363 the immediate post-merge verification is **principal-" in flat
+        assert "operated**" in flat
+        assert "is **not** narrowed for any other unit" in flat
+
+
+class TestTheCompleteAdversarialClosureMatrix:
+    """Every historical and new counterexample, run against the FINAL architecture.
+
+    Each entry is named for the defect it closes and the review that found it, so a future
+    session can see at a glance which attacks are covered and which review demanded them.
+    One independent gate is varied at a time, and each failure is attributed to that gate.
+    """
+
+    def _ctx(self, **over):
+        ctx = dict(designation_record=_designation_record(),
+                   merged_pull_request=_merged_pull_request(),
+                   closure_record=_closure_record())
+        ctx.update(over)
+        return ctx
+
+    # ---- reviews 5060791095 / 5060793954 -- record kind and provenance ----------
+    def test_reviewer_record_is_not_misclassified_as_principal(self):
+        for ident in INDEPENDENT_REVIEW_IDS:
+            review = _pull_request_review(ident=ident)
+            assert is_direct_principal_record(review) is False, ident
+            assert is_canonical_top_level_issue_comment(review) is False, ident
+            assert ratifies_pr362_acceptance(review) is False, ident
+
+    def test_app_attributed_record_is_not_misclassified_as_principal(self):
+        rec = _issue_comment(app="claude")
+        assert is_direct_principal_record(rec) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    @pytest.mark.parametrize("foreign", FOREIGN_RECORD_KIND_FIELDS)
+    def test_wrong_record_kind_is_rejected(self, foreign):
+        rec = _issue_comment()
+        rec[foreign] = "x"
+        assert is_canonical_top_level_issue_comment(rec) is False
+
+    def test_wrong_repository_or_pull_request_is_rejected(self):
+        assert is_canonical_top_level_issue_comment(_issue_comment(pr=999)) is False
+        assert canonical_merged_pull_request_is_valid(
+            _merged_pull_request(base={"repo": {"full_name": "someone/else"}})) is False
+
+    # ---- review 5061031729 -- self-bound refusal and circular binding -----------
+    def test_self_bound_refusal_never_ratifies(self):
+        rec = _issue_comment(body=_refusal_body())
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    def test_contradictory_ratification_never_ratifies(self):
+        rec = _issue_comment(body=SCOPE_BODY + "\nHowever I do NOT ratify this.")
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    def test_the_circular_binding_commit_stays_withdrawn(self):
+        assert BOUND_RATIFICATION_ID is None
+        assert BOUND_RATIFICATION_FINGERPRINT is None
+        assert ratifies_pr362_acceptance(_issue_comment()) is False
+
+    # ---- review 5061240650 -- self-designation and free-text results -----------
+    def test_mallory_cannot_self_designate_as_coordinator_and_merger(self):
+        mallory = _coordinator_record(login="mallory", assoc="NONE", app="evil")
+        forged = _issue_comment(login="mallory", type_="Bot", assoc="NONE", app="evil",
+                                ident=9_100_000_001, created=PMV_DESIGNATED_AT,
+                                body=_designation_body(coordinator_login="mallory",
+                                                       coordinator_association="NONE",
+                                                       coordinator_app="evil"))
+        assert principal_designation_is_valid(forged) is False
+        assert post_merge_verification_is_valid(
+            mallory, **self._ctx(designation_record=forged,
+                                 merged_pull_request=_merged_pull_request(
+                                     merged_by={"login": "mallory", "type": "Bot", "id": 9}))
+        ) is False
+
+    def test_the_96_combination_self_designation_sweep_is_fully_closed(self):
+        """72/96 passed with an explicit refusal body two heads ago; 0/96 now."""
+        import itertools
+
+        passed = total = 0
+        for login, type_, assoc, app in itertools.product(
+            ["mallory", "", COORDINATOR_LOGIN, PRINCIPAL_LOGIN],
+            ["Bot", "User", "", None], ["NONE", "OWNER", 123], ["evil", None],
+        ):
+            total += 1
+            rec = _issue_comment(login=login, type_=type_, assoc=assoc, app=app,
+                                 created=PMV_VERIFIED_AT, ident=9_100_000_002,
+                                 body="I did NOT perform post-merge verification.")
+            forged = _issue_comment(login=login, type_=type_, assoc=assoc, app=app,
+                                    ident=9_100_000_003, created=PMV_DESIGNATED_AT,
+                                    body=_designation_body(coordinator_login=login or "x"))
+            if post_merge_verification_is_valid(
+                rec, **self._ctx(designation_record=forged,
+                                 merged_pull_request=_merged_pull_request(
+                                     merged_by={"login": login or "x", "type": type_ or "Bot",
+                                                "id": 9}))):
+                passed += 1
+        assert total == 96
+        assert passed == 0
+
+    def test_a_pull_request_review_is_never_pmv_evidence(self):
+        assert post_merge_verification_is_valid(_pull_request_review(), **self._ctx()) is False
+
+    @pytest.mark.parametrize("app", [{}, {"slug": ""}, {"slug": None}, {"name": "x"},
+                                     "claude", 7, []])
+    def test_malformed_application_provenance_fails(self, app):
+        rec = _coordinator_record()
+        rec["performed_via_github_app"] = app
+        assert post_merge_verification_is_valid(rec, **self._ctx()) is False
+
+    def test_even_carrying_a_perfect_ratification_declaration_it_cannot_ratify(self):
+        rec = _coordinator_record(body=SCOPE_BODY)
+        assert body_declares_ratification(rec) is True
+        assert post_merge_verification_is_valid(rec, **self._ctx()) is False
+        assert _ratifies_with_binding(rec, **_bound(rec)) is False
+
+    # ---- review 5062156189 -- the six findings of the final review --------------
+    def test_unrelated_principal_comment_repurposed_as_designation(self):
+        unrelated = _issue_comment(ident=9_100_000_010, created="2026-08-31T10:20:00Z",
+                                   body="I accept the reviewed head. I designate nobody.")
+        assert principal_designation_is_valid(unrelated) is False
+
+    def test_i_designate_nobody_with_adjacent_caller_fields(self):
+        """There are no adjacent fields any more -- the shape itself is impossible."""
+        import inspect
+
+        assert set(inspect.signature(principal_designation_is_valid).parameters) == {"record"}
+        unrelated = _issue_comment(ident=9_100_000_011, body="I designate nobody.")
+        assert principal_designation_is_valid(unrelated) is False
+
+    @pytest.mark.parametrize("designated_at", ["2026-08-31T10:00:01Z", "2026-08-31T10:06:00Z",
+                                               "2026-08-31T10:20:00Z", "2026-09-01T00:00:00Z"])
+    def test_designation_issued_after_the_merge_or_verification(self, designated_at):
+        assert post_merge_verification_is_valid(
+            _coordinator_record(),
+            **self._ctx(designation_record=_designation_record(created=designated_at))) is False
+
+    def test_a_public_copied_nonce_is_not_session_evidence(self):
+        """The commitment is public; only the un-published reveal satisfies it."""
+        assert post_merge_verification_is_valid(
+            _coordinator_record(body=_pmv_body(session_reveal=SESSION_COMMITMENT)),
+            **self._ctx()) is False
+
+    def test_a_wrong_reveal_for_a_commitment_fails(self):
+        assert post_merge_verification_is_valid(
+            _coordinator_record(body=_pmv_body(session_reveal="guessed-value")),
+            **self._ctx()) is False
+
+    def test_a_different_application_under_the_same_login_fails(self):
+        assert post_merge_verification_is_valid(
+            _coordinator_record(app="a-different-app"), **self._ctx()) is False
+        assert post_merge_verification_is_valid(
+            _coordinator_record(app_key_present=False), **self._ctx()) is False
+
+    def test_a_synthetic_merge_projection_is_rejected(self):
+        assert canonical_merged_pull_request_is_valid(
+            {"merged": True, "number": THIS_CORRECTIVE_PULL_REQUEST,
+             "accepted_head": PMV_MERGE_HEAD, "merge_sha": PMV_MERGE_COMMIT_SHA,
+             "merged_by_login": COORDINATOR_LOGIN, "merged_at": PMV_MERGED_AT}) is False
+
+    def test_a_caller_cannot_move_the_merge_or_closure_timestamp(self):
+        # Closure is a resource; a bare string is not one.
+        assert post_merge_verification_is_valid(
+            _coordinator_record(created="2026-08-31T23:00:00Z"),
+            **self._ctx(closure_record="2026-09-01T00:00:00Z")) is False
+        # And a malformed merged_at is not rescued by anything the caller supplies.
+        assert post_merge_verification_is_valid(
+            _coordinator_record(),
+            **self._ctx(merged_pull_request=_merged_pull_request(
+                merged_at="2026-13-45T99:99:99Z"))) is False
+
+    def test_a_schema_valid_negative_pmv_result_fails(self):
+        for field, value in (("overall_result", "FAIL"), ("tests_result", "FAIL"),
+                             ("validators_result", "SKIPPED"),
+                             ("protected_path_identity", "UNKNOWN"),
+                             ("main_clean", "FALSE"), ("merge_tree_identity", "DIFFERENT")):
+            body = _pmv_body(**{field: value})
+            assert parse_pmv_body(body) is None, (field, value)
+            assert post_merge_verification_is_valid(
+                _coordinator_record(body=body), **self._ctx()) is False, (field, value)
+
+    def test_a_fake_final_review_mapping_fails(self):
+        for evidence in ({"reviewed_head": REAL_FINAL_HEAD},
+                         {"reviewed_head": REAL_FINAL_HEAD, "verdict": "APPROVED"},
+                         {"commit_id": REAL_FINAL_HEAD}):
+            assert external_ratification_readback(
+                _ratification_naming(REAL_FINAL_HEAD), _live_pr(),
+                evidence)["equality_proven"] is False
+
+    def test_a_changes_required_review_fails(self):
+        assert external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(),
+            _final_review(body="FORMAL DISPOSITION: CHANGES REQUIRED"))[
+                "equality_proven"] is False
+
+    def test_a_wrong_head_or_wrong_pull_request_review_fails(self):
+        assert external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(),
+            _final_review(head="8" * 40))["equality_proven"] is False
+        assert external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(),
+            _final_review(pull_request_url=f"{REPO_API}/pulls/362"))[
+                "equality_proven"] is False
+
+    def test_a_later_adverse_review_fails(self):
+        later = _final_review(ident=5_099_999_996,
+                              body="FORMAL DISPOSITION: CHANGES REQUIRED")
+        assert external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(), _final_review(),
+            [later])["equality_proven"] is False
+
+    def test_a_well_formed_but_wrong_ratification_head_fails(self):
+        assert external_ratification_readback(
+            _ratification_naming("f" * 40), _live_pr(),
+            _final_review())["equality_proven"] is False
+
+    def test_an_impossible_ratification_timestamp_fails(self):
+        assert external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD, created="9999-99-99T99:99:99Z"),
+            _live_pr(), _final_review())["equality_proven"] is False
+
+    def test_a_missing_protocol_member_fails(self):
+        for key in sorted(PMV_SCHEMA):
+            body = "\n".join(ln for ln in _pmv_body().splitlines()
+                             if not ln.startswith(f"{key}: "))
+            assert parse_pmv_body(body) is None, key
+        for key in sorted(DESIGNATION_SCHEMA):
+            body = "\n".join(ln for ln in _designation_body().splitlines()
+                             if not ln.startswith(f"{key}: "))
+            assert parse_designation_body(body) is None, key
+
+    def test_the_positive_case_holds_when_no_gate_is_varied(self):
+        """The control: every negative above must fail for ITS gate, not a broken fixture."""
+        assert post_merge_verification_is_valid(_coordinator_record(), **self._ctx()) is True
+        assert external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(),
+            _final_review())["equality_proven"] is True
+        assert principal_designation_is_valid(_designation_record()) is True
+        assert canonical_merged_pull_request_is_valid(_merged_pull_request()) is True
+        assert canonical_closure_record_is_valid(_closure_record()) is True
 
 
 class TestNoStandingAuthorityIsCreated:

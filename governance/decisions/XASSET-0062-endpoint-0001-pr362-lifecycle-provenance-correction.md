@@ -496,6 +496,129 @@ restriction outside this unit's scope. Removing a coordinator's authority would 
 separately authorized amendment expressly superseding `OPS-0009` `§8`; **this filing is not that
 amendment.**
 
+#### I.2.1 — The operative protocol, defined here before it is implemented
+
+**Added under DELTA review `5062156189`.** The prior correction defined the designation, the
+verification declaration and the session rule **only** in the supporting artifact, so the parser and
+its fixtures derived the protocol from one another. The reviewer renamed `PMV_HEADER` to
+`UNAUTHORIZED RENAMED PMV PROTOCOL` and `PMV_ACTION` to `UNAUTHORIZED-RENAMED-ACTION` and **all 327
+focused tests still passed** — the same "both sides move together" weakness previously found for
+`REPO_API` and `INDEPENDENT_REVIEW_IDS`, one layer up. Every literal below is therefore **governing
+text**, and the implementation is anchored to it.
+
+**A. The principal designation declaration.** A designation is a canonical top-level issue comment on
+PR #363, authored under the complete `§G.2` direct-principal predicate, whose **body** parses as
+exactly this, one key per line, each key once, no other line:
+
+```
+XASSET-0062 COORDINATOR DESIGNATION
+action: DESIGNATE-MERGE-COORDINATOR
+pull_request: 363
+accepted_head: <40 lowercase hex>
+coordinator_login: <login>
+coordinator_type: <User|Bot>
+coordinator_association: <OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR>
+coordinator_app: <application slug, or the literal DIRECT for a present-and-null record>
+session_commitment: <64 lowercase hex, SHA-256 of a value the coordinator has not published>
+```
+
+**No value beside the record carries authority.** An earlier draft accepted `coordinator_login` and
+`session_claim` as fields the caller attached *next to* an authenticated principal comment, so an
+unrelated principal comment — including one whose body read *"I designate nobody"* — could be
+repurposed into a designation its body never made. Adjacent authority fields are **removed**: the
+designation is exactly what the principal's own body says, and nothing else.
+
+**B. The post-merge-verification declaration.** A canonical top-level issue comment on PR #363 whose
+body parses as exactly this:
+
+```
+XASSET-0062 POST-MERGE VERIFICATION
+action: POST-MERGE-VERIFICATION-PERFORMED
+pull_request: 363
+accepted_head: <40 lowercase hex>
+merge_commit_sha: <40 lowercase hex>
+session_reveal: <the pre-committed value, whose SHA-256 must equal the designation's commitment>
+accepted_head_ancestry: PASS
+authorized_scope: PASS
+merge_tree_identity: IDENTICAL
+protected_path_identity: IDENTICAL
+head_agreement: IDENTICAL
+main_clean: TRUE
+validators_result: PASS
+tests_result: PASS
+merge_commit_ci: SUCCESS
+overall_result: PASS
+```
+
+**Every result field carries a closed literal value, and free text carries no authority.** The prior
+schema's `scope` and `results` accepted arbitrary non-empty text, so a declaration reading
+*"scope: I performed no verification."* and *"results: All checks failed; no evidence retained."*
+parsed cleanly and **verified**. The ten result fields above admit **only** the literals shown —
+`PASS`, `IDENTICAL`, `TRUE`, `SUCCESS` — one per field, defined here. `FAIL`, `SKIPPED`, `UNKNOWN`,
+`N/A`, an empty value, a negated value, or any other string **fails**. `merge_commit_ci` additionally
+admits the literal `NOT_APPLICABLE`, and only where no merge-commit run is required. Narrative may be
+retained **separately**, in the operator's own comment, and never determines the verdict.
+
+Each field names one `OPS-0009` `§9` check: accepted-head ancestry; the exact authorized merged scope;
+merge-tree identity against the accepted head; protected-path byte identity; local/remote/merged-head
+agreement; a clean `main`; the standalone validators; the affected tests; and merge-commit CI.
+
+**C. Session continuity: a pre-merge commitment, a post-merge reveal.** The prior design published a
+plaintext `session_claim` in the designation and required the verification to quote it — a **public**
+value, so possession proved only that someone had read the designation. It is replaced:
+
+1. the coordinator session generates an unpredictable value and **does not publish it**;
+2. the principal's designation retains only `session_commitment` = its SHA-256;
+3. the same coordinator session retains the value;
+4. the verification declaration reveals it as `session_reveal`;
+5. the verifier recomputes SHA-256 and compares against the principal-authorized commitment.
+
+**What this establishes, stated exactly:** continuity of possession, across the designation-to-
+verification interval, of a value committed **before** the merge and never published — combined with
+the canonical `merged_by` account and the strict chronology below. **It is not GitHub runtime-session
+identity, and is never described as such.** GitHub exposes no session identity; this decision does not
+pretend otherwise.
+
+**D. Canonical GitHub evidence, by its real field names.** Each resource is the raw API resource, not a
+projection. An earlier draft accepted a six-field caller mapping containing invented keys
+(`accepted_head`, `merge_sha`, `merged_by_login`) and called it canonical; that is withdrawn.
+
+| Evidence | Resource | Required raw fields |
+|---|---|---|
+| Merge | `GET /repos/{owner}/{repo}/pulls/363` | `url`, `html_url`, `number`, `merged` true, `merge_commit_sha`, `head.sha`, `merged_at`, `base.repo.full_name`, `merged_by.login`, `merged_by.type`, `merged_by.id` |
+| Closure | the closure issue comment | `id`, `url`, `html_url`, `issue_url`, `created_at`, `user.login`, `user.type`, `author_association`, `performed_via_github_app` |
+| Final review | `GET /repos/{owner}/{repo}/pulls/363/reviews/{id}` | `id`, `pull_request_url`, `html_url`, `commit_id`, `submitted_at`, `state`, `body`, `user.login`, `user.type`, `author_association` |
+
+`base.repo.full_name` must equal `Mast3rkey/Portfolio-HQ`, taken from the load-bearing module's own
+`REPOSITORY_IDENTITY` rather than restated here as a second copy.
+
+**Closure is a resource, not a timestamp.** The prior design took `closure_at` as a bare caller string,
+so a verification posted after the real closure passed whenever the caller supplied a later one.
+
+**Two limits the platform imposes, disclosed rather than papered over.** The merged-PR resource
+exposes **no application provenance**: `merged_by` carries `login`, `type`, `id` and `node_id` and no
+`performed_via_github_app` at any level. Application provenance therefore **cannot** be compared
+between the designated coordinator and the recorded merger, and this decision does not claim it is.
+What is compared is the complete identity the resource does expose. Likewise a pull-request review
+carries **no** `performed_via_github_app` key at all — the very fact `§C` records — so reviewer
+**independence is procedural**, established by the reviewer's own retained disclosure, and is **not**
+provable from the resource. Both limits fail closed: absent evidence never passes.
+
+**E. Chronology, on parsed instants.** Every comparison below is between timezone-aware UTC instants
+parsed with calendar validation, never strings and never shapes:
+
+> designation_at **<** merge_at **<** verification_at **<** closure_at
+
+A designation issued after the merge, or after the verification it purports to authorize, **fails**.
+
+**F. This filing's own path.** For PR #363 the immediate post-merge verification is **principal-
+operated**: `§I.1`'s complete direct-principal predicate applies to the verifier as well. The
+coordinator path defined in `§I.2` and `A`–`E` above remains available under `OPS-0009` `§8` generally
+and is **not** narrowed for any other unit; it is simply not the route this filing uses, because the
+coordinator-session evidence this filing can actually retain is possession-continuity and not session
+identity. Choosing the lawful principal path is a fail-closed choice, not a claim that the coordinator
+path is invalid.
+
 #### I.3 — What the rule does not do
 
 Item 2 of the earlier draft — a verification claim made only in a later comment does not by itself

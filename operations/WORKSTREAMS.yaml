@@ -18388,7 +18388,57 @@ workstreams:
           is_canonical_top_level_issue_comment docstring still claimed it rejects synthetic
           records (it cannot; the suite's own fixtures pass) and four source comments cited
           SS-G.6 for readback when SS-G.6 is the Claude non-composition rule and SS-G.9 is the
-          readback rule -- both corrected and pinned. Creates NO
+          readback rule -- both corrected and pinned.
+          CORRECTED A FOURTH TIME under independent exact-head DELTA review 5062156189
+          (2 BLOCKING / 3 MAJOR / 1 MINOR), all six reproduced before editing. The governing
+          protocol is now DEFINED IN THE DECISION FIRST, at new SS-I.2.1, and the
+          implementation is anchored to that committed text: the reviewer renamed PMV_HEADER
+          and PMV_ACTION at the prior head and all 327 focused tests still passed, because
+          parser and fixtures derived the protocol from one another. BLOCKING 1, DESIGNATION
+          AND MERGE EVIDENCE WERE CALLER-DEFINED: principal_designation_is_valid checked only
+          that a comment had principal SHAPE and never parsed its body, while coordinator_login
+          and session_claim sat BESIDE it as caller fields, so an unrelated principal comment
+          reading "I designate nobody", created AFTER the verification, designated mallory. The
+          designation is now an exact declaration IN THE PRINCIPAL'S OWN BODY carrying action,
+          PR, accepted head, coordinator login/type/association/application identity and a
+          session commitment; every adjacent authority field is removed; and chronology is
+          designation_at <= merge_at < verification_at < closure_at on parsed instants. The
+          six-field caller projection previously called canonical is replaced by the RAW
+          merged-PR resource validated by GitHub's real field names (url, html_url, number,
+          merged, merge_commit_sha, head.sha, merged_at, base.repo.full_name, merged_by), and
+          bare closure_at by a validated closure RESOURCE, so a caller can no longer rescue a
+          late verification by supplying a later time. TWO PLATFORM LIMITS ARE DISCLOSED RATHER
+          THAN PAPERED OVER: the merged-PR resource exposes NO application provenance on
+          merged_by at any level, so application provenance is NOT compared between coordinator
+          and merger and is not claimed to be; and a pull-request review carries no
+          performed_via_github_app key at all, so reviewer independence is PROCEDURAL and not
+          provable from the resource. The public plaintext nonce is replaced by a pre-merge
+          one-way SHA-256 commitment in the principal's declaration and a post-merge reveal in
+          the verification, establishing continuity of possession of a value committed before
+          the merge and never published -- explicitly NOT GitHub runtime-session identity,
+          which GitHub does not expose. For THIS filing the post-merge verification is
+          PRINCIPAL-OPERATED; the OPS-0009 SS-8 coordinator role is defined and preserved, not
+          narrowed. BLOCKING 2, AN EXACT-SCHEMA DECLARATION COULD DENY SUCCESS: scope and
+          results took arbitrary text, so "I performed no verification." and "All checks
+          failed; no evidence retained." parsed and VERIFIED. Free text is removed from the
+          verdict entirely and replaced by ten typed fields with closed literals --
+          accepted_head_ancestry, authorized_scope, merge_tree_identity,
+          protected_path_identity, head_agreement, main_clean, validators_result,
+          tests_result, merge_commit_ci, overall_result -- admitting only PASS, IDENTICAL,
+          TRUE, SUCCESS and (merge_commit_ci alone) NOT_APPLICABLE; FAIL, SKIPPED, UNKNOWN,
+          N/A, empty and negated values all fail. MAJOR 1, THE FINAL REVIEW WAS NEVER
+          AUTHENTICATED: the readback read only reviewed_head, so a bare mapping, one carrying
+          CHANGES_REQUIRED, and one naming an author with a null id all proved the equality. It
+          now consumes the RAW pull-request-review resource and validates id, PR association,
+          canonical URLs, commit_id == final head, submitted_at, actor identity and state, and
+          parses the disposition with the repository's OWN parse_formal_disposition in the
+          load-bearing module -- never a second parser written here -- plus later-adverse-review
+          rules. MAJOR 2 is the anchoring above. MAJOR 3, IMPOSSIBLE RATIFICATION TIMESTAMPS
+          PASSED: _ratification_is_structurally_complete used a shape regex and a LEXICOGRAPHIC
+          string comparison, so 9999-99-99T99:99:99Z passed structural validation and the
+          complete readback; both now parse real timezone-aware UTC instants. MINOR 1, the
+          comment above the binding constants still promised retention in a future
+          fast-forward commit; corrected to SS-G.9 and pinned. Creates NO
           standing authority for claude[bot], the claude application, ChatGPT/Codex, the
           chatgpt-codex-connector application, or any other automation. THIS FILING MUTATES
           NOTHING LOAD-BEARING: level1_stage1_execution_authorization.py, all twenty-five
