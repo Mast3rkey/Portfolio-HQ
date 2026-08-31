@@ -71,6 +71,14 @@ PRINCIPAL_LOGIN = "Mast3rkey"
 #: The principal's real numeric GitHub actor id, read from the live canonical resource during
 #: the SS-I.2.1 A0 capability proof. Every live actor resource exposes one; fixtures that
 #: omitted it were not modelled on the real shape.
+#:
+#: SS-I.2.1 J.2 makes this the EXACT required value for both principal-authored record
+#: families, re-established independently from five genuine direct-principal records on PRs
+#: #310, #311, #314, #316 and #319 -- comments 5277973392, 5278918515, 5280528293, 5285852893
+#: and 5288124307 -- each carrying ``performed_via_github_app: null`` and all agreeing.
+#: Disclosed limitation: ``GET /users/{login}`` is unreachable from a repository-scoped
+#: session (HTTP 403), so this rests on those five in-scope comment resources and not on a
+#: user-endpoint lookup.
 PRINCIPAL_ID = 218449187
 PRINCIPAL_TYPE = "User"
 PRINCIPAL_ASSOCIATION = "OWNER"
@@ -296,7 +304,12 @@ def is_direct_principal_record(record: dict) -> bool:
     # SS-I.2.1 A / DELTA 5062784888 MAJOR 1: a login is a mutable display handle. This path
     # checked login, type, association and application provenance but never the numeric id,
     # so a ratification with ``user.id`` DELETED still proved equality through the readback.
-    if _principal_actor_id(record) is None:
+    #
+    # SS-I.2.1 J.2 / DELTA 5063139843 MAJOR 1: requiring merely SOME positive integer is not
+    # an identity check. ``PRINCIPAL_ID + 1`` satisfied this predicate, the readback, the
+    # designation validator and -- once the public fingerprint was honestly recomputed -- the
+    # complete composition. The principal is a SPECIFIC actor.
+    if _principal_actor_id(record) != PRINCIPAL_ID:
         return False
     if record.get("author_association") != PRINCIPAL_ASSOCIATION:
         return False
@@ -1313,10 +1326,26 @@ def canonical_ci_run_is_successful(run: object, job: object, merge_commit_sha: o
         if resource.get("conclusion") != "success":
             return False
 
-    # SS-I.2.1 D: the RUN's own completion instant, which is measurably LATER than its job's.
-    if parse_utc_instant(job.get("completed_at")) is None:
+    # SS-I.2.1 J.3 / DELTA 5063139843 MAJOR 2: BOTH completion instants are parsed and
+    # COMPARED. Parsing each in isolation accepted an internally impossible pair -- a run
+    # completing at 10:16 beside a job claiming 10:40 -- and let closure precede the
+    # completion its own named job asserts. The relation is ``<=`` because the job completed
+    # strictly before its run in every measured sample, and two samples do not establish
+    # strictness as a platform guarantee.
+    job_completed_at = parse_utc_instant(job.get("completed_at"))
+    run_completed_at = ci_run_completed_at(run)
+    if job_completed_at is None or run_completed_at is None:
         return False
-    return ci_run_completed_at(run) is not None
+    return job_completed_at <= run_completed_at
+
+
+def ci_job_completed_at(job: object) -> datetime.datetime | None:
+    """The job's own completion instant, parsed -- SS-I.2.1 J.3."""
+    if not isinstance(job, dict):
+        return None
+    if job.get("status") != "completed":
+        return None
+    return parse_utc_instant(job.get("completed_at"))
 
 
 def ci_run_completed_at(run: object) -> datetime.datetime | None:
@@ -1387,14 +1416,19 @@ def closure_is_authorized(
     if _record_app_identity(closure_record) != designated["coordinator_app"]:
         return False
 
-    # SS-I.2.1 E: verification_at < ci_RUN_completed_at < closure_at, all strict. The bound is
-    # the RUN's own completion, not the job's -- DELTA 5062784888 BLOCKING 2 point 6.
+    # SS-I.2.1 J.3, stated exactly:
+    #     verification_at < job.completed_at <= run.updated_at < closure_at
     verified_at = parse_utc_instant(verification_record.get("created_at"))
+    job_completed_at = ci_job_completed_at(ci_job)
     run_completed_at = ci_run_completed_at(ci_run)
     closed_at = parse_utc_instant(closure_record["created_at"])
-    if verified_at is None or run_completed_at is None or closed_at is None:
+    if None in (verified_at, job_completed_at, run_completed_at, closed_at):
         return False
-    return verified_at < run_completed_at < closed_at
+    if not verified_at < job_completed_at:
+        return False
+    if not job_completed_at <= run_completed_at:
+        return False
+    return run_completed_at < closed_at
 
 
 def session_reveal_matches_commitment(reveal: object, commitment: object) -> bool:
@@ -1539,7 +1573,8 @@ def lifecycle_composition_is_proven(
     """
     out: dict = {
         "proven": False, "readback_evidence": None, "ratification_readback": None,
-        "post_merge_verification": None, "instants": {}, "failure_reason": None,
+        "post_merge_verification": None, "instants": {}, "accepted_head": None,
+        "head_chain": {}, "failure_reason": None,
     }
 
     # 1-2. The ratification family, re-run in full.
@@ -1586,6 +1621,48 @@ def lifecycle_composition_is_proven(
     if not verified:
         out["failure_reason"] = "post-merge verification failed"
         return out
+
+    # SS-I.2.1 J.1 -- THE CROSS-FAMILY ACCEPTED-HEAD CHAIN.
+    #
+    # DELTA review 5063139843 BLOCKING 1: the first version of this predicate joined the two
+    # families' TIMESTAMPS and nothing else, so it proved an ordering while leaving the thing
+    # being ordered unidentified. The reviewed and ratified head a1b2... could be REPLACED by
+    # bbbb... before designation and merge, and the whole lifecycle still proved.
+    #
+    # Chronology without identity is not composition. There is exactly ONE accepted head, and
+    # it is taken from the ratification family -- the head that was actually reviewed and
+    # accepted -- then required of every downstream family. This is also what forbids an
+    # intervening commit: a push after the readback changes head.sha, so requiring the merged
+    # PR's head to equal the accepted head rejects the resulting merge.
+    accepted_head = readback["live_pr_head"]
+    designated_body = parse_designation_body(designation_record.get("body"))
+    verification_body = parse_pmv_body(verification_record.get("body"))
+    closure_body = parse_closure_body(closure_record.get("body"))
+    if designated_body is None or verification_body is None or closure_body is None:
+        out["failure_reason"] = "a downstream declaration does not parse"
+        return out
+    merged_head = merged_pull_request.get("head")
+    merged_head = merged_head.get("sha") if isinstance(merged_head, dict) else None
+
+    head_chain = {
+        "approving_review.commit_id": approving_review.get("commit_id"),
+        "ratification.pr363_accepted_head": readback["declared_pr363_accepted_head"],
+        "live_pull_request.head.sha": readback["live_pr_head"],
+        "readback.declared_accepted_head": retained["declared_accepted_head"],
+        "readback.live_pull_request_head": retained["live_pull_request_head"],
+        "readback.independently_reviewed_head": retained["independently_reviewed_head"],
+        "designation.accepted_head": designated_body["accepted_head"],
+        "merged_pull_request.head.sha": merged_head,
+        "verification.accepted_head": verification_body["accepted_head"],
+        "closure.accepted_head": closure_body["accepted_head"],
+    }
+    out["accepted_head"] = accepted_head
+    out["head_chain"] = dict(head_chain)
+    for name, value in head_chain.items():
+        if value != accepted_head:
+            out["failure_reason"] = (
+                f"accepted-head chain broken: {name} is {value!r}, not {accepted_head!r}")
+            return out
 
     # Every adjacent edge of SS-I.2.1 E, on parsed instants.
     instants = {
@@ -2457,7 +2534,17 @@ COORDINATOR_ID = 209825114
 SESSION_REVEAL = "coordinator-session-secret-7f3a91e4c2"
 SESSION_COMMITMENT = hashlib.sha256(SESSION_REVEAL.encode("utf-8")).hexdigest()
 
-PMV_MERGE_HEAD = "b" * 40
+#: SS-I.2.1 J.1 -- THE ONE accepted head. A lifecycle has exactly one, and the sole positive
+#: fixture set uses it in every evidence family. DELTA review 5063139843 BLOCKING 1 found the
+#: positive lifecycle carrying TWO: a1b2... through the ratification family and bbbb... through
+#: the merge family, with the composition proving anyway.
+#:
+#: These are deliberately ALIASES rather than one name, because the review warned that making
+#: them aliases WITHOUT the operative predicate would hide the defect rather than fix it. The
+#: equality is asserted inside lifecycle_composition_is_proven and proved by regressions that
+#: pass genuinely different heads; the aliasing only ensures the positive case is coherent.
+LIFECYCLE_ACCEPTED_HEAD = "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"
+PMV_MERGE_HEAD = LIFECYCLE_ACCEPTED_HEAD
 PMV_MERGE_COMMIT_SHA = "c" * 40
 PMV_DESIGNATED_AT = "2026-08-31T09:00:00Z"
 PMV_MERGED_AT = "2026-08-31T10:00:00Z"
@@ -2482,7 +2569,7 @@ PMV_CI_JOB_ID = 99_348_350_944
 
 _DEFAULT = object()   # distinct from None, which is itself a body under test
 
-REAL_FINAL_HEAD = "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"
+REAL_FINAL_HEAD = LIFECYCLE_ACCEPTED_HEAD
 APPROVING_BODY = f"FORMAL DISPOSITION: {APPROVING_REVIEW_DISPOSITION}\n\nIndependent review."
 
 
@@ -2856,16 +2943,20 @@ class TestPostMergeVerificationEvidenceIsMechanised:
         assert post_merge_verification_is_valid(rec, **ctx) is True
 
     def test_one_second_inside_each_boundary_passes(self):
-        """The lawful window is (merge_at, ci_completed_at), both ends exclusive.
+        """The lawful window is (merge_at, job.completed_at), both ends exclusive.
 
-        The upper bound moved from ``closure_at`` (10:30) to ``ci_completed_at`` (10:16) when
-        merge-commit CI was relocated out of the verification declaration into the closure
-        declaration -- SS-I.2.1 B, DELTA review 5062494115 MAJOR 2. A verification at 10:29:59
-        now legitimately FAILS, because it would postdate the CI run it never attests.
+        The upper bound has moved twice, each time for a stated reason. It left ``closure_at``
+        (10:30) when merge-commit CI was relocated into the closure declaration (SS-I.2.1 B,
+        DELTA 5062494115 MAJOR 2), and it left ``run.updated_at`` (10:16:00) for
+        ``job.completed_at`` (10:15:59) when SS-I.2.1 J.3 required the two completion instants
+        to be compared rather than each parsed alone (DELTA 5063139843 MAJOR 2).
         """
-        for created in ("2026-08-31T10:00:01Z", "2026-08-31T10:15:59Z"):
+        for created in ("2026-08-31T10:00:01Z", "2026-08-31T10:15:58Z"):
             assert post_merge_verification_is_valid(
                 _coordinator_record(created=created), **self._ctx()) is True, created
+        # Equal to the job's completion is not before it.
+        assert post_merge_verification_is_valid(
+            _coordinator_record(created=PMV_CI_JOB_COMPLETED_AT), **self._ctx()) is False
         assert post_merge_verification_is_valid(
             _coordinator_record(created="2026-08-31T10:29:59Z"), **self._ctx()) is False
 
@@ -4879,19 +4970,19 @@ class TestEveryChronologyBoundaryIsStrictAtEquality:
         return ctx
 
     def test_ci_completing_at_the_verification_instant_fails(self):
-        """``verified_at < ci_RUN_completed_at`` -- equality is not "after".
+        """``verified_at < job.completed_at`` -- equality is not "after".
 
-        The bound moved from ``job.completed_at`` to ``run.updated_at`` under DELTA review
-        5062784888 BLOCKING 2, so this varies the RUN. Varying only the job no longer moves
-        this boundary, which is the point: the job is not the run.
+        SS-I.2.1 J.3 makes the JOB the verification's upper bound and the RUN the closure's
+        lower bound, with ``job.completed_at <= run.updated_at`` joining them. This therefore
+        varies the job; the run keeps its own boundary test below.
         """
         assert closure_is_authorized(
             _closure_record(),
-            **self._ctx(ci_run=_ci_run(updated_at=PMV_VERIFIED_AT))) is False
-        # One second later is the nearest lawful value.
+            **self._ctx(ci_job=_ci_job(completed_at=PMV_VERIFIED_AT))) is False
+        # One second later is the nearest lawful value, and still <= the run.
         assert closure_is_authorized(
             _closure_record(),
-            **self._ctx(ci_run=_ci_run(updated_at="2026-08-31T10:05:01Z"))) is True
+            **self._ctx(ci_job=_ci_job(completed_at="2026-08-31T10:05:01Z"))) is True
 
     def test_closure_at_the_ci_completion_instant_fails(self):
         """``ci_completed_at < closed_at`` -- equality is not "after"."""
@@ -5270,6 +5361,15 @@ class TestThePrincipalActorIdIsRequired:
             ci_run=_ci_run(), ci_job=_ci_job()) is False
 
 
+OTHER_HEAD = "b" * 40   # a lawful-looking head that is NOT the accepted one
+
+
+def _merged_at_head(head, **over):
+    """A merged PR resource whose head is ``head`` -- the raw shape, not a patch."""
+    return _merged_pull_request(
+        head={"sha": head, "repo": {"full_name": CANONICAL_REPOSITORY}}, **over)
+
+
 class TestTheMutationProofGapsAreClosed:
     """What the composed mutation proof found, recorded honestly rather than reclassified.
 
@@ -5364,3 +5464,470 @@ class TestTheMutationProofGapsAreClosed:
                    ci_run=_ci_run(run_attempt=1), ci_job=_ci_job(run_attempt=1))
         assert closure_is_authorized(
             _closure_record(body=_closure_body(merge_commit_ci_run_attempt=2)), **ctx) is False
+
+    # ------------------------------------- round 4: the head-chain and CI-relation mutations
+    def test_the_decision_states_the_one_accepted_head_rule(self):
+        """REAL GAP (mutation A-6). The governing sentence was deletable without a failure.
+
+        ``§I.2.1 J.1`` is the authority the chain implements; deleting the rule from the
+        decision while leaving the code in place would leave an unanchored implementation --
+        exactly the failure mode `5062156189` MAJOR 2 established for the protocol constants.
+        """
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "Chronology without identity is not composition." in flat
+        assert "There is **exactly one accepted head** in a lifecycle," in flat
+        assert "The equality must hold **behaviourally, inside the composition predicate**." in flat
+
+    @pytest.mark.parametrize("phrase", [
+        "the approving review's `commit_id`",
+        "the ratification declaration's `pr363_accepted_head`",
+        "the live, open PR's `head.sha` at readback",
+        "`independently_reviewed_head`",
+        "the designation declaration's `accepted_head`",
+        "the merged PR's `head.sha`",
+        "the verification declaration's `accepted_head`",
+        "the closure declaration's `accepted_head`",
+    ])
+    def test_the_decision_enumerates_every_head_bearing_field(self, phrase):
+        """The chain's membership is the decision's, not this artifact's."""
+        assert phrase in _flat(_read(DECISION_RELPATH)), phrase
+
+    def test_the_decision_states_the_intervening_commit_consequence(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "**This is also what forbids an intervening commit.**" in flat
+
+    @pytest.mark.parametrize("label,call", [
+        ("designation vs merge, inside the PMV", lambda: post_merge_verification_is_valid(
+            _coordinator_record(),
+            designation_record=_designation_record(
+                body=_designation_body(accepted_head=OTHER_HEAD)),
+            merged_pull_request=_merged_pull_request(),
+            closure_record=_closure_record(), ci_run=_ci_run(), ci_job=_ci_job())),
+        ("verification vs merge, inside the PMV", lambda: post_merge_verification_is_valid(
+            _coordinator_record(body=_pmv_body(accepted_head=OTHER_HEAD)),
+            designation_record=_designation_record(),
+            merged_pull_request=_merged_pull_request(),
+            closure_record=_closure_record(), ci_run=_ci_run(), ci_job=_ci_job())),
+        ("closure vs merge, inside the closure", lambda: closure_is_authorized(
+            _closure_record(body=_closure_body(accepted_head=OTHER_HEAD)),
+            designated=parse_designation_body(_designation_record()["body"]),
+            merged_pull_request=_merged_pull_request(),
+            verification_record=_coordinator_record(),
+            ci_run=_ci_run(), ci_job=_ci_job())),
+    ])
+    def test_each_downstream_head_is_also_pinned_by_its_own_family_predicate(self, label, call):
+        """Mutations H-2..H-7 were MISSED because each entry is TRANSITIVELY pinned.
+
+        Dropping one name from the chain leaves the wrong head detectable by the predicate
+        that owns that family, so the deletion is invisible. That is a redundancy, not a hole,
+        and it is proved here at the level it actually lives: each family predicate rejects a
+        wrong head **on its own**, with no chain involved.
+
+        The chain's own unique contribution is the single cross-family link -- and mutation
+        H-1, which deleted the chain entirely, WAS caught, which is what proves it load-bearing.
+        """
+        assert call() is False, label
+
+    @staticmethod
+    def _chain_literal() -> str:
+        """The ``head_chain`` dict literal itself, not the whole function."""
+        import inspect
+
+        src = inspect.getsource(lifecycle_composition_is_proven)
+        start = src.index("    head_chain = {")
+        return src[start:src.index("\n    }", start)]
+
+    @pytest.mark.parametrize("expression", [
+        'approving_review.get("commit_id")',
+        'readback["declared_pr363_accepted_head"]',
+        'readback["live_pr_head"]',
+        'retained["declared_accepted_head"]',
+        'retained["live_pull_request_head"]',
+        'retained["independently_reviewed_head"]',
+        'designated_body["accepted_head"]',
+        "merged_head",
+        'verification_body["accepted_head"]',
+        'closure_body["accepted_head"]',
+    ])
+    def test_every_chain_entry_is_read_from_the_family_it_names(self, expression):
+        """Mutations H-2..H-7 replace an entry's VALUE with the representative.
+
+        The key stays present, so ``test_the_chain_covers_all_ten_head_bearing_fields``
+        cannot see it, and the family predicate that owns the head catches the wrong value
+        first, so no behavioural test can see it either. What the mutation actually destroys
+        is the entry's *provenance*, and provenance is a source property -- so it is pinned at
+        the source, the only level at which a neutered-but-present entry is visible.
+        """
+        assert expression in self._chain_literal(), expression
+
+    def test_no_chain_entry_is_the_representative_itself(self):
+        """The single assertion that closes all six H-2..H-7 mutations at once.
+
+        Every one of them rewrites some entry to ``: accepted_head,``, which compares the
+        representative with itself and is vacuously true. No entry may be spelled that way --
+        including the live-PR entry, which names the same value but must still be READ from
+        the readback rather than from the loop variable.
+        """
+        assert ": accepted_head," not in self._chain_literal()
+
+    def test_the_coordinator_is_not_the_principal(self):
+        """REAL GAP (mutation P-1, retargeted). Widening the pin admits the coordinator.
+
+        ``PRINCIPAL_ID`` and ``COORDINATOR_ID`` are different accounts, and SS-I.2.1 A keeps the
+        five roles separate. Widening ``is_direct_principal_record`` to accept either would let
+        the DESIGNATED COORDINATOR author the ratification and the designation -- the exact
+        role collapse the separation exists to prevent -- so it is tested rather than assumed.
+        """
+        assert COORDINATOR_ID != PRINCIPAL_ID
+        assert is_direct_principal_record(_ratification_naming(
+            REAL_FINAL_HEAD, actor_id=COORDINATOR_ID)) is False
+        assert principal_designation_is_valid(
+            _designation_record(actor_id=COORDINATOR_ID)) is False
+
+    def test_a_coordinator_authored_ratification_fails_the_whole_composition(self):
+        """The behavioural half, with the fingerprint honestly recomputed for the wrong id."""
+        rat = _ratification_naming(REAL_FINAL_HEAD, actor_id=COORDINATOR_ID)
+        out = lifecycle_composition_is_proven(**_lifecycle(
+            ratification_record=rat,
+            readback_record=_readback_record(body=_readback_body(
+                ratification_comment_id=rat["id"],
+                ratification_fingerprint=canonical_ratification_fingerprint(rat)))))
+        assert out["proven"] is False
+
+    def test_the_ratification_family_heads_are_pinned_by_the_readback(self):
+        """The upstream half of the same redundancy (mutations H-2, H-4, H-5)."""
+        review = _final_review(head=OTHER_HEAD)
+        out = external_ratification_readback(
+            _ratification_naming(REAL_FINAL_HEAD), _live_pr(), review,
+            _complete_collection(review))
+        assert out["equality_proven"] is False
+
+    def test_the_head_chain_is_an_equivalence_so_its_representative_is_arbitrary(self):
+        """Mutation H-8 (read the head from a different family) is a provable NO-OP.
+
+        The chain compares every member to one representative that is itself a member, so
+        "all equal X, where X is in the set" is exactly "all mutually equal". Any member can
+        play representative and the predicate is identical -- which is why swapping it changes
+        no outcome. Proved, rather than asserted, by requiring the representative to be a
+        member and the whole set to collapse to one value on the positive lifecycle.
+        """
+        out = lifecycle_composition_is_proven(**_lifecycle())
+        assert out["proven"] is True
+        assert out["accepted_head"] in out["head_chain"].values()
+        assert len(set(out["head_chain"].values())) == 1
+
+        import inspect
+
+        src = inspect.getsource(lifecycle_composition_is_proven)
+        assert 'accepted_head = readback["live_pr_head"]' in src
+        assert "live_pull_request.head.sha" in src
+        assert "for name, value in head_chain.items():" in src
+
+    def test_the_closure_reaches_the_job_before_run_edge_through_the_ci_predicate(self):
+        """Mutation CT-5 was MISSED because ``closure_is_authorized`` cannot get past it.
+
+        ``canonical_ci_run_is_successful`` already rejects ``job.completed_at >
+        run.updated_at``, and closure calls it before its own chronology walk, so the
+        closure-level comparison is unreachable for that input. Both halves are pinned: the
+        upstream rejection behaviourally, and the call ordering at the source level.
+        """
+        late_job = _ci_job(completed_at="2026-08-31T10:40:00Z")   # AFTER the run's own update
+        assert canonical_ci_run_is_successful(_ci_run(), late_job, PMV_MERGE_COMMIT_SHA) is False
+        assert closure_is_authorized(
+            _closure_record(), designated=parse_designation_body(_designation_record()["body"]),
+            merged_pull_request=_merged_pull_request(),
+            verification_record=_coordinator_record(),
+            ci_run=_ci_run(), ci_job=late_job) is False
+
+        import inspect
+
+        src = inspect.getsource(closure_is_authorized)
+        assert src.index("canonical_ci_run_is_successful") < src.index("job_completed_at <=")
+
+
+class TestOneLifecycleHasExactlyOneAcceptedHead:
+    """DELTA review 5063139843 BLOCKING 1 -- chronology without identity is not composition.
+
+    The composition joined the two families' timestamps and nothing else, so a head that was
+    independently reviewed and principal-accepted could be REPLACED before designation and
+    merge while the whole lifecycle still proved.
+    """
+
+    def test_the_reviewers_exact_reproduction_now_fails(self):
+        """The whole post-merge family coherently moved from head A to head B."""
+        moved = _lifecycle(
+            designation_record=_designation_record(
+                body=_designation_body(accepted_head=OTHER_HEAD)),
+            merged_pull_request=_merged_at_head(OTHER_HEAD),
+            verification_record=_coordinator_record(body=_pmv_body(accepted_head=OTHER_HEAD)),
+            closure_record=_closure_record(body=_closure_body(accepted_head=OTHER_HEAD)))
+        out = lifecycle_composition_is_proven(**moved)
+        assert out["proven"] is False
+        assert "accepted-head chain broken" in out["failure_reason"], out["failure_reason"]
+
+    def test_the_positive_lifecycle_carries_one_head_in_every_family(self):
+        out = lifecycle_composition_is_proven(**_lifecycle())
+        assert out["proven"] is True
+        assert out["accepted_head"] == LIFECYCLE_ACCEPTED_HEAD
+        assert set(out["head_chain"].values()) == {LIFECYCLE_ACCEPTED_HEAD}, out["head_chain"]
+
+    def test_the_chain_covers_all_ten_head_bearing_fields(self):
+        out = lifecycle_composition_is_proven(**_lifecycle())
+        assert set(out["head_chain"]) == {
+            "approving_review.commit_id",
+            "ratification.pr363_accepted_head",
+            "live_pull_request.head.sha",
+            "readback.declared_accepted_head",
+            "readback.live_pull_request_head",
+            "readback.independently_reviewed_head",
+            "designation.accepted_head",
+            "merged_pull_request.head.sha",
+            "verification.accepted_head",
+            "closure.accepted_head",
+        }, out["head_chain"]
+
+    @pytest.mark.parametrize("label,over", [
+        ("designation", {"designation_record": _designation_record(
+            body=_designation_body(accepted_head=OTHER_HEAD))}),
+        ("merged PR", {"merged_pull_request": _merged_at_head(OTHER_HEAD)}),
+        ("verification", {"verification_record": _coordinator_record(
+            body=_pmv_body(accepted_head=OTHER_HEAD))}),
+        ("closure", {"closure_record": _closure_record(
+            body=_closure_body(accepted_head=OTHER_HEAD))}),
+        ("approving review", {"approving_review": _final_review(head=OTHER_HEAD)}),
+        ("live PR", {"live_pull_request": _live_pr(head=OTHER_HEAD)}),
+        ("readback", {"readback_record": _readback_record(
+            body=_readback_body(declared_accepted_head=OTHER_HEAD))}),
+    ])
+    def test_each_downstream_head_changed_individually_fails(self, label, over):
+        """Some are caught by the inner family predicate, some only by the chain.
+
+        Both are correct outcomes; what matters is that none passes. The chain is what closes
+        the case where a whole family moves TOGETHER, which no inner predicate can see.
+        """
+        assert lifecycle_composition_is_proven(**_lifecycle(**over))["proven"] is False, label
+
+    def test_designation_and_merge_moved_together_fails(self):
+        assert lifecycle_composition_is_proven(**_lifecycle(
+            designation_record=_designation_record(
+                body=_designation_body(accepted_head=OTHER_HEAD)),
+            merged_pull_request=_merged_at_head(OTHER_HEAD)))["proven"] is False
+
+    def test_merge_verification_and_closure_moved_together_fails(self):
+        assert lifecycle_composition_is_proven(**_lifecycle(
+            merged_pull_request=_merged_at_head(OTHER_HEAD),
+            verification_record=_coordinator_record(body=_pmv_body(accepted_head=OTHER_HEAD)),
+            closure_record=_closure_record(
+                body=_closure_body(accepted_head=OTHER_HEAD))))["proven"] is False
+
+    def test_live_pr_and_readback_moved_without_the_review_fails(self):
+        assert lifecycle_composition_is_proven(**_lifecycle(
+            live_pull_request=_live_pr(head=OTHER_HEAD),
+            readback_record=_readback_record(
+                body=_readback_body(declared_accepted_head=OTHER_HEAD))))["proven"] is False
+
+    def test_an_intervening_commit_before_the_merge_is_rejected(self):
+        """SS-I.2.1 J.1 -- a push after the readback changes ``head.sha``.
+
+        No separate rule about pushes is needed: requiring the merged head to equal the
+        reviewed and ratified head rejects the resulting merge on identity alone.
+        """
+        intervening = "c0ffee" + "0" * 34
+        assert intervening != LIFECYCLE_ACCEPTED_HEAD
+        assert lifecycle_composition_is_proven(**_lifecycle(
+            merged_pull_request=_merged_at_head(intervening)))["proven"] is False
+
+    def test_restoring_equality_everywhere_is_the_nearest_passing_case(self):
+        moved = dict(
+            designation_record=_designation_record(
+                body=_designation_body(accepted_head=OTHER_HEAD)),
+            merged_pull_request=_merged_at_head(OTHER_HEAD),
+            verification_record=_coordinator_record(body=_pmv_body(accepted_head=OTHER_HEAD)),
+            closure_record=_closure_record(body=_closure_body(accepted_head=OTHER_HEAD)))
+        assert lifecycle_composition_is_proven(**_lifecycle(**moved))["proven"] is False
+        # Move the ratification family too, and it is one coherent lifecycle again.
+        review = _final_review(head=OTHER_HEAD)
+        ratification = _ratification_naming(OTHER_HEAD)
+        restored = _lifecycle(
+            approving_review=review,
+            ratification_record=ratification,
+            live_pull_request=_live_pr(head=OTHER_HEAD),
+            review_collection=_complete_collection(review),
+            readback_record=_readback_record(body=_readback_body(
+                ratification_comment_id=ratification["id"],
+                ratification_fingerprint=canonical_ratification_fingerprint(ratification),
+                declared_accepted_head=OTHER_HEAD)),
+            **moved)
+        assert lifecycle_composition_is_proven(**restored)["proven"] is True
+
+    def test_the_equality_is_behavioural_not_a_fixture_alias(self):
+        """The review's specific warning: aliasing the constants proves nothing.
+
+        ``REAL_FINAL_HEAD`` and ``PMV_MERGE_HEAD`` are aliases so the sole positive lifecycle
+        is coherent, but that alone would hide the defect. This passes genuinely different
+        heads into the operative predicate and requires it to reject them.
+        """
+        assert REAL_FINAL_HEAD == PMV_MERGE_HEAD == LIFECYCLE_ACCEPTED_HEAD
+        out = lifecycle_composition_is_proven(**_lifecycle(
+            merged_pull_request=_merged_at_head(OTHER_HEAD)))
+        assert out["proven"] is False
+        import inspect
+
+        src = inspect.getsource(lifecycle_composition_is_proven)
+        assert "accepted-head chain broken" in src
+
+
+class TestThePrincipalIsASpecificActor:
+    """DELTA review 5063139843 MAJOR 1 -- any positive integer passed as the principal."""
+
+    def test_the_reviewers_exact_reproduction_now_fails(self):
+        """``PRINCIPAL_ID + 1``, with the public fingerprint honestly recomputed."""
+        wrong = PRINCIPAL_ID + 1
+        ratification = _ratification_naming(REAL_FINAL_HEAD, actor_id=wrong)
+        designation = _designation_record(actor_id=wrong)
+        readback = _readback_record(body=_readback_body(
+            ratification_comment_id=ratification["id"],
+            ratification_fingerprint=canonical_ratification_fingerprint(ratification)))
+        assert is_direct_principal_record(ratification) is False
+        assert _readback(ratification)["equality_proven"] is False
+        assert principal_designation_is_valid(designation) is False
+        out = lifecycle_composition_is_proven(**_lifecycle(
+            ratification_record=ratification, readback_record=readback,
+            designation_record=designation))
+        assert out["proven"] is False
+
+    def test_a_wrong_id_fails_because_it_is_the_wrong_principal(self):
+        """Not merely because a stale fingerprint was left behind.
+
+        The fingerprint is recomputed honestly here, so it cannot be what fails. What fails is
+        the identity.
+        """
+        wrong = _ratification_naming(REAL_FINAL_HEAD, actor_id=PRINCIPAL_ID + 1)
+        readback = _readback_record(body=_readback_body(
+            ratification_comment_id=wrong["id"],
+            ratification_fingerprint=canonical_ratification_fingerprint(wrong)))
+        # The fingerprint genuinely matches the record it names.
+        assert (parse_readback_body(readback["body"])["ratification_fingerprint"]
+                == canonical_ratification_fingerprint(wrong))
+        out = lifecycle_composition_is_proven(**_lifecycle(
+            ratification_record=wrong, readback_record=readback))
+        assert out["proven"] is False
+        assert "fingerprint" not in (out["failure_reason"] or "")
+
+    @pytest.mark.parametrize("actor_id", [
+        None, "218449187", True, False, 0, -1,
+        218449186, 218449188, 1, 999999999,
+    ])
+    def test_no_other_id_is_the_principal(self, actor_id):
+        record = _ratification_naming(REAL_FINAL_HEAD)
+        record["user"]["id"] = actor_id
+        assert is_direct_principal_record(record) is False, actor_id
+        designation = _designation_record()
+        designation["user"]["id"] = actor_id
+        assert principal_designation_is_valid(designation) is False, actor_id
+
+    def test_the_correct_principal_id_passes(self):
+        assert is_direct_principal_record(_ratification_naming(REAL_FINAL_HEAD)) is True
+        assert principal_designation_is_valid(_designation_record()) is True
+        assert lifecycle_composition_is_proven(**_lifecycle())["proven"] is True
+
+    def test_both_principal_authored_families_are_pinned(self):
+        """Ratification AND designation, not just one of them."""
+        wrong = PRINCIPAL_ID + 1
+        assert lifecycle_composition_is_proven(**_lifecycle(
+            designation_record=_designation_record(actor_id=wrong)))["proven"] is False
+        ratification = _ratification_naming(REAL_FINAL_HEAD, actor_id=wrong)
+        assert lifecycle_composition_is_proven(**_lifecycle(
+            ratification_record=ratification,
+            readback_record=_readback_record(body=_readback_body(
+                ratification_comment_id=ratification["id"],
+                ratification_fingerprint=canonical_ratification_fingerprint(
+                    ratification))))) ["proven"] is False
+
+    def test_the_coordinator_keeps_its_own_distinct_id(self):
+        """The five roles stay separate: the principal author is not the designee."""
+        assert PRINCIPAL_ID != COORDINATOR_ID
+        designation = _designation_record()
+        assert _principal_actor_id(designation) == PRINCIPAL_ID
+        assert _positive_int(
+            parse_designation_body(designation["body"])["coordinator_id"]) == COORDINATOR_ID
+        assert lifecycle_composition_is_proven(**_lifecycle())["proven"] is True
+
+    def test_the_decision_pins_the_established_principal_id(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert f"**`{PRINCIPAL_ID}`**" in flat
+        assert "read independently from five genuine" in flat
+        assert "A positive integer is not a principal." in flat
+
+
+class TestTheJobAndRunCompletionInstantsAreCompared:
+    """DELTA review 5063139843 MAJOR 2 -- both parsed, never compared."""
+
+    @staticmethod
+    def _ctx(**over):
+        ctx = dict(designated=parse_designation_body(_designation_record()["body"]),
+                   merged_pull_request=_merged_pull_request(),
+                   verification_record=_coordinator_record(),
+                   ci_run=_ci_run(), ci_job=_ci_job())
+        ctx.update(over)
+        return ctx
+
+    def test_the_reviewers_exact_reproduction_now_fails(self):
+        """run 10:16, job 10:40, closure 10:30 -- an impossible pair of raw records."""
+        run = _ci_run(updated_at="2026-08-31T10:16:00Z")
+        job = _ci_job(completed_at="2026-08-31T10:40:00Z")
+        assert canonical_ci_run_is_successful(run, job, PMV_MERGE_COMMIT_SHA) is False
+        out = lifecycle_composition_is_proven(**_lifecycle(
+            ci_run=run, ci_job=job,
+            closure_record=_closure_record(created="2026-08-31T10:30:00Z")))
+        assert out["proven"] is False
+
+    def test_job_completion_after_run_completion_fails(self):
+        assert canonical_ci_run_is_successful(
+            _ci_run(updated_at="2026-08-31T10:16:00Z"),
+            _ci_job(completed_at="2026-08-31T10:16:01Z"),
+            PMV_MERGE_COMMIT_SHA) is False
+
+    def test_job_completion_equal_to_run_completion_passes(self):
+        """The relation is ``<=``: two measured samples do not establish strictness."""
+        assert canonical_ci_run_is_successful(
+            _ci_run(updated_at=PMV_CI_COMPLETED_AT),
+            _ci_job(completed_at=PMV_CI_COMPLETED_AT),
+            PMV_MERGE_COMMIT_SHA) is True
+        assert lifecycle_composition_is_proven(**_lifecycle(
+            ci_job=_ci_job(completed_at=PMV_CI_COMPLETED_AT)))["proven"] is True
+
+    @pytest.mark.parametrize("job_completed", [
+        "2026-08-31T10:30:00Z", "2026-08-31T10:31:00Z", "2026-08-31T23:59:59Z",
+    ])
+    def test_job_completion_at_or_after_closure_fails(self, job_completed):
+        assert lifecycle_composition_is_proven(**_lifecycle(
+            ci_job=_ci_job(completed_at=job_completed)))["proven"] is False
+
+    def test_run_completion_equal_to_closure_fails(self):
+        assert closure_is_authorized(
+            _closure_record(created=PMV_CI_COMPLETED_AT), **self._ctx()) is False
+
+    @pytest.mark.parametrize("completed_at", [
+        None, "", "9999-99-99T99:99:99Z", "2026-02-30T00:00:00Z", 123, "not-a-time",
+    ])
+    def test_an_unparseable_job_completion_fails_closed(self, completed_at):
+        assert canonical_ci_run_is_successful(
+            _ci_run(), _ci_job(completed_at=completed_at), PMV_MERGE_COMMIT_SHA) is False
+        assert ci_job_completed_at(_ci_job(completed_at=completed_at)) is None
+
+    def test_an_incomplete_job_has_no_completion_instant(self):
+        assert ci_job_completed_at(_ci_job(status="in_progress")) is None
+        assert ci_job_completed_at(None) is None
+
+    def test_the_nearest_lawful_ordering(self):
+        """verification 10:05 < job 10:15:59 <= run 10:16:00 < closure 10:30."""
+        out = lifecycle_composition_is_proven(**_lifecycle())
+        assert out["proven"] is True
+        assert PMV_VERIFIED_AT < PMV_CI_JOB_COMPLETED_AT <= PMV_CI_COMPLETED_AT < PMV_CLOSED_AT
+
+    def test_the_decision_states_the_relation_exactly(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert ("verification_at **<** job.completed_at **<=** run.updated_at "
+                "**<** closure_at") in flat
+        assert "Two samples" in flat and "do not establish strictness" in flat

@@ -876,6 +876,76 @@ A lifecycle in which either half passes alone is **not** a proven lifecycle. Tha
 sentence, and it is why the composition predicate exists rather than a stronger version of either
 half.
 
+**J.1 — the cross-family accepted-head identity chain.** Added under `5063139843` BLOCKING 1. The
+first version of `J` joined the two families' **timestamps** and nothing else, so it proved an
+ordering while leaving the thing being ordered unidentified. Reproduced with this filing's own sole
+positive lifecycle: the approving review, the ratification, the live PR and all three retained-readback
+head fields named `a1b2c3d4…`, while the designation, the merged PR, the verification and the closure
+named `bbbb…`, and the composition returned `True`. A head that was independently reviewed and
+principal-accepted could therefore be **replaced before designation and merge** while the "whole
+lifecycle" still proved.
+
+Chronology without identity is not composition. There is **exactly one accepted head** in a lifecycle,
+and these eight values must all be equal to it:
+
+1. the approving review's `commit_id`;
+2. the ratification declaration's `pr363_accepted_head`;
+3. the live, open PR's `head.sha` at readback;
+4. the retained readback's `declared_accepted_head`, `live_pull_request_head` **and**
+   `independently_reviewed_head` (all three);
+5. the designation declaration's `accepted_head`;
+6. the merged PR's `head.sha`;
+7. the verification declaration's `accepted_head`;
+8. the closure declaration's `accepted_head`.
+
+**This is also what forbids an intervening commit.** The head accepted while the PR was open must be
+the exact head that merges; any commit pushed after the readback changes `head.sha`, so requiring the
+merged PR's `head.sha` to equal the reviewed and ratified head rejects the resulting merge without
+needing a separate rule about pushes. Nothing else in this decision detects that case.
+
+The equality must hold **behaviourally, inside the composition predicate**. Making the fixtures' two
+head constants aliases of one another would let the positive case pass without the operative check
+existing — the failure mode `5062494115` MAJOR 2 already established for a different constant. The sole
+positive lifecycle therefore uses one accepted-head value in every family **and** the composition
+asserts the chain independently of how the fixtures were built.
+
+**J.2 — the principal is a specific actor, not a well-formed one.** Added under `5063139843` MAJOR 1.
+`§I.2.1 A` already recorded that a login is mutable and the numeric id is the stable identity, but the
+implementation required only *some* positive integer, so `PRINCIPAL_ID + 1` satisfied
+`is_direct_principal_record`, the readback, `principal_designation_is_valid`, and — once the public
+fingerprint was honestly recomputed — the complete composition. A positive integer is not a principal.
+
+The principal's numeric actor id is **`218449187`**, read independently from five genuine
+direct-principal canonical records on PRs #310, #311, #314, #316 and #319, each carrying
+`performed_via_github_app: null` and all agreeing. Both principal-authored record families — the
+**ratification** and the **designation** — must carry exactly that id. The designated coordinator keeps
+its own separate id inside the designation's body, and the five roles of `§I.2.1 A` remain distinct:
+the principal author's id is never compared with the coordinator's.
+
+*Disclosed limitation:* `GET /users/{login}` is not reachable from a repository-scoped session (HTTP
+403, "sessions are bound to their configured repositories"), so this value rests on the five in-scope
+direct-principal comment resources rather than on a user-endpoint lookup. That is the strongest
+evidence the platform makes available here, and it is not described as more.
+
+**J.3 — the CI completion relation, stated exactly.** Added under `5063139843` MAJOR 2. `D` established
+that closure is ordered after the **run's** completion, but the run's and the job's completion instants
+were each parsed and never compared, so a run completing at `10:16` alongside a job claiming to complete
+at `10:40`, with closure at `10:30`, satisfied every check — an internally impossible pair of raw
+records, and a closure preceding the completion its own named job asserts. This validator's purpose is
+to reject malformed or caller-assembled mappings, not to assume the platform's invariants hold in
+evidence it was handed.
+
+The required relation is:
+
+> verification_at **<** job.completed_at **<=** run.updated_at **<** closure_at
+
+The middle relation is `<=`, and the reason is stated rather than assumed. Measured on the live
+resources, the job completed strictly **before** its run in every sample examined — `15:18:49Z` against
+`15:18:50Z` on run `33259403778`, and `02:21:24Z` against `02:21:25Z` on run `33349722310`. Two samples
+do not establish strictness as a platform guarantee, so the relation adopted here is the weaker one the
+evidence actually supports. Tightening it to `<` on two observations would be a claim this decision
+cannot back.
+
 #### I.3 — What the rule does not do
 
 Item 2 of the earlier draft — a verification claim made only in a later comment does not by itself

@@ -18539,6 +18539,94 @@ workstreams:
           unconsumed; XASSET-0061 remains Proposed; no lane, AUTHORIZATION_ROOT, allocation,
           target, trade or order is touched. Draft, open, unmerged; awaiting a fresh independent
           exact-head DELTA review.
+          SEVENTH BOUNDED CORRECTION (independent exact-head DELTA review 5063139843, 1
+          BLOCKING / 2 MAJOR at head d2f4121, delta base 650d7f0). The three findings from
+          5062784888 were confirmed closed on their original terms and are preserved. A
+          complete invariant matrix over all ten lifecycle evidence nodes was built BEFORE any
+          edit, listing every value appearing in more than one evidence family and the exact
+          equality joining it; it showed one family joined only by time. BLOCKING 1: ONE
+          LIFECYCLE ACCEPTED TWO DIFFERENT HEADS. The composition joined the ratification and
+          merge families' TIMESTAMPS and nothing else, so with the approving review, the
+          ratification, the live PR and all three retained-readback head fields naming
+          a1b2c3d4... while the designation, merged PR, verification and closure named bbbb...,
+          the composition still returned True -- an independently reviewed and principal-accepted
+          head could be REPLACED before designation and merge while the whole lifecycle proved.
+          Corrected by defining SS-I.2.1 J.1 in the decision FIRST: there is exactly one accepted
+          head in a lifecycle and ten head-bearing fields across six evidence families must all
+          equal it (approving review commit_id; ratification pr363_accepted_head; live open PR
+          head.sha; all three retained-readback head fields; designation accepted_head; merged PR
+          head.sha; verification accepted_head; closure accepted_head). The same rule is what
+          forbids an INTERVENING COMMIT: a push after the readback changes head.sha, so requiring
+          the merged head to equal the reviewed and ratified head rejects the resulting merge on
+          identity alone, with no separate rule about pushes. The equality is BEHAVIOURAL inside
+          lifecycle_composition_is_proven, not a fixture alias: LIFECYCLE_ACCEPTED_HEAD unifies
+          REAL_FINAL_HEAD and PMV_MERGE_HEAD so the sole positive lifecycle is coherent, and the
+          predicate asserts the chain independently of how the fixtures were built. Regressions
+          cover each of the seven downstream heads changed individually, the whole post-merge
+          family moved coherently A to B, designation plus merge together, merge plus
+          verification plus closure together, live PR plus readback without the review, an
+          intervening commit, and equality restored everywhere as the nearest passing case.
+          MAJOR 1: THE PRINCIPAL WAS ONLY TYPE-CHECKED. is_direct_principal_record required some
+          positive integer id, so PRINCIPAL_ID + 1 satisfied it, the readback,
+          principal_designation_is_valid and -- once the public fingerprint was honestly
+          recomputed -- the complete composition. A positive integer is not a principal. The
+          principal's numeric actor id 218449187 was re-read independently from five genuine
+          direct-principal canonical records on PRs #310, #311, #314, #316 and #319, each
+          carrying performed_via_github_app null and all agreeing, and is now pinned in
+          SS-I.2.1 J.2 and in the implementation; both principal-authored families, the
+          ratification and the designation, must carry exactly it. GET /users/{login} is not
+          reachable from a repository-scoped session (HTTP 403), and that limitation is
+          disclosed rather than papered over. The separate coordinator id and the five-role
+          separation of SS-I.2.1 A are preserved; a wrong principal id now fails BECAUSE IT IS
+          THE WRONG PRINCIPAL, proved by a complete-composition regression with the fingerprint
+          honestly recomputed for the wrong id. MAJOR 2: CLOSURE COULD PRECEDE ITS OWN JOB'S
+          STATED COMPLETION. The run's and the job's completion instants were each parsed and
+          never compared, so a run completing 10:16 alongside a job claiming 10:40, with closure
+          10:30, satisfied every check -- an internally impossible pair of raw records.
+          SS-I.2.1 J.3 states the relation exactly: verification_at < job.completed_at <=
+          run.updated_at < closure_at. The middle relation is <= and the reason is stated, not
+          assumed: the job completed strictly before its run in both live samples examined
+          (15:18:49Z against 15:18:50Z; 02:21:24Z against 02:21:25Z), and two samples do not
+          establish strictness as a platform guarantee, so the weaker relation the evidence
+          actually supports is adopted rather than a claim the decision cannot back. Every
+          existing run and job id, url, attempt, workflow, repository, event and SHA binding is
+          preserved. Tests 795 to 872, asserts 701 to 777, or-fallback
+          assertions 0 to 0 -- the suite's own or-fallback guard caught one such assertion
+          introduced by this very correction and it was rewritten conjunctively rather than
+          exempted; every count is re-derived from the final committed head, not carried
+          forward. Mutation proof over the composed
+          lifecycle: 62 mutations, 61 caught, 0 missed, 0 invalid, 1 declared unreachable. The first run of the extended proof returned 9
+          MISSED and 1 INVALID, and every one was INVESTIGATED AND CLOSED rather than
+          reclassified as defence in depth. A-6, deleting the decision's own one-accepted-head
+          rule, was a REAL coverage gap: closed by reading that sentence, the eight enumerated
+          fields and the intervening-commit consequence back from the committed decision. H-2 to
+          H-7 rewrite a chain entry's VALUE to the representative, leaving the key present, so
+          neither the membership test nor any behavioural test could see them and the family
+          predicate that owns each head catches the wrong value first; what they actually
+          destroy is the entry's PROVENANCE, so provenance is now pinned at the source -- each
+          of the ten value expressions individually, plus one assertion that no entry is spelled
+          ": accepted_head," -- and the redundancy they exploit is separately proved by showing
+          each family predicate rejects a wrong head ON ITS OWN. H-1, which deleted the chain
+          entirely, was caught throughout, which is what proves the chain load-bearing. H-8,
+          reading the representative from a different family, is a PROVABLE NO-OP -- the chain
+          compares every member to one representative that is itself a member, so "all equal X
+          where X is in the set" is exactly "all mutually equal" -- and is now pinned by
+          asserting the representative's provenance and the set's collapse to one value. CT-5 is
+          UNREACHABLE from closure_is_authorized, which calls canonical_ci_run_is_successful --
+          already enforcing job <= run -- before its own chronology walk; both halves are pinned,
+          the upstream rejection behaviourally and the call ordering at the source. P-1's
+          original anchor no longer existed because MAJOR 1 replaced it, so rather than being
+          left INVALID or silently dropped it was RE-TARGETED to a genuinely distinct attack on
+          the new form -- widening the pin to admit the DESIGNATED COORDINATOR -- which came
+          back MISSED as a real gap and is now closed by testing that the coordinator fails as
+          the principal on the ratification, the designation and the complete composition. X-5
+          remains the single declared-unreachable mutation, reported in its own category and
+          never as caught. Infrastructure failures abort the proof and
+          never count as caught; both mutated files were restored byte-identical by SHA-256
+          outside the harness. Stage 1 remains UNARMED and NOT EXECUTABLE; ATTEMPT_1 intact,
+          unclaimed and unconsumed; XASSET-0061 remains Proposed; no lane, AUTHORIZATION_ROOT,
+          allocation, target, trade or order is touched. Draft, open, unmerged; awaiting a fresh
+          independent exact-head DELTA review.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
