@@ -18595,7 +18595,8 @@ workstreams:
           introduced by this very correction and it was rewritten conjunctively rather than
           exempted; every count is re-derived from the final committed head, not carried
           forward. Mutation proof over the composed
-          lifecycle: 62 mutations, 61 caught, 0 missed, 0 invalid, 1 declared unreachable. The first run of the extended proof returned 9
+          lifecycle: 62 mutations, 61 caught, 0 missed, 0 invalid, 1 declared
+          unreachable. The first run of the extended proof returned 9
           MISSED and 1 INVALID, and every one was INVESTIGATED AND CLOSED rather than
           reclassified as defence in depth. A-6, deleting the decision's own one-accepted-head
           rule, was a REAL coverage gap: closed by reading that sentence, the eight enumerated
