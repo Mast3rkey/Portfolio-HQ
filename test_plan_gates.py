@@ -67,16 +67,20 @@ def _metrics(tickers, price=100.0, rsi=50.0, sma200=90.0):
 # ── A. largest-dollar-gap ordering + cash exhaustion ────────────────────────
 
 def test_gap_ordering_fills_largest_first_partial_second_blocks_third():
-    # target_pcts sum to 140% of book so total demand always exceeds cash,
-    # forcing a genuine partial fill + exhaustion rather than "everyone
-    # fits" (with holdings=0, book == cash exactly, so total gap ==
-    # cash * sum(target_pct)/100 — that must exceed cash for this to bite).
-    targets = _multi_targets({"AAA": 60.0, "BBB": 50.0, "CCC": 30.0})
+    # RE-EXPRESSED, assertions unchanged. The old fixture summed target_pcts to
+    # 140% of book so that total demand exceeded cash. A destination total above
+    # 100% is now a hard configuration error -- the canonical architecture
+    # cannot promise more capital than exists -- so the same condition is
+    # produced the way a real book produces it: a large HELD position makes
+    # book > cash. PAD holds $900 against a $860 target (overweight, so never a
+    # buy candidate), cash is $100, book is $1,000, and AAA/BBB/CCC's targets
+    # are the identical $60/$50/$30 the assertions below already expect.
+    targets = _multi_targets({"AAA": 6.0, "BBB": 5.0, "CCC": 3.0, "PAD": 86.0})
     roster = build_roster(targets)
     # Insertion order deliberately reversed vs. expected gap-descending
     # output order (CCC, BBB, AAA) — insertion order must not leak through.
-    holdings = {"CCC": 0.0, "BBB": 0.0, "AAA": 0.0}
-    metrics = _metrics(["CCC", "BBB", "AAA"])
+    holdings = {"CCC": 0.0, "BBB": 0.0, "AAA": 0.0, "PAD": 900.0}
+    metrics = _metrics(["CCC", "BBB", "AAA", "PAD"])
 
     result = plan(targets, holdings, roster, metrics, regime_ok=True,
                  regime_known=True, cash=100.0)
@@ -97,10 +101,10 @@ def test_gap_ordering_fills_largest_first_partial_second_blocks_third():
 def test_gap_ordering_independent_of_dict_insertion_order():
     # Same fixture as above, but every dict built in ascending-gap order
     # (the opposite of the previous test) — output order must be identical.
-    targets = _multi_targets({"AAA": 60.0, "BBB": 50.0, "CCC": 30.0})
+    targets = _multi_targets({"AAA": 6.0, "BBB": 5.0, "CCC": 3.0, "PAD": 86.0})
     roster = build_roster(targets)
-    holdings = {"CCC": 0.0, "AAA": 0.0, "BBB": 0.0}
-    metrics = _metrics(["BBB", "AAA", "CCC"])
+    holdings = {"CCC": 0.0, "AAA": 0.0, "BBB": 0.0, "PAD": 900.0}
+    metrics = _metrics(["BBB", "AAA", "CCC", "PAD"])
 
     result = plan(targets, holdings, roster, metrics, regime_ok=True,
                  regime_known=True, cash=100.0)

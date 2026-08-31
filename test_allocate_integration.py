@@ -334,6 +334,12 @@ def _crypto_targets():
             {"ticker": "BTC", "target_pct": 6.0, "asset_class": "crypto"},
             {"ticker": "ETH", "target_pct": 3.0, "asset_class": "crypto"},
             {"ticker": "SOL", "target_pct": 1.0, "asset_class": "crypto"},
+            # PAD completes the destination to 100%. Without it this synthetic
+            # config allocated only 10% of book, leaving 90% UNRECONCILED --
+            # which protected-capital accounting correctly protects, blocking
+            # every buy. The 90% was an artifact of a partial fixture, not the
+            # behavior these tests exist to check (independent crypto rows).
+            {"ticker": "PAD", "target_pct": 90.0, "asset_class": "equity"},
         ],
         "caps": {"clusters": []},
         "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
@@ -1087,7 +1093,12 @@ def test_production_wall_clock_behaviour_is_unchanged(tmp_path, monkeypatch, cap
 # required test 5: normal --cash/--margin/--review logging is unchanged
 # (without --no-log involved at all).
 
-@pytest.mark.parametrize("argv_tail", [["--cash", "500"], ["--margin", "500"], ["--review"]])
+# `--cash 500` was dropped from this list when the additive --cash deposit
+# argument was RETIRED in favour of a tracked total cash balance: the flag now
+# exits 2 with a migration message, so asserting it still logs was asserting a
+# behavior that no longer exists. The retirement itself is covered by
+# test_protected_capital_accounting.py::TestNoDoubleCounting.
+@pytest.mark.parametrize("argv_tail", [["--margin", "500"], ["--review"]])
 def test_normal_logging_unchanged_without_no_log(argv_tail, tmp_path, monkeypatch, capsys):
     targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path)
     logs_dir = tmp_path / "logs"

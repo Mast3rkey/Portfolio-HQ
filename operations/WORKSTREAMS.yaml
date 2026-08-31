@@ -18255,6 +18255,83 @@ workstreams:
           MERGING XASSET-0061 LEAVES STAGE 1 UNARMED AND NOT EXECUTABLE, the lane ABSENT,
           AUTHORIZATION_ROOT absent, no stage1_results.yaml, all three authorization predicates
           False, and ATTEMPT_1 INTACT, UNCLAIMED and UNCONSUMED.
+      - gate: protected-capital-accounting-and-full-book-reconciliation
+        status: in_progress
+        pr: null
+        description: >-
+          PROTECTED-CAPITAL ACCOUNTING AND FULL-BOOK RECONCILIATION. One bounded
+          implementation PR under existing PHQ-2026-01/PHQ-2026-02 policy and the
+          OPS-0009/OPS-0014 lifecycle; NO new governance decision, and no accepted
+          target, gate, cap, cluster, or margin-policy number is changed. Corrects
+          seven independently reproduced allocator defects. D1: holdings.yaml had
+          no cash field at all, so book = invested + cash - debt was computed from
+          a runtime argument only, and every target_pct dollar figure was
+          understated whenever the account held cash that was not retyped. A
+          tracked cash block (total balance plus its own synced_at) is added,
+          seeded ONLY with the stale PHQ-2026-06 historical baseline $1,041.23 at
+          its real 2026-08-01 evidence date, which the freshness gate then refuses
+          to act on, so it is evidence and never authorization. D2: CASH (1.00%)
+          and RESERVE (4.00%) were skipped as definitionally satisfied with nothing
+          checked; grep confirmed no protected-floor concept existed anywhere, and
+          protection held only as an ACCIDENTAL consequence of the per-name
+          ceiling. The floor is now computed, asserted inside plan(), and tested.
+          D3: the 6.75% gated weight was never surfaced as a number. D4: the 0.75%
+          unreconciled remainder was silent, so deliberately unallocated was
+          indistinguishable from a missing row; reconciliation is now Decimal-exact
+          and a total above 100% raises rather than inflating every downstream
+          dollar. D5: cash and margin freshness are checked BEFORE plan(), reusing
+          the repository's own STALE_MARGIN_DAYS=2 rather than inventing a
+          threshold; missing, malformed, future-dated or stale state makes the run
+          NON-ACTIONABLE with buys and trims WITHDRAWN, not annotated. D6: every
+          nonzero shares/crypto_shares entry must price or the unresolved symbols
+          are named and dollars blocked; previously an unpriced holding fell back
+          to an empty manual dict and vanished from gross and book silently. D7 is
+          recorded, not fixed: the current percentages are inherited PHQ-2026-01
+          committee policy, not economically re-derived successor percentages, and
+          that remains WS-0014 (6)/(7)/(8) work.
+          REVIEWER CORRECTIONS INCORPORATED. (A) The book identity was verified in
+          source, not assumed: margin_capacity() computes net_equity = gross minus
+          margin_debt with cash EXCLUDED, so adding one tracked balance exactly
+          once is correct. (B) The floor includes the unreconciled remainder,
+          giving 1.00 + 4.00 + 0.75 + 6.75 = 12.50% at zero gated holdings; the
+          earlier incomplete 11.75% formula is NOT implemented. (C) A held gated
+          name requires only max(0, target minus held) in cash, so its held value
+          is never both counted toward the book and protected in full. (D)
+          write_state() rewrites the whole file and had no cash parameter, so every
+          update path would have silently DELETED a cash block; preservation is now
+          the default and is tested for all four commands plus update-cash. (E)
+          cash_left was seeded from deployable = cash + margin_allowed and
+          therefore reported BUYING POWER as remaining cash, reproduced with cash=0
+          returning cash_left of $665; cash_after_plan is now actual cash, unused
+          margin is reported separately, and render/health/performance all include
+          tracked cash exactly once, with the performance log gaining cash and book
+          COLUMNS rather than redefining the existing net_equity series. (F)
+          Margin-funded buys FAIL CLOSED: no evidence here models Robinhood
+          preserving literal cash while borrowing, and PHQ-2026-01 item 6
+          authorizes no new margin, so broker behavior is not invented. (G)
+          Valuation completeness is proved before any dollar figure.
+          DISCLOSED CLASSIFICATION TENSION, not resolved silently: OPS-0014
+          paragraph 58 bars Class 2 from touching allocate.py's plan(), and Class 4
+          names allocator rule changes. The position taken is that this makes the
+          allocator HONOR already-accepted PHQ-2026-01/PHQ-2026-02 policy rather
+          than change policy, since no percentage, gate, cap, cluster or margin
+          parameter moves, but that is exactly the judgment an independent reviewer
+          should test rather than accept.
+          THREE EXISTING ASSERTIONS were obsolete and are strengthened, none
+          weakened: test_normal_logging_unchanged_without_no_log dropped its
+          --cash 500 case because the flag is retired and now exits 2;
+          _crypto_targets() gained a PAD row because the fixture allocated only 10%
+          of book, leaving 90% unreconciled and therefore correctly protected, an
+          artifact of a partial fixture rather than the behavior under test; and
+          test_non_common_driver_addition_remains_eligible asserted ELIGIBILITY
+          through buys, conflating it with FUNDING, and now asserts eligibility via
+          underweight and funding separately in both directions. The old
+          test_gated_capital_remains_cash claim, which only re-read the unchanged
+          INPUT cash value, is superseded by post-plan preservation tests. Stage 1
+          remains UNARMED and NOT EXECUTABLE; the lane is absent; ATTEMPT_1 intact,
+          unclaimed and unconsumed; XASSET-0061 remains Proposed; no .env,
+          credential, live allocation, order or trade. Draft, open, unmerged;
+          awaiting an independent FULL exact-head review.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

@@ -228,14 +228,37 @@ def test_common_driver_blocked_addition(targets, roster, lookthrough):
 
 
 def test_non_common_driver_addition_remains_eligible(targets, roster, lookthrough):
+    """The 40% ceiling constrains common-driver members ONLY.
+
+    Strengthened when protected-capital accounting landed. This previously
+    asserted eligibility through `buys`, which conflates two different things:
+    whether a name is ELIGIBLE (the ceiling question this test is about) and
+    whether cash is available to FUND it (the protected-floor question it is
+    not). With $100 cash against a ~$5,100 book the protected floor is unmet,
+    so no buy of any kind is lawful -- and the old assertion would have read
+    that as a ceiling failure. Eligibility is now asserted through
+    `underweight`, and funding is asserted separately and explicitly."""
     metrics = _flat_metrics(roster)
     holdings = {"NVDA": 5000.0}   # common-driver aggregate pinned over ceiling
     result = plan(targets, holdings, roster, metrics, True, True, cash=100.0,
                  gates_cfg={}, lookthrough=lookthrough)
     common_driver_members = {i["ticker"] for i in lookthrough["issuers"]} | \
         {f["fund"] for i in lookthrough["issuers"] for f in i["funds"]}
-    non_member_buys = [b for b in result["buys"] if b["ticker"] not in common_driver_members]
-    assert len(non_member_buys) > 0
+    non_member_candidates = [u for u in result["underweight"]
+                             if u["ticker"] not in common_driver_members]
+    assert len(non_member_candidates) > 0, \
+        "a non-common-driver name must stay ELIGIBLE despite the 40% ceiling"
+
+    # Funding, asserted separately: $100 against this book is below the floor.
+    assert result["protection"]["cash_shortfall_dollars"] > 0
+    assert not result["buys"]
+
+    # And with cash comfortably above the floor, eligibility becomes a real buy.
+    funded = plan(targets, holdings, roster, metrics, True, True, cash=50000.0,
+                  gates_cfg={}, lookthrough=lookthrough)
+    funded_non_members = [b for b in funded["buys"]
+                          if b["ticker"] not in common_driver_members]
+    assert len(funded_non_members) > 0
 
 
 def test_no_automatic_trim_from_common_driver_ceiling(targets, roster, lookthrough):

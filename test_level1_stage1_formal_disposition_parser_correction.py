@@ -2819,7 +2819,15 @@ class TestTheScopeBoundaryHolds:
             assert base == live and base
 
     def test_no_other_repository_file_carries_a_production_change(self):
-        changed = set(_git("diff", "--name-only", BASE_SHA).split())
+        # RE-ANCHORED over THIS unit's own CLOSED range, for exactly the reason
+        # test_no_protected_or_canonical_path_was_touched below was already
+        # re-anchored: measured against the LIVE working tree this assertion
+        # grows stale the moment any later authorized unit changes any
+        # production module, and it then reports that later unit's work as
+        # though this one had done it. The closed range measures what this unit
+        # actually did, exactly and permanently. Strictness is unchanged -- it
+        # is still an equality against exactly one module.
+        changed = set(_git("diff", "--name-only", BASE_SHA, MERGE_SHA).split())
         production = {p for p in changed if p.endswith(".py") and not p.startswith("test_")}
         assert production == {MODULE_RELPATH}, sorted(production)
 

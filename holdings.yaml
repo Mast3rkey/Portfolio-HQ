@@ -86,6 +86,29 @@
 # field here (unchanged since PHQ-2026-02) — to be supplied through
 # `allocate.py`'s existing `--cash` runtime input at a future live,
 # credentialed allocation-check session.
+#
+# PROTECTED-CAPITAL ACCOUNTING (this change): `cash:` is now a tracked state
+# block, not a runtime-only argument. Rationale: `book = invested + cash -
+# margin_debt`, so an untracked cash balance understated the book on every run
+# and made every `target_pct` dollar figure wrong by construction. It also made
+# the CASH (1.00%) and RESERVE (4.00%) destination rows "definitionally
+# satisfied" with no evidence at all.
+#
+# `balance` below is the TOTAL account cash balance, not a deposit. Sync it with
+# `allocate.py update-cash <balance>`. A deposit is reflected by re-syncing the
+# new TOTAL, never by adding a delta -- `--cash` as an additive deposit is
+# retired precisely because it could double-count against this field.
+#
+# The value below is the STALE PHQ-2026-06 historical baseline
+# (governance/evidence/PHQ-2026-06/, SHA-256
+# d602da67bee33644da8600691974ddd3098549c78c73292904320a16c0e2ffca), recorded
+# with its real evidence date of 2026-08-01. It is NOT current, it does NOT
+# authorize any recommendation, and the allocator fails closed on it: a cash
+# sync older than STALE_MARGIN_DAYS blocks every dollar recommendation until
+# the principal re-syncs an actual current balance.
+cash:
+  balance: 1041.23
+  synced_at: 2026-08-01
 margin:
   debt: 0.0
   # No displayed buffer % was captured in the v1.35 evidence (only
