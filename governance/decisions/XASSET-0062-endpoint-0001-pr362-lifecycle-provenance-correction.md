@@ -554,9 +554,31 @@ session_commitment: <64 lowercase hex, SHA-256 of a value the coordinator has no
 ```
 
 `coordinator_id` is added under `5062494115` MAJOR 1. A login is a mutable display handle; the numeric
-actor id is not. Every live actor resource that exposes an id — the designation comment's own
-`user.id`, the verification comment's `user.id`, the closure comment's `user.id`, and the merged PR's
-`merged_by.id` — must carry an **integer** id, and all four must equal `coordinator_id`.
+actor id is not.
+
+**Five identities, kept separate — corrected under `5062784888` MAJOR 1.** The previous sentence here
+required the designation comment's *own* `user.id` to equal `coordinator_id`. That was wrong, and
+wrong in a way that would have defeated the coordinator role entirely: **the designation is written by
+the principal, and the coordinator it designates is ordinarily somebody else.** Requiring the author's
+id to equal the designee's would permit only self-designation. The implementation never did this; the
+text did, and the text is corrected:
+
+| Identity | Where it is read | Whose id it is |
+|---|---|---|
+| ratification author | the ratification comment's `user.id` | **the principal's** |
+| readback author | the readback comment's `user.id` | the retaining actor's |
+| designation **author** | the designation comment's `user.id` | **the principal's** — never compared to `coordinator_id` |
+| designated **coordinator** | the designation's own **body**, `coordinator_id` | the coordinator's |
+| merger | the merged PR's `merged_by.id` | must equal `coordinator_id` |
+| verification actor | the verification comment's `user.id` | must equal `coordinator_id` |
+| closure actor | the closure comment's `user.id` | must equal `coordinator_id` |
+
+Every one of these must be an **exact positive integer** on the raw resource — GitHub returns
+`209825114`, never `"209825114"`, so a resource carrying the string form is a hand-built mapping
+wearing the resource's field names and fails. A declaration *line*, which is text, may carry either.
+The principal ratification record is included in this requirement: `5062784888` MAJOR 1 reproduced a
+ratification with `user.id` deleted still proving equality, because the structural path checked
+login, type, association and application provenance but never the id.
 
 **No value beside the record carries authority.** An earlier draft accepted `coordinator_login` and
 `session_claim` as fields the caller attached *next to* an authenticated principal comment, so an
@@ -645,7 +667,9 @@ projection. An earlier draft accepted a six-field caller mapping containing inve
 | Closure | the closure issue comment | as *Principal record*, plus the `G` declaration in its body |
 | Final review | `GET /repos/{owner}/{repo}/pulls/363/reviews/{id}` | `id`, `pull_request_url`, `html_url`, `commit_id`, `submitted_at`, `state`, `body`, `user.login`, `user.type`, `author_association` |
 | Review collection | `GET /repos/{owner}/{repo}/pulls/363/reviews?per_page={n}` | the full array, **and** the response `Link` header |
-| Merge-commit CI | `GET /repos/{owner}/{repo}/actions/runs/{run_id}` and `/jobs` | run `id`, `head_sha`, `run_attempt`, `status`, `conclusion`; job `id`, `head_sha`, `run_attempt`, `status`, `conclusion` |
+| Merge-commit CI run | `GET /repos/{owner}/{repo}/actions/runs/{run_id}` | `id`, `url`, `html_url`, `name`, `path`, `workflow_id`, `event`, `head_sha`, `run_attempt`, `status`, `conclusion`, `updated_at`, `repository.full_name` |
+| Merge-commit CI job | `GET /repos/{owner}/{repo}/actions/jobs/{job_id}` | `id`, `run_id`, `run_url`, `run_attempt`, `head_sha`, `name`, `workflow_name`, `url`, `html_url`, `status`, `conclusion`, `completed_at` |
+| Retained `§G.9` readback | the readback issue comment | as *Principal record*, plus the `I` declaration in its body |
 
 `base.repo.full_name` must equal `Mast3rkey/Portfolio-HQ`, taken from the load-bearing module's own
 `REPOSITORY_IDENTITY` rather than restated here as a second copy. `merged_by.id` must be an **integer**;
@@ -658,6 +682,47 @@ validator and the complete verification predicate.
 through an application named `evil`, whose body read *"I do NOT close this lifecycle."*, was accepted
 as canonical closure and carried the complete verification predicate to `True`. Closure is now the
 exact declaration at `G`.
+
+**The CI job must be proved to belong to the named run — corrected under `5062784888` BLOCKING 2.**
+The prior text validated the run and the job *separately* and compared each id to the declaration, but
+never established that the job was that run's job. `5062784888` reproduced the consequence three ways:
+changing only `ci_job.run_attempt` to `2` while the run and declaration stayed at attempt `1` still
+passed; an arbitrary job id `424242` passed whenever that same id was copied into the closure body; and
+the complete verification predicate stayed `True` throughout. A successful job from a *different* run
+or a *different* attempt could therefore be paired with the declared run and satisfy condition 6.
+
+The binding fields below were read from the live resources, not invented. Measured on the PR #362
+merge-commit run `33259403778` and independently on run `33349722310`:
+
+| Requirement | Raw fields compared |
+|---|---|
+| the job belongs to the run | `job.run_id == run.id` **and** `job.run_url == run.url` |
+| one attempt throughout | `closure declaration == run.run_attempt == job.run_attempt` |
+| the same workflow | `job.workflow_name == run.name`, with `run.path` and `run.workflow_id` naming the intended workflow |
+| the intended trigger | `run.event` |
+| the right repository | `run.repository.full_name` |
+| the exact merge commit | `run.head_sha == job.head_sha == merge_commit_sha` |
+| the named job | `job.name` |
+
+The workflow this lifecycle's merge-commit CI **must be**, named here so the implementation is
+anchored to governing text rather than to its own fixtures:
+
+```
+XASSET-0062 REQUIRED MERGE-COMMIT CI
+workflow_name: CI
+workflow_path: .github/workflows/ci.yml
+job_name: test
+event: push
+```
+
+`event` is `push` because a merge-commit run is triggered by the push of the merge commit; a run at
+the same SHA triggered by `pull_request` is a different run and does not satisfy condition 6.
+
+**Closure is ordered after the RUN's completion, not the job's.** `run.updated_at` is the run's own
+completion instant, and in both measured cases it is strictly **later** than `job.completed_at` —
+`15:18:50Z` against `15:18:49Z` on run `33259403778`, and `02:21:25Z` against `02:21:24Z` on run
+`33349722310`. Ordering closure only after the job therefore admits a window in which the run has not
+finished. The chronology at `E` uses the run.
 
 **Review-collection completeness is proved from the response, not asserted by the caller.** A caller
 that supplies the reviews it chooses can always omit the one that defeats it. The collection is
@@ -678,14 +743,30 @@ a pull-request review carries **no** `performed_via_github_app` key at all — t
 and is **not** provable from the resource. Both limits fail closed: absent evidence never passes.
 
 **E. Chronology, on parsed instants.** Every comparison below is between timezone-aware UTC instants
-parsed with calendar validation, never strings and never shapes. The full lifecycle order is:
+parsed with calendar validation, never strings and never shapes. The full lifecycle order is eight
+nodes and seven adjacent edges:
 
-> approving_review_submitted_at **<** ratification_at **<** designation_at **<** merge_at **<** verification_at **<** ci_completed_at **<** closure_at
+> approving_review_submitted_at **<** ratification_at **<** readback_at **<** designation_at **<** merge_at **<** verification_at **<** ci_run_completed_at **<** closure_at
 
 Every relation is **strict**. `5062494115` MAJOR 2 found `designation_at <= merge_at` implemented where
 this text said `<`, with equality tested as a *positive* case; equality is a failure and is never
 synthesized. A designation issued at or after the merge, or after the verification it purports to
 authorize, **fails**.
+
+`readback_at` is added under `5062784888` BLOCKING 1, and `ci_completed_at` is narrowed to
+`ci_run_completed_at` (`run.updated_at`) under `5062784888` BLOCKING 2 for the reason measured at `D`.
+
+**No edge in this chain may be proved by a predicate that cannot see both of its endpoints.** That is
+the whole of `5062784888` BLOCKING 1, and it is stated here rather than left to inference: the
+ratification family and the merge family were two predicates with no bridge, so both could pass a
+lifecycle in which the accepted ratification occurred **after** the designation, the merge, the
+verification, the CI run and the closure. Reproduced at the reviewed head with this filing's own
+positive fixtures — ratification `13:00:00Z`, designation `09:00:00Z`, merge `10:00:00Z`, verification
+`10:05:00Z`, CI `10:16:00Z`, closure `10:30:00Z` — with `external_ratification_readback` and
+`post_merge_verification_is_valid` each returning `True`. Neither was wrong about what it checked.
+Together they proved nothing, because nothing checked them together. The composition predicate at `J`
+is that missing check, and the fixtures are rebuilt on **one** coherent timeline so that no positive
+case in this filing models an order the decision forbids.
 
 **F. Ratification, acceptance and readback ordering.** `5062494115` BLOCKING 2 reproduced a ratification
 timestamped **before** the approving review it claims to accept, and another posted **after** the merge,
@@ -742,6 +823,58 @@ principal must still post the `A` designation naming themself before the merge, 
 `merged_by` on every identity field the merge resource exposes, must still satisfy commitment and
 reveal, and must still meet the strict chronology at `E`. The coordinator path remains available under
 `OPS-0009` `§8` generally and is not narrowed. What was removed is the *bypass*, not the role.
+
+**I. The retained `§G.9` readback declaration.** `§G.9` step 3 has always required the readback to be
+retained "as a separate GitHub lifecycle-evidence comment", but the prior text never gave that comment
+a shape, so nothing durable proved the readback happened at all, let alone in its required place before
+the designation and the merge. `5062784888` BLOCKING 1 is right that an unmodelled step is not an
+enforced one. It is now a canonical top-level issue comment on PR #363 whose body parses as exactly:
+
+```
+XASSET-0062 RATIFICATION READBACK
+action: RATIFICATION-READBACK-RETAINED
+pull_request: 363
+ratification_comment_id: <positive integer>
+ratification_fingerprint: <64 lowercase hex, the canonical-JSON SHA-256 of the ratification record>
+declared_accepted_head: <40 lowercase hex>
+live_pull_request_head: <40 lowercase hex>
+independently_reviewed_head: <40 lowercase hex>
+selected_review_id: <positive integer>
+review_collection_complete: TRUE
+equality_proven: TRUE
+```
+
+The three head fields must be **equal to one another**; that equality is the whole content of `§G.9`'s
+three-way test, and a readback that records a mismatch records a failed readback. `review_collection_
+complete` and `equality_proven` admit **only** `TRUE` — a readback that did not prove the equality is
+not retained evidence of one, and there is no `FALSE` that closes anything. `ratification_comment_id`
+and `ratification_fingerprint` bind the record to **one** ratification, so a readback cannot be
+re-pointed at a different comment after the fact, and the fingerprint changes if that comment's own
+identity fields change.
+
+**J. The lifecycle composition predicate.** No single family's predicate may stand for the lifecycle.
+Composition consumes all eight nodes at once:
+
+1. the approving exact-head review resource;
+2. the principal ratification record;
+3. the retained readback record of `I`, whose declaration must name that exact ratification by id and
+   by fingerprint, and whose three heads must equal the live head;
+4. the principal designation record;
+5. the raw merged PR resource;
+6. the post-merge-verification record;
+7. the merge-commit CI run **and** its job, bound to each other per `D`;
+8. the closure record.
+
+It re-runs the ratification readback and the post-merge verification in full — it does not trust
+either, and it does not replace either — and then enforces **every adjacent edge of `E` on parsed
+instants**, including the two edges neither family could see: `ratification_at < readback_at` and
+`readback_at < designation_at`. It additionally asserts `ratification_at < merge_at` directly rather
+than by transitivity, so that the specific failure `5062784888` reproduced is caught by a named check
+rather than as a side effect.
+
+A lifecycle in which either half passes alone is **not** a proven lifecycle. That is the operative
+sentence, and it is why the composition predicate exists rather than a stronger version of either
+half.
 
 #### I.3 — What the rule does not do
 

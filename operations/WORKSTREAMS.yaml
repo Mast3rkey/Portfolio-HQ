@@ -18494,6 +18494,51 @@ workstreams:
           and NOT EXECUTABLE, ATTEMPT_1 intact, unclaimed and unconsumed, XASSET-0061 remains
           Proposed, and no lane, AUTHORIZATION_ROOT, allocation, target, trade or order is
           touched. Draft, open, unmerged; awaiting a fresh independent exact-head DELTA review.
+          SIXTH BOUNDED CORRECTION (independent exact-head DELTA review 5062784888, 2
+          BLOCKING / 1 MAJOR at head 650d7f0). The nine attacks from 5062494115 were confirmed
+          closed on their original terms and are preserved. All three new findings were
+          independently REPRODUCED before any edit. BLOCKING 1: the ratification family and
+          the merge family were two predicates with NO BRIDGE, so both returned True for a
+          lifecycle whose accepted ratification occurred AFTER the designation, the merge, the
+          verification, the CI run and the closure, using this filing's own positive fixtures
+          (ratification 13:00 against designation 09:00, merge 10:00, verification 10:05, CI
+          10:16, closure 10:30). Corrected by defining SS-I.2.1 J, one lifecycle-composition
+          predicate that re-runs BOTH families in full and then enforces every adjacent edge of
+          an eight-node chain on parsed instants, and by giving the SS-G.9 retained readback a
+          shape for the first time (SS-I.2.1 I) bound to the ratification comment id and
+          canonical fingerprint, the three agreeing heads, the selected review id, and
+          affirmative completeness and equality literals. All positive fixtures were rebuilt on
+          ONE coherent timeline (review 08:00, ratification 08:30, readback 08:45, designation
+          09:00, merge 10:00, verification 10:05, CI-run completion 10:16, closure 10:30);
+          there is no second positive timeline. BLOCKING 2: the run and job were validated
+          separately and never bound, so a job at attempt 2 against a run and declaration at
+          attempt 1 passed, and an arbitrary job id passed whenever the same id was copied into
+          the closure body. Corrected from fields read off the live resources -- job.run_id ==
+          run.id, job.run_url == run.url, one attempt across declaration/run/job,
+          job.workflow_name == run.name, plus the decision's own required workflow name, path,
+          job name and event, the repository, and the exact merge SHA on every resource that
+          exposes it. Closure is now ordered after the RUN's own completion (run.updated_at)
+          rather than the job's, because the run completes measurably later than its job on
+          both live runs examined (15:18:50Z against 15:18:49Z; 02:21:25Z against 02:21:24Z),
+          and the prior bound admitted that window. MAJOR 1: the SS-G identity path checked
+          login, type, association and application provenance but never user.id, so a
+          ratification with user.id deleted still proved equality; an exact positive integer id
+          is now required and folded into the retained fingerprint. The decision's own claim
+          that the designation comment's user.id must equal coordinator_id was corrected as
+          wrong -- the principal writes the designation and the coordinator is ordinarily
+          somebody else, so requiring equality would have permitted only self-designation --
+          and five identities are now separated explicitly. Mutation proof over the COMPOSED
+          lifecycle: 42 mutations, 41 caught, 0 missed, 0 invalid, 1 declared unreachable. Five
+          came back MISSED on the first run and were investigated rather than reclassified: one
+          (a consistently renamed workflow and job) was a REAL coverage gap and is closed with
+          new tests; two were provably redundant given an upstream equality and are pinned at
+          source level; one was a bad anchor and was re-targeted; and one targets a None-guard
+          proven unreachable by eight new tests, retained only because the composition predicate
+          promises never to raise, and reported in its own category rather than as caught.
+          Stage 1 remains UNARMED and NOT EXECUTABLE; ATTEMPT_1 intact, unclaimed and
+          unconsumed; XASSET-0061 remains Proposed; no lane, AUTHORIZATION_ROOT, allocation,
+          target, trade or order is touched. Draft, open, unmerged; awaiting a fresh independent
+          exact-head DELTA review.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

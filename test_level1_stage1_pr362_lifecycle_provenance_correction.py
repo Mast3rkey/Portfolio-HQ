@@ -293,6 +293,11 @@ def is_direct_principal_record(record: dict) -> bool:
         return False
     if _actor_type(record) != PRINCIPAL_TYPE:
         return False
+    # SS-I.2.1 A / DELTA 5062784888 MAJOR 1: a login is a mutable display handle. This path
+    # checked login, type, association and application provenance but never the numeric id,
+    # so a ratification with ``user.id`` DELETED still proved equality through the readback.
+    if _principal_actor_id(record) is None:
+        return False
     if record.get("author_association") != PRINCIPAL_ASSOCIATION:
         return False
     # PRESENT and null. An ABSENT key is the signature of a review or review comment, so
@@ -302,6 +307,24 @@ def is_direct_principal_record(record: dict) -> bool:
     if record["performed_via_github_app"] is not None:
         return False
     return True
+
+
+def _principal_actor_id(record: object) -> int | None:
+    """The record's exact positive integer ``user.id``, or ``None``.
+
+    Defined here rather than reusing ``_actor_identity`` because that helper lives further
+    down with the SS-I.2 evidence model; this is the SS-G identity path and must not depend
+    on it. Both reject the string form: GitHub returns ``209825114``, never ``"209825114"``.
+    """
+    if not isinstance(record, dict):
+        return None
+    user = record.get("user")
+    if not isinstance(user, dict):
+        return None
+    value = user.get("id")
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    return value if value > 0 else None
 
 
 def canonical_ratification_fingerprint(record: dict) -> str:
@@ -317,6 +340,7 @@ def canonical_ratification_fingerprint(record: dict) -> str:
         "html_url": record.get("html_url"),
         "issue_url": record.get("issue_url"),
         "user.login": _actor_login(record),
+        "user.id": _principal_actor_id(record),
         "user.type": _actor_type(record),
         "author_association": record.get("author_association"),
         "performed_via_github_app": record.get("performed_via_github_app"),
@@ -857,6 +881,8 @@ PMV_HEADER = "XASSET-0062 POST-MERGE VERIFICATION"
 PMV_ACTION = "POST-MERGE-VERIFICATION-PERFORMED"
 CLOSURE_HEADER = "XASSET-0062 LIFECYCLE CLOSURE"
 CLOSURE_ACTION = "FINAL-POST-CI-LIFECYCLE-CLOSURE"
+READBACK_HEADER = "XASSET-0062 RATIFICATION READBACK"
+READBACK_ACTION = "RATIFICATION-READBACK-RETAINED"
 
 _SHA256_HEX = re.compile(r"\A[0-9a-f]{64}\Z")
 _COORDINATOR_TYPES = ("User", "Bot")
@@ -910,6 +936,23 @@ PMV_SCHEMA: dict[str, str | None] = {
 #: mallory/Bot/NONE comment posted through an application named ``evil``, whose body read
 #: "I do NOT close this lifecycle.", passing as canonical closure and carrying the complete
 #: verification predicate to True.
+#: SS-I.2.1 I. The retained SS-G.9 readback, given a shape for the first time. DELTA review
+#: 5062784888 BLOCKING 1: SS-G.9 step 3 always required the readback to be retained as a
+#: separate GitHub lifecycle-evidence comment, but nothing modelled that comment, so no
+#: durable predicate proved the readback happened at all -- let alone before the designation.
+READBACK_SCHEMA: dict[str, str | None] = {
+    "action": READBACK_ACTION,
+    "pull_request": str(THIS_CORRECTIVE_PULL_REQUEST),
+    "ratification_comment_id": None,
+    "ratification_fingerprint": None,
+    "declared_accepted_head": None,
+    "live_pull_request_head": None,
+    "independently_reviewed_head": None,
+    "selected_review_id": None,
+    "review_collection_complete": "TRUE",
+    "equality_proven": "TRUE",
+}
+
 CLOSURE_SCHEMA: dict[str, str | None] = {
     "action": CLOSURE_ACTION,
     "pull_request": str(THIS_CORRECTIVE_PULL_REQUEST),
@@ -1029,6 +1072,47 @@ def _exact_positive_int(value: object) -> int | None:
     if isinstance(value, bool) or not isinstance(value, int):
         return None
     return value if value > 0 else None
+
+
+def parse_readback_body(body: object) -> dict[str, str] | None:
+    """SS-I.2.1 I -- the retained SS-G.9 readback declaration, or ``None``.
+
+    The three head fields must be EQUAL to one another: that equality is the whole content of
+    SS-G.9's three-way test, and a readback recording a mismatch records a FAILED readback.
+    """
+    parsed = _parse_declaration(body, READBACK_HEADER, READBACK_SCHEMA)
+    if parsed is None:
+        return None
+    heads = (parsed["declared_accepted_head"], parsed["live_pull_request_head"],
+             parsed["independently_reviewed_head"])
+    for head in heads:
+        if not _SHA40.match(head):
+            return None
+    if len(set(heads)) != 1:
+        return None
+    for field in ("ratification_comment_id", "selected_review_id"):
+        if _positive_int(parsed[field]) is None:
+            return None
+    if not _SHA256_HEX.match(parsed["ratification_fingerprint"]):
+        return None
+    return parsed
+
+
+def canonical_readback_record_is_valid(record: object) -> bool:
+    """SS-I.2.1 I -- the readback is a canonical record carrying an affirmative declaration."""
+    if not isinstance(record, dict):
+        return False
+    if not is_canonical_top_level_issue_comment(record):
+        return False
+    if _actor_identity(record) is None:
+        return False
+    if not _nonempty_str(record.get("author_association")):
+        return False
+    if _record_app_identity(record) is None:
+        return False
+    if parse_utc_instant(record.get("created_at")) is None:
+        return False
+    return parse_readback_body(record.get("body")) is not None
 
 
 def _positive_int(value: object) -> int | None:
@@ -1152,27 +1236,101 @@ def canonical_closure_record_is_valid(record: object) -> bool:
     return parse_closure_body(record.get("body")) is not None
 
 
-def canonical_ci_run_is_successful(run: object, job: object, merge_commit_sha: object) -> bool:
-    """SS-I.2.1 D/G -- the raw Actions run and job, at the EXACT merge SHA.
+#: SS-I.2.1 D -- the workflow this lifecycle's merge-commit CI must actually be, read from the
+#: live run resource rather than assumed. A different successful workflow at the same SHA is
+#: not this workflow.
+REQUIRED_CI_WORKFLOW_NAME = "CI"
+REQUIRED_CI_WORKFLOW_PATH = ".github/workflows/ci.yml"
+REQUIRED_CI_JOB_NAME = "test"
+#: A merge-commit run is triggered by the push of the merge commit, not by a pull request.
+REQUIRED_CI_EVENT = "push"
 
-    A successful run at some other commit closes nothing, and neither does an incomplete one.
+
+def canonical_ci_run_is_successful(run: object, job: object, merge_commit_sha: object) -> bool:
+    """SS-I.2.1 D/G -- the raw Actions run and its OWN job, at the EXACT merge SHA.
+
+    DELTA review 5062784888 BLOCKING 2: the prior implementation validated the run and the job
+    SEPARATELY and never proved the job belonged to that run, so a job from another run or
+    another attempt could be paired with the declared run. Reproduced three ways at the
+    reviewed head -- ``job.run_attempt=2`` against a run and declaration at attempt 1; an
+    arbitrary job id 424242 quoted into the closure body; and the complete verification
+    predicate staying True throughout.
+
+    Every field compared below was read from the live resources for runs 33259403778 and
+    33349722310. None is invented.
     """
     if not (isinstance(run, dict) and isinstance(job, dict)):
         return False
     if not (isinstance(merge_commit_sha, str) and _SHA40.match(merge_commit_sha)):
         return False
+
+    run_id = _exact_positive_int(run.get("id"))
+    job_id = _exact_positive_int(job.get("id"))
+    if run_id is None or job_id is None:
+        return False
+
+    # The job BELONGS to this run -- ``run_id`` and ``run_url`` are the canonical relationship
+    # fields the live job resource exposes.
+    if _exact_positive_int(job.get("run_id")) != run_id:
+        return False
+    if run.get("url") != f"{REPO_API}/actions/runs/{run_id}":
+        return False
+    if job.get("run_url") != run["url"]:
+        return False
+    if job.get("url") != f"{REPO_API}/actions/jobs/{job_id}":
+        return False
+
+    # ONE attempt across the run and its job. The declaration's own attempt is compared
+    # against this pair by ``closure_is_authorized``.
+    attempt = _exact_positive_int(run.get("run_attempt"))
+    if attempt is None or _exact_positive_int(job.get("run_attempt")) != attempt:
+        return False
+
+    # The intended workflow, event and repository -- a different successful workflow at the
+    # same commit is not this lifecycle's required CI.
+    if run.get("name") != REQUIRED_CI_WORKFLOW_NAME:
+        return False
+    if run.get("path") != REQUIRED_CI_WORKFLOW_PATH:
+        return False
+    if _exact_positive_int(run.get("workflow_id")) is None:
+        return False
+    if run.get("event") != REQUIRED_CI_EVENT:
+        return False
+    repo = run.get("repository")
+    if not isinstance(repo, dict) or repo.get("full_name") != CANONICAL_REPOSITORY:
+        return False
+    if job.get("workflow_name") != run["name"]:
+        return False
+    if job.get("name") != REQUIRED_CI_JOB_NAME:
+        return False
+
+    # The exact merge commit, on every resource that exposes it.
     for resource in (run, job):
-        if _exact_positive_int(resource.get("id")) is None:
-            return False
         if resource.get("head_sha") != merge_commit_sha:
-            return False
-        if _exact_positive_int(resource.get("run_attempt")) is None:
             return False
         if resource.get("status") != "completed":
             return False
         if resource.get("conclusion") != "success":
             return False
-    return parse_utc_instant(job.get("completed_at")) is not None
+
+    # SS-I.2.1 D: the RUN's own completion instant, which is measurably LATER than its job's.
+    if parse_utc_instant(job.get("completed_at")) is None:
+        return False
+    return ci_run_completed_at(run) is not None
+
+
+def ci_run_completed_at(run: object) -> datetime.datetime | None:
+    """The run's own completion instant -- ``updated_at`` on the raw run resource.
+
+    Measured, not assumed: on run 33259403778 the run completed 15:18:50Z while its job
+    completed 15:18:49Z, and on run 33349722310 02:21:25Z against 02:21:24Z. Ordering closure
+    only after the JOB therefore admits a window in which the run has not finished.
+    """
+    if not isinstance(run, dict):
+        return None
+    if run.get("status") != "completed":
+        return None
+    return parse_utc_instant(run.get("updated_at"))
 
 
 def closure_is_authorized(
@@ -1203,9 +1361,13 @@ def closure_is_authorized(
         return False
     if _positive_int(declaration["merge_commit_ci_job_id"]) != _positive_int(ci_job.get("id")):
         return False
-    if _positive_int(declaration["merge_commit_ci_run_attempt"]) != _positive_int(
-        ci_run.get("run_attempt")
-    ):
+    # SS-I.2.1 D: ONE attempt across the declaration, the run and the job. The run/job pair is
+    # already proved to share an attempt by canonical_ci_run_is_successful; this ties the
+    # declaration to that same value rather than to the run alone.
+    declared_attempt = _positive_int(declaration["merge_commit_ci_run_attempt"])
+    if declared_attempt != _exact_positive_int(ci_run.get("run_attempt")):
+        return False
+    if declared_attempt != _exact_positive_int(ci_job.get("run_attempt")):
         return False
     # Closure names the act it completes, rather than floating free.
     if _positive_int(declaration["post_merge_verification_comment_id"]) != _positive_int(
@@ -1225,13 +1387,14 @@ def closure_is_authorized(
     if _record_app_identity(closure_record) != designated["coordinator_app"]:
         return False
 
-    # SS-I.2.1 E: verification_at < ci_completed_at < closure_at, all strict.
+    # SS-I.2.1 E: verification_at < ci_RUN_completed_at < closure_at, all strict. The bound is
+    # the RUN's own completion, not the job's -- DELTA 5062784888 BLOCKING 2 point 6.
     verified_at = parse_utc_instant(verification_record.get("created_at"))
-    ci_completed_at = parse_utc_instant(ci_job.get("completed_at"))
+    run_completed_at = ci_run_completed_at(ci_run)
     closed_at = parse_utc_instant(closure_record["created_at"])
-    if verified_at is None or ci_completed_at is None or closed_at is None:
+    if verified_at is None or run_completed_at is None or closed_at is None:
         return False
-    return verified_at < ci_completed_at < closed_at
+    return verified_at < run_completed_at < closed_at
 
 
 def session_reveal_matches_commitment(reveal: object, commitment: object) -> bool:
@@ -1345,6 +1508,117 @@ def post_merge_verification_is_valid(
     return designation_at < merged_at < verified_at
 
 
+def lifecycle_composition_is_proven(
+    *,
+    approving_review: object,
+    ratification_record: object,
+    live_pull_request: object,
+    review_collection: object,
+    readback_record: object,
+    designation_record: object,
+    merged_pull_request: object,
+    verification_record: object,
+    ci_run: object,
+    ci_job: object,
+    closure_record: object,
+) -> dict:
+    """SS-I.2.1 J -- the whole lifecycle, or nothing. Never raises.
+
+    DELTA review 5062784888 BLOCKING 1. ``external_ratification_readback`` and
+    ``post_merge_verification_is_valid`` were two predicates with NO BRIDGE: the first
+    validated only through the ratification, the second accepted designation, merge, PMV, CI
+    and closure without ever consuming the ratification or its retained readback. Both
+    therefore returned True for a lifecycle in which the accepted ratification occurred AFTER
+    the designation, the merge, the verification, the CI run AND the closure -- reproduced
+    with this filing's own positive fixtures at the reviewed head.
+
+    Neither predicate was wrong about what it checked. Together they proved nothing, because
+    nothing checked them together. This is that check. It RE-RUNS both in full rather than
+    trusting or replacing either, then enforces every adjacent edge of SS-I.2.1 E on parsed
+    instants -- including the two edges neither family could see.
+    """
+    out: dict = {
+        "proven": False, "readback_evidence": None, "ratification_readback": None,
+        "post_merge_verification": None, "instants": {}, "failure_reason": None,
+    }
+
+    # 1-2. The ratification family, re-run in full.
+    readback = external_ratification_readback(
+        ratification_record, live_pull_request, approving_review, review_collection)
+    out["ratification_readback"] = readback
+    if not readback["equality_proven"]:
+        out["failure_reason"] = f"ratification readback failed: {readback['failure_reason']}"
+        return out
+
+    # 3. The retained SS-G.9 readback record, bound to THAT ratification.
+    if not canonical_readback_record_is_valid(readback_record):
+        out["failure_reason"] = "retained readback record is missing or invalid"
+        return out
+    retained = parse_readback_body(readback_record["body"])
+    out["readback_evidence"] = retained
+    if _positive_int(retained["ratification_comment_id"]) != _exact_positive_int(
+        ratification_record.get("id")
+    ):
+        out["failure_reason"] = "readback names a different ratification comment"
+        return out
+    if retained["ratification_fingerprint"] != canonical_ratification_fingerprint(
+        ratification_record
+    ):
+        out["failure_reason"] = "readback fingerprint does not match the ratification record"
+        return out
+    if retained["declared_accepted_head"] != readback["live_pr_head"]:
+        out["failure_reason"] = "readback names a different head"
+        return out
+    if _positive_int(retained["selected_review_id"]) != _exact_positive_int(
+        approving_review.get("id") if isinstance(approving_review, dict) else None
+    ):
+        out["failure_reason"] = "readback names a different approving review"
+        return out
+
+    # 4-8. The merge family, re-run in full.
+    verified = post_merge_verification_is_valid(
+        verification_record if isinstance(verification_record, dict) else {},
+        designation_record=designation_record,
+        merged_pull_request=merged_pull_request,
+        closure_record=closure_record,
+        ci_run=ci_run, ci_job=ci_job)
+    out["post_merge_verification"] = verified
+    if not verified:
+        out["failure_reason"] = "post-merge verification failed"
+        return out
+
+    # Every adjacent edge of SS-I.2.1 E, on parsed instants.
+    instants = {
+        "approving_review_submitted_at": parse_utc_instant(approving_review.get("submitted_at")),
+        "ratification_at": parse_utc_instant(ratification_record.get("created_at")),
+        "readback_at": parse_utc_instant(readback_record.get("created_at")),
+        "designation_at": parse_utc_instant(designation_record.get("created_at")),
+        "merge_at": parse_utc_instant(merged_pull_request.get("merged_at")),
+        "verification_at": parse_utc_instant(verification_record.get("created_at")),
+        "ci_run_completed_at": ci_run_completed_at(ci_run),
+        "closure_at": parse_utc_instant(closure_record.get("created_at")),
+    }
+    out["instants"] = {k: (v.isoformat() if v else None) for k, v in instants.items()}
+    order = list(instants)
+    for name in order:
+        if instants[name] is None:
+            out["failure_reason"] = f"{name} is missing or unparseable"
+            return out
+    for earlier, later in zip(order, order[1:]):
+        if not (instants[earlier] < instants[later]):
+            out["failure_reason"] = f"lifecycle order violated: {earlier} is not before {later}"
+            return out
+
+    # Asserted directly, not by transitivity, so the exact failure 5062784888 reproduced is
+    # caught by a NAMED check rather than as a side effect of the chain above.
+    if not (instants["ratification_at"] < instants["merge_at"]):
+        out["failure_reason"] = "ratification is not before the merge"
+        return out
+
+    out["proven"] = True
+    return out
+
+
 # --------------------------------------------------------------------------------------
 # Record fixtures modelled on the real, live-derived record SHAPES.
 #
@@ -1441,7 +1715,7 @@ def _review_comment(ident=3824991608):
         "diff_hunk": "@@ -1 +1 @@",
         "path": "governance/decisions.yaml",
         "position": 1,
-        "user": {"login": PRINCIPAL_LOGIN, "type": PRINCIPAL_TYPE},
+        "user": {"login": PRINCIPAL_LOGIN, "type": PRINCIPAL_TYPE, "id": PRINCIPAL_ID},
         "author_association": PRINCIPAL_ASSOCIATION,
         "created_at": "2026-08-30T18:00:00Z",
         "body": SCOPE_BODY,
@@ -1455,7 +1729,7 @@ def _commit_comment(ident=170000001):
         "url": f"{REPO_API}/comments/{ident}",
         "html_url": f"{REPO_HTML}/commit/{RATIFIED_MERGE}#commitcomment-{ident}",
         "commit_id": RATIFIED_MERGE,
-        "user": {"login": PRINCIPAL_LOGIN, "type": PRINCIPAL_TYPE},
+        "user": {"login": PRINCIPAL_LOGIN, "type": PRINCIPAL_TYPE, "id": PRINCIPAL_ID},
         "author_association": PRINCIPAL_ASSOCIATION,
         "performed_via_github_app": None,
         "created_at": "2026-08-30T18:00:00Z",
@@ -2188,8 +2462,19 @@ PMV_MERGE_COMMIT_SHA = "c" * 40
 PMV_DESIGNATED_AT = "2026-08-31T09:00:00Z"
 PMV_MERGED_AT = "2026-08-31T10:00:00Z"
 PMV_VERIFIED_AT = "2026-08-31T10:05:00Z"
+#: The job completes strictly BEFORE its run, as measured on the live resources: run
+#: 33259403778 completed 15:18:50Z while its job completed 15:18:49Z.
+PMV_CI_JOB_COMPLETED_AT = "2026-08-31T10:15:59Z"
+#: The RUN's own completion -- ``run.updated_at`` -- which is the bound SS-I.2.1 E uses.
 PMV_CI_COMPLETED_AT = "2026-08-31T10:16:00Z"
 PMV_CLOSED_AT = "2026-08-31T10:30:00Z"
+#: SS-I.2.1 E, the three nodes that precede the designation. Placed BEFORE 09:00 so that the
+#: whole eight-node chain -- review, ratification, readback, designation, merge, verification,
+#: CI-run completion, closure -- is one strictly increasing sequence.
+LIFECYCLE_REVIEW_AT = "2026-08-31T08:00:00Z"
+LIFECYCLE_RATIFIED_AT = "2026-08-31T08:30:00Z"
+LIFECYCLE_READBACK_AT = "2026-08-31T08:45:00Z"
+READBACK_RECORD_ID = 8_300_000_003
 PMV_RECORD_ID = 8_300_000_010
 PMV_CI_RUN_ID = 33_345_371_079
 PMV_CI_JOB_ID = 99_348_350_944
@@ -2252,21 +2537,121 @@ def _closure_body(action=CLOSURE_ACTION, pull_request=THIS_CORRECTIVE_PULL_REQUE
 
 
 def _ci_run(**over):
-    """The RAW Actions run resource, by GitHub's own field names."""
-    out = {"id": PMV_CI_RUN_ID, "head_sha": PMV_MERGE_COMMIT_SHA, "run_attempt": 1,
+    """The RAW Actions run resource, by GitHub's own field names.
+
+    Every key below appears on the live resource; read from runs 33259403778 and 33349722310
+    during the SS-I.2.1 D binding audit.
+    """
+    out = {"id": PMV_CI_RUN_ID,
+           "url": f"{REPO_API}/actions/runs/{PMV_CI_RUN_ID}",
+           "html_url": f"{REPO_HTML}/actions/runs/{PMV_CI_RUN_ID}",
+           "name": REQUIRED_CI_WORKFLOW_NAME,
+           "path": REQUIRED_CI_WORKFLOW_PATH,
+           "workflow_id": 317141285,
+           "event": REQUIRED_CI_EVENT,
+           "head_sha": PMV_MERGE_COMMIT_SHA,
+           "head_branch": "main",
+           "run_attempt": 1,
+           "run_number": 914,
            "status": "completed", "conclusion": "success",
-           "created_at": PMV_MERGED_AT, "updated_at": PMV_CI_COMPLETED_AT}
+           "repository": {"full_name": CANONICAL_REPOSITORY, "id": 1298786643},
+           "created_at": PMV_MERGED_AT, "run_started_at": PMV_MERGED_AT,
+           "updated_at": PMV_CI_COMPLETED_AT}
     out.update(over)
     return out
 
 
 def _ci_job(**over):
-    """The RAW Actions job resource."""
-    out = {"id": PMV_CI_JOB_ID, "head_sha": PMV_MERGE_COMMIT_SHA, "run_attempt": 1,
+    """The RAW Actions job resource.
+
+    ``run_id`` and ``run_url`` are the canonical fields that bind a job to its run. The prior
+    fixture omitted both, which is exactly how a job from another run or attempt could satisfy
+    the declared run -- DELTA review 5062784888 BLOCKING 2.
+    """
+    out = {"id": PMV_CI_JOB_ID,
+           "run_id": PMV_CI_RUN_ID,
+           "run_url": f"{REPO_API}/actions/runs/{PMV_CI_RUN_ID}",
+           "url": f"{REPO_API}/actions/jobs/{PMV_CI_JOB_ID}",
+           "html_url": f"{REPO_HTML}/actions/runs/{PMV_CI_RUN_ID}/job/{PMV_CI_JOB_ID}",
+           "run_attempt": 1,
+           "head_sha": PMV_MERGE_COMMIT_SHA,
+           "head_branch": "main",
+           "name": REQUIRED_CI_JOB_NAME,
+           "workflow_name": REQUIRED_CI_WORKFLOW_NAME,
            "status": "completed", "conclusion": "success",
-           "completed_at": PMV_CI_COMPLETED_AT}
+           "started_at": PMV_MERGED_AT,
+           "completed_at": PMV_CI_JOB_COMPLETED_AT}
     out.update(over)
     return out
+
+
+def _readback_body(action=READBACK_ACTION, pull_request=THIS_CORRECTIVE_PULL_REQUEST,
+                   ratification_comment_id=None, ratification_fingerprint=None,
+                   declared_accepted_head=REAL_FINAL_HEAD,
+                   live_pull_request_head=None, independently_reviewed_head=None,
+                   selected_review_id=5_062_156_189,
+                   review_collection_complete="TRUE", equality_proven="TRUE",
+                   header=READBACK_HEADER):
+    """SS-I.2.1 I -- the retained SS-G.9 readback declaration."""
+    if ratification_comment_id is None:
+        ratification_comment_id = 8_400_000_001
+    if ratification_fingerprint is None:
+        ratification_fingerprint = canonical_ratification_fingerprint(
+            _ratification_naming(REAL_FINAL_HEAD))
+    if live_pull_request_head is None:
+        live_pull_request_head = declared_accepted_head
+    if independently_reviewed_head is None:
+        independently_reviewed_head = declared_accepted_head
+    return "\n".join([
+        header,
+        f"action: {action}",
+        f"pull_request: {pull_request}",
+        f"ratification_comment_id: {ratification_comment_id}",
+        f"ratification_fingerprint: {ratification_fingerprint}",
+        f"declared_accepted_head: {declared_accepted_head}",
+        f"live_pull_request_head: {live_pull_request_head}",
+        f"independently_reviewed_head: {independently_reviewed_head}",
+        f"selected_review_id: {selected_review_id}",
+        f"review_collection_complete: {review_collection_complete}",
+        f"equality_proven: {equality_proven}",
+    ])
+
+
+def _readback_record(created=LIFECYCLE_READBACK_AT, ident=READBACK_RECORD_ID,
+                     body=_DEFAULT, login=COORDINATOR_LOGIN, type_=COORDINATOR_TYPE,
+                     assoc=COORDINATOR_ASSOCIATION, app=COORDINATOR_APP,
+                     actor_id=COORDINATOR_ID, **over):
+    """The retained SS-G.9 lifecycle-evidence comment, as a canonical record."""
+    return _issue_comment(login=login, type_=type_, assoc=assoc, app=app, created=created,
+                          ident=ident, actor_id=actor_id,
+                          body=_readback_body() if body is _DEFAULT else body, **over)
+
+
+def _lifecycle(**over):
+    """The ONE coherent lifecycle: eight nodes, strictly increasing.
+
+    review 08:00 < ratification 08:30 < readback 08:45 < designation 09:00 < merge 10:00
+    < verification 10:05 < CI run completion 10:16 < closure 10:30.
+
+    There is exactly one positive timeline in this suite. DELTA review 5062784888 BLOCKING 1
+    found two that could not coexist: a ratification at 13:00 accepted against a designation,
+    merge, verification, CI run and closure that had all already happened.
+    """
+    review = _final_review()
+    ctx = dict(
+        approving_review=review,
+        ratification_record=_ratification_naming(REAL_FINAL_HEAD),
+        live_pull_request=_live_pr(),
+        review_collection=_complete_collection(review),
+        readback_record=_readback_record(),
+        designation_record=_designation_record(),
+        merged_pull_request=_merged_pull_request(),
+        verification_record=_coordinator_record(),
+        ci_run=_ci_run(), ci_job=_ci_job(),
+        closure_record=_closure_record(),
+    )
+    ctx.update(over)
+    return ctx
 
 
 def _open_pull_request(head=REAL_FINAL_HEAD, number=THIS_CORRECTIVE_PULL_REQUEST, **over):
@@ -2359,7 +2744,7 @@ def _final_review(head=REAL_FINAL_HEAD, ident=5_062_156_189, state="COMMENTED",
         "node_id": "PRR_synthetic",
         "state": state,
         "commit_id": head,
-        "submitted_at": "2026-08-31T12:00:00Z",
+        "submitted_at": LIFECYCLE_REVIEW_AT,
         "author_association": "OWNER",
         "html_url": f"{REPO_HTML}/pull/{pr}#pullrequestreview-{ident}",
         "pull_request_url": f"{REPO_API}/pulls/{pr}",
@@ -2370,7 +2755,7 @@ def _final_review(head=REAL_FINAL_HEAD, ident=5_062_156_189, state="COMMENTED",
     return out
 
 
-def _ratification_naming(head, created="2026-08-31T13:00:00Z", **over):
+def _ratification_naming(head, created=LIFECYCLE_RATIFIED_AT, **over):
     """A ratification that POSTDATES the approving review, as SS-I.2.1 F.4 requires."""
     over.setdefault("created", created)
     body = SCOPE_BODY.replace(f"pr363_accepted_head: {FIXTURE_PR363_HEAD}",
@@ -3365,6 +3750,50 @@ class TestTheProtocolIsAnchoredInTheDecision:
         assert block.splitlines()[0] == PMV_HEADER
         assert f"action: {PMV_ACTION}" in block
 
+    def test_the_readback_block_defines_the_implementation_constants(self):
+        block = self._protocol_block("XASSET-0062 RATIFICATION READBACK")
+        assert block.splitlines()[0] == READBACK_HEADER
+        assert f"action: {READBACK_ACTION}" in block
+
+    @pytest.mark.parametrize("key", sorted(READBACK_SCHEMA))
+    def test_every_readback_key_appears_in_the_decision_block(self, key):
+        assert f"{key}:" in self._protocol_block("XASSET-0062 RATIFICATION READBACK"), key
+
+    def test_the_readback_block_names_no_key_the_implementation_lacks(self):
+        block = self._protocol_block("XASSET-0062 RATIFICATION READBACK")
+        declared = {ln.split(":", 1)[0].strip() for ln in block.splitlines()
+                    if ":" in ln and not ln.startswith("XASSET-")}
+        assert declared == set(READBACK_SCHEMA), declared ^ set(READBACK_SCHEMA)
+
+    def test_the_readback_fixed_literals_are_the_decisions_own(self):
+        block = self._protocol_block("XASSET-0062 RATIFICATION READBACK")
+        for key, literal in READBACK_SCHEMA.items():
+            if literal is not None:
+                assert f"{key}: {literal}" in block, key
+
+    def test_the_decision_defines_the_composition_predicate(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "J. The lifecycle composition predicate." in flat
+        assert "No single family's predicate may stand for the lifecycle." in flat
+        assert "A lifecycle in which either half passes alone is **not** a proven lifecycle." in flat
+
+    def test_the_decision_defines_the_run_job_binding_from_measured_fields(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "The CI job must be proved to belong to the named run" in flat
+        for token in ("`job.run_id == run.id`", "`job.run_url == run.url`",
+                      "`job.workflow_name == run.name`", "run.updated_at"):
+            assert token in flat, token
+        assert "Closure is ordered after the RUN's completion, not the job's." in flat
+
+    def test_the_ci_constants_are_the_decisions_own(self):
+        """Anchored to the fenced block, not to prose that happens to mention them."""
+        block = self._protocol_block("XASSET-0062 REQUIRED MERGE-COMMIT CI")
+        for key, literal in (("workflow_name", REQUIRED_CI_WORKFLOW_NAME),
+                             ("workflow_path", REQUIRED_CI_WORKFLOW_PATH),
+                             ("job_name", REQUIRED_CI_JOB_NAME),
+                             ("event", REQUIRED_CI_EVENT)):
+            assert f"{key}: {literal}" in block, (key, literal)
+
     def test_the_closure_block_defines_the_implementation_constants(self):
         block = self._protocol_block("XASSET-0062 LIFECYCLE CLOSURE")
         assert block.splitlines()[0] == CLOSURE_HEADER
@@ -3474,9 +3903,13 @@ class TestTheProtocolIsAnchoredInTheDecision:
         assert "reviewer **independence is procedural**" in flat
 
     def test_the_decision_states_the_chronology(self):
+        """SS-I.2.1 E is now EIGHT nodes: readback added, CI narrowed to the RUN."""
         flat = _flat(_read(DECISION_RELPATH))
-        assert "approving_review_submitted_at **<** ratification_at **<** designation_at" in flat
-        assert "merge_at **<** verification_at **<** ci_completed_at **<** closure_at" in flat
+        assert ("approving_review_submitted_at **<** ratification_at **<** readback_at "
+                "**<** designation_at **<** merge_at **<** verification_at "
+                "**<** ci_run_completed_at **<** closure_at") in flat
+        assert "Every relation is **strict**." in flat
+        assert "No edge in this chain may be proved by a predicate that cannot see both of its" in flat
 
     def test_the_canonical_repository_comes_from_the_load_bearing_module(self):
         """Not a second copy written here -- the module is the independent anchor."""
@@ -4307,7 +4740,7 @@ class TestTheReviewCollectionCompletenessIsProved:
 class TestTheRatificationOrderingIsEnforced:
     """DELTA review 5062494115 BLOCKING 2 -- review -> ratification -> readback -> merge."""
 
-    @pytest.mark.parametrize("created", ["2026-08-31T11:59:59Z", "2026-08-31T12:00:00Z"])
+    @pytest.mark.parametrize("created", ["2026-08-31T07:59:59Z", LIFECYCLE_REVIEW_AT])
     def test_a_ratification_at_or_before_the_approval_fails(self, created):
         """Equality fails too: SS-I.2.1 F.4 is strict."""
         out = _readback(_ratification_naming(REAL_FINAL_HEAD, created=created))
@@ -4325,7 +4758,7 @@ class TestTheRatificationOrderingIsEnforced:
         assert out["failure_reason"] == "record fails an SS-G structural clause"
 
     def test_one_second_after_the_approval_passes(self):
-        out = _readback(_ratification_naming(REAL_FINAL_HEAD, created="2026-08-31T12:00:01Z"))
+        out = _readback(_ratification_naming(REAL_FINAL_HEAD, created="2026-08-31T08:00:01Z"))
         assert out["equality_proven"] is True
 
     @pytest.mark.parametrize("over", [
@@ -4346,7 +4779,7 @@ class TestTheRatificationOrderingIsEnforced:
 
     def test_the_retained_evidence_names_the_approval_instant(self):
         out = _readback(_ratification_naming(REAL_FINAL_HEAD))
-        assert out["approving_review_submitted_at"] == "2026-08-31T12:00:00Z"
+        assert out["approving_review_submitted_at"] == LIFECYCLE_REVIEW_AT
         assert out["review_collection_complete"] is True
 
 
@@ -4446,14 +4879,19 @@ class TestEveryChronologyBoundaryIsStrictAtEquality:
         return ctx
 
     def test_ci_completing_at_the_verification_instant_fails(self):
-        """``verified_at < ci_completed_at`` -- equality is not "after"."""
+        """``verified_at < ci_RUN_completed_at`` -- equality is not "after".
+
+        The bound moved from ``job.completed_at`` to ``run.updated_at`` under DELTA review
+        5062784888 BLOCKING 2, so this varies the RUN. Varying only the job no longer moves
+        this boundary, which is the point: the job is not the run.
+        """
         assert closure_is_authorized(
             _closure_record(),
-            **self._ctx(ci_job=_ci_job(completed_at=PMV_VERIFIED_AT))) is False
+            **self._ctx(ci_run=_ci_run(updated_at=PMV_VERIFIED_AT))) is False
         # One second later is the nearest lawful value.
         assert closure_is_authorized(
             _closure_record(),
-            **self._ctx(ci_job=_ci_job(completed_at="2026-08-31T10:05:01Z"))) is True
+            **self._ctx(ci_run=_ci_run(updated_at="2026-08-31T10:05:01Z"))) is True
 
     def test_closure_at_the_ci_completion_instant_fails(self):
         """``ci_completed_at < closed_at`` -- equality is not "after"."""
@@ -4469,14 +4907,460 @@ class TestEveryChronologyBoundaryIsStrictAtEquality:
         same instant, which is not evidence that anything changed after it.
         """
         simultaneous = _final_review(ident=5_000_000_003,
-                                     submitted_at="2026-08-31T12:00:00Z",
+                                     submitted_at=LIFECYCLE_REVIEW_AT,
                                      body="FORMAL DISPOSITION: CHANGES REQUIRED")
         out = _readback(_ratification_naming(REAL_FINAL_HEAD), collection=[simultaneous])
         assert out["equality_proven"] is True
         assert out["later_adverse_review_exists"] is False
         # One second later genuinely is later, and does defeat it.
         one_later = _final_review(ident=5_000_000_004,
-                                  submitted_at="2026-08-31T12:00:01Z",
+                                  submitted_at="2026-08-31T08:00:01Z",
                                   body="FORMAL DISPOSITION: CHANGES REQUIRED")
         assert _readback(_ratification_naming(REAL_FINAL_HEAD),
                          collection=[one_later])["equality_proven"] is False
+
+
+def _coherent_lifecycle(ratified_at=LIFECYCLE_RATIFIED_AT, readback_at=LIFECYCLE_READBACK_AT,
+                        **over):
+    """A COHERENT attacker: the readback is re-bound to whatever ratification is supplied.
+
+    Without this, moving the ratification changes its fingerprint and the composition fails on
+    the binding rather than on the chronology -- which would leave the chronology edge itself
+    untested. These fixtures make the ordering the only thing left to catch the attack.
+    """
+    ratification = _ratification_naming(REAL_FINAL_HEAD, created=ratified_at)
+    readback = _readback_record(created=readback_at, body=_readback_body(
+        ratification_comment_id=ratification["id"],
+        ratification_fingerprint=canonical_ratification_fingerprint(ratification)))
+    return _lifecycle(ratification_record=ratification, readback_record=readback, **over)
+
+
+class TestTheLifecycleIsProvedAsOneComposition:
+    """DELTA review 5062784888 BLOCKING 1 -- two predicates, no bridge.
+
+    ``external_ratification_readback`` validated only through the ratification;
+    ``post_merge_verification_is_valid`` accepted designation/merge/PMV/CI/closure without ever
+    consuming the ratification or its retained readback. Both returned True for a lifecycle in
+    which the accepted ratification came AFTER everything it purported to authorize.
+    """
+
+    def test_the_one_coherent_lifecycle_is_proven(self):
+        out = lifecycle_composition_is_proven(**_lifecycle())
+        assert out["proven"] is True
+        assert out["failure_reason"] is None
+
+    def test_the_positive_timeline_is_strictly_increasing(self):
+        """There is exactly ONE positive timeline, and it satisfies SS-I.2.1 E by itself."""
+        out = lifecycle_composition_is_proven(**_lifecycle())
+        order = ["approving_review_submitted_at", "ratification_at", "readback_at",
+                 "designation_at", "merge_at", "verification_at",
+                 "ci_run_completed_at", "closure_at"]
+        instants = [out["instants"][name] for name in order]
+        assert all(a < b for a, b in zip(instants, instants[1:])), instants
+
+    def test_the_reviewers_exact_reproduction_now_fails_as_a_whole(self):
+        """The reproduction, verbatim: ratification 13:00 against a lifecycle ending 10:30."""
+        halves = _lifecycle(
+            ratification_record=_ratification_naming(REAL_FINAL_HEAD,
+                                                     created="2026-08-31T13:00:00Z"))
+        # Each half still passes ALONE -- neither was wrong about what it checked.
+        assert external_ratification_readback(
+            halves["ratification_record"], halves["live_pull_request"],
+            halves["approving_review"], halves["review_collection"]
+        )["equality_proven"] is True
+        assert post_merge_verification_is_valid(
+            halves["verification_record"],
+            designation_record=halves["designation_record"],
+            merged_pull_request=halves["merged_pull_request"],
+            closure_record=halves["closure_record"],
+            ci_run=halves["ci_run"], ci_job=halves["ci_job"]) is True
+        # Composed, it fails.
+        assert lifecycle_composition_is_proven(**halves)["proven"] is False
+
+    @pytest.mark.parametrize("ratified_at,readback_at,label", [
+        ("2026-08-31T09:30:00Z", "2026-08-31T09:40:00Z", "ratification after designation"),
+        (PMV_MERGED_AT, "2026-08-31T10:00:01Z", "ratification at the merge"),
+        ("2026-08-31T10:01:00Z", "2026-08-31T10:02:00Z", "ratification after the merge"),
+        ("2026-08-31T11:00:00Z", "2026-08-31T11:05:00Z", "ratification after closure"),
+        ("2026-08-31T13:00:00Z", "2026-08-31T13:05:00Z", "ratification after everything"),
+    ])
+    def test_a_late_ratification_fails_on_ordering_even_when_coherently_rebound(
+            self, ratified_at, readback_at, label):
+        out = lifecycle_composition_is_proven(
+            **_coherent_lifecycle(ratified_at=ratified_at, readback_at=readback_at))
+        assert out["proven"] is False, label
+        assert "lifecycle order violated" in out["failure_reason"], (label, out["failure_reason"])
+
+    @pytest.mark.parametrize("ratified_at,readback_at,edge", [
+        (LIFECYCLE_RATIFIED_AT, LIFECYCLE_RATIFIED_AT, "ratification_at is not before readback_at"),
+        (LIFECYCLE_RATIFIED_AT, PMV_DESIGNATED_AT, "readback_at is not before designation_at"),
+    ])
+    def test_equality_at_a_strict_boundary_fails(self, ratified_at, readback_at, edge):
+        """The two edges only the composition can see. Equality is the value that separates
+        ``<`` from ``<=``, so each is pinned at exactly the instant it separates.
+        """
+        out = lifecycle_composition_is_proven(
+            **_coherent_lifecycle(ratified_at=ratified_at, readback_at=readback_at))
+        assert out["proven"] is False
+        assert out["failure_reason"].endswith(edge), out["failure_reason"]
+
+    def test_the_review_to_ratification_edge_is_enforced_by_the_inner_readback(self):
+        """Enforced, but by ``external_ratification_readback``, not by the composition loop.
+
+        Recorded as its own case rather than folded into the parametrisation above: asserting
+        the composition's own message here would be false, and the honest fact is that this
+        edge fails earlier and never reaches the chain walk.
+        """
+        out = lifecycle_composition_is_proven(
+            **_coherent_lifecycle(ratified_at=LIFECYCLE_REVIEW_AT,
+                                  readback_at="2026-08-31T08:10:00Z"))
+        assert out["proven"] is False
+        assert out["failure_reason"] == (
+            "ratification readback failed: ratification does not postdate the approving review")
+
+    @pytest.mark.parametrize("over,reason", [
+        ({"readback_record": None}, "retained readback record is missing or invalid"),
+        ({"readback_record": {}}, "retained readback record is missing or invalid"),
+        ({"readback_record": _readback_record(body="Readback done.")},
+         "retained readback record is missing or invalid"),
+        ({"readback_record": _readback_record(body=_readback_body(ratification_comment_id=999))},
+         "readback names a different ratification comment"),
+        ({"readback_record": _readback_record(body=_readback_body(
+            ratification_fingerprint="a" * 64))},
+         "readback fingerprint does not match the ratification record"),
+        ({"readback_record": _readback_record(body=_readback_body(selected_review_id=999))},
+         "readback names a different approving review"),
+        ({"readback_record": _readback_record(body=_readback_body(
+            declared_accepted_head="f" * 40))}, "readback names a different head"),
+    ])
+    def test_a_missing_or_mis_bound_readback_fails(self, over, reason):
+        out = lifecycle_composition_is_proven(**_lifecycle(**over))
+        assert out["proven"] is False
+        assert out["failure_reason"] == reason, out["failure_reason"]
+
+    @pytest.mark.parametrize("created", [
+        "2026-08-31T09:00:01Z", PMV_MERGED_AT, "2026-08-31T10:31:00Z",
+    ])
+    def test_a_readback_after_the_designation_or_merge_fails(self, created):
+        out = lifecycle_composition_is_proven(**_lifecycle(
+            readback_record=_readback_record(created=created)))
+        assert out["proven"] is False
+        assert "readback_at is not before designation_at" in out["failure_reason"]
+
+    @pytest.mark.parametrize("field", [
+        "review_collection_complete", "equality_proven",
+    ])
+    @pytest.mark.parametrize("value", ["FALSE", "false", "UNKNOWN", "N/A", ""])
+    def test_a_readback_that_did_not_prove_the_equality_is_not_evidence(self, field, value):
+        assert parse_readback_body(_readback_body(**{field: value})) is None
+
+    def test_the_three_readback_heads_must_agree(self):
+        """SS-G.9's three-way test IS the readback's content."""
+        assert parse_readback_body(_readback_body(live_pull_request_head="9" * 40)) is None
+        assert parse_readback_body(_readback_body(independently_reviewed_head="9" * 40)) is None
+        assert parse_readback_body(_readback_body()) is not None
+
+    @pytest.mark.parametrize("over", [
+        {"approving_review": None}, {"ratification_record": None},
+        {"live_pull_request": {"number": 363, "head": {"sha": REAL_FINAL_HEAD}}},
+        {"designation_record": None}, {"merged_pull_request": None},
+        {"verification_record": None}, {"closure_record": None},
+        {"ci_run": None}, {"ci_job": None}, {"review_collection": None},
+    ])
+    def test_removing_any_evidence_family_fails(self, over):
+        assert lifecycle_composition_is_proven(**_lifecycle(**over))["proven"] is False
+
+    def test_the_composition_is_total_and_never_raises(self):
+        for value in (None, 123, "text", [], {}):
+            out = lifecycle_composition_is_proven(
+                approving_review=value, ratification_record=value, live_pull_request=value,
+                review_collection=value, readback_record=value, designation_record=value,
+                merged_pull_request=value, verification_record=value, ci_run=value,
+                ci_job=value, closure_record=value)
+            assert out["proven"] is False
+
+
+class TestTheCiJobIsBoundToItsRun:
+    """DELTA review 5062784888 BLOCKING 2 -- run and job were validated separately."""
+
+    @staticmethod
+    def _ctx(**over):
+        ctx = dict(designated=parse_designation_body(_designation_record()["body"]),
+                   merged_pull_request=_merged_pull_request(),
+                   verification_record=_coordinator_record(),
+                   ci_run=_ci_run(), ci_job=_ci_job())
+        ctx.update(over)
+        return ctx
+
+    def test_the_honest_run_and_job_pass(self):
+        assert canonical_ci_run_is_successful(
+            _ci_run(), _ci_job(), PMV_MERGE_COMMIT_SHA) is True
+        assert closure_is_authorized(_closure_record(), **self._ctx()) is True
+
+    def test_the_reviewers_mismatched_attempt_reproduction_fails(self):
+        """job.run_attempt=2 while the run and declaration remain attempt 1."""
+        assert closure_is_authorized(
+            _closure_record(), **self._ctx(ci_job=_ci_job(run_attempt=2))) is False
+        assert post_merge_verification_is_valid(
+            _coordinator_record(), designation_record=_designation_record(),
+            merged_pull_request=_merged_pull_request(), closure_record=_closure_record(),
+            ci_run=_ci_run(), ci_job=_ci_job(run_attempt=2)) is False
+
+    def test_the_reviewers_arbitrary_job_id_reproduction_fails(self):
+        """An unrelated job id, quoted into the closure body so the declaration agrees."""
+        assert closure_is_authorized(
+            _closure_record(body=_closure_body(merge_commit_ci_job_id=424242)),
+            **self._ctx(ci_job=_ci_job(id=424242))) is False
+
+    @pytest.mark.parametrize("over", [
+        {"run_id": 999}, {"run_id": None}, {"run_id": str(PMV_CI_RUN_ID)},
+        {"run_id": True}, {"run_id": 0}, {"run_id": -1},
+        {"run_url": f"{REPO_API}/actions/runs/999"}, {"run_url": None},
+    ])
+    def test_a_job_that_does_not_belong_to_the_run_fails(self, over):
+        assert canonical_ci_run_is_successful(
+            _ci_run(), _ci_job(**over), PMV_MERGE_COMMIT_SHA) is False, over
+
+    @pytest.mark.parametrize("run_attempt,job_attempt,declared", [
+        (1, 2, 1), (2, 1, 1), (1, 1, 2), (2, 2, 1), (1, 2, 2),
+    ])
+    def test_one_attempt_must_hold_across_declaration_run_and_job(
+            self, run_attempt, job_attempt, declared):
+        assert closure_is_authorized(
+            _closure_record(body=_closure_body(merge_commit_ci_run_attempt=declared)),
+            **self._ctx(ci_run=_ci_run(run_attempt=run_attempt),
+                        ci_job=_ci_job(run_attempt=job_attempt))) is False
+
+    def test_the_same_attempt_everywhere_passes(self):
+        assert closure_is_authorized(
+            _closure_record(body=_closure_body(merge_commit_ci_run_attempt=2)),
+            **self._ctx(ci_run=_ci_run(run_attempt=2), ci_job=_ci_job(run_attempt=2))) is True
+
+    @pytest.mark.parametrize("over", [
+        {"name": "Other Workflow"}, {"name": None},
+        {"path": ".github/workflows/other.yml"}, {"path": None},
+        {"workflow_id": None}, {"workflow_id": "317141285"}, {"workflow_id": 0},
+        {"event": "pull_request"}, {"event": "workflow_dispatch"}, {"event": None},
+        {"repository": {"full_name": "someone/else"}}, {"repository": None}, {"repository": {}},
+        {"head_sha": "d" * 40}, {"url": f"{REPO_API}/actions/runs/999"},
+    ])
+    def test_a_different_workflow_event_or_repository_fails(self, over):
+        assert canonical_ci_run_is_successful(
+            _ci_run(**over), _ci_job(), PMV_MERGE_COMMIT_SHA) is False, over
+
+    @pytest.mark.parametrize("over", [
+        {"workflow_name": "Other Workflow"}, {"workflow_name": None},
+        {"name": "other-job"}, {"name": None},
+        {"head_sha": "d" * 40}, {"url": f"{REPO_API}/actions/jobs/999"},
+    ])
+    def test_an_unrelated_job_fails(self, over):
+        assert canonical_ci_run_is_successful(
+            _ci_run(), _ci_job(**over), PMV_MERGE_COMMIT_SHA) is False, over
+
+    def test_closure_between_job_completion_and_run_completion_fails(self):
+        """The window the prior bound admitted: the job is done, the run is not.
+
+        Measured on the live resources -- run 33259403778 completed 15:18:50Z while its job
+        completed 15:18:49Z -- so this window is real, not hypothetical.
+        """
+        assert PMV_CI_JOB_COMPLETED_AT < PMV_CI_COMPLETED_AT
+        assert closure_is_authorized(
+            _closure_record(created=PMV_CI_JOB_COMPLETED_AT), **self._ctx()) is False
+        assert closure_is_authorized(
+            _closure_record(created=PMV_CI_COMPLETED_AT), **self._ctx()) is False
+        assert closure_is_authorized(
+            _closure_record(created="2026-08-31T10:16:01Z"), **self._ctx()) is True
+
+    def test_the_run_completion_instant_comes_from_the_run(self):
+        assert ci_run_completed_at(_ci_run()) == parse_utc_instant(PMV_CI_COMPLETED_AT)
+        assert ci_run_completed_at(_ci_run(status="in_progress")) is None
+        assert ci_run_completed_at(_ci_run(updated_at=None)) is None
+        assert ci_run_completed_at(_ci_run(updated_at="9999-99-99T99:99:99Z")) is None
+        assert ci_run_completed_at(None) is None
+
+    @pytest.mark.parametrize("over", [
+        {"id": None}, {"id": "33345371079"}, {"id": True}, {"id": 0}, {"id": -1},
+        {"run_attempt": None}, {"run_attempt": "1"}, {"run_attempt": True},
+        {"run_attempt": 0}, {"run_attempt": -1},
+    ])
+    def test_malformed_ids_and_attempts_fail(self, over):
+        assert canonical_ci_run_is_successful(
+            _ci_run(**over), _ci_job(), PMV_MERGE_COMMIT_SHA) is False, over
+        assert canonical_ci_run_is_successful(
+            _ci_run(), _ci_job(**over), PMV_MERGE_COMMIT_SHA) is False, over
+
+    def test_a_hand_assembled_mapping_is_not_a_canonical_resource(self):
+        """The shape the prior design would have accepted."""
+        projection = {"id": PMV_CI_RUN_ID, "head_sha": PMV_MERGE_COMMIT_SHA,
+                      "run_attempt": 1, "status": "completed", "conclusion": "success"}
+        assert canonical_ci_run_is_successful(
+            projection, _ci_job(), PMV_MERGE_COMMIT_SHA) is False
+        assert canonical_ci_run_is_successful(
+            _ci_run(), projection, PMV_MERGE_COMMIT_SHA) is False
+
+
+class TestThePrincipalActorIdIsRequired:
+    """DELTA review 5062784888 MAJOR 1 -- the SS-G identity path never checked ``user.id``."""
+
+    def test_the_reviewers_exact_reproduction_fails(self):
+        record = _ratification_naming(REAL_FINAL_HEAD)
+        del record["user"]["id"]
+        assert is_direct_principal_record(record) is False
+        assert _readback(record)["equality_proven"] is False
+
+    @pytest.mark.parametrize("actor_id", [
+        None, "218449187", True, False, 0, -1, 1.0, [], {},
+    ])
+    def test_a_malformed_principal_id_fails(self, actor_id):
+        record = _ratification_naming(REAL_FINAL_HEAD)
+        record["user"]["id"] = actor_id
+        assert _principal_actor_id(record) is None
+        assert is_direct_principal_record(record) is False
+        assert _readback(record)["equality_proven"] is False
+
+    def test_the_id_is_identity_bearing_and_enters_the_fingerprint(self):
+        base = _ratification_naming(REAL_FINAL_HEAD)
+        moved = _ratification_naming(REAL_FINAL_HEAD, actor_id=PRINCIPAL_ID + 1)
+        assert canonical_ratification_fingerprint(base) != canonical_ratification_fingerprint(moved)
+
+    def test_the_designation_author_id_is_never_compared_to_the_coordinator(self):
+        """SS-I.2.1 A -- the principal designates SOMEBODY ELSE; that is the whole role.
+
+        The decision previously required the designation comment's own ``user.id`` to equal
+        ``coordinator_id``, which would have permitted only self-designation. The text is
+        corrected; this pins the behaviour so it cannot drift back.
+        """
+        designation = _designation_record()
+        assert _principal_actor_id(designation) == PRINCIPAL_ID
+        declared = parse_designation_body(designation["body"])
+        assert _positive_int(declared["coordinator_id"]) == COORDINATOR_ID
+        assert PRINCIPAL_ID != COORDINATOR_ID
+        assert principal_designation_is_valid(designation) is True
+        assert post_merge_verification_is_valid(
+            _coordinator_record(), designation_record=designation,
+            merged_pull_request=_merged_pull_request(), closure_record=_closure_record(),
+            ci_run=_ci_run(), ci_job=_ci_job()) is True
+
+    def test_the_decision_records_the_five_separate_identities(self):
+        flat = _flat(_read(DECISION_RELPATH))
+        assert "Five identities, kept separate" in flat
+        assert "never compared to `coordinator_id`" in flat
+
+    def test_every_lifecycle_actor_id_is_validated_independently(self):
+        """Principal, coordinator, merger, verifier and closer are five separate checks."""
+        # A verifier whose id is not the coordinator's.
+        assert post_merge_verification_is_valid(
+            _coordinator_record(actor_id=PRINCIPAL_ID),
+            designation_record=_designation_record(),
+            merged_pull_request=_merged_pull_request(), closure_record=_closure_record(),
+            ci_run=_ci_run(), ci_job=_ci_job()) is False
+        # A merger whose id is not the coordinator's.
+        assert post_merge_verification_is_valid(
+            _coordinator_record(), designation_record=_designation_record(),
+            merged_pull_request=_merged_pull_request(
+                merged_by={"login": COORDINATOR_LOGIN, "type": COORDINATOR_TYPE,
+                           "id": PRINCIPAL_ID, "node_id": "x"}),
+            closure_record=_closure_record(),
+            ci_run=_ci_run(), ci_job=_ci_job()) is False
+        # A closer whose id is not the coordinator's.
+        assert post_merge_verification_is_valid(
+            _coordinator_record(), designation_record=_designation_record(),
+            merged_pull_request=_merged_pull_request(),
+            closure_record=_closure_record(actor_id=PRINCIPAL_ID),
+            ci_run=_ci_run(), ci_job=_ci_job()) is False
+
+
+class TestTheMutationProofGapsAreClosed:
+    """What the composed mutation proof found, recorded honestly rather than reclassified.
+
+    Five mutations came back MISSED on the first run. One was a REAL coverage gap and is
+    closed here. The others were provably redundant or provably unreachable, and rather than
+    calling them "defence in depth" and moving on, each is converted into a property this
+    class actually tests -- so the reason they cannot fail is itself pinned.
+    """
+
+    # ---------------------------------------------------------------- the real gap
+    def test_a_consistently_renamed_workflow_is_still_rejected(self):
+        """REAL GAP (mutation J-8). ``job.workflow_name == run.name`` does not catch this.
+
+        An attacker who renames the run AND its job consistently satisfies the job-to-run
+        agreement check; only the comparison against the DECISION's own required workflow name
+        rejects it. Nothing covered that case, so the check could have been deleted silently.
+        """
+        assert canonical_ci_run_is_successful(
+            _ci_run(name="Other Workflow"),
+            _ci_job(workflow_name="Other Workflow"),
+            PMV_MERGE_COMMIT_SHA) is False
+        # The same shape, but agreeing with the required workflow, passes.
+        assert canonical_ci_run_is_successful(
+            _ci_run(), _ci_job(), PMV_MERGE_COMMIT_SHA) is True
+
+    def test_a_consistently_renamed_job_is_still_rejected(self):
+        """The mirror case: the job name is checked against the decision, not just the run."""
+        assert canonical_ci_run_is_successful(
+            _ci_run(), _ci_job(name="other-job"), PMV_MERGE_COMMIT_SHA) is False
+
+    # ------------------------------------------- provably unreachable, so proved unreachable
+    @pytest.mark.parametrize("node,over", [
+        ("approving_review", {"approving_review": _final_review(submitted_at=None)}),
+        ("ratification", {"ratification_record": _ratification_naming(REAL_FINAL_HEAD,
+                                                                     created=None)}),
+        ("readback", {"readback_record": _readback_record(created=None)}),
+        ("designation", {"designation_record": _designation_record(created=None)}),
+        ("merge", {"merged_pull_request": _merged_pull_request(merged_at=None)}),
+        ("verification", {"verification_record": _coordinator_record(created=None)}),
+        ("ci_run", {"ci_run": _ci_run(updated_at=None)}),
+        ("closure", {"closure_record": _closure_record(created=None)}),
+    ])
+    def test_every_lifecycle_instant_is_validated_before_the_chain_walk(self, node, over):
+        """Mutation X-5 was MISSED because the chain's own None-guard is UNREACHABLE.
+
+        That is a property worth pinning rather than a hole: each of the eight instants is
+        rejected by the predicate that owns its record, so a missing instant never reaches the
+        ordering comparison. This proves the guard is redundant rather than assuming it.
+        """
+        out = lifecycle_composition_is_proven(**_lifecycle(**over))
+        assert out["proven"] is False, node
+        assert "missing or unparseable" not in (out["failure_reason"] or ""), (
+            node, out["failure_reason"])
+
+    # --------------------------------------------- provably redundant, so proved to be there
+    def test_the_named_ratification_before_merge_check_is_present(self):
+        """Mutation X-3 was MISSED because the chain walk already implies this edge.
+
+        SS-I.2.1 J requires it ANYWAY, as a named check, so that the exact failure review
+        5062784888 reproduced is caught by its own assertion rather than as a side effect.
+        Behaviourally redundant; contractually required. Pinned at the source level, which is
+        the only level at which a redundant check can be pinned.
+        """
+        import inspect
+
+        src = inspect.getsource(lifecycle_composition_is_proven)
+        assert 'instants["ratification_at"] < instants["merge_at"]' in src
+        assert '"ratification is not before the merge"' in src
+
+    def test_the_declaration_attempt_is_tied_to_both_the_run_and_the_job(self):
+        """Mutations J-6 and J-7 were MISSED because each masks the other.
+
+        ``canonical_ci_run_is_successful`` already proves ``run.run_attempt ==
+        job.run_attempt``, so tying the declaration to either one implies the other. Both
+        comparisons are kept because the equality they lean on lives in a different function,
+        and a future change there would otherwise silently weaken this one.
+        """
+        import inspect
+
+        src = inspect.getsource(closure_is_authorized)
+        assert 'declared_attempt != _exact_positive_int(ci_run.get("run_attempt"))' in src
+        assert 'declared_attempt != _exact_positive_int(ci_job.get("run_attempt"))' in src
+        # And the upstream equality they depend on is real.
+        assert canonical_ci_run_is_successful(
+            _ci_run(run_attempt=1), _ci_job(run_attempt=2), PMV_MERGE_COMMIT_SHA) is False
+
+    def test_the_declaration_attempt_is_actually_compared(self):
+        """The behavioural half: run and job agree at 1, the declaration says 2."""
+        ctx = dict(designated=parse_designation_body(_designation_record()["body"]),
+                   merged_pull_request=_merged_pull_request(),
+                   verification_record=_coordinator_record(),
+                   ci_run=_ci_run(run_attempt=1), ci_job=_ci_job(run_attempt=1))
+        assert closure_is_authorized(
+            _closure_record(body=_closure_body(merge_commit_ci_run_attempt=2)), **ctx) is False
