@@ -498,13 +498,43 @@ amendment.**
 
 #### I.2.1 — The operative protocol, defined here before it is implemented
 
-**Added under DELTA review `5062156189`.** The prior correction defined the designation, the
-verification declaration and the session rule **only** in the supporting artifact, so the parser and
-its fixtures derived the protocol from one another. The reviewer renamed `PMV_HEADER` to
-`UNAUTHORIZED RENAMED PMV PROTOCOL` and `PMV_ACTION` to `UNAUTHORIZED-RENAMED-ACTION` and **all 327
-focused tests still passed** — the same "both sides move together" weakness previously found for
-`REPO_API` and `INDEPENDENT_REVIEW_IDS`, one layer up. Every literal below is therefore **governing
-text**, and the implementation is anchored to it.
+**Rewritten under DELTA review `5062494115`.** That review reproduced nine false lifecycle proofs
+against the prior text. Each had one root cause: the protocol authenticated a resource's **shape**
+but never the **act** it recorded, nor the chain binding that act to an authorized actor. Shape is
+not authority, and the corrections below are stated as governing text so the implementation is
+anchored to them rather than to itself.
+
+**A0. The principal-provenance evidence source, proved readable before it was relied upon.**
+
+`§G.2` requires `performed_via_github_app` to be **present and null**. `5062494115` BLOCKING 1
+correctly refused to accept that requirement on the strength of Python fixtures that manufacture the
+key: a predicate that cannot be satisfied from a live resource is not a lifecycle, and GitHub's
+published issue-comment schema does not list the field. Before any edit, the capability was therefore
+proved directly against the live canonical resource:
+
+> `GET https://api.github.com/repos/Mast3rkey/Portfolio-HQ/issues/comments/{comment_id}`
+
+That resource **does** carry `performed_via_github_app` as a top-level key. Measured on the live API:
+
+| Record | `user.login` / `type` / `author_association` | `performed_via_github_app` |
+|---|---|---|
+| Claude-posted, bot-attributed (`5466955895`) | `claude[bot]` / `Bot` / `CONTRIBUTOR` | object — app `claude`, id `1236702` |
+| Claude-posted, **owner-attributed** (`5472404218`, `5472419137`, `5472429340`) | `Mast3rkey` / `User` / `OWNER` | object — app `claude`, id `1236702` |
+| Reviewer-posted, owner-attributed | `Mast3rkey` / `User` / `OWNER` | object — app `chatgpt-codex-connector` |
+| Direct principal (19 records across PRs #310, #311, #314, #316, #319) | `Mast3rkey` / `User` / `OWNER` | **`null`** |
+
+Two facts follow, and they are the reason `§G.2` is satisfiable rather than decorative. First, the
+derived triple `Mast3rkey` / `User` / `OWNER` **does not** distinguish the principal from Claude or
+from the reviewer — all three produce it — exactly as `§C` records. Second, `performed_via_github_app`
+**does** distinguish them, including in the hardest case: a Claude-authored comment that derives as
+the owner still carries the `claude` application object. The field is therefore the operative
+discriminator, and it is obtainable.
+
+Across every comment on PRs #362 and #363 the key was present on **26 of 26** records; it was never
+absent. **An absent key is not a null value and never satisfies `§G.2`.** It is a malformed or
+non-canonical resource and fails, as does any resource whose `issue_url` does not name this
+repository and this pull request. No separate event or timeline resource is required, because the
+primary resource carries the fact; none is therefore introduced.
 
 **A. The principal designation declaration.** A designation is a canonical top-level issue comment on
 PR #363, authored under the complete `§G.2` direct-principal predicate, whose **body** parses as
@@ -516,11 +546,17 @@ action: DESIGNATE-MERGE-COORDINATOR
 pull_request: 363
 accepted_head: <40 lowercase hex>
 coordinator_login: <login>
+coordinator_id: <positive integer, the coordinator's numeric GitHub actor id>
 coordinator_type: <User|Bot>
 coordinator_association: <OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR>
 coordinator_app: <application slug, or the literal DIRECT for a present-and-null record>
 session_commitment: <64 lowercase hex, SHA-256 of a value the coordinator has not published>
 ```
+
+`coordinator_id` is added under `5062494115` MAJOR 1. A login is a mutable display handle; the numeric
+actor id is not. Every live actor resource that exposes an id — the designation comment's own
+`user.id`, the verification comment's `user.id`, the closure comment's `user.id`, and the merged PR's
+`merged_by.id` — must carry an **integer** id, and all four must equal `coordinator_id`.
 
 **No value beside the record carries authority.** An earlier draft accepted `coordinator_login` and
 `session_claim` as fields the caller attached *next to* an authenticated principal comment, so an
@@ -546,38 +582,56 @@ head_agreement: IDENTICAL
 main_clean: TRUE
 validators_result: PASS
 tests_result: PASS
-merge_commit_ci: SUCCESS
 overall_result: PASS
 ```
 
 **Every result field carries a closed literal value, and free text carries no authority.** The prior
 schema's `scope` and `results` accepted arbitrary non-empty text, so a declaration reading
 *"scope: I performed no verification."* and *"results: All checks failed; no evidence retained."*
-parsed cleanly and **verified**. The ten result fields above admit **only** the literals shown —
-`PASS`, `IDENTICAL`, `TRUE`, `SUCCESS` — one per field, defined here. `FAIL`, `SKIPPED`, `UNKNOWN`,
-`N/A`, an empty value, a negated value, or any other string **fails**. `merge_commit_ci` additionally
-admits the literal `NOT_APPLICABLE`, and only where no merge-commit run is required. Narrative may be
-retained **separately**, in the operator's own comment, and never determines the verdict.
+parsed cleanly and **verified**. The nine result fields above admit **only** the literals shown —
+`PASS`, `IDENTICAL`, `TRUE` — one per field, defined here. `FAIL`, `SKIPPED`, `UNKNOWN`, `N/A`, an
+empty value, a negated value, or any other string **fails**. Narrative may be retained **separately**,
+in the operator's own comment, and never determines the verdict.
 
 Each field names one `OPS-0009` `§9` check: accepted-head ancestry; the exact authorized merged scope;
 merge-tree identity against the accepted head; protected-path byte identity; local/remote/merged-head
-agreement; a clean `main`; the standalone validators; the affected tests; and merge-commit CI.
+agreement; a clean `main`; the standalone validators; and the affected tests.
+
+**`merge_commit_ci` is removed from this declaration, and the reason is measured rather than
+preferred.** `5062494115` MAJOR 2 found `NOT_APPLICABLE` accepted for PR #363 although `§J` condition 6
+always requires the run. Both halves of that contradiction are resolved by observing when the run
+actually finishes. On the immediately preceding unit, PR #362 merged at `15:07:49Z`; the merge-commit
+run for the exact merge SHA was created at `15:07:52Z` and did not complete until `15:18:50Z`. A
+verification that is **immediate**, as `OPS-0009` `§9` requires, therefore *cannot* carry authenticated
+merge-CI success — roughly eleven minutes of it do not exist yet. Asserting `SUCCESS` there would be a
+prediction, and `NOT_APPLICABLE` would be false. Merge-commit CI is consequently **not** a verification
+field at all: it is bound, with its exact run, job, head SHA, attempt and conclusion, in the closure
+declaration at `G` below, which by construction is posted after the run completes. `NOT_APPLICABLE` is
+not an accepted value anywhere in this lifecycle.
 
 **C. Session continuity: a pre-merge commitment, a post-merge reveal.** The prior design published a
 plaintext `session_claim` in the designation and required the verification to quote it — a **public**
 value, so possession proved only that someone had read the designation. It is replaced:
 
-1. the coordinator session generates an unpredictable value and **does not publish it**;
+1. the session that will merge generates an unpredictable value and **does not publish it**;
 2. the principal's designation retains only `session_commitment` = its SHA-256;
-3. the same coordinator session retains the value;
+3. that same session retains the value;
 4. the verification declaration reveals it as `session_reveal`;
 5. the verifier recomputes SHA-256 and compares against the principal-authorized commitment.
 
 **What this establishes, stated exactly:** continuity of possession, across the designation-to-
 verification interval, of a value committed **before** the merge and never published — combined with
-the canonical `merged_by` account and the strict chronology below. **It is not GitHub runtime-session
+the canonical `merged_by` identity and the strict chronology below. **It is not GitHub runtime-session
 identity, and is never described as such.** GitHub exposes no session identity; this decision does not
 pretend otherwise.
+
+**This rule now admits no exception.** The prior text allowed a direct-principal verifier to skip the
+designation, the merger-identity comparison and the reveal entirely, assigning `designation_at =
+merge_at`. `5062494115` BLOCKING 3 reproduced the consequence: a principal-attributed verification with
+**no designation at all**, a *different* account recorded as `merged_by`, and an uncommitted session
+reveal was accepted. There is no principal bypass. Whichever lawful actor merges and verifies — the
+principal included — must be designated **before** the merge by the principal's own body, must match
+`merged_by` on every identity field the resource exposes, and must satisfy commitment and reveal.
 
 **D. Canonical GitHub evidence, by its real field names.** Each resource is the raw API resource, not a
 projection. An earlier draft accepted a six-field caller mapping containing invented keys
@@ -585,39 +639,109 @@ projection. An earlier draft accepted a six-field caller mapping containing inve
 
 | Evidence | Resource | Required raw fields |
 |---|---|---|
+| Principal record | `GET /repos/{owner}/{repo}/issues/comments/{id}` | `id`, `url`, `html_url`, `issue_url`, `created_at`, `body`, `user.login`, `user.id`, `user.type`, `author_association`, `performed_via_github_app` |
+| Live PR at readback | `GET /repos/{owner}/{repo}/pulls/363` | `url`, `html_url`, `number`, `state` `open`, `merged` false, `merged_at` null, `head.sha`, `base.repo.full_name` |
 | Merge | `GET /repos/{owner}/{repo}/pulls/363` | `url`, `html_url`, `number`, `merged` true, `merge_commit_sha`, `head.sha`, `merged_at`, `base.repo.full_name`, `merged_by.login`, `merged_by.type`, `merged_by.id` |
-| Closure | the closure issue comment | `id`, `url`, `html_url`, `issue_url`, `created_at`, `user.login`, `user.type`, `author_association`, `performed_via_github_app` |
+| Closure | the closure issue comment | as *Principal record*, plus the `G` declaration in its body |
 | Final review | `GET /repos/{owner}/{repo}/pulls/363/reviews/{id}` | `id`, `pull_request_url`, `html_url`, `commit_id`, `submitted_at`, `state`, `body`, `user.login`, `user.type`, `author_association` |
+| Review collection | `GET /repos/{owner}/{repo}/pulls/363/reviews?per_page={n}` | the full array, **and** the response `Link` header |
+| Merge-commit CI | `GET /repos/{owner}/{repo}/actions/runs/{run_id}` and `/jobs` | run `id`, `head_sha`, `run_attempt`, `status`, `conclusion`; job `id`, `head_sha`, `run_attempt`, `status`, `conclusion` |
 
 `base.repo.full_name` must equal `Mast3rkey/Portfolio-HQ`, taken from the load-bearing module's own
-`REPOSITORY_IDENTITY` rather than restated here as a second copy.
+`REPOSITORY_IDENTITY` rather than restated here as a second copy. `merged_by.id` must be an **integer**;
+`5062494115` MAJOR 1 reproduced a merge resource with `id` and `node_id` removed passing both the merge
+validator and the complete verification predicate.
 
-**Closure is a resource, not a timestamp.** The prior design took `closure_at` as a bare caller string,
-so a verification posted after the real closure passed whenever the caller supplied a later one.
+**Closure is a resource carrying an act, not a timestamp and not a shape.** The prior design took
+`closure_at` as a bare caller string, and its replacement validated only that *some* comment existed.
+`5062494115` BLOCKING 4 reproduced the consequence: a comment from `mallory` / `Bot` / `NONE`, posted
+through an application named `evil`, whose body read *"I do NOT close this lifecycle."*, was accepted
+as canonical closure and carried the complete verification predicate to `True`. Closure is now the
+exact declaration at `G`.
+
+**Review-collection completeness is proved from the response, not asserted by the caller.** A caller
+that supplies the reviews it chooses can always omit the one that defeats it. The collection is
+therefore the raw array **together with** the `Link` header GitHub returns: a present `Link` header
+means an unread page exists and completeness is **unproven**, and a returned array whose length equals
+the requested `per_page` may be truncated. Either condition **fails**. `5062494115` BLOCKING 2
+reproduced both halves of the omission: an adverse review from `2026-01-01` was counted as "later"
+than an approval submitted in August, while a genuinely later adverse review simply left out of the
+caller's list was invisible.
 
 **Two limits the platform imposes, disclosed rather than papered over.** The merged-PR resource
 exposes **no application provenance**: `merged_by` carries `login`, `type`, `id` and `node_id` and no
 `performed_via_github_app` at any level. Application provenance therefore **cannot** be compared
 between the designated coordinator and the recorded merger, and this decision does not claim it is.
-What is compared is the complete identity the resource does expose. Likewise a pull-request review
-carries **no** `performed_via_github_app` key at all — the very fact `§C` records — so reviewer
-**independence is procedural**, established by the reviewer's own retained disclosure, and is **not**
-provable from the resource. Both limits fail closed: absent evidence never passes.
+What is compared is the complete identity the resource does expose, including the numeric id. Likewise
+a pull-request review carries **no** `performed_via_github_app` key at all — the very fact `§C` records
+— so reviewer **independence is procedural**, established by the reviewer's own retained disclosure,
+and is **not** provable from the resource. Both limits fail closed: absent evidence never passes.
 
 **E. Chronology, on parsed instants.** Every comparison below is between timezone-aware UTC instants
-parsed with calendar validation, never strings and never shapes:
+parsed with calendar validation, never strings and never shapes. The full lifecycle order is:
 
-> designation_at **<** merge_at **<** verification_at **<** closure_at
+> approving_review_submitted_at **<** ratification_at **<** designation_at **<** merge_at **<** verification_at **<** ci_completed_at **<** closure_at
 
-A designation issued after the merge, or after the verification it purports to authorize, **fails**.
+Every relation is **strict**. `5062494115` MAJOR 2 found `designation_at <= merge_at` implemented where
+this text said `<`, with equality tested as a *positive* case; equality is a failure and is never
+synthesized. A designation issued at or after the merge, or after the verification it purports to
+authorize, **fails**.
 
-**F. This filing's own path.** For PR #363 the immediate post-merge verification is **principal-
-operated**: `§I.1`'s complete direct-principal predicate applies to the verifier as well. The
-coordinator path defined in `§I.2` and `A`–`E` above remains available under `OPS-0009` `§8` generally
-and is **not** narrowed for any other unit; it is simply not the route this filing uses, because the
-coordinator-session evidence this filing can actually retain is possession-continuity and not session
-identity. Choosing the lawful principal path is a fail-closed choice, not a claim that the coordinator
-path is invalid.
+**F. Ratification, acceptance and readback ordering.** `5062494115` BLOCKING 2 reproduced a ratification
+timestamped **before** the approving review it claims to accept, and another posted **after** the merge,
+both proving equality. Neither is lawful. The readback must, conjunctively:
+
+1. validate a **raw** PR #363 resource — never a caller projection such as
+   `{"number": 363, "head": {"sha": …}}` — including `url`, `html_url`, `number` and
+   `base.repo.full_name`;
+2. require that PR to be **open**, **unmerged** and with `merged_at` null at the moment of readback;
+3. authenticate the selected approving review as a real exact-head review resource;
+4. require `approving_review.submitted_at` **<** `ratification.created_at`, so an approval can only be
+   accepted after it exists;
+5. validate the **complete** review collection with the completeness proof at `D`;
+6. treat as adverse only authenticated exact-head reviews whose `submitted_at` is **strictly after**
+   the selected approval, and fail if any exists;
+7. prove the three-way equality of declared, live and independently reviewed head.
+
+A ratification cannot be rescued by a later-supplied timestamp, an earlier review, a shortened review
+list, or a PR that has already merged.
+
+**G. The closure declaration.** Closure is the final post-CI act and is an exact affirmative
+declaration, defined here before it is implemented, in the body of a canonical top-level issue comment
+on PR #363 authored by the **same authorized actor** the designation names:
+
+```
+XASSET-0062 LIFECYCLE CLOSURE
+action: FINAL-POST-CI-LIFECYCLE-CLOSURE
+pull_request: 363
+accepted_head: <40 lowercase hex>
+merge_commit_sha: <40 lowercase hex>
+post_merge_verification_comment_id: <positive integer>
+merge_commit_ci_run_id: <positive integer>
+merge_commit_ci_job_id: <positive integer>
+merge_commit_ci_head_sha: <40 lowercase hex>
+merge_commit_ci_run_attempt: <positive integer>
+merge_commit_ci_status: COMPLETED
+merge_commit_ci_conclusion: SUCCESS
+lifecycle_closed: TRUE
+```
+
+`merge_commit_ci_head_sha` must equal `merge_commit_sha` exactly: a successful run at some *other* SHA
+closes nothing. `post_merge_verification_comment_id` must equal the `id` of the verification resource
+being closed, so closure names the act it completes rather than floating free. The closer's
+`user.id`, `user.login`, `user.type`, `author_association` and application provenance must equal the
+designation's authorized coordinator, and `closure_at` must be strictly after both the verification and
+the completion of the named run. `merge_commit_ci_status` and `merge_commit_ci_conclusion` admit only
+`COMPLETED` and `SUCCESS`; a failed, cancelled, in-progress or absent run **fails**, and there is no
+`NOT_APPLICABLE`. A refusal, an unrelated narrative, a wrong actor, a wrong application, a malformed
+resource, a wrong SHA or a pre-CI timestamp all **fail**.
+
+**H. This filing's own path.** For PR #363 the merge and the immediate post-merge verification are
+**principal-operated**. That is a choice of actor, **not** an exemption from any rule above: the
+principal must still post the `A` designation naming themself before the merge, must still appear as
+`merged_by` on every identity field the merge resource exposes, must still satisfy commitment and
+reveal, and must still meet the strict chronology at `E`. The coordinator path remains available under
+`OPS-0009` `§8` generally and is not narrowed. What was removed is the *bypass*, not the role.
 
 #### I.3 — What the rule does not do
 

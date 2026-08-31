@@ -18449,6 +18449,51 @@ workstreams:
           lane ABSENT, AUTHORIZATION_ROOT absent, no stage1_results.yaml, all three
           authorization predicates False, ATTEMPT_1 INTACT, UNCLAIMED and UNCONSUMED, and does
           NOT make XASSET-0061 effective.
+          FIFTH BOUNDED CORRECTION (independent exact-head DELTA review 5062494115, 4
+          BLOCKING / 2 MAJOR at head a4e3c297). All six accepted; all nine of the review's
+          exact attacks independently REPRODUCED before any edit. Root cause common to all
+          nine, the protocol authenticated a resource's SHAPE but never the ACT it recorded
+          nor the chain binding that act to an authorized actor. BLOCKING 1 required the
+          principal-provenance evidence source be PROVED readable rather than assumed; a
+          read-only capability proof against the live canonical issue-comment resource
+          established that it DOES carry performed_via_github_app, present-and-object for
+          Claude records INCLUDING those deriving as Mast3rkey/User/OWNER (app claude, id
+          1236702), and present-and-null on 19 genuine direct-principal records across PRs
+          #310, #311, #314, #316 and #319; the key was present on 26 of 26 comments scanned
+          on PRs #362 and #363 and never absent, and an absent key is recorded as a malformed
+          resource, never as a null value. Two platform limits stay disclosed and fail closed,
+          neither the pull-request nor the pull-request-review resource exposes application
+          provenance, so merger app comparison and reviewer independence are not claimed.
+          BLOCKING 2 closed by validating a RAW open, unmerged PR #363 resource instead of a
+          caller projection, requiring the ratification to postdate the selected approval on
+          parsed instants, proving review-collection completeness from GitHub's own Link
+          header rather than a caller-supplied list, and treating only authenticated
+          exact-head reviews submitted STRICTLY after the selected approval as adverse.
+          BLOCKING 3 removed the direct-principal PMV bypass entirely; whichever actor merges
+          and verifies, the principal included, must be designated before the merge by the
+          principal's own body, match merged_by on every identity field the resource exposes,
+          and satisfy commitment and reveal. BLOCKING 4 replaced shape-only closure with an
+          exact affirmative XASSET-0062 LIFECYCLE CLOSURE declaration bound to the accepted
+          head, merge SHA, the PMV comment id it completes, the exact CI run, job, head SHA
+          and attempt, and the authorized closer's full identity. MAJOR 1 added coordinator_id
+          to the designation and now requires an exact integer id on every live actor resource,
+          with raw-resource ids rejecting the string form. MAJOR 2 implemented the strict
+          inequality the decision states and RELOCATED merge_commit_ci out of the verification
+          declaration on measured fact, PR #362 merged 15:07:49Z while its merge-commit run
+          completed 15:18:50Z, so an immediate verification cannot carry authenticated CI
+          success; CI is bound exclusively in the post-CI closure and NOT_APPLICABLE is no
+          longer an accepted value anywhere. Decision SS-I.2.1 was rewritten first (A0 to H)
+          and every protocol literal anchored to its fenced block. Three test methods were
+          renamed and INVERTED because their old expectations were the defects; zero test
+          classes removed; tests 239 to 291, asserts 513 to 615, or-fallback assertions 0 to 0.
+          Mutation proof 37 caught, 0 missed, 0 invalid, with infrastructure failures aborting
+          rather than counting, both files restored byte-identical by SHA-256 outside the
+          harness. Two mutations initially came back MISSED, the strict-versus-loose chronology
+          at closure and the strictly-later adverse-review rule; both were real weakenings and
+          were closed with equality-boundary tests rather than counted. Stage 1 remains UNARMED
+          and NOT EXECUTABLE, ATTEMPT_1 intact, unclaimed and unconsumed, XASSET-0061 remains
+          Proposed, and no lane, AUTHORIZATION_ROOT, allocation, target, trade or order is
+          touched. Draft, open, unmerged; awaiting a fresh independent exact-head DELTA review.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
