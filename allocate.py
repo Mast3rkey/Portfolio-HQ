@@ -10,8 +10,9 @@ BUY / TRIM / NO ADD / BLOCKED table plus a short summary. You execute
 manually on Robinhood.
 
 Usage:
-    python allocate.py --cash 2000       # deploy new cash
-    python allocate.py --review          # rebalance check, no new cash
+    python allocate.py update-cash 2000  # sync the TOTAL account cash balance
+    python allocate.py --review          # the allocation check (cash is tracked
+                                         #   state, not a runtime argument)
     python allocate.py update-shares         # paste "TICKER qty" lines, Ctrl-D (stocks/ETFs)
     python allocate.py update-crypto-shares  # paste "COIN qty" lines, Ctrl-D (BTC/ETH/SOL)
     python allocate.py update-holdings       # paste "TICKER value" lines, Ctrl-D (manual fallback)
@@ -21,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import math
 import sys
 from datetime import date, datetime
 from decimal import Decimal
@@ -105,6 +107,46 @@ MARGIN_CASH_PRESERVATION_UNPROVEN = (
     "PHQ-2026-01 item 6 authorizes no new margin. Use a cash-funded run.")
 
 
+#: The three distinct states any persisted numeric observation can be in. A
+#: fallback value is NEVER one of them: substituting zero for an unknown, then
+#: labelling the result "actual", publishes a knowingly false figure — the exact
+#: failure PHQ-2026-07 item 4 forbids.
+STATE_CURRENT = "current"
+STATE_STALE = "stale"
+STATE_UNKNOWN = "unknown"
+
+
+def _finite_scalar(raw, label: str, *, minimum: float | None = None,
+                   maximum: float | None = None) -> tuple[float | None, str | None]:
+    """Validate a persisted numeric scalar, fail-closed. Returns (value, reason).
+
+    Rejects, in this order and each for its own reason:
+
+    * ``bool`` — ``True`` is an ``int`` in Python, so ``float(True) == 1.0``
+      would silently read as one dollar;
+    * anything not an ``int``/``float``;
+    * any non-finite value — ``NaN`` in particular defeats EVERY comparison
+      (``nan < 30`` and ``nan >= 30`` are both False), so a NaN buffer would
+      pass a floor check by passing neither branch of it;
+    * anything outside its accepted domain.
+
+    A rejection returns ``(None, reason)``. There is deliberately no fallback
+    value: the caller must treat the observation as unknown.
+    """
+    if isinstance(raw, bool):
+        return None, f"{label} is a boolean, not a number: {raw!r}"
+    if not isinstance(raw, (int, float)):
+        return None, f"{label} is not a number: {raw!r}"
+    val = float(raw)
+    if not math.isfinite(val):
+        return None, f"{label} is not finite: {raw!r}"
+    if minimum is not None and val < minimum:
+        return None, f"{label} is below its accepted minimum {minimum}: {raw!r}"
+    if maximum is not None and val > maximum:
+        return None, f"{label} is above its accepted maximum {maximum}: {raw!r}"
+    return val, None
+
+
 def _state_age_days(synced_at) -> float | None:
     """Days since an ISO ``synced_at``, or None when missing, unparseable, or
     in the FUTURE. Identical fail-safe semantics to _margin_buffer_age_days --
@@ -120,16 +162,24 @@ def _state_age_days(synced_at) -> float | None:
 
 
 def load_cash_state(data: dict | None = None) -> dict:
-    """Read holdings.yaml's tracked ``cash:`` block and judge it fit to act on.
+    """Read holdings.yaml's tracked ``cash:`` block and classify it.
 
-    ``usable`` is the verdict, and it is the ONLY thing a dollar recommendation
-    may consult. Missing, malformed, future-dated, or stale-beyond
-    STALE_MARGIN_DAYS all fail closed BEFORE any recommendation, never after.
-    ``balance`` is the TOTAL account cash balance -- never a deposit delta."""
+    Per PHQ-2026-07 item 4, the verdict is a THREE-state classification, not a
+    boolean:
+
+    * ``current`` — present, valid, in-domain, within STALE_MARGIN_DAYS. The
+      only state a dollar recommendation may act on (``usable`` True).
+    * ``stale``   — a genuine past observation whose date is too old. The
+      balance is RETAINED and may be displayed, but only as stale historical
+      evidence carrying its own date. It is never presented as current.
+    * ``unknown`` — absent, malformed, non-numeric, non-finite, out-of-domain,
+      or undateable. ``balance`` is None. Zero is never substituted for it.
+
+    ``balance`` is the TOTAL account cash balance — never a deposit delta."""
     data = load_yaml(HOLDINGS_FILE) if data is None else (data or {})
     block = data.get("cash")
     out = {"present": False, "balance": None, "synced_at": None, "age_days": None,
-           "usable": False, "reason": None}
+           "usable": False, "state": STATE_UNKNOWN, "reason": None}
     if block is None:
         out["reason"] = ("holdings.yaml has no `cash:` block — the total account cash "
                          "balance is unknown, so book value and every target dollar "
@@ -140,64 +190,85 @@ def load_cash_state(data: dict | None = None) -> dict:
         return out
     out["present"] = True
     out["synced_at"] = block.get("synced_at")
-    raw = block.get("balance")
-    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
-        out["reason"] = f"holdings.yaml cash.balance is not a number: {raw!r}"
+    # Cash is a non-negative dollar amount. A negative, non-finite, or boolean
+    # balance is UNKNOWN, not a small number — see _finite_scalar.
+    value, reason = _finite_scalar(block.get("balance"), "holdings.yaml cash.balance",
+                                   minimum=0.0)
+    if reason is not None:
+        out["reason"] = reason
         return out
-    if float(raw) < 0:
-        out["reason"] = f"holdings.yaml cash.balance is negative: {raw!r}"
-        return out
-    out["balance"] = float(raw)
     age = _state_age_days(out["synced_at"])
     out["age_days"] = age
     if age is None:
         out["reason"] = (f"cash.synced_at is missing, malformed, or in the future "
-                         f"({out['synced_at']!r}) — age cannot be established")
+                         f"({out['synced_at']!r}) — age cannot be established, so this "
+                         f"observation cannot be dated and is unknown, not stale")
         return out
+    # Past this point the observation is real and dated: it is either current or
+    # stale, and in BOTH cases the balance is retained as a genuine observation.
+    out["balance"] = value
     if age > STALE_MARGIN_DAYS:
+        out["state"] = STATE_STALE
         out["reason"] = (f"cash synced {age}d ago (> {STALE_MARGIN_DAYS}d) — re-sync the "
                          f"actual current balance: allocate.py update-cash <balance>")
         return out
+    out["state"] = STATE_CURRENT
     out["usable"] = True
     return out
 
 
 def load_margin_state(data: dict | None = None) -> dict:
-    """Read holdings.yaml's ``margin:`` block and judge it fit to act on.
+    """Read holdings.yaml's ``margin:`` block and classify it.
 
-    Margin debt participates in the book identity (book = invested + cash -
-    debt), so a stale or malformed margin block must be caught BEFORE it affects
-    book or buying capacity -- not merely footnoted afterward."""
+    Same three-state contract as load_cash_state. Margin debt participates in
+    the book identity (book = invested + cash - debt), so a stale, malformed, or
+    out-of-domain margin block must be caught BEFORE it affects book or buying
+    capacity -- not merely footnoted afterward. A NEGATIVE debt is rejected
+    outright rather than accepted as a small number: ``gross - (-debt)`` ADDS
+    capital, silently inflating net equity."""
     data = load_yaml(HOLDINGS_FILE) if data is None else (data or {})
     block = data.get("margin") or {}
     out = {"present": bool(block), "debt": None, "buffer_pct": None,
            "synced_at": block.get("synced_at") if isinstance(block, dict) else None,
-           "age_days": None, "usable": False, "reason": None}
+           "age_days": None, "usable": False, "state": STATE_UNKNOWN, "reason": None}
     if not isinstance(block, dict) or not block:
         out["reason"] = "holdings.yaml has no usable `margin:` block"
         return out
-    try:
-        out["debt"] = float(block.get("debt"))
-    except (TypeError, ValueError):
-        out["reason"] = f"margin.debt is not a number: {block.get('debt')!r}"
+    debt, reason = _finite_scalar(block.get("debt"), "margin.debt", minimum=0.0)
+    if reason is not None:
+        out["reason"] = reason
         return out
+    # Robinhood displays the buffer as a percentage; 0-100 is its whole accepted
+    # domain. Anything outside it is not a buffer reading we can act on.
     bp = block.get("buffer_pct")
+    buffer_pct = None
     if bp is not None:
-        try:
-            out["buffer_pct"] = float(bp)
-        except (TypeError, ValueError):
-            out["reason"] = f"margin.buffer_pct is not a number: {bp!r}"
+        buffer_pct, reason = _finite_scalar(bp, "margin.buffer_pct",
+                                            minimum=0.0, maximum=100.0)
+        if reason is not None:
+            out["reason"] = reason
             return out
+    # The parsed values are retained whatever the DATE verdict turns out to be.
+    # They are real, validated numbers read off the file, and the pre-existing
+    # margin risk-state classifier needs them to distinguish "a buffer exists but
+    # its sync date is unverifiable" from "no buffer was ever recorded" -- two
+    # materially different warnings. `usable` below, never these fields, is what
+    # gates a dollar recommendation.
+    out["debt"] = debt
+    out["buffer_pct"] = buffer_pct
     age = _state_age_days(out["synced_at"])
     out["age_days"] = age
     if age is None:
         out["reason"] = (f"margin.synced_at is missing, malformed, or in the future "
-                         f"({out['synced_at']!r}) — age cannot be established")
+                         f"({out['synced_at']!r}) — age cannot be established, so this "
+                         f"observation cannot be dated and is unknown, not stale")
         return out
     if age > STALE_MARGIN_DAYS:
+        out["state"] = STATE_STALE
         out["reason"] = (f"margin synced {age}d ago (> {STALE_MARGIN_DAYS}d) — re-sync: "
                          f"allocate.py update-margin <debt> <buffer_pct>")
         return out
+    out["state"] = STATE_CURRENT
     out["usable"] = True
     return out
 
@@ -218,7 +289,15 @@ def valuation_completeness(holdings: dict, data: dict | None = None) -> dict:
     for c, qty in (data.get("crypto_shares") or {}).items():
         if float(qty) != 0:
             expected.append(c)
-    unresolved = sorted(t for t in expected if not float(holdings.get(t, 0.0) or 0.0))
+    # A resolved value must be a real, finite, nonzero number. bool(nan) is True
+    # in Python, so a NaN price would otherwise read as "resolved" and then
+    # poison gross, book, and every dollar figure derived from them.
+    unresolved = []
+    for t in expected:
+        val, bad = _finite_scalar(holdings.get(t, 0.0) or 0.0, f"resolved value for {t}")
+        if bad is not None or val == 0.0:
+            unresolved.append(t)
+    unresolved = sorted(unresolved)
     return {"expected_count": len(expected), "unresolved": unresolved,
             "complete": not unresolved,
             "reason": None if not unresolved else
@@ -314,8 +393,8 @@ def protected_weights(targets: dict, gates_cfg: dict | None = None) -> dict:
     }
 
 
-def protected_capital(targets: dict, roster: dict, holdings: dict, book: float,
-                      actual_cash: float, gates_cfg: dict | None = None) -> dict:
+def protected_capital(targets: dict, roster: dict, holdings: dict, book: float | None,
+                      actual_cash: float | None, gates_cfg: dict | None = None) -> dict:
     """Full protected-capital accounting for one run.
 
     protected_floor = book x (cash% + reserve% + unreconciled%)
@@ -323,9 +402,32 @@ def protected_capital(targets: dict, roster: dict, holdings: dict, book: float,
 
     cash_shortfall / cash_surplus are measured against ACTUAL CASH, never
     against buying power. Margin capacity can never satisfy this floor: see
-    render()'s margin section and MARGIN_CASH_PRESERVATION_UNPROVEN."""
+    render()'s margin section and MARGIN_CASH_PRESERVATION_UNPROVEN.
+
+    ``actual_cash`` is None when the current cash observation is stale or
+    unknown. PHQ-2026-07 item 4 forbids substituting zero for it, so every
+    dollar figure that depends on it -- book, the floor, the per-gated-name
+    requirement, shortfall, surplus -- is returned as None and ``cash_known``
+    is False. The percentage fields are config-derived and stay knowable in
+    every state. A None surplus means nothing is deployable: fail closed."""
     gates_cfg = gates_cfg or {}
     w = protected_weights(targets, gates_cfg)
+    cash_known = actual_cash is not None and book is not None
+    if not cash_known:
+        # No fabricated zero, and no dollar figure derived from a quantity we do
+        # not have. Every one of these is genuinely unavailable, not $0.00.
+        return {
+            **w,
+            "cash_known": False,
+            "book": None,
+            "actual_cash": None,
+            "static_protected_dollars": None,
+            "gated_cash_required_dollars": None,
+            "gated_detail": [],
+            "protected_floor_dollars": None,
+            "cash_shortfall_dollars": None,
+            "cash_surplus_dollars": None,
+        }
     book = float(book)
     static_dollars = book * w["static_protected_pct"] / 100.0
     gated_detail = []
@@ -345,6 +447,7 @@ def protected_capital(targets: dict, roster: dict, holdings: dict, book: float,
     actual_cash = float(actual_cash)
     return {
         **w,
+        "cash_known": True,
         "book": book,
         "actual_cash": actual_cash,
         "static_protected_dollars": static_dollars,
@@ -626,7 +729,14 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     gates, represented separately — a gated ticker is never a buy candidate
     and its target capital is never renormalized into another name, it
     simply never enters buy_candidates). `lookthrough` is
-    load_issuer_lookthrough()'s output (8%/40% no-add controls)."""
+    load_issuer_lookthrough()'s output (8%/40% no-add controls).
+
+    `cash` is None when the current cash observation is stale or unknown.
+    PHQ-2026-07 item 4: no zero is substituted for it. Ranking and gap ordering
+    still run so the observational view survives, but `book`, `cash`, and every
+    protected-capital dollar figure are returned as None, `cash_known` is False,
+    and NOTHING is deployable -- the cash surplus that bounds buys is
+    unavailable, so it funds nothing."""
     gates = targets.get("gates", {})
     caps = targets.get("caps", {})
     gates_cfg = gates_cfg or {}
@@ -648,23 +758,33 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     leverage_cap, buffer_floor_pct = _resolve_margin_config(targets)
 
     gross = sum(float(v) for v in holdings.values())
+    # PHQ-2026-07 item 4. A None cash observation is UNKNOWN, never zero. The
+    # ranking below still needs a finite scale to order gaps by, so it uses net
+    # equity alone -- but that number never escapes as `book`, and every dollar
+    # figure derived from it is withheld, because a book computed without a
+    # cash balance we do not have is not the book.
+    cash_known = cash is not None
+    cash_value = float(cash) if cash_known else 0.0
     net_equity, margin_allowed, forced_delever, margin_block_reason = margin_capacity(
-        gross, margin_debt, float(cash), leverage_cap, margin_buffer_pct,
+        gross, margin_debt, cash_value, leverage_cap, margin_buffer_pct,
         buffer_floor_pct, float(margin_requested))
-    book = net_equity + float(cash)          # doctrine: book = net equity (+ new deposit)
+    book = net_equity + cash_value           # doctrine: book = net equity + tracked cash
     # ---- PROTECTED-CAPITAL ACCOUNTING -------------------------------------
     # Cash-funded buys are bounded by the CASH SURPLUS -- actual cash above the
     # protected floor -- never by raw cash and never by buying power. Margin is
     # reported separately and, per MARGIN_CASH_PRESERVATION_UNPROVEN, may not
     # fund buys at all: there is no evidence it preserves literal cash.
-    protection = protected_capital(targets, roster, holdings, book, float(cash), gates_cfg)
+    protection = protected_capital(targets, roster, holdings,
+                                   book if cash_known else None,
+                                   cash_value if cash_known else None, gates_cfg)
     # Valuation completeness is computed against the tracked state, so an
     # unpriced nonzero holding is a REPORTED fact rather than a silent
     # disappearance from gross/book. `holdings_state` is injectable for tests;
     # production passes the real holdings.yaml mapping.
     valuation = valuation_completeness(holdings, holdings_state)
     margin_funding_blocked = float(margin_requested) > 0
-    deployable = protection["cash_surplus_dollars"]
+    # None surplus (unknown cash) deploys nothing. Fail closed, not open.
+    deployable = protection["cash_surplus_dollars"] or 0.0
     # per-cluster running value + per-ticker target/current, for the mechanical trim below
     cluster_value = {c["name"]: sum(float(holdings.get(t, 0)) for t in c["tickers"])
                      for c in clusters}
@@ -914,22 +1034,35 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     # margin_used is structurally zero. Kept explicit rather than removed so the
     # margin section still reports honestly, and asserted below.
     margin_used = 0.0
-    cash_after_plan = protection["actual_cash"] - cash_spent
-    # THE INVARIANT. Cash-funded buys may never breach the protected floor, and
-    # unused margin may never disguise a breach. Asserted, not emergent.
-    assert cash_spent <= protection["cash_surplus_dollars"] + 1e-6, (
-        f"cash-funded buys ${cash_spent:,.2f} exceed cash surplus "
-        f"${protection['cash_surplus_dollars']:,.2f}")
-    assert cash_after_plan >= protection["protected_floor_dollars"] - 1e-6 or \
-        protection["cash_shortfall_dollars"] > 0, (
-        f"cash after plan ${cash_after_plan:,.2f} is below the protected floor "
-        f"${protection['protected_floor_dollars']:,.2f}")
+    if cash_known:
+        cash_after_plan = protection["actual_cash"] - cash_spent
+        # THE INVARIANT. Cash-funded buys may never breach the protected floor,
+        # and unused margin may never disguise a breach. Asserted, not emergent.
+        assert cash_spent <= protection["cash_surplus_dollars"] + 1e-6, (
+            f"cash-funded buys ${cash_spent:,.2f} exceed cash surplus "
+            f"${protection['cash_surplus_dollars']:,.2f}")
+        assert cash_after_plan >= protection["protected_floor_dollars"] - 1e-6 or \
+            protection["cash_shortfall_dollars"] > 0, (
+            f"cash after plan ${cash_after_plan:,.2f} is below the protected floor "
+            f"${protection['protected_floor_dollars']:,.2f}")
+    else:
+        # Unknown cash: there is no post-plan cash figure to report, and the
+        # complementary invariant is that nothing was funded at all.
+        cash_after_plan = None
+        assert cash_spent == 0.0, (
+            f"cash-funded buys ${cash_spent:,.2f} were made while the cash "
+            f"observation was stale or unknown")
 
     buy_candidates.sort(key=lambda r: r["gap"], reverse=True)
     unresolved = {t: float(v) for t, v in holdings.items() if t.upper() not in roster}
     leverage_current = (gross / net_equity) if net_equity > 0 else None
     return {
-        "book": book, "cash": float(cash), "cash_left": cash_left,
+        # `book`/`cash` are None when the cash observation is unusable: a book
+        # computed without a cash balance we do not have is not the book.
+        "book": book if cash_known else None,
+        "cash": cash_value if cash_known else None,
+        "cash_known": cash_known,
+        "cash_left": cash_left if cash_known else None,
         # Actual cash, kept strictly distinct from buying power.
         "cash_spent": cash_spent,
         "cash_after_plan": cash_after_plan,
@@ -975,25 +1108,40 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
 
 # ── rendering ──────────────────────────────────────────────────────────────────
 
-def _fmt_row(r):
+def _fmt_row(r, cash_known: bool = True):
     px = f"${r['price']:.2f}" if r.get("price") else "n/a"
     rsi = f"{r['rsi']:.0f}" if r.get("rsi") is not None else "n/a"
     vs = f"{r['vs200']:+.1f}%" if r.get("vs200") is not None else "n/a"
-    dollars = f"${r['dollars']:,.0f}" if r.get("dollars") else "—"
+    # A gap dollar figure is book-derived, and book is unknown when the cash
+    # observation is not current. PHQ-2026-07 item 4: withhold, never estimate.
+    if not cash_known:
+        dollars = "n/a"
+    else:
+        dollars = f"${r['dollars']:,.0f}" if r.get("dollars") else "—"
     action = r["action"] + (f": {r['reason']}" if r.get("reason") else "")
     return f"| {r['ticker']:<6} | {action:<34} | {dollars:>8} | {px:>8} | {rsi:>4} | {vs:>7} |"
 
 
 def render(result, review: bool) -> str:
     L = []
+    #: Is the cash observation current? Gates every book-derived DOLLAR figure
+    #: below. Percentages, tickers, prices, RSI and trend are unaffected -- they
+    #: do not depend on the cash balance, so the observational view survives.
+    _ck = bool(result.get("cash_known", True))
     regime = ("ABOVE 200-EMA (risk-on)" if result["regime_ok"]
               else "BELOW 200-EMA (risk-off)") if result["regime_known"] else "UNKNOWN"
 
     L.append(f"# Allocation advisory — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     L.append("")
-    L.append(f"**Book:** ${result['book']:,.0f}  |  "
-             f"**Tracked cash:** ${result['cash']:,.0f}  |  "
-             f"**Regime (QQQ):** {regime}")
+    if result.get("cash_known", True):
+        L.append(f"**Book:** ${result['book']:,.0f}  |  "
+                 f"**Tracked cash:** ${result['cash']:,.0f}  |  "
+                 f"**Regime (QQQ):** {regime}")
+    else:
+        # PHQ-2026-07 item 4. No dollar book, and no "$0" standing in for a
+        # balance we do not have.
+        L.append(f"**Book:** UNAVAILABLE (cash observation is not current)  |  "
+                 f"**Regime (QQQ):** {regime}")
     L.append("")
 
     # ---- ACTIONABILITY BANNER, first, before any dollar figure -------------
@@ -1009,7 +1157,41 @@ def render(result, review: bool) -> str:
 
     # ---- PROTECTED-CAPITAL ACCOUNTING --------------------------------------
     prot = result.get("protection")
-    if prot:
+    if prot and not prot.get("cash_known", True):
+        # ---- UNKNOWN/STALE CASH: percentages only, no dollar figure ---------
+        # Every dollar quantity here depends on a cash balance that is not
+        # current. PHQ-2026-07 item 4 forbids presenting a derived fallback as
+        # observed, so they are withheld rather than shown as $0.00.
+        cs = result.get("cash_state") or {}
+        L.append("### Protected-capital accounting — DOLLAR FIGURES UNAVAILABLE")
+        L.append("")
+        L.append(f"The cash observation is **{cs.get('state', 'unknown')}**, so book, the "
+                 "protected floor, every target dollar figure, and any shortfall are "
+                 "**unavailable** — not zero, and not estimated.")
+        L.append("")
+        if cs.get("state") == STATE_STALE and cs.get("balance") is not None:
+            L.append(f"> **Stale historical evidence, not a current balance:** the last "
+                     f"recorded cash observation was **${cs['balance']:,.2f}** as of "
+                     f"**{cs.get('synced_at')}** ({cs.get('age_days')}d ago). It is shown "
+                     f"for evidence only and is NOT used in any figure above or below.")
+            L.append("")
+        L.append("| Item | Value |")
+        L.append("|---|---:|")
+        L.append(f"| Actual tracked cash | UNAVAILABLE ({cs.get('state', 'unknown')}) |")
+        L.append(f"| Book | UNAVAILABLE |")
+        L.append(f"| Protected floor | UNAVAILABLE |")
+        L.append(f"| Destination total | {prot['destination_total_pct']:.4f}% |")
+        L.append(f"| Unreconciled remainder | {prot['unreconciled_pct']:.4f}% |")
+        L.append(f"| CASH target | {prot['cash_pct']:.4f}% |")
+        L.append(f"| RESERVE target | {prot['reserve_pct']:.4f}% |")
+        L.append(f"| Gated target weight | {prot['gated_target_pct']:.4f}% |")
+        L.append(f"| Static protected | {prot['static_protected_pct']:.4f}% |")
+        L.append("")
+        L.append("**CASH+RESERVE satisfaction is UNPROVEN.** It is proved against a current "
+                 "tracked balance or it is not proved at all — it is never assumed. Run: "
+                 "`allocate.py update-cash <total_balance>`")
+        L.append("")
+    elif prot:
         cs = result.get("cash_state") or {}
         L.append("### Protected-capital accounting")
         L.append("")
@@ -1037,7 +1219,9 @@ def render(result, review: bool) -> str:
         L.append(f"| Cash-funded capacity | ${result.get('cash_funded_capacity', 0.0):,.2f} |")
         L.append(f"| Unused MARGIN capacity (not cash) | "
                  f"${result.get('unused_margin_capacity', 0.0):,.2f} |")
-        L.append(f"| Cash remaining after plan | ${result.get('cash_after_plan', 0.0):,.2f} |")
+        _cap = result.get("cash_after_plan")
+        L.append(f"| Cash remaining after plan | "
+                 f"{'UNAVAILABLE' if _cap is None else f'${_cap:,.2f}'} |")
         L.append("")
         if prot["cash_shortfall_dollars"] > 0:
             L.append(f"**CASH+RESERVE are NOT satisfied.** Actual cash "
@@ -1055,18 +1239,18 @@ def render(result, review: bool) -> str:
     L.append("|--------|--------|--------:|------:|----:|------:|")
 
     for r in result["trims"]:
-        L.append(_fmt_row(r))
+        L.append(_fmt_row(r, _ck))
     if review:
         # rebalance view: show every underweight name that passes gates
         for r in result["underweight"]:
             rr = dict(r, action="UNDER", dollars=r["want"],
                       reason=r.get("earn_flag", "") or "to target")
-            L.append(_fmt_row(rr))
+            L.append(_fmt_row(rr, _ck))
     else:
         for r in result["buys"]:
-            L.append(_fmt_row(r))
+            L.append(_fmt_row(r, _ck))
     for r in result["blocked"]:
-        L.append(_fmt_row(r))
+        L.append(_fmt_row(r, _ck))
 
     rendered_any = result["trims"] or result["blocked"] or (
         result["underweight"] if review else result["buys"])
@@ -1080,10 +1264,17 @@ def render(result, review: bool) -> str:
     L.append("## Summary")
     if review:
         under_total = sum(r["want"] for r in result["underweight"])
+        _tot = f"${under_total:,.0f}" if _ck else "an UNAVAILABLE dollar amount"
         L.append(f"- **Review mode** (no new cash). {len(result['underweight'])} underweight "
-                 f"name(s) totaling ${under_total:,.0f} to target; "
+                 f"name(s) totaling {_tot} to target; "
                  f"{len(result['trims'])} trim candidate(s); "
                  f"{len(result['blocked'])} blocked.")
+    elif not _ck:
+        # No cash figure exists, so there is no deployable pool to report and
+        # nothing was deployed. Say that, rather than arithmetic on a None.
+        L.append(f"- **NOTHING DEPLOYED.** The cash observation is not current, so "
+                 f"available cash, the deployable pool and the post-plan remainder are "
+                 f"all UNAVAILABLE; {n_buy} buy(s) were made.")
     else:
         mg = result["margin"]
         margin_note = f" (incl. ${mg['used']:,.0f} margin)" if mg["used"] > 0.01 else ""
@@ -1093,10 +1284,13 @@ def render(result, review: bool) -> str:
                  f"**{n_buy} buy(s)**; ${result['cash_left']:,.0f} left.")
     L.append(f"- Regime **{regime}** (informational — no longer gates buys; "
              "see `reports/regime_backtest.md`).")
+    # Cluster VALUE is a real holdings figure and stays. Its %-of-book is
+    # book-derived, so it is withheld -- never silently rendered as 0.0%.
     cluster_bits = "; ".join(
         f"{c['name']} ${c['value']:,.0f} "
-        f"({c['value']/result['book']*100 if result['book'] else 0:.1f}% of book, "
-        f"cap {c['pct']:.0f}%)"
+        + (f"({c['value']/result['book']*100:.1f}% of book, "
+           if (_ck and result['book']) else "(%-of-book n/a, ")
+        + f"cap {c['pct']:.0f}%)"
         for c in result.get("clusters", []))
     L.append(f"- **{len(result['trims'])} trim(s)**, "
              f"**{len(result['blocked'])} blocked**"
@@ -1171,7 +1365,14 @@ def render(result, review: bool) -> str:
         # Tracked cash is part of the book identity, so the health view reports
         # it too rather than showing a book that silently omits it.
         _p = result.get("protection")
-        if _p:
+        if _p and not _p.get("cash_known", True):
+            # Same rule as the protected-capital section above: withhold every
+            # book-derived dollar rather than print a fabricated zero.
+            _cs = result.get("cash_state") or {}
+            L.append(f"| Tracked cash | UNAVAILABLE ({_cs.get('state', 'unknown')}) |")
+            L.append("| Book (invested + cash − debt) | UNAVAILABLE |")
+            L.append("| Protected floor | UNAVAILABLE |")
+        elif _p:
             L.append(f"| Tracked cash | ${_p['actual_cash']:,.0f} |")
             L.append(f"| Book (invested + cash − debt) | ${_p['book']:,.0f} |")
             L.append(f"| Protected floor | ${_p['protected_floor_dollars']:,.0f} |")
@@ -1241,7 +1442,9 @@ def render_health(result) -> str:
     L = []
     L.append(f"# Portfolio Health View — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     L.append("")
-    L.append(f"**Book:** ${result['book']:,.0f}")
+    _ck = bool(result.get("cash_known", True))
+    L.append(f"**Book:** ${result['book']:,.0f}" if _ck
+             else "**Book:** UNAVAILABLE (cash observation is not current)")
 
     mg = result["margin"]
     lev_s = f"{mg['leverage_current']:.2f}x" if mg["leverage_current"] is not None else "n/a"
@@ -1261,13 +1464,23 @@ def render_health(result) -> str:
         L.append("## Protected capital")
         L.append("| | |")
         L.append("|---|---:|")
-        L.append(f"| Tracked cash | ${_p['actual_cash']:,.0f} |")
-        L.append(f"| Book (invested + cash − debt) | ${_p['book']:,.0f} |")
-        L.append(f"| Protected floor | ${_p['protected_floor_dollars']:,.0f} |")
-        if _p["cash_shortfall_dollars"] > 0:
-            L.append(f"| **Protected shortfall** | **−${_p['cash_shortfall_dollars']:,.0f}** |")
+        if not _p.get("cash_known", True):
+            # Same rule as render(): withhold every book-derived dollar figure
+            # rather than print a fabricated zero. PHQ-2026-07 item 4.
+            _cs = result.get("cash_state") or {}
+            L.append(f"| Tracked cash | UNAVAILABLE ({_cs.get('state', 'unknown')}) |")
+            L.append("| Book (invested + cash − debt) | UNAVAILABLE |")
+            L.append("| Protected floor | UNAVAILABLE |")
+            L.append(f"| Static protected weight | {_p['static_protected_pct']:.4f}% |")
         else:
-            L.append(f"| Protected surplus | ${_p['cash_surplus_dollars']:,.0f} |")
+            L.append(f"| Tracked cash | ${_p['actual_cash']:,.0f} |")
+            L.append(f"| Book (invested + cash − debt) | ${_p['book']:,.0f} |")
+            L.append(f"| Protected floor | ${_p['protected_floor_dollars']:,.0f} |")
+            if _p["cash_shortfall_dollars"] > 0:
+                L.append(
+                    f"| **Protected shortfall** | **−${_p['cash_shortfall_dollars']:,.0f}** |")
+            else:
+                L.append(f"| Protected surplus | ${_p['cash_surplus_dollars']:,.0f} |")
 
     L.append("")
     L.append("## Margin risk state")
@@ -1560,8 +1773,18 @@ def log_performance(note: str = "", client=None, quiet: bool = False,
     Pass 'resolved_holdings' (already live-priced, e.g. from main()'s primary flow)
     to avoid a second round of per-ticker price fetches; omit it to resolve fresh."""
     holdings_yaml = load_yaml(HOLDINGS_FILE) or {}
+    # Route margin debt through the validating reader rather than the raw dict:
+    # a negative, non-finite, or malformed debt would otherwise flow straight
+    # into net_equity and be RECORDED as a data point. PHQ-2026-07 item 8 -- a
+    # row may never record stale or unknown state as current.
+    margin_status = load_margin_state(holdings_yaml)
     margin_state = holdings_yaml.get("margin", {}) or {}
-    margin_debt = float(margin_state.get("debt", 0.0))
+    if not margin_status["usable"]:
+        if not quiet:
+            print(f"  (performance log: snapshot SKIPPED — margin state is "
+                  f"{margin_status['state']}: {margin_status['reason']})", file=sys.stderr)
+        return
+    margin_debt = margin_status["debt"]
     # Fallback gross if live resolution fails below: last raw 'holdings' dict on
     # file (misses share-tracked positions, but keeps this from crashing).
     gross = sum(float(v) for v in (holdings_yaml.get("holdings", {}) or {}).values())
@@ -1578,8 +1801,11 @@ def log_performance(note: str = "", client=None, quiet: bool = False,
             if not quiet:
                 print(f"  (performance log: couldn't resolve live holdings — {e})", file=sys.stderr)
     net_equity = gross - margin_debt
+    # Only a CURRENT cash observation may be recorded in a current row. A stale
+    # balance is a real past fact, but writing it into today's row would assert
+    # it is today's -- exactly the corruption this column exists to prevent.
     cash_state = load_cash_state(holdings_yaml)
-    cash_balance = cash_state["balance"] if cash_state["balance"] is not None else None
+    cash_balance = cash_state["balance"] if cash_state["usable"] else None
     book = (net_equity + cash_balance) if cash_balance is not None else None
 
     # Do not write a misleading snapshot. When live valuation could NOT be
@@ -1739,7 +1965,8 @@ def main():
             "  Migration: record the new TOTAL balance, then run the check:\n"
             "    allocate.py update-cash <total_balance>\n"
             "    allocate.py --review")
-    args.cash = 0.0
+    # Nothing re-seeds args.cash afterwards: cash comes from tracked state via
+    # load_cash_state(), so no fabricated value can survive this point.
     if args.no_log and not args.review:
         ap.error("--no-log is only valid together with --review — it exists to keep "
                  "the read-only phone check read-only. A --cash/--margin allocation "
@@ -1750,7 +1977,6 @@ def main():
         print(render_performance())
         return
     if args.review or args.health:
-        args.cash = 0.0
         args.margin = 0.0
 
     if args.levels:
@@ -1767,9 +1993,12 @@ def main():
     targets = load_yaml(TARGETS_FILE)
     holdings_yaml = load_yaml(HOLDINGS_FILE) or {}
     margin_state = holdings_yaml.get("margin", {}) or {}
-    margin_debt = float(margin_state.get("debt", 0.0))
-    margin_buffer_pct = margin_state.get("buffer_pct")
-    margin_buffer_pct = float(margin_buffer_pct) if margin_buffer_pct is not None else None
+    # Validated read, same reader the actionability gate below uses. An
+    # out-of-domain debt (negative, non-finite) is never allowed to reach
+    # net_equity even in the purely observational view.
+    _margin_read = load_margin_state(holdings_yaml)
+    margin_debt = _margin_read["debt"] if _margin_read["debt"] is not None else 0.0
+    margin_buffer_pct = _margin_read["buffer_pct"]
     roster = build_roster(targets)
     if not roster:
         print("No tickers in targets.yaml — paste your roster into the "
@@ -1802,7 +2031,7 @@ def main():
     # failing gate does not suppress the observational view — it makes the run
     # explicitly NON-ACTIONABLE and blocks dollar recommendations.
     cash_state = load_cash_state(holdings_yaml)
-    margin_status = load_margin_state(holdings_yaml)
+    margin_status = _margin_read          # one reader, one owner, read once above
     valuation = valuation_completeness(holdings, holdings_yaml)
     actionable_blocks = []
     if not cash_state["usable"]:
@@ -1815,8 +2044,11 @@ def main():
         actionable_blocks.append(f"MARGIN FUNDING: {MARGIN_CASH_PRESERVATION_UNPROVEN}")
 
     # The single authoritative total cash balance, consumed exactly once. When
-    # the state is unusable it contributes 0 and the run is non-actionable.
-    tracked_cash = cash_state["balance"] if cash_state["usable"] else 0.0
+    # the state is stale or unknown this is None -- NOT zero. PHQ-2026-07 item
+    # 4: a fabricated zero would flow into book, the protected floor, every
+    # target dollar and the shortfall, and would then be rendered as though it
+    # were observed. None makes those figures unavailable instead.
+    tracked_cash = cash_state["balance"] if cash_state["usable"] else None
 
     result = plan(targets, holdings, roster, metrics, regime_ok, regime_known, tracked_cash,
                   margin_debt=margin_debt, margin_buffer_pct=margin_buffer_pct,
@@ -1832,7 +2064,7 @@ def main():
         result["buys"] = []
         result["trims"] = []
         result["cash_spent"] = 0.0
-        result["cash_after_plan"] = tracked_cash
+        result["cash_after_plan"] = tracked_cash   # None when cash is not current
 
     # ---- margin risk-state classification (Phase 2D) -----------------------
     # Pure post-hoc read of plan()'s own output — computed AFTER plan() has

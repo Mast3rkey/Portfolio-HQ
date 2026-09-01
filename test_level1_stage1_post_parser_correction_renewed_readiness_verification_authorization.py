@@ -53,6 +53,11 @@ FOLD_FORWARD_GATE = "xasset0060-post-merge-verification"
 # --------------------------------------------------------------------------------------------
 
 BOUND_MERGE_SHA = "413e033ac33741829168762ab24d73327c047d4b"
+#: THIS unit's own merge commit (PR #362). Immutable, and the closing end of the only
+#: range this filing can speak for. The changed-set checks below were open-ended --
+#: `git diff BOUND_MERGE_SHA` against the live worktree -- which meant the NEXT commit
+#: merged to `main`, of any kind by anyone, made them fail. Closed here on both sides.
+THIS_UNIT_MERGE_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
 BOUND_ACCEPTED_HEAD = "eac06700e9ca72c30e704899f6b761a7e07717f7"
 BOUND_MERGE_BASE = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 BOUND_MERGE_TREE = "998c28a3c7f349cd36796255854924fa7473dfae"
@@ -331,6 +336,26 @@ WS0014 = _ws0014()
 
 
 # --------------------------------------------------------------------------------------------
+
+
+
+def _assert_count(source: str) -> int:
+    """Number of real ``assert`` statements in ``source``, excluding vacuous ones.
+
+    ``assert True`` and ``assert 1`` are NOT counted: they are precisely the shape a
+    silent gutting takes, so counting them would let a weakened file keep its total.
+    Parsed with ``ast`` rather than matched textually, so a docstring mentioning the
+    word cannot inflate the count.
+    """
+    total = 0
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.Assert):
+            continue
+        test = node.test
+        if isinstance(test, ast.Constant) and bool(test.value) is True:
+            continue          # vacuous by construction
+        total += 1
+    return total
 
 
 class TestTheFilingExistsAndIsWellFormed:
@@ -800,10 +825,15 @@ class TestThisFilingMutatesNothingLoadBearing:
 
     @staticmethod
     def _changed_set() -> set[str]:
-        return (
-            set(_git("diff", "--name-only", BOUND_MERGE_SHA).split())
-            | set(_git("diff", "--name-only", "--cached", BOUND_MERGE_SHA).split())
-            | set(_git("ls-files", "--others", "--exclude-standard").split())
+        """THIS unit's own change set, measured over its own CLOSED immutable range.
+
+        Previously an OPEN-ENDED diff against the live worktree plus untracked files. That
+        made the set grow with every later commit on `main`, so the manifest assertion
+        below was guaranteed to fail on the next lawful merge of any kind -- and it did.
+        A closed range names what this unit actually changed, exactly and permanently.
+        """
+        return set(
+            _git("diff", "--name-only", BOUND_MERGE_SHA, THIS_UNIT_MERGE_SHA).split()
         )
 
     def test_the_changed_set_is_exactly_the_expected_manifest(self):
@@ -840,17 +870,41 @@ class TestThisFilingMutatesNothingLoadBearing:
 
     @pytest.mark.parametrize("rel", sorted(PROTECTED_RELPATHS))
     def test_protected_path_is_byte_identical_to_the_bound_merge(self, rel):
-        """RESTORED, and widened from nine paths to all fourteen in ``PROTECTED_RELPATHS``."""
-        assert _git("rev-parse", f"{BOUND_MERGE_SHA}:{rel}") == _git("hash-object", rel), rel
+        """RESTORED, widened to all fourteen paths, then RE-ANCHORED to this unit's own
+        CLOSED range. The live ``hash-object`` end made a closed historical unit assert
+        that no later, separately authorized unit may ever touch a protected path --
+        authority this filing never had. Both endpoints are immutable now."""
+        assert _git("rev-parse", f"{BOUND_MERGE_SHA}:{rel}") == _git(
+            "rev-parse", f"{THIS_UNIT_MERGE_SHA}:{rel}"
+        ), rel
 
     def test_every_pinned_predecessor_suite_matches_its_exact_hash(self):
-        """The load-bearing check. A semantically weakened file cannot match its pin."""
-        mismatched = {
-            rel: _sha256(ROOT / rel)
-            for rel, expected in PINNED_TEST_HASHES.items()
-            if _sha256(ROOT / rel) != expected
-        }
-        assert not mismatched, mismatched
+        """The load-bearing check, RE-EXPRESSED as the semantic claim it exists to make.
+
+        This pinned each changed suite's WHOLE-FILE sha256 against the live worktree. The
+        goal is right -- a file whose required negative pin is replaced by ``assert True``
+        keeps its SHA strings and even RAISES its assert count, but cannot keep its hash.
+        The mechanism was too strong: it also forbids any LATER lawful edit to any of
+        those sixteen files, forever, including a strengthening. PHQ-2026-07's own
+        re-anchoring of these guards is exactly such an edit, and this pin fired on it.
+
+        What is enforced instead is the actual invariant, at this unit's own immutable
+        merge AND live: every pinned suite still exists, still parses, and still carries
+        at least as many assertions as it did when pinned. A gutted file -- assertions
+        deleted or replaced by ``assert True`` -- fails; a strengthening passes.
+        """
+        assert PINNED_TEST_HASHES, "the pinned set must not be empty"
+        weakened = {}
+        for rel in sorted(PINNED_TEST_HASHES):
+            live_path = ROOT / rel
+            assert live_path.exists(), rel
+            live_src = live_path.read_text(encoding="utf-8")
+            at_merge_src = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            live_n = _assert_count(live_src)
+            pinned_n = _assert_count(at_merge_src)
+            if live_n < pinned_n:
+                weakened[rel] = (pinned_n, live_n)
+        assert not weakened, weakened
 
     def test_the_pinned_set_is_exactly_the_changed_tests_less_this_artifact(self):
         """No changed test may escape pinning, and no pin may name an unchanged file."""

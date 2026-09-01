@@ -28,7 +28,7 @@ regime_gate.py        200-day EMA regime check (informational only, see below)
 margin_state.py        leverage-cap/buffer-floor math, concentration risk scoring (imported by allocate.py)
 
 targets.yaml          tier structure, weights, caps, gates, margin doctrine (config truth)
-holdings.yaml          position state: shares, crypto_shares, margin (rewritten by update-* commands)
+holdings.yaml          position state: shares, crypto_shares, cash, margin (rewritten by update-* commands)
 CLAUDE.md               doctrine: Decisions Log, Open Items, Guardrails, workflow
 decision_log.yaml       historical decision record, PI-000N / MARGIN-000N series (pre-dates the
                         governance/decisions/ layer below; new decisions are not appended here)
@@ -159,25 +159,37 @@ python intelligence_report.py --staleness --as-of 2026-08-01   # deterministic a
 
 ## Allocation workflow
 
-1. **Deposit or margin draw.** Report the amount and whether it's cash or
-   margin-funded buying power (they're gated differently).
+1. **Sync the current total cash balance.** Cash is *tracked state*, not a
+   runtime argument (`PHQ-2026-07`). Record the **new total**, never a deposit
+   delta — a deposit is recorded by re-syncing the new total:
+   ```bash
+   python allocate.py update-cash 2000    # TOTAL account cash balance
+   ```
+   The retired `--cash` flag is refused with a migration message: adding a
+   deposit on top of a tracked balance would double-count it.
 2. **Run the allocator:**
    ```bash
-   python allocate.py --cash 2000      # deploy new cash → ranked buys
-   python allocate.py --margin 1000    # margin-funded buying power (clipped to
-                                        # the leverage cap, blocked below the
-                                        # buffer floor)
-   python allocate.py --review         # rebalance check, no new cash —
-                                        # underweights + trim candidates
+   python allocate.py --review         # the allocation check — underweights,
+                                        # trim candidates, protected-capital
+                                        # accounting, buys funded from the cash
+                                        # surplus above the protected floor
+   python allocate.py --margin 1000    # margin capacity is still reported and
+                                        # still clipped to the leverage cap and
+                                        # blocked below the buffer floor, but
+                                        # margin-funded BUYS fail closed
    python allocate.py --levels         # buy-rung staging report (see below)
    python allocate.py --health         # read-only risk/health snapshot (see below)
    ```
+   A cash or margin sync older than two days — or missing, malformed, or
+   future-dated — makes the run **NON-ACTIONABLE**: it still prints, but every
+   dollar figure is withheld rather than estimated, and buys and trims are
+   withdrawn.
 3. **Execute manually on Robinhood.**
 4. **Sync fills back** (see "Updating holdings" below).
 
 ### How a run computes recommendations
 
-1. Book = live-priced holdings (net equity) + any new cash this cycle.
+1. Book = live-priced holdings + tracked cash − margin debt, cash counted once.
    Per-ticker target dollars come from that name's tier weight × book.
 2. Pull last price, 200-SMA, 50-SMA, RSI(14), ATR(14) per roster ticker via
    Alpaca (free IEX feed); QQQ daily bars for the regime signal.
@@ -236,9 +248,13 @@ system already computes it.
 
 ## Updating holdings
 
-State lives in `holdings.yaml`, in three tracked blocks plus a margin block:
+State lives in `holdings.yaml`, in three tracked position blocks plus a cash
+block and a margin block:
 
 ```bash
+python allocate.py update-cash <total_balance>         # TOTAL account cash —
+                                           # never a deposit delta; a deposit is
+                                           # recorded by re-syncing the new total
 python allocate.py update-shares          # paste "TICKER qty" lines, Ctrl-D
                                            # (stocks/ETFs — live-priced every
                                            # run via qty × latest Alpaca price)

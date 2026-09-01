@@ -742,8 +742,12 @@ def test_health_flag_cli_path_is_read_only(tmp_path, monkeypatch, capsys):
                                                           # vocabulary was not
 
     assert len(plan_calls) == 1
-    # observational: no deployable cash or margin capacity reaches plan()
-    assert plan_calls[0]["cash"] == 0.0
+    # observational: no deployable margin capacity reaches plan(), and cash comes
+    # from TRACKED STATE rather than a runtime argument (PHQ-2026-07 item 1). The
+    # earlier `== 0.0` pinned the fabricated zero that item 4 now forbids: this
+    # fixture's holdings.yaml carries no current cash observation, so the correct
+    # value is None -- "unknown", never "zero dollars".
+    assert plan_calls[0]["cash"] is None
     assert plan_calls[0]["margin_requested"] == 0.0
 
     assert len(render_health_calls) == 1

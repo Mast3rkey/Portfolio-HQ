@@ -25,6 +25,8 @@ from __future__ import annotations
 import copy
 import datetime
 import inspect
+import pathlib
+import re
 
 import pytest
 import yaml
@@ -391,7 +393,10 @@ class TestCashStateFailsClosed:
 
     def test_a_negative_balance_is_unusable(self):
         st = load_cash_state({"cash": {"balance": -1.0, "synced_at": FRESH}})
-        assert st["usable"] is False and "negative" in st["reason"]
+        assert st["usable"] is False
+        assert st["state"] == A.STATE_UNKNOWN          # out of domain is UNKNOWN, not stale
+        assert st["balance"] is None                   # and carries no number forward
+        assert "minimum" in st["reason"] and "-1.0" in st["reason"]
 
     def test_a_future_dated_sync_is_unusable(self):
         st = load_cash_state({"cash": {"balance": 100.0, "synced_at": FUTURE}})
@@ -527,9 +532,24 @@ class TestThePerformanceSnapshotIsNotMisleading:
         assert not perf.exists(), "a snapshot was written despite unavailable valuation"
         assert "SKIPPED" in capsys.readouterr().err
 
+    @staticmethod
+    def _state(tmp_path, monkeypatch, *, cash_synced=FRESH, margin_synced=FRESH,
+               balance=500.0, debt=0.0):
+        """A controlled holdings.yaml, so these tests describe the WRITER's behaviour
+        rather than whatever the committed baseline's freshness happens to be."""
+        f = tmp_path / "holdings.yaml"
+        body = {"shares": {"AAA": 10.0},
+                "margin": {"debt": debt, "buffer_pct": 60.0, "synced_at": margin_synced}}
+        if balance is not None:
+            body["cash"] = {"balance": balance, "synced_at": cash_synced}
+        f.write_text(yaml.safe_dump(body))
+        monkeypatch.setattr(A, "HOLDINGS_FILE", f)
+        return f
+
     def test_a_successful_resolution_still_writes(self, tmp_path, monkeypatch):
         perf = tmp_path / "perf.csv"
         monkeypatch.setattr(A, "PERF_LOG_FILE", perf)
+        self._state(tmp_path, monkeypatch)
         monkeypatch.setattr(A, "resolve_holdings", lambda *a, **k: {"AAA": 1000.0})
         A.log_performance(client=self._Boom(), quiet=True)
         assert perf.exists()
@@ -539,6 +559,7 @@ class TestThePerformanceSnapshotIsNotMisleading:
         holdings file it may not be using broke three unrelated suites."""
         perf = tmp_path / "perf.csv"
         monkeypatch.setattr(A, "PERF_LOG_FILE", perf)
+        self._state(tmp_path, monkeypatch)
         A.log_performance(client=self._Boom(), quiet=True,
                           resolved_holdings={"AAA": 1000.0})
         assert perf.exists()
@@ -546,11 +567,62 @@ class TestThePerformanceSnapshotIsNotMisleading:
     def test_the_written_row_carries_cash_and_book(self, tmp_path, monkeypatch):
         perf = tmp_path / "perf.csv"
         monkeypatch.setattr(A, "PERF_LOG_FILE", perf)
+        self._state(tmp_path, monkeypatch, balance=500.0, debt=100.0)
         A.log_performance(client=self._Boom(), quiet=True,
                           resolved_holdings={"AAA": 1000.0})
         import csv as _csv
         row = list(_csv.DictReader(open(perf)))[-1]
         assert "cash" in row and "book" in row
+        # book = invested + cash - debt, cash counted exactly once.
+        assert float(row["cash"]) == 500.0
+        assert float(row["book"]) == 1000.0 + 500.0 - 100.0
+
+    # ---- PHQ-2026-07 item 8: a row may never record stale or unknown state ----
+
+    def test_a_STALE_cash_observation_is_never_written_as_current(self, tmp_path,
+                                                                  monkeypatch, capsys):
+        """The defect this closes: log_performance gated on ``balance is not None``,
+        which is true for a stale reading too, so a 30-day-old balance would be
+        recorded in TODAY's row as though it were today's."""
+        perf = tmp_path / "perf.csv"
+        monkeypatch.setattr(A, "PERF_LOG_FILE", perf)
+        self._state(tmp_path, monkeypatch, cash_synced=STALE, balance=1041.23)
+        A.log_performance(client=self._Boom(), quiet=True,
+                          resolved_holdings={"AAA": 1000.0})
+        import csv as _csv
+        row = list(_csv.DictReader(open(perf)))[-1]
+        assert row["cash"] == "" and row["book"] == ""      # blank, never the stale number
+        assert "1041" not in open(perf).read()
+
+    def test_an_UNKNOWN_cash_observation_is_never_written_as_zero(self, tmp_path, monkeypatch):
+        perf = tmp_path / "perf.csv"
+        monkeypatch.setattr(A, "PERF_LOG_FILE", perf)
+        self._state(tmp_path, monkeypatch, balance=None)    # no cash block at all
+        A.log_performance(client=self._Boom(), quiet=True,
+                          resolved_holdings={"AAA": 1000.0})
+        import csv as _csv
+        row = list(_csv.DictReader(open(perf)))[-1]
+        assert row["cash"] == "" and row["book"] == ""      # blank, never "0.0"
+
+    def test_an_UNUSABLE_margin_state_writes_no_row_at_all(self, tmp_path, monkeypatch, capsys):
+        """Margin debt is part of the book identity, so a stale or out-of-domain debt
+        would corrupt net_equity in a RECORDED data point. Fail closed instead."""
+        perf = tmp_path / "perf.csv"
+        monkeypatch.setattr(A, "PERF_LOG_FILE", perf)
+        self._state(tmp_path, monkeypatch, margin_synced=STALE)
+        A.log_performance(client=self._Boom(), quiet=False,
+                          resolved_holdings={"AAA": 1000.0})
+        assert not perf.exists()
+        assert "SKIPPED" in capsys.readouterr().err
+
+    def test_a_NEGATIVE_margin_debt_writes_no_row_at_all(self, tmp_path, monkeypatch):
+        """`gross - (-debt)` ADDS capital; recording that would inflate the series."""
+        perf = tmp_path / "perf.csv"
+        monkeypatch.setattr(A, "PERF_LOG_FILE", perf)
+        self._state(tmp_path, monkeypatch, debt=-5000.0)
+        A.log_performance(client=self._Boom(), quiet=True,
+                          resolved_holdings={"AAA": 1000.0})
+        assert not perf.exists()
 
 
 class TestStatePreservation:
@@ -659,14 +731,29 @@ class TestNoDoubleCounting:
             A.main()
         assert e.value.code == 2
 
-    def test_an_unusable_cash_state_contributes_zero_not_its_balance(self):
-        """Closes `tracked_cash = cash_state["balance"] or 0.0`: that consumes a
-        stale balance as though it were current. The committed baseline IS
-        stale and non-zero, so the mutation would silently act on it."""
+    def test_an_unusable_cash_state_contributes_NOTHING_and_no_zero_is_substituted(self):
+        """CORRECTED under PHQ-2026-07 item 4.
+
+        This test previously PINNED the zero-substitution it was meant to guard against:
+        it required main() to contain ``... if cash_state["usable"] else 0.0``. Consuming
+        a stale balance as current is one defect; fabricating a zero and then rendering it
+        as ``Actual tracked cash`` is another, and the old pin enforced the second while
+        closing the first. Both are closed now: the state is passed as None.
+        """
         st = load_cash_state()
         assert st["usable"] is False and st["balance"], "baseline must be stale and non-zero"
         src = inspect.getsource(A.main)
-        assert 'tracked_cash = cash_state["balance"] if cash_state["usable"] else 0.0' in src
+        assert 'tracked_cash = cash_state["balance"] if cash_state["usable"] else None' in src
+        assert "else 0.0" not in src.split("tracked_cash")[1].split("\n")[0]
+        # And behaviourally, end to end: no dollar figure is derived from the unknown.
+        t = _targets()
+        roster = build_roster(t)
+        r = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True, None,
+                 holdings_state={"shares": {"AAA": 10.0}})
+        assert r["cash_known"] is False
+        assert r["book"] is None and r["cash"] is None and r["cash_after_plan"] is None
+        assert r["protection"]["protected_floor_dollars"] is None
+        assert r["cash_spent"] == 0.0 and r["buys"] == []
 
     def test_update_cash_is_the_only_documented_cash_writer(self):
         src = inspect.getsource(A.update_cash)
@@ -749,7 +836,11 @@ class TestBookIdentityEverywhere:
         src = inspect.getsource(A.margin_capacity)
         assert "net_equity = gross - margin_debt" in src
         psrc = inspect.getsource(plan)
-        assert psrc.count("book = net_equity + float(cash)") == 1
+        # CORRECTED: the addend is now `cash_value`, which is the tracked balance when
+        # the observation is current and is never consumed at all when it is not.
+        assert psrc.count("book = net_equity + cash_value") == 1
+        assert psrc.count("cash_value = float(cash) if cash_known else 0.0") == 1
+        assert "float(cash)" not in psrc.replace("cash_value = float(cash) if cash_known", "")
 
     def test_the_performance_log_records_cash_and_book(self):
         assert "cash" in A.PERF_FIELDS and "book" in A.PERF_FIELDS
@@ -836,3 +927,334 @@ class TestNoAcceptedNumberChanged:
 
     def test_the_gate_roster_is_untouched(self, real_gates):
         assert set(real_gates) == {"SNPS", "ICE", "SPGI", "WM", "RKLB", "TSLA"}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PHQ-2026-07 corrections — adversarial coverage for the findings the independent
+# FULL review raised at head bb6701b (BLOCKING 1/2, MAJOR 1/2/3).
+# ══════════════════════════════════════════════════════════════════════════════
+
+#: Every shape a persisted numeric scalar must be REJECTED in. Each is its own
+#: distinct failure mode, so each is listed separately rather than folded into a
+#: single "bad input" case that one fix could accidentally satisfy.
+BAD_SCALARS = [
+    ("negative", -1.0),
+    ("nan", float("nan")),
+    ("posinf", float("inf")),
+    ("neginf", float("-inf")),
+    ("true", True),
+    ("false", False),
+    ("string", "500"),
+    ("none", None),
+    ("list", [500.0]),
+]
+#: Controls. If these ever stop being ACCEPTED the checks above have gone from
+#: fail-closed to fail-shut and are no longer measuring what they claim to.
+GOOD_SCALARS = [("zero", 0.0), ("int", 500), ("float", 1041.23), ("tiny", 0.01)]
+
+
+class TestNumericDomainsFailClosed:
+    """MAJOR 2. `float()` alone admits NaN and +Infinity, and `bool` is an `int`."""
+
+    @pytest.mark.parametrize("label,value", BAD_SCALARS, ids=[b[0] for b in BAD_SCALARS])
+    def test_cash_balance_rejects(self, label, value):
+        st = load_cash_state({"cash": {"balance": value, "synced_at": FRESH}})
+        assert st["usable"] is False, label
+        assert st["state"] == A.STATE_UNKNOWN, label
+        assert st["balance"] is None, label
+        assert st["reason"], label
+
+    @pytest.mark.parametrize("label,value", GOOD_SCALARS, ids=[g[0] for g in GOOD_SCALARS])
+    def test_cash_balance_accepts_valid_values(self, label, value):
+        st = load_cash_state({"cash": {"balance": value, "synced_at": FRESH}})
+        assert st["usable"] is True, label
+        assert st["state"] == A.STATE_CURRENT, label
+        assert st["balance"] == float(value), label
+
+    @pytest.mark.parametrize("label,value", BAD_SCALARS, ids=[b[0] for b in BAD_SCALARS])
+    def test_margin_debt_rejects(self, label, value):
+        st = A.load_margin_state(
+            {"margin": {"debt": value, "buffer_pct": 60.0, "synced_at": FRESH}})
+        assert st["usable"] is False, label
+        assert st["debt"] is None, label
+
+    def test_a_negative_debt_cannot_inflate_net_equity(self):
+        """The concrete harm: `gross - (-debt)` ADDS capital. Reject, never absorb."""
+        st = A.load_margin_state(
+            {"margin": {"debt": -5000.0, "buffer_pct": 60.0, "synced_at": FRESH}})
+        assert st["usable"] is False and "minimum" in st["reason"]
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), -0.1, 100.01, True])
+    def test_margin_buffer_rejects_out_of_domain(self, value):
+        st = A.load_margin_state(
+            {"margin": {"debt": 0.0, "buffer_pct": value, "synced_at": FRESH}})
+        assert st["usable"] is False
+
+    @pytest.mark.parametrize("value", [0.0, 30.0, 60.0, 100.0])
+    def test_margin_buffer_accepts_its_whole_valid_domain(self, value):
+        st = A.load_margin_state(
+            {"margin": {"debt": 0.0, "buffer_pct": value, "synced_at": FRESH}})
+        assert st["usable"] is True and st["buffer_pct"] == value
+
+    def test_a_nan_buffer_would_otherwise_pass_BOTH_sides_of_the_floor(self):
+        """Why finiteness is not cosmetic: NaN satisfies neither `< 30` nor `>= 30`,
+        so a NaN buffer slips through a floor check by failing to trip either branch."""
+        nan = float("nan")
+        assert not (nan < 30.0) and not (nan >= 30.0)
+        st = A.load_margin_state(
+            {"margin": {"debt": 0.0, "buffer_pct": nan, "synced_at": FRESH}})
+        assert st["usable"] is False
+
+    @pytest.mark.parametrize("text", ["balance: .nan", "balance: .inf", "balance: -.inf"])
+    def test_yaml_serialised_non_finite_forms_are_rejected(self, text):
+        """These are the forms that would actually appear on disk."""
+        data = yaml.safe_load(f"cash:\n  {text}\n  synced_at: {FRESH}\n")
+        st = load_cash_state(data)
+        assert st["usable"] is False and st["balance"] is None
+
+    def test_a_nan_holding_value_is_not_treated_as_resolved(self):
+        """`bool(nan)` is True, so a NaN price would read as 'priced' and poison book."""
+        vc = A.valuation_completeness({"AAA": float("nan")}, {"shares": {"AAA": 1.0}})
+        assert vc["complete"] is False and vc["unresolved"] == ["AAA"]
+
+    def test_a_real_price_is_still_resolved(self):
+        vc = A.valuation_completeness({"AAA": 1000.0}, {"shares": {"AAA": 1.0}})
+        assert vc["complete"] is True and vc["unresolved"] == []
+
+
+class TestThreeStateObservation:
+    """MAJOR 1. current / stale / unknown are distinct, and zero is none of them."""
+
+    def test_current_stale_and_unknown_are_three_distinct_states(self):
+        cur = load_cash_state({"cash": {"balance": 500.0, "synced_at": FRESH}})
+        stale = load_cash_state({"cash": {"balance": 500.0, "synced_at": STALE}})
+        unknown = load_cash_state({})
+        assert (cur["state"], stale["state"], unknown["state"]) == (
+            A.STATE_CURRENT, A.STATE_STALE, A.STATE_UNKNOWN)
+        assert len({cur["state"], stale["state"], unknown["state"]}) == 3
+
+    def test_a_stale_observation_keeps_its_value_and_its_date(self):
+        """Stale is a real past fact. It is retained AS evidence -- and marked unusable."""
+        st = load_cash_state({"cash": {"balance": 1041.23, "synced_at": STALE}})
+        assert st["state"] == A.STATE_STALE
+        assert st["balance"] == 1041.23 and st["synced_at"] == STALE
+        assert st["usable"] is False
+
+    def test_an_unknown_observation_carries_no_number_at_all(self):
+        for data in ({}, {"cash": {"balance": "x", "synced_at": FRESH}},
+                     {"cash": {"balance": 5.0, "synced_at": "not-a-date"}}):
+            st = load_cash_state(data)
+            assert st["state"] == A.STATE_UNKNOWN and st["balance"] is None
+
+    def test_zero_is_a_real_observation_not_an_absence(self):
+        """A genuine $0.00 balance is CURRENT and usable -- the point of the three-state
+        model is that a fabricated zero and an observed zero are not the same thing."""
+        st = load_cash_state({"cash": {"balance": 0.0, "synced_at": FRESH}})
+        assert st["state"] == A.STATE_CURRENT and st["usable"] is True
+        assert st["balance"] == 0.0
+
+    def test_plan_withholds_every_dollar_figure_when_cash_is_not_current(self):
+        t = _targets(); roster = build_roster(t)
+        r = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True, None,
+                 holdings_state={"shares": {"AAA": 10.0}})
+        for key in ("book", "cash", "cash_left", "cash_after_plan"):
+            assert r[key] is None, key
+        p = r["protection"]
+        assert p["cash_known"] is False
+        for key in ("book", "actual_cash", "protected_floor_dollars",
+                    "cash_shortfall_dollars", "cash_surplus_dollars",
+                    "static_protected_dollars", "gated_cash_required_dollars"):
+            assert p[key] is None, key
+        # Percentages are config-derived and stay knowable in every state.
+        assert p["static_protected_pct"] > 0 and p["unreconciled_pct"] >= 0
+
+    def test_nothing_is_funded_while_cash_is_not_current(self):
+        t = _targets(); roster = build_roster(t)
+        r = plan(t, {"AAA": 1.0}, roster, _metrics(roster), True, True, None,
+                 holdings_state={"shares": {"AAA": 10.0}})
+        assert r["buys"] == [] and r["cash_spent"] == 0.0
+
+    def test_the_render_never_labels_a_withheld_figure_actual(self):
+        t = _targets(); roster = build_roster(t)
+        r = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True, None,
+                 holdings_state={"shares": {"AAA": 10.0}})
+        r["cash_state"] = load_cash_state({"cash": {"balance": 1041.23, "synced_at": STALE}})
+        r["actionable"] = False
+        r["actionable_blocks"] = ["CASH STATE: stale"]
+        out = A.render(r, review=True)
+        assert "UNAVAILABLE" in out
+        assert "Actual tracked cash | $0.00" not in out
+        assert "$0.00" not in out.split("### Protected-capital")[1].split("|---|---:|")[1][:600]
+        # The stale number may appear ONLY inside its own dated evidence disclaimer.
+        for line in out.splitlines():
+            if "1,041.23" in line:
+                assert "Stale historical evidence" in line, line
+
+
+    def test_the_no_funding_invariant_actually_fires_under_unknown_cash(self, monkeypatch):
+        """The backstop assertion, exercised rather than merely present.
+
+        ``deployable = surplus or 0.0`` already prevents spending while cash is
+        unknown, so the ``assert cash_spent == 0.0`` guard behind it is unreachable in
+        normal operation -- and an unreachable guard can be weakened without any test
+        noticing. Here the upstream protection is deliberately made to LIE (a surplus
+        reported while cash_known is False), so the backstop is the only thing left
+        standing. Weakening it to ``>= 0.0`` makes this test pass silently, which is
+        exactly the regression being pinned.
+        """
+        real = A.protected_capital
+
+        def lying(*a, **k):
+            out = real(*a, **k)
+            if not out["cash_known"]:
+                out = dict(out, cash_surplus_dollars=10_000.0)
+            return out
+
+        monkeypatch.setattr(A, "protected_capital", lying)
+        t = _targets()
+        roster = build_roster(t)
+        with pytest.raises(AssertionError, match="stale or unknown"):
+            # BBB carries the book so AAA is genuinely underweight by more than
+            # one minimum lot; with a $1 book no candidate clears min_lot_dollars
+            # and cash_spent would stay 0 for a reason unrelated to the guard.
+            A.plan(t, {"BBB": 10_000.0}, roster, _metrics(roster), True, True, None,
+                   holdings_state={"shares": {"BBB": 100.0}})
+
+    def test_no_book_shaped_dollar_value_escapes_when_cash_is_unknown(self):
+        """A speculative ``ranking_scale_dollars`` key was carrying net equity out of
+        plan() under unknown cash -- unread, honestly named, and still exactly the
+        "a number that looks like the book but is not the book" shape MAJOR 1 is about.
+        Removed. This pins that no top-level key leaks that value again."""
+        t = _targets(); roster = build_roster(t)
+        gross = 1234.5
+        r = plan(t, {"AAA": gross}, roster, _metrics(roster), True, True, None,
+                 holdings_state={"shares": {"AAA": 10.0}})
+        leaked = [k for k, v in r.items()
+                  if isinstance(v, (int, float)) and not isinstance(v, bool)
+                  and abs(float(v) - gross) < 1e-6]
+        assert leaked == [], leaked
+        assert "ranking_scale_dollars" not in r
+
+    def test_a_current_run_still_reports_real_dollar_figures(self):
+        """The complement: the withholding must not have broken the normal path."""
+        t = _targets(); roster = build_roster(t)
+        r = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True, 5000.0,
+                 holdings_state={"shares": {"AAA": 10.0}})
+        assert r["cash_known"] is True
+        assert r["book"] == 6000.0 and r["cash"] == 5000.0
+        assert r["protection"]["protected_floor_dollars"] > 0
+        assert r["cash_after_plan"] >= r["protection"]["protected_floor_dollars"] - 1e-6
+
+
+class TestTheCliMigrationIsComplete:
+    """MAJOR 3. The canonical `how` documentation must match the shipped interface."""
+
+    def test_the_readme_documents_update_cash_and_not_the_retired_flag(self):
+        readme = (pathlib.Path(__file__).parent / "README.md").read_text(encoding="utf-8")
+        workflow = readme.split("## Allocation workflow")[1].split("\n## ")[0]
+        assert "update-cash" in workflow
+        assert "allocate.py --cash 2000" not in readme
+
+    def test_every_command_the_readme_prescribes_is_a_real_command(self):
+        """Behavioural, not textual: each documented invocation must actually parse."""
+        readme = (pathlib.Path(__file__).parent / "README.md").read_text(encoding="utf-8")
+        # Subcommands only -- flags are checked separately by argparse itself.
+        prescribed = re.findall(r"python allocate\.py (?!--)([a-z][a-z-]+)", readme)
+        known = {"update-cash", "update-shares", "update-crypto-shares",
+                 "update-holdings", "update-margin", "log-performance"}
+        assert prescribed, "the README must actually prescribe commands"
+        assert "update-cash" in prescribed
+        for cmd in set(prescribed):
+            assert cmd in known, cmd
+        # And the flags it prescribes must all still parse.
+        flags = set(re.findall(r"python allocate\.py (--[a-z-]+)", readme))
+        assert flags, "the README must actually prescribe flags"
+        assert "--cash" not in flags
+        for flag in flags:
+            assert flag in inspect.getsource(A.main), flag
+
+    def test_the_dashboard_no_longer_instructs_the_retired_flag(self):
+        src = (pathlib.Path(__file__).parent / "portfolio_hq" / "dashboard"
+               / "render.py").read_text(encoding="utf-8")
+        assert "--cash" not in src
+        assert "update-cash" in src
+
+    def test_the_module_usage_docstring_matches_the_shipped_interface(self):
+        assert "--cash 2000" not in (A.__doc__ or "")
+        assert "update-cash" in (A.__doc__ or "")
+
+    def test_no_fabricated_cash_value_survives_argument_parsing(self):
+        """`args.cash = 0.0` after the retirement check re-introduced the exact
+        fabricated zero this correction exists to remove, even though inert."""
+        src = inspect.getsource(A.main)
+        assert "args.cash = 0.0" not in src
+
+    def test_historical_evidence_that_mentions_the_flag_is_left_alone(self):
+        """Accepted decisions record what was true when they were filed. Migrating an
+        interface must never rewrite them."""
+        root = pathlib.Path(__file__).parent
+        for rel in ("governance/decisions/PHQ-2026-02-holdings-reconciliation-and-"
+                    "actionable-allocation-policy.md",
+                    "governance/decisions/OPS-0014-routine-operational-sync.md"):
+            assert "--cash" in (root / rel).read_text(encoding="utf-8"), rel
+
+
+class TestTheGoverningDecisionIsFiled:
+    """BLOCKING 1. The Class-4 authority must exist, be accepted, and be catalogued."""
+
+    DECISION_ID = "PHQ-2026-07"
+    RELPATH = ("governance/decisions/PHQ-2026-07-protected-capital-accounting-"
+               "and-persisted-cash.md")
+
+    @pytest.fixture
+    def decision(self):
+        return (pathlib.Path(__file__).parent / self.RELPATH).read_text(encoding="utf-8")
+
+    def test_the_decision_file_exists_and_is_accepted(self, decision):
+        assert decision.startswith("---")
+        front = decision.split("---")[1]
+        assert f"decision_id: {self.DECISION_ID}" in front
+        assert "status: Accepted" in front
+
+    def test_the_catalog_lists_it_exactly_once_and_points_at_the_real_file(self):
+        root = pathlib.Path(__file__).parent
+        rows = yaml.safe_load((root / "governance/decisions.yaml").read_text())["decisions"]
+        matches = [r for r in rows if r["decision_id"] == self.DECISION_ID]
+        assert len(matches) == 1
+        assert matches[0]["file"] == self.RELPATH
+        assert (root / matches[0]["file"]).exists()
+
+    @staticmethod
+    def _flat(text: str) -> str:
+        """Line-wrapped Markdown, flattened, so a phrase split across lines still matches."""
+        return re.sub(r"\s+", " ", text.replace("**", "")).lower()
+
+    def test_it_supersedes_prospectively_without_editing_history(self, decision):
+        flat = self._flat(decision)
+        assert "prospectively supersedes" in flat
+        assert "are not edited" in flat
+
+    def test_it_names_every_behaviour_this_pr_implements(self, decision):
+        for clause in ("Cash source of truth", "Book identity", "Protected floor",
+                       "State semantics", "Freshness", "Margin", "CLI",
+                       "Performance logging", "Valuation completeness"):
+            assert clause in decision, clause
+
+    def test_it_hardcodes_no_policy_percentage(self, decision):
+        """NUM-0001: governed percentages live in targets.yaml, not duplicated as an
+        operative value here. Scoped to the OPERATIVE section -- the Alternatives
+        section names 12.50% precisely to record that hardcoding it was REJECTED."""
+        body = decision.split("## Decision")[1].split("## Rationale")[0]
+        for pct in ("12.50%", "1.00%", "4.00%", "0.75%", "6.75%"):
+            assert pct not in body, pct
+        assert "derived at runtime from the current" in self._flat(body)
+        assert "hardcode 12.50%" in self._flat(decision.split("## Alternatives")[1])
+
+    def test_it_authorises_no_policy_number_change(self, decision):
+        flat = self._flat(decision)
+        assert "1.8x leverage cap and 30% buffer floor are untouched" in flat
+        assert "no new margin-deployment policy" in flat
+        # The closed list of things it explicitly does NOT authorise.
+        for forbidden in ("holdings membership", "targets", "gates", "issuer limits",
+                          "cluster caps", "stage-1 authority", "orders", "trades"):
+            assert forbidden in flat, forbidden

@@ -18260,9 +18260,21 @@ workstreams:
         pr: null
         description: >-
           PROTECTED-CAPITAL ACCOUNTING AND FULL-BOOK RECONCILIATION. One bounded
-          implementation PR under existing PHQ-2026-01/PHQ-2026-02 policy and the
-          OPS-0009/OPS-0014 lifecycle; NO new governance decision, and no accepted
-          target, gate, cap, cluster, or margin-policy number is changed. Corrects
+          implementation PR under the NEW Class-4 decision PHQ-2026-07, filed in
+          this same PR and explicitly authorized by the principal after independent
+          FULL review 5069633229 returned CHANGES REQUIRED at head bb6701b with
+          BLOCKING 2 / MAJOR 3. That review found -- correctly -- that persisting
+          cash, retiring --cash, and changing plan()'s funding, freshness, margin,
+          logging and CLI behaviour are Class-4 allocator-policy changes under
+          OPS-0014 paragraph 32, and that no accepted decision supplied that
+          authority. The earlier claim recorded here and in the PR description,
+          that this merely honored existing PHQ-2026-01/PHQ-2026-02 policy and
+          needed NO new governance decision, was WRONG and is superseded: a
+          repository-wide search found no accepted decision defining a protected
+          floor anywhere, and four accepted decisions (PHQ-2026-02, PHQ-2026-05,
+          PHQ-2026-06, OPS-0014 paragraph 38) affirmatively recorded the runtime
+          --cash representation this PR reverses. No accepted target, gate, cap,
+          cluster, or margin-policy number is changed. Corrects
           seven independently reproduced allocator defects. D1: holdings.yaml had
           no cash field at all, so book = invested + cash - debt was computed from
           a runtime argument only, and every target_pct dollar figure was
@@ -18310,13 +18322,39 @@ workstreams:
           preserving literal cash while borrowing, and PHQ-2026-01 item 6
           authorizes no new margin, so broker behavior is not invented. (G)
           Valuation completeness is proved before any dollar figure.
-          DISCLOSED CLASSIFICATION TENSION, not resolved silently: OPS-0014
-          paragraph 58 bars Class 2 from touching allocate.py's plan(), and Class 4
-          names allocator rule changes. The position taken is that this makes the
-          allocator HONOR already-accepted PHQ-2026-01/PHQ-2026-02 policy rather
-          than change policy, since no percentage, gate, cap, cluster or margin
-          parameter moves, but that is exactly the judgment an independent reviewer
-          should test rather than accept.
+          CLASSIFICATION RESOLVED, not merely disclosed: the independent review
+          tested the earlier "honors existing policy" position and rejected it.
+          OPS-0014 paragraph 58 bars Class 2 from touching allocate.py's plan() and
+          paragraph 32 names allocator-rule changes Class 4 requiring an accepted
+          decision AND its own separate implementation authority. PHQ-2026-07
+          supplies both. It prospectively supersedes the runtime-only cash
+          representation without editing a single historical decision.
+          THE OTHER FOUR FINDINGS ARE CORRECTED. MAJOR 1: unusable cash is no
+          longer replaced by 0.0 and then rendered as "Actual tracked cash" --
+          current, stale and unknown are three distinct states, book/floor/target
+          dollars/shortfall are reported UNAVAILABLE when cash is not current, a
+          stale balance appears only as dated historical evidence, and
+          log_performance writes neither a stale cash figure nor an unvalidated
+          margin debt into a current row. MAJOR 2: every persisted numeric boundary
+          rejects bool, non-finite (NaN and both infinities), and out-of-domain
+          values -- a negative debt previously read as usable and INFLATED net
+          equity via gross minus a negative, and a NaN buffer satisfied neither
+          side of the 30% floor comparison. MAJOR 3: README, the dashboard
+          instruction and the module usage docstring are migrated to update-cash;
+          immutable historical evidence that merely mentions --cash is left alone.
+          BLOCKING 2: the thirty exact-head CI failures are repaired by ONE durable
+          invariant per root cause across ten merged Stage-1 suites, not by ten
+          literal hash or count updates -- G1/G2 historical non-mutation claims are
+          measured over each unit's OWN closed immutable base..merge range instead
+          of live HEAD or the worktree; G3's changed-set guard gains its own
+          immutable second endpoint, having previously been open-ended and
+          therefore guaranteed to fail on the NEXT lawful commit of any kind by
+          anyone; G4's copied successor-gate and successor-decision literals are
+          replaced by mechanically derived append-only structure (historical prefix
+          unchanged, own position preserved); and G5's whole-file SHA pin is
+          re-expressed as the semantic claim it exists to make -- no pinned suite
+          may LOSE assertions -- so a gutted file still fails while a lawful
+          strengthening passes.
           THREE EXISTING ASSERTIONS were obsolete and are strengthened, none
           weakened: test_normal_logging_unchanged_without_no_log dropped its
           --cash 500 case because the flag is retired and now exits 2;

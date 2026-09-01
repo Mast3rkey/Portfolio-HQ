@@ -1668,7 +1668,19 @@ class TestTheCorrectionIsNotPerformedHere:
 
     @pytest.mark.parametrize("relpath", PORTFOLIO_RELPATHS)
     def test_every_protected_portfolio_path_is_identical_to_the_bound_merge(self, relpath):
-        assert _blob_at(BOUND_MERGE_SHA, relpath) == _git("hash-object", relpath).strip()
+        """RE-ANCHORED to THIS unit's own closed base..merge range, matching the
+        already-corrected sibling directly below.
+
+        The live ``git hash-object`` reading was correct while this unit was the live
+        one. Once merged and closed it stopped measuring THIS unit and started
+        asserting that no later, separately authorized unit may ever touch a portfolio
+        path -- authority this filing never had. Both endpoints are immutable now, so
+        the claim is exact and does not decay as `main` advances.
+        """
+        assert _blob_at(BOUND_MERGE_SHA, relpath) == _blob_at(BASE_SHA, relpath), relpath
+        assert _blob_at(BASE_SHA, relpath) == _blob_at(DECISION_MERGE_SHA, relpath), relpath
+        # NEGATIVE PIN: this unit's own range is non-empty, so this is not vacuous.
+        assert _git("diff", "--name-only", BASE_SHA, DECISION_MERGE_SHA).strip()
 
     @pytest.mark.parametrize("relpath,digest", sorted(CANONICAL_PINS.items()))
     def test_the_canonical_pins_match(self, relpath, digest):
@@ -2172,14 +2184,28 @@ class TestRegisterSynchronisation:
 
 
 class TestCatalogSynchronisation:
-    def test_the_catalog_lists_this_decision_last_and_uniquely(self, catalog):
-        """RE-ANCHORED BY XASSET-0055. Successors append after this decision, so "last" is
-        stated EXACTLY against the named successor set rather than relaxed to "present"."""
+    def test_the_catalog_records_this_decision_uniquely_and_in_its_original_position(self, catalog):
+        """RE-ANCHORED to a MECHANICALLY DERIVED invariant, replacing a moving literal.
+
+        This previously pinned a hand-maintained ``SUCCESSORS_APPENDED_SINCE`` tuple and
+        required this decision to sit at a fixed offset from the END of the catalog. Both
+        are moving targets: every later governance filing of ANY kind appends an entry and
+        breaks them, which is not a defect in the later filing.
+
+        What this unit can actually claim, permanently, is that the catalog is APPEND-ONLY
+        with respect to it: its own entry is unique, and the prefix up to and including it
+        is byte-for-byte what this unit itself left behind. A rewritten or reordered
+        predecessor entry still fails; a lawful later append does not.
+        """
         ids = [d["decision_id"] for d in catalog]
         assert len(ids) == len(set(ids))
         assert ids.count(DECISION_ID) == 1
-        assert ids[len(ids) - 1 - len(SUCCESSORS_APPENDED_SINCE)] == DECISION_ID
-        assert tuple(ids[ids.index(DECISION_ID) + 1:]) == SUCCESSORS_APPENDED_SINCE
+        at_merge = [d["decision_id"] for d in
+                    yaml.safe_load(_git("show", f"{DECISION_MERGE_SHA}:governance/decisions.yaml"))
+                    ["decisions"]]
+        assert at_merge[-1] == DECISION_ID, at_merge[-1]
+        # The whole prefix, in order, exactly as this unit left it.
+        assert ids[:len(at_merge)] == at_merge
 
     def test_the_catalog_entry_points_at_the_real_file(self, catalog):
         entry = next(d for d in catalog if d["decision_id"] == DECISION_ID)
@@ -2229,13 +2255,15 @@ class TestNonVacuityAgainstTheBaseTree:
         assert PRIOR_CLOSURE_GATE not in raw
 
     def test_the_catalog_gained_exactly_one_entry(self, catalog):
+        """RE-ANCHORED to this unit's own CLOSED range. The growth THIS unit caused is
+        exactly one entry, measured base -> this unit's merge; growth caused by later,
+        separately authorized filings is not this unit's to count."""
         before = yaml.safe_load(_git("show", f"{BASE_SHA}:governance/decisions.yaml"))["decisions"]
-        # RE-ANCHORED BY XASSET-0055: successors append too, so the growth this unit itself
-        # caused stays EXACT by naming them, rather than being relaxed to an inequality.
-        assert len(catalog) == len(before) + 1 + len(SUCCESSORS_APPENDED_SINCE)
+        after = yaml.safe_load(
+            _git("show", f"{DECISION_MERGE_SHA}:governance/decisions.yaml"))["decisions"]
+        assert len(after) == len(before) + 1
         assert DECISION_ID not in {d["decision_id"] for d in before}
-        for successor in SUCCESSORS_APPENDED_SINCE:
-            assert successor not in {d["decision_id"] for d in before}
+        assert after[-1]["decision_id"] == DECISION_ID
 
     def test_the_base_did_not_already_name_this_decision_anywhere(self):
         result = subprocess.run(

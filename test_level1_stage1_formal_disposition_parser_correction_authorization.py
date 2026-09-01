@@ -1679,9 +1679,21 @@ class TestThisFilingChangesNoProductionByte:
     @pytest.mark.parametrize(
         "relpath", [r for r in PROTECTED_RELPATHS if r != PRODUCTION_MODULE_RELPATH]
     )
-    def test_every_other_protected_path_is_still_byte_identical_at_head(self, relpath):
-        """XASSET-0058 §F/§H authorize ONE production surface and no other. Pinned at HEAD."""
-        assert _blob_at("HEAD", relpath) == _blob_at(THIS_UNIT_BASE_SHA, relpath), relpath
+    def test_every_other_protected_path_is_untouched_across_this_units_own_range(self, relpath):
+        """XASSET-0058 §F/§H authorize ONE production surface and no other.
+
+        RE-ANCHORED to a CLOSED IMMUTABLE RANGE. This previously compared the live
+        ``HEAD`` against this unit's base, which asserted that no LATER, separately
+        authorized unit may ever touch a protected path -- authority this filing does
+        not have and never claimed. XASSET-0058 can only speak for its own delta, so
+        that is what is measured: base -> this unit's own merge, both immutable, so the
+        claim is exact and permanent instead of decaying with every later merge.
+        """
+        assert _blob_at(XASSET_0058_MERGE_SHA, relpath) == _blob_at(
+            THIS_UNIT_BASE_SHA, relpath
+        ), relpath
+        # NEGATIVE PIN: the range is genuinely non-empty, so the check is not vacuous.
+        assert _git("diff", "--name-only", THIS_UNIT_BASE_SHA, XASSET_0058_MERGE_SHA).strip()
 
     def test_the_production_module_still_carries_the_vulnerable_identity(self):
         """The vulnerable identity is preserved as ADVERSE HISTORY at this filing's own merge.

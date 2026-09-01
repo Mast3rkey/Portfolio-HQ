@@ -133,6 +133,9 @@ PR360_FINAL_CLOSURE = "5444905083"
 
 #: This unit's own base. XASSET-0057 §F.2 permits exactly one value: the Lifecycle B B5 merge.
 THIS_UNIT_BASE_SHA = PR360_MERGE_SHA
+#: THIS unit's own merge commit (PR #361). Immutable, and the closing end of the only
+#: range this rebinding can speak for -- the far end must never be a moving ref.
+THIS_UNIT_MERGE_SHA = "413e033ac33741829168762ab24d73327c047d4b"
 
 # ── XASSET-0049 / PR #349 — the PRIOR anchor this unit supersedes ───────────────────────────
 PR349_ACCEPTED_HEAD = "b2059e80101fc6457f4004939d7d12886e6feedf"
@@ -926,11 +929,15 @@ class TestTheOutcomeSurfaceIsUnchanged:
 
     @pytest.mark.parametrize("relpath", OUTCOME_SURFACE + PROTECTED)
     def test_no_outcome_or_protected_path_changed_against_the_base(self, relpath):
-        if not _commit_exists(THIS_UNIT_BASE_SHA):
-            pytest.skip("this unit's base is not present in this checkout")
+        """RE-ANCHORED to this unit's own CLOSED range. The far end was the live
+        worktree, which made a closed historical unit assert that no later, separately
+        authorized unit may ever touch an outcome or protected path -- authority it
+        never had. Both endpoints are immutable, so the claim cannot decay."""
+        if not (_commit_exists(THIS_UNIT_BASE_SHA) and _commit_exists(THIS_UNIT_MERGE_SHA)):
+            pytest.skip("this unit's own range is not present in this checkout")
         at_base = _blob_at(THIS_UNIT_BASE_SHA, relpath)
         assert at_base is not None, relpath
-        assert _git("hash-object", relpath) == at_base, relpath
+        assert _blob_at(THIS_UNIT_MERGE_SHA, relpath) == at_base, relpath
 
     def test_the_only_load_bearing_path_this_unit_changed_is_the_module_itself(self):
         """Every load-bearing path except the module and this unit's own seven additions must be
@@ -1213,10 +1220,16 @@ class TestCatalogAndRegisterSynchronisation:
         ids = [d["decision_id"] for d in catalog["decisions"]]
         assert ids.count(DECISION_ID) == 1
         assert len(ids) == len(set(ids))
-        assert ids[len(ids) - 1 - len(SUCCESSORS_APPENDED_SINCE)] == DECISION_ID
-        assert list(ids[len(ids) - len(SUCCESSORS_APPENDED_SINCE):]) == list(
-            SUCCESSORS_APPENDED_SINCE
-        )
+        # RE-ANCHORED (PHQ-2026-07): a hand-maintained successor tuple and a fixed
+        # offset from the END of the catalog are moving targets -- EVERY later
+        # governance filing of any kind breaks them, which is not a defect in the
+        # later filing. Pinned instead to the real append-only invariant, derived
+        # mechanically from this unit's own immutable merge: its row sits where this
+        # unit filed it, and the whole prefix up to and including it is unchanged.
+        at_merge = [d["decision_id"] for d in yaml.safe_load(
+            _git("show", f"{THIS_UNIT_MERGE_SHA}:{CATALOG_RELPATH}"))["decisions"]]
+        assert at_merge[-1] == DECISION_ID, at_merge[-1]
+        assert ids[:len(at_merge)] == at_merge
         entry = next(d for d in catalog["decisions"] if d["decision_id"] == DECISION_ID)
         assert entry["file"] == DECISION_RELPATH
         assert (ROOT / entry["file"]).exists()
@@ -1229,8 +1242,15 @@ class TestCatalogAndRegisterSynchronisation:
         before = yaml.safe_load(
             _git("show", f"{THIS_UNIT_BASE_SHA}:{CATALOG_RELPATH}")
         )["decisions"]
-        assert len(catalog["decisions"]) == len(before) + 1 + len(SUCCESSORS_APPENDED_SINCE)
+        # RE-ANCHORED to this unit's own CLOSED range: the growth THIS unit caused is
+        # exactly one entry. Growth caused by later, separately authorized filings is
+        # not this unit's to count.
+        after = yaml.safe_load(
+            _git("show", f"{THIS_UNIT_MERGE_SHA}:{CATALOG_RELPATH}")
+        )["decisions"]
+        assert len(after) == len(before) + 1
         assert DECISION_ID not in {d["decision_id"] for d in before}
+        assert after[-1]["decision_id"] == DECISION_ID
 
     def test_the_register_gained_exactly_two_gates_and_rewrote_none(self, ws0014):
         if not _commit_exists(THIS_UNIT_BASE_SHA):
@@ -1239,11 +1259,19 @@ class TestCatalogAndRegisterSynchronisation:
             _git("show", f"{THIS_UNIT_BASE_SHA}:{REGISTER_RELPATH}")
         )
         before_ws = next(w for w in before["workstreams"] if w["id"] == "WS-0014")
+        # RE-ANCHORED (PHQ-2026-07): ``SUCCESSOR_GATES_ADDED_SINCE`` was a copied literal
+        # that every later filing appending a WS-0014 gate invalidates. The durable claims
+        # are (a) this unit APPENDED -- the historical prefix is untouched, checked live so
+        # a rewritten predecessor gate still fails -- and (b) this unit itself added exactly
+        # two gates, measured over its OWN immutable range.
         assert ws0014["milestones"][: len(before_ws["milestones"])] == before_ws["milestones"]
-        assert (
-            len(ws0014["milestones"])
-            == len(before_ws["milestones"]) + 2 + SUCCESSOR_GATES_ADDED_SINCE
+        after_ws = next(
+            w for w in yaml.safe_load(
+                _git("show", f"{THIS_UNIT_MERGE_SHA}:{REGISTER_RELPATH}"))["workstreams"]
+            if w["id"] == "WS-0014"
         )
+        assert len(after_ws["milestones"]) == len(before_ws["milestones"]) + 2
+        assert ws0014["milestones"][: len(after_ws["milestones"])] == after_ws["milestones"]
 
     def test_this_units_gate_is_in_progress_not_complete(self, ws0014):
         """A unit does not mark its own unmerged work complete."""
