@@ -22,6 +22,7 @@ The production authorization module is imported read-only; historical module sou
 from __future__ import annotations
 
 import ast
+import collections
 import hashlib
 import re
 import subprocess
@@ -339,15 +340,37 @@ WS0014 = _ws0014()
 
 
 
-def _assert_count(source: str) -> int:
-    """Number of real ``assert`` statements in ``source``, excluding vacuous ones.
+def _assertion_strength(source: str) -> tuple[int, int]:
+    """(non-vacuous assertions, assertions that actually TEST something).
 
-    ``assert True`` and ``assert 1`` are NOT counted: they are precisely the shape a
-    silent gutting takes, so counting them would let a weakened file keep its total.
-    Parsed with ``ast`` rather than matched textually, so a docstring mentioning the
-    word cannot inflate the count.
+    RE-ANCHORED (PHQ-2026-07). This replaces ``_assert_count``, which returned only
+    the first number. Independent review showed a bare count cannot see a same-count
+    weakening: replacing
+
+        assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
+
+    with
+
+        assert entry["file"]
+
+    destroys the catalog-path identity property -- a row pointing at a DIFFERENT
+    decision's file then passes -- while the total stays 441 -> 441.
+
+    An exact-fingerprint inventory was tried first and REJECTED as too strong: it
+    also forbids re-anchoring a moving self-reference. A predecessor lawfully
+    changed ``== XASSET0060_MAIN_SHA`` to ``== XASSET0061_MAIN_SHA`` and ADDED two
+    assertions; an identity-based rule calls that a loss. That is whole-file
+    immutability wearing a different hat -- the exact defect this guard was
+    re-anchored to remove.
+
+    What actually distinguishes the two is SHAPE, not identity. A weakening
+    collapses a compound test -- a comparison, a call, a boolean operation -- into
+    bare truthiness. So the second number counts assertions whose test is NOT a bare
+    name, attribute, subscript or literal. Re-anchoring a constant leaves the shape
+    intact; hollowing an assertion does not.
     """
-    total = 0
+    total = hollow = 0
+    BARE = (ast.Name, ast.Attribute, ast.Subscript, ast.Constant)
     for node in ast.walk(ast.parse(source)):
         if not isinstance(node, ast.Assert):
             continue
@@ -355,7 +378,28 @@ def _assert_count(source: str) -> int:
         if isinstance(test, ast.Constant) and bool(test.value) is True:
             continue          # vacuous by construction
         total += 1
-    return total
+        if isinstance(test, BARE):
+            hollow += 1
+    return total, total - hollow
+
+
+def _lost_assertions(pinned_src: str, live_src: str) -> list[str]:
+    """Empty unless the suite got WEAKER. Reports what shrank, and by how much.
+
+    Both numbers must hold: the count of real assertions, and the count of those
+    that test something rather than merely evaluating truthy. A strengthening
+    raises either and lowers neither, so a lawful later improvement is never
+    reported; a deletion, an ``assert True`` gutting, or a collapse to bare
+    truthiness lowers one and is.
+    """
+    p_total, p_real = _assertion_strength(pinned_src)
+    l_total, l_real = _assertion_strength(live_src)
+    lost = []
+    if l_total < p_total:
+        lost.append(f"non-vacuous assertions {p_total} -> {l_total}")
+    if l_real < p_real:
+        lost.append(f"assertions that actually test something {p_real} -> {l_real}")
+    return lost
 
 
 class TestTheFilingExistsAndIsWellFormed:
@@ -417,8 +461,35 @@ class TestTheFilingExistsAndIsWellFormed:
         assert gates[GATE]["pr"] in (None, THIS_PULL_REQUEST), gates[GATE]["pr"]
 
     def test_ws0014_self_reference_fields_point_at_the_current_binding(self):
-        assert WS0014["last_verified_main_sha"] == BOUND_MERGE_SHA
-        assert WS0014["active_pr"] in (None, THIS_PULL_REQUEST), WS0014["active_pr"]
+        """RE-ANCHORED (PHQ-2026-07) -- the same G1 defect this unit's siblings had.
+
+        These two fields are the workstream's LIVE self-reference: they name whichever
+        lane is currently active. Pinning them to THIS unit's own merge and PR number
+        asserts "no later unit may ever become the active lane", which is a moving
+        target, not an invariant -- it fails on the next lawful filing of any kind.
+
+        The claim that is actually this unit's to make is bound at its OWN immutable
+        merge: at that commit, the register named this unit. Live, the fields must
+        remain WELL-FORMED -- a real 40-hex SHA and a real PR number -- so a
+        corruption or a blanked field still fails, but a lawful successor does not.
+        """
+        at_merge = yaml.safe_load(subprocess.run(
+            ["git", "show", f"{BOUND_MERGE_SHA}:operations/WORKSTREAMS.yaml"],
+            cwd=ROOT, capture_output=True, check=True, text=True).stdout)
+        ws_then = next(w for w in at_merge["workstreams"] if w["id"] == "WS-0014")
+        # The register records the main SHA a unit VERIFIED AGAINST -- its base --
+        # not the merge commit it does not yet have when it writes the field.
+        assert ws_then["last_verified_main_sha"] == BOUND_MERGE_BASE
+        # At that merge the register named THIS UNIT'S OWN lane -- either the PR that
+        # authorized it or the PR that implemented it. Both are this unit's; neither
+        # is a successor's.
+        assert ws_then["active_pr"] in (
+            None, BOUND_AUTHORIZING_PULL_REQUEST, THIS_PULL_REQUEST), ws_then["active_pr"]
+
+        live_sha = WS0014["last_verified_main_sha"]
+        assert isinstance(live_sha, str) and re.fullmatch(r"[0-9a-f]{40}", live_sha), live_sha
+        live_pr = WS0014["active_pr"]
+        assert live_pr is None or (isinstance(live_pr, int) and live_pr > 0), live_pr
 
     def test_binding_the_pull_request_number_touched_no_other_workstream(self):
         """Reading back GitHub's issued number must not clobber a sibling workstream.
@@ -888,10 +959,13 @@ class TestThisFilingMutatesNothingLoadBearing:
         those sixteen files, forever, including a strengthening. PHQ-2026-07's own
         re-anchoring of these guards is exactly such an edit, and this pin fired on it.
 
-        What is enforced instead is the actual invariant, at this unit's own immutable
-        merge AND live: every pinned suite still exists, still parses, and still carries
-        at least as many assertions as it did when pinned. A gutted file -- assertions
-        deleted or replaced by ``assert True`` -- fails; a strengthening passes.
+        RE-ANCHORED AGAIN (PHQ-2026-07). The first correction compared assertion
+        COUNTS. Independent review showed a count is blind to a same-count weakening:
+        replacing a specific negative check with a bare truthiness test loses the
+        property while the total is unchanged. What is enforced now is the normalized
+        SEMANTIC INVENTORY -- every assertion this suite made when pinned must still
+        be made. Adding assertions is free, so a lawful later strengthening passes;
+        losing or hollowing one does not.
         """
         assert PINNED_TEST_HASHES, "the pinned set must not be empty"
         weakened = {}
@@ -900,10 +974,9 @@ class TestThisFilingMutatesNothingLoadBearing:
             assert live_path.exists(), rel
             live_src = live_path.read_text(encoding="utf-8")
             at_merge_src = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
-            live_n = _assert_count(live_src)
-            pinned_n = _assert_count(at_merge_src)
-            if live_n < pinned_n:
-                weakened[rel] = (pinned_n, live_n)
+            lost = _lost_assertions(at_merge_src, live_src)
+            if lost:
+                weakened[rel] = lost[:3]
         assert not weakened, weakened
 
     def test_the_pinned_set_is_exactly_the_changed_tests_less_this_artifact(self):
@@ -935,9 +1008,11 @@ class TestThisFilingMutatesNothingLoadBearing:
             assert BOUND_MERGE_BASE in live, (
                 f"{rel} dropped XASSET-0060's value instead of retaining it as a pin"
             )
-            assert len(re.findall(r"^\s+assert ", live, re.M)) >= len(
-                re.findall(r"^\s+assert ", base, re.M)
-            ), f"{rel} lost assertions"
+            # Same semantic inventory, not a textual count. The superseded regex
+            # counted lines beginning with ``assert``, which a same-count weakening
+            # slips straight past.
+            lost = _lost_assertions(base, live)
+            assert not lost, f"{rel} lost assertions: {lost[:3]}"
 
 
 class TestTheScopeGuardCatchesTheReviewedBypasses:
@@ -949,6 +1024,65 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
     @staticmethod
     def _hash_text(text: str) -> str:
         return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    def test_a_same_count_weakening_of_the_wrong_file_check_is_caught(self):
+        """ADVERSARIAL (PHQ-2026-07). The exact bypass independent review demonstrated.
+
+        Against the real corpus, replacing
+
+            assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
+
+        with
+
+            assert entry["file"]
+
+        destroys the catalog-path identity property -- a row pointing at ANOTHER
+        decision's file then passes -- while the textual assert count stays 441 -> 441
+        and the non-vacuous AST count stays 441 -> 441. The superseded count-based
+        guard accepted it. The semantic inventory must reject it.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = ('assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                  'entry["file"]')
+        assert src.count(strong) == 1, "the pinned check moved; re-anchor this proof"
+        weakened = src.replace(strong, 'assert entry["file"]')
+
+        # The counts a weaker guard would have compared are IDENTICAL ...
+        import re as _re
+        assert (len(_re.findall(r"^\s+assert ", src, _re.M))
+                == len(_re.findall(r"^\s+assert ", weakened, _re.M)))
+        assert _assertion_strength(src)[0] == _assertion_strength(weakened)[0], \
+            "the non-vacuous totals must be identical, or this proves nothing"
+        # ... and the semantic inventory still catches the loss.
+        assert _lost_assertions(src, weakened), "same-count weakening slipped through"
+
+    def test_a_genuine_strengthening_is_not_reported_as_a_loss(self):
+        """The complement: the guard must not bind a lawful later improvement.
+
+        Adding an assertion, and improving an assertion's MESSAGE, are both free.
+        Without this the invariant would be whole-file immutability wearing a
+        different hat -- the exact defect the first correction was made to remove.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = ('assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                  'entry["file"]')
+        stronger = src.replace(
+            strong, strong + '\n        assert entry["file"].endswith(".md"), entry["file"]')
+        assert not _lost_assertions(src, stronger), "a strengthening was called a loss"
+        remsg = src.replace(strong,
+                            'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                            'f"bad catalog row: {entry}"')
+        assert not _lost_assertions(src, remsg), "a message change was called a loss"
+
+    def test_gutting_an_assertion_to_assert_true_is_still_caught(self):
+        """The original bypass class must remain closed under the new mechanism."""
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = ('assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                  'entry["file"]')
+        assert _lost_assertions(src, src.replace(strong, "assert True"))
 
     def test_replacing_a_negative_pin_with_assert_true_is_caught(self):
         """The reviewer's construction, reproduced and required to FAIL.

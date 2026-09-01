@@ -22,6 +22,7 @@ ceiling. It is asserted and proved here instead.
 """
 from __future__ import annotations
 
+import ast
 import copy
 import datetime
 import inspect
@@ -109,13 +110,26 @@ class TestDestinationReconciliation:
     def test_the_arithmetic_is_decimal_exact_not_float_approximate(self, real_targets):
         """Today's 36 weights happen to sum exactly in float too, so the real
         config cannot distinguish the two implementations. A config that CAN is
-        used instead -- otherwise this would assert nothing."""
+        used instead -- otherwise this would assert nothing.
+
+        VERSION-INDEPENDENT (PHQ-2026-07). The superseded fixture guarded itself with
+        ``sum(...) != 1.0``. CPython 3.12 gave the BUILTIN ``sum()`` Neumaier
+        compensation, so it returns exactly 1.0 there and that guard failed -- on an
+        interpreter ``requirements.txt`` explicitly supports (>=3.10). The drift being
+        demonstrated is real; only the way it was elicited was interpreter-specific.
+        An explicit accumulation loop is naive in EVERY version, because the
+        compensation was added to ``sum()`` and not to ``+=``, so it shows the same
+        drift on 3.10, 3.11 and 3.12 alike. The production assertions below are
+        unchanged.
+        """
         exact = destination_reconciliation(real_targets)["destination_total_pct"]
         assert exact == 99.25
 
         rows = [{"ticker": f"T{i}", "target_pct": 0.1, "asset_class": "equity"}
                 for i in range(10)]
-        naive = sum(r["target_pct"] for r in rows)
+        naive = 0.0
+        for r in rows:                      # NOT builtin sum(): see the docstring
+            naive += r["target_pct"]
         assert naive != 1.0, "fixture no longer exercises float drift"
         t = _targets(rows)
         rec = destination_reconciliation(t)
@@ -676,7 +690,7 @@ class TestStatePreservation:
         assert after["crypto_shares"] == before["crypto_shares"]
 
     def test_update_cash_refuses_a_negative_balance(self, sandbox):
-        with pytest.raises(ValueError, match="negative"):
+        with pytest.raises(ValueError, match="below its accepted minimum"):
             A.update_cash(-1.0)
 
     def test_update_cash_records_a_total_not_a_delta(self, sandbox):
@@ -750,7 +764,7 @@ class TestNoDoubleCounting:
         roster = build_roster(t)
         r = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True, None,
                  holdings_state={"shares": {"AAA": 10.0}})
-        assert r["cash_known"] is False
+        assert r["dollars_available"] is False
         assert r["book"] is None and r["cash"] is None and r["cash_after_plan"] is None
         assert r["protection"]["protected_floor_dollars"] is None
         assert r["cash_spent"] == 0.0 and r["buys"] == []
@@ -839,8 +853,11 @@ class TestBookIdentityEverywhere:
         # CORRECTED: the addend is now `cash_value`, which is the tracked balance when
         # the observation is current and is never consumed at all when it is not.
         assert psrc.count("book = net_equity + cash_value") == 1
-        assert psrc.count("cash_value = float(cash) if cash_known else 0.0") == 1
-        assert "float(cash)" not in psrc.replace("cash_value = float(cash) if cash_known", "")
+        assert psrc.count("cash_value = float(cash) if cash is not None else 0.0") == 1
+        # Intent unchanged: after removing the ONE legitimate assignment, no other
+        # `float(cash)` may remain -- cash is converted in exactly one place.
+        assert "float(cash)" not in psrc.replace(
+            "cash_value = float(cash) if cash is not None", "")
 
     def test_the_performance_log_records_cash_and_book(self):
         assert "cash" in A.PERF_FIELDS and "book" in A.PERF_FIELDS
@@ -1140,7 +1157,7 @@ class TestThreeStateObservation:
         t = _targets(); roster = build_roster(t)
         r = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True, 5000.0,
                  holdings_state={"shares": {"AAA": 10.0}})
-        assert r["cash_known"] is True
+        assert r["dollars_available"] is True
         assert r["book"] == 6000.0 and r["cash"] == 5000.0
         assert r["protection"]["protected_floor_dollars"] > 0
         assert r["cash_after_plan"] >= r["protection"]["protected_floor_dollars"] - 1e-6
@@ -1258,3 +1275,285 @@ class TestTheGoverningDecisionIsFiled:
         for forbidden in ("holdings membership", "targets", "gates", "issuer limits",
                           "cluster caps", "stage-1 authority", "orders", "trades"):
             assert forbidden in flat, forbidden
+
+
+# ── PHQ-2026-07 correction round 2 — independent FULL review 5079067543 ────────
+# MAJOR 1: current-dollar availability was gated by CASH ALONE, so a stale margin
+# reading or an unresolved tracked position still published a numeric book,
+# protected floor, target dollars and gap dollars. MAJOR 2: the fail-closed
+# numeric boundary guarded the READ path but not the WRITE path, not a missing
+# buffer, not resolved values outside shares/crypto_shares, and not a
+# caller-supplied performance set.
+
+
+class TestCurrentDollarsRequireEveryRequiredState:
+    """The three-dimensional availability matrix the review asked for.
+
+    Each case makes exactly ONE required observation unusable and requires that NO
+    current book-derived dollar escapes; the fourth is the positive control that
+    proves the gate is fail-closed rather than fail-shut.
+    """
+
+    TODAY = datetime.date.today().isoformat()
+    STALE = "2026-01-01"
+
+    def _run(self, cash_synced, margin_synced, shares, resolved):
+        data = {"shares": shares,
+                "cash": {"balance": 1000.0, "synced_at": cash_synced},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0, "synced_at": margin_synced}}
+        cs = A.load_cash_state(data)
+        ms = A.load_margin_state(data)
+        val = A.valuation_completeness(resolved, data)
+        avail = A.current_dollar_availability(cs, ms, val)
+        t = _targets()
+        roster = build_roster(t)
+        res = plan(t, resolved, roster, _metrics(roster), True, True,
+                   cash=(cs["balance"] if cs["usable"] else None),
+                   margin_debt=(ms["debt"] or 0.0),
+                   margin_buffer_pct=(ms["buffer_pct"] or 0.0),
+                   holdings_state=data, dollars_available=avail["available"])
+        res["margin_state_check"] = ms
+        res["cash_state"] = cs
+        res["dollar_availability"] = avail
+        res["margin"]["synced_at"] = margin_synced
+        return res, avail
+
+    @staticmethod
+    def _escaped_dollars(res):
+        """Every current book-derived dollar the result could publish."""
+        prot = res.get("protection") or {}
+        candidates = [res.get("book"), res.get("cash"), res.get("cash_left"),
+                      prot.get("book"), prot.get("actual_cash"),
+                      prot.get("protected_floor_dollars"),
+                      prot.get("cash_surplus_dollars"),
+                      prot.get("cash_shortfall_dollars")]
+        for r in res.get("rows", []) or []:
+            candidates += [r.get("gap_dollars"), r.get("target_dollars"),
+                           r.get("pct_of_book")]
+        return [c for c in candidates if c is not None]
+
+    def test_bad_cash_good_margin_complete_valuation_withholds_dollars(self):
+        res, avail = self._run(self.STALE, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0})
+        assert avail["available"] is False
+        assert res["dollars_available"] is False
+        assert not self._escaped_dollars(res), self._escaped_dollars(res)
+
+    def test_good_cash_bad_margin_complete_valuation_withholds_dollars(self):
+        """The first case the review reproduced: book was $1,400 and the floor $280."""
+        res, avail = self._run(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0})
+        assert avail["available"] is False, avail
+        assert res["cash_state"]["usable"] is True, "cash itself must be current here"
+        assert res["dollars_available"] is False
+        assert not self._escaped_dollars(res), self._escaped_dollars(res)
+
+    def test_good_cash_good_margin_incomplete_valuation_withholds_dollars(self):
+        """The second case: BBB is tracked but unpriced, so gross is understated."""
+        res, avail = self._run(self.TODAY, self.TODAY,
+                               {"AAA": 10.0, "BBB": 5.0}, {"AAA": 600.0})
+        assert avail["available"] is False, avail
+        assert res["cash_state"]["usable"] is True
+        assert res["dollars_available"] is False
+        assert not self._escaped_dollars(res), self._escaped_dollars(res)
+
+    def test_all_three_good_still_publishes_dollars(self):
+        """POSITIVE CONTROL. The gate must be fail-closed, never fail-shut."""
+        res, avail = self._run(self.TODAY, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0})
+        assert avail["available"] is True, avail
+        assert res["dollars_available"] is True
+        assert res["book"] is not None
+        assert self._escaped_dollars(res), "the control published no dollars at all"
+
+    def test_the_rendered_advisory_publishes_no_dollar_book_when_unavailable(self):
+        for cash_s, margin_s, shares, resolved in [
+            (self.STALE, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0}),
+            (self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0}),
+            (self.TODAY, self.TODAY, {"AAA": 10.0, "BBB": 5.0}, {"AAA": 600.0}),
+        ]:
+            res, _ = self._run(cash_s, margin_s, shares, resolved)
+            out = A.render(res, review=True)
+            assert "UNAVAILABLE" in out
+            assert "**Book:** $" not in out, out[:200]
+
+    def test_the_reason_names_the_actual_blocking_state_not_always_cash(self):
+        """The banner said "cash observation is not current" even when cash was fine."""
+        res, _ = self._run(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0})
+        out = A.render(res, review=True)
+        assert "MARGIN STATE" in out, out[:400]
+
+    def test_an_independently_knowable_margin_diagnostic_still_renders(self):
+        """Withholding a CASH-derived dollar must never silence a margin warning."""
+        res, _ = self._run(self.STALE, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0})
+        out = A.render(res, review=True)
+        assert "Margin" in out
+
+    def test_net_equity_is_withheld_when_the_margin_reading_is_unusable(self):
+        """`net equity = gross - debt` is DERIVED from the debt, so a stale debt
+        makes it a current-dollar figure computed from an unverified term."""
+        res, _ = self._run(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0})
+        out = A.render(res, review=True)
+        leaked = [l for l in out.splitlines()
+                  if "net equity" in l.lower() and "$" in l and "UNAVAILABLE" not in l]
+        assert not leaked, leaked
+        assert any("dated evidence" in l for l in out.splitlines()), \
+            "a stale debt must be shown as dated evidence, not as a current reading"
+
+
+class TestTheAvailabilityFactHasExactlyOneOwner:
+    def test_every_required_state_is_represented(self):
+        good_cash = {"usable": True}
+        good_marg = {"usable": True}
+        good_val = {"complete": True}
+        assert A.current_dollar_availability(good_cash, good_marg, good_val)["available"]
+        for bad in [({"usable": False, "reason": "c"}, good_marg, good_val),
+                    (good_cash, {"usable": False, "reason": "m"}, good_val),
+                    (good_cash, good_marg, {"complete": False, "reason": "v"})]:
+            out = A.current_dollar_availability(*bad)
+            assert out["available"] is False
+            assert out["blocked_by"], out
+
+    def test_main_hands_plan_the_computed_fact_rather_than_re_deriving_it(self):
+        """No parallel rule: plan() must be TOLD, and main() must tell it."""
+        src = inspect.getsource(A.main)
+        assert "current_dollar_availability(cash_state, margin_status, valuation)" in src
+        assert 'dollars_available=availability["available"]' in src
+        # Strip the docstring first: it legitimately NAMES the owner, and matching
+        # prose would make this assert vacuous in the wrong direction.
+        plan_ast = ast.parse(inspect.getsource(A.plan).lstrip()).body[0]
+        if (plan_ast.body and isinstance(plan_ast.body[0], ast.Expr)
+                and isinstance(plan_ast.body[0].value, ast.Constant)):
+            plan_ast.body = plan_ast.body[1:]
+        plan_code = ast.dump(plan_ast)
+        assert "current_dollar_availability" not in plan_code, \
+            "plan() must consume the fact, never re-derive it"
+
+
+class TestWriteBoundariesValidateBeforeTheyWrite:
+    """MAJOR 2. An update command must never report success after persisting poison."""
+
+    BAD_CASH = [float("nan"), float("inf"), float("-inf"), True, -1.0, "500", None]
+    GOOD_CASH = [0.0, 1234.0, 7]
+
+    @pytest.fixture
+    def state(self, tmp_path, monkeypatch):
+        f = tmp_path / "holdings.yaml"
+        f.write_text(yaml.safe_dump(
+            {"shares": {"AAA": 10.0},
+             "cash": {"balance": 500.0, "synced_at": "2026-09-01"},
+             "margin": {"debt": 0.0, "buffer_pct": 60.0, "synced_at": "2026-09-01"}},
+            sort_keys=False))
+        monkeypatch.setattr(A, "HOLDINGS_FILE", f)
+        return f
+
+    @pytest.mark.parametrize("bad", BAD_CASH)
+    def test_update_cash_rejects_and_leaves_the_file_byte_identical(self, state, bad):
+        before = state.read_bytes()
+        with pytest.raises(ValueError):
+            A.update_cash(bad)
+        assert state.read_bytes() == before, "a rejected update still rewrote the file"
+
+    @pytest.mark.parametrize("good", GOOD_CASH)
+    def test_update_cash_still_accepts_valid_values(self, state, good, monkeypatch):
+        monkeypatch.setattr(A, "log_performance", lambda *a, **k: None)
+        A.update_cash(good)
+        assert yaml.safe_load(state.read_text())["cash"]["balance"] == float(good)
+
+    @pytest.mark.parametrize("debt,buf", [
+        (-1.0, 120.0), (float("nan"), float("nan")), (0.0, 101.0), (0.0, -1.0),
+        (0.0, float("inf")), (True, 30.0), (0.0, True), (0.0, None),
+    ])
+    def test_update_margin_rejects_and_preserves_the_file(self, state, debt, buf):
+        before = state.read_bytes()
+        with pytest.raises(ValueError):
+            A.update_margin(debt, buf)
+        assert state.read_bytes() == before
+
+    @pytest.mark.parametrize("debt,buf", [(0.0, 0.0), (0.0, 100.0), (0.0, 30.0),
+                                          (1234.5, 45.25)])
+    def test_update_margin_accepts_valid_boundaries(self, state, debt, buf, monkeypatch):
+        monkeypatch.setattr(A, "log_performance", lambda *a, **k: None)
+        A.update_margin(debt, buf)
+        m = yaml.safe_load(state.read_text())["margin"]
+        assert (m["debt"], m["buffer_pct"]) == (debt, buf)
+
+
+class TestTheMarginBufferIsRequiredNotOptional:
+    TODAY = datetime.date.today().isoformat()
+
+    @pytest.mark.parametrize("block", [
+        {"debt": 100.0, "synced_at": TODAY},                      # key absent
+        {"debt": 100.0, "buffer_pct": None, "synced_at": TODAY},   # explicitly null
+    ])
+    def test_a_current_debt_without_a_buffer_is_not_usable(self, block):
+        """The 30% floor consumes this value; an absent buffer cannot satisfy it."""
+        st = A.load_margin_state({"margin": block})
+        assert st["usable"] is False
+        assert "buffer_pct" in st["reason"]
+
+    def test_a_complete_current_block_is_still_usable(self):
+        st = A.load_margin_state(
+            {"margin": {"debt": 100.0, "buffer_pct": 45.0, "synced_at": self.TODAY}})
+        assert st["usable"] is True
+        assert st["buffer_pct"] == 45.0
+
+    def test_yaml_serialized_non_finite_forms_are_rejected(self):
+        doc = yaml.safe_load(
+            f"margin:\n  debt: .nan\n  buffer_pct: .inf\n  synced_at: {self.TODAY}\n")
+        assert A.load_margin_state(doc)["usable"] is False
+
+
+class TestEveryResolvedValueIsValidated:
+    def test_a_manual_or_orphan_non_finite_value_blocks(self):
+        """Only shares/crypto_shares symbols were scanned, so an entry tracked
+        nowhere was never examined at all."""
+        vc = A.valuation_completeness(
+            {"MAN": float("nan")},
+            {"holdings": {"MAN": float("nan")}, "shares": {}, "crypto_shares": {}})
+        assert vc["complete"] is False
+        assert vc["invalid"] == ["MAN"]
+
+    def test_the_expected_symbol_coverage_proof_is_retained_separately(self):
+        vc = A.valuation_completeness({"AAA": 600.0},
+                                      {"shares": {"AAA": 10.0, "BBB": 5.0},
+                                       "crypto_shares": {}})
+        assert vc["unresolved"] == ["BBB"]
+        assert vc["invalid"] == []
+        assert vc["complete"] is False
+
+    def test_a_fully_valid_set_is_complete(self):
+        vc = A.valuation_completeness({"AAA": 600.0},
+                                      {"shares": {"AAA": 10.0}, "crypto_shares": {}})
+        assert vc["complete"] is True
+        assert vc["invalid"] == [] and vc["unresolved"] == []
+
+
+class TestTheLedgerRejectsPoisonFromASuppliedSet:
+    TODAY = datetime.date.today().isoformat()
+
+    class _Client:
+        def get_bars(self, *a, **k):
+            return [{"c": 100.0}]
+
+    @pytest.fixture
+    def paths(self, tmp_path, monkeypatch):
+        h = tmp_path / "holdings.yaml"
+        h.write_text(yaml.safe_dump(
+            {"shares": {"AAA": 10.0},
+             "cash": {"balance": 500.0, "synced_at": self.TODAY},
+             "margin": {"debt": 0.0, "buffer_pct": 60.0, "synced_at": self.TODAY}}))
+        monkeypatch.setattr(A, "HOLDINGS_FILE", h)
+        monkeypatch.setattr(A, "PERF_LOG_FILE", tmp_path / "performance_log.csv")
+        return tmp_path
+
+    def test_a_caller_supplied_non_finite_value_writes_no_row(self, paths):
+        A.log_performance(note="p", client=self._Client(), quiet=True,
+                          resolved_holdings={"MAN": float("nan")})
+        assert not (paths / "performance_log.csv").exists()
+
+    def test_a_valid_supplied_set_still_writes_even_without_full_coverage(self, paths):
+        """Coverage is the caller's business; only VALUE validity is enforced here,
+        so this must not over-block."""
+        A.log_performance(note="p", client=self._Client(), quiet=True,
+                          resolved_holdings={"ZZZ": 900.0})
+        assert (paths / "performance_log.csv").exists()
+        text = (paths / "performance_log.csv").read_text()
+        assert "nan" not in text.lower()

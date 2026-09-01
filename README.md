@@ -237,9 +237,12 @@ ratio-to-ceiling. Every figure is read straight from `plan()`'s and
 `margin_state.py`'s own existing computations — nothing is recomputed a
 second way, and no new threshold is introduced.
 
-`--health` is observational only, same pattern as `--review`: cash and margin
-are forced to zero before `plan()` runs, so it can never add deployable
-buying power. It **does not place an order, does not change any buy/trim/
+`--health` is observational only, same pattern as `--review`: it requests no
+new cash and no margin, so it can never add deployable buying power. (It no
+longer "forces cash and margin to zero" — under `PHQ-2026-07` a fabricated zero
+is exactly what must never stand in for an observation. Tracked cash is read
+from `holdings.yaml` like any other run, and when it is stale or unknown the
+dollar figures are reported UNAVAILABLE rather than as `$0`.) It **does not place an order, does not change any buy/trim/
 block decision, and does not write `holdings.yaml`, `targets.yaml`, or any
 other file** — it only prints a snapshot. There is no composite health score
 or overall healthy/unhealthy verdict; every metric is shown individually,

@@ -457,9 +457,53 @@ class TestTheFilingExistsAndIsWellFormed:
         # and including it is unchanged. A reordering or a rewritten predecessor row
         # still fails; a lawful later append in any domain does not.
         assert idx == _catalog_index_at_this_units_merge(), idx
+        # RE-ANCHORED AGAIN (PHQ-2026-07). The superseded form additionally required
+        #     int(later.split("-")[1]) > int(DECISION_ID.split("-")[1])
+        # which compares the SEQUENCE NUMBERS OF DIFFERENT DECISION DOMAINS as if they
+        # shared a counter. They do not. A lawful later ``OPS-0018`` appended after
+        # ``XASSET-0051`` fails it (18 > 51 is False) even though the whole historical
+        # prefix is untouched, and ``PHQ-2026-07`` only passes it by the accident that
+        # 2026 happens to be large. That is the same moving target this guard was
+        # re-anchored to remove, one level down: a later lawful filing in another
+        # domain would re-break CI for no reason.
+        #
+        # Append-only is a claim about STRUCTURE, not about identifier arithmetic, and
+        # the two assertions that remain state it completely: this row is unique, it
+        # sits exactly where this unit filed it (checked above against the immutable
+        # merge), and nothing after it duplicates anything at or before it. A
+        # reordering or a rewritten predecessor still fails; a lawful later append in
+        # ANY domain, with ANY sequence number, does not.
         for later in ids[idx + 1:]:
             assert later not in ids[: idx + 1], later
-            assert int(later.split("-")[1]) > int(DECISION_ID.split("-")[1]), later
+
+    def test_a_lawful_lower_numbered_cross_domain_successor_is_not_a_violation(self):
+        """ADVERSARIAL (PHQ-2026-07). The exact construction independent review named.
+
+        The superseded guard also required ``int(later.split("-")[1]) >
+        int(DECISION_ID.split("-")[1])``. Decision domains do not share a counter, so a
+        lawful later ``OPS-0018`` appended after this filing failed that comparison --
+        18 is not greater than 51 -- while the historical prefix was completely
+        untouched. This reproduces that append and requires it to be ACCEPTED, and
+        keeps the real violations rejected so the repair did not simply delete a guard.
+        """
+        def append_only_holds(ids):
+            """The corrected invariant, transcribed exactly from the guard above."""
+            assert ids.count(DECISION_ID) == 1
+            idx = ids.index(DECISION_ID)
+            for later in ids[idx + 1:]:
+                assert later not in ids[: idx + 1], later
+
+        prefix = ["GOV-0001", "OPS-0001", DECISION_ID]
+        # Lawful later appends, in any domain, with any sequence number.
+        for tail in (["OPS-0018"], ["OPS-0001x"], ["PHQ-2026-07"],
+                     ["OPS-0018", "PHQ-2026-07"], []):
+            append_only_holds(prefix + tail)
+
+        # Genuine violations must still fail.
+        with pytest.raises(AssertionError):
+            append_only_holds(prefix + [DECISION_ID])          # duplicate of this row
+        with pytest.raises(AssertionError):
+            append_only_holds(prefix + ["GOV-0001"])           # predecessor reappears after
 
     def test_the_identifier_was_previously_unused(self, catalog):
         """The row this filing adds must be the ONLY occurrence anywhere in the catalog."""
