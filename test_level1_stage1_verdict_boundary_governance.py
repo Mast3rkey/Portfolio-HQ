@@ -775,8 +775,13 @@ class TestCatalogAndRegisterSynchronisation:
         ids = [d["decision_id"] for d in yaml.safe_load(CATALOG.read_text())["decisions"]]
         assert ids.count(DECISION_ID) == 1
         assert len(ids) == len(set(ids))
-        assert ids[len(ids) - 1 - len(SUCCESSORS_APPENDED_SINCE)] == DECISION_ID
-        assert tuple(ids[ids.index(DECISION_ID) + 1:]) == SUCCESSORS_APPENDED_SINCE
+        # RE-ANCHORED (PHQ-2026-07): the named-successor tuple and the offset-from-the-end
+        # are moving targets that every later governance filing breaks. Pinned instead to
+        # the mechanically derived append-only invariant at this unit's own merge.
+        at_merge = [d["decision_id"] for d in yaml.safe_load(
+            _git("show", f"{MERGE_SHA}:governance/decisions.yaml"))["decisions"]]
+        assert at_merge[-1] == DECISION_ID, at_merge[-1]
+        assert ids[:len(at_merge)] == at_merge
         assert "XASSET-0054" not in ids  # consumed by the closed-unmerged unit, never reused
 
     def test_the_catalog_entry_points_at_the_real_file(self):
@@ -932,12 +937,14 @@ class TestNonVacuityAgainstTheBase:
     def test_the_catalog_gained_exactly_one_entry(self):
         """RE-ANCHORED (XASSET-0056): successors append too, so the growth THIS unit caused
         stays EXACT by naming them rather than being relaxed to an inequality."""
+        # RE-ANCHORED (PHQ-2026-07) to this unit's own CLOSED range: the growth THIS unit
+        # caused is exactly one entry. Growth caused by later, separately authorized
+        # filings is not this unit's to count.
         before = yaml.safe_load(_git("show", f"{BASE_SHA}:governance/decisions.yaml"))["decisions"]
-        after = yaml.safe_load(CATALOG.read_text())["decisions"]
-        assert len(after) == len(before) + 1 + len(SUCCESSORS_APPENDED_SINCE)
+        after = yaml.safe_load(_git("show", f"{MERGE_SHA}:governance/decisions.yaml"))["decisions"]
+        assert len(after) == len(before) + 1
         assert DECISION_ID not in {d["decision_id"] for d in before}
-        for successor in SUCCESSORS_APPENDED_SINCE:
-            assert successor not in {d["decision_id"] for d in before}
+        assert after[-1]["decision_id"] == DECISION_ID
 
     def test_the_base_did_not_already_name_this_decision_anywhere(self):
         result = subprocess.run(

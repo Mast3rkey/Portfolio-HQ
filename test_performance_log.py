@@ -12,6 +12,10 @@ row (the idempotent re-log path that actually triggered both failures).
 """
 
 import csv
+import datetime
+
+import pytest
+import yaml
 
 import allocate
 
@@ -19,6 +23,29 @@ import allocate
 class _FakeClient:
     def get_bars(self, *a, **k):
         return [{"c": 100.0}]
+
+
+@pytest.fixture(autouse=True)
+def current_state(tmp_path, monkeypatch):
+    """A holdings.yaml with a CURRENT cash and margin observation.
+
+    Added under PHQ-2026-07 item 8: log_performance() now refuses to write a row
+    at all when margin state is stale, unknown or out of domain, because
+    ``net_equity = gross - margin_debt`` would otherwise record an unverified
+    debt as today's. These tests are about LINE ENDINGS, so they need a row to
+    actually be written -- this supplies the current state that produces one.
+    Nothing about the line-ending assertions is relaxed; a separate suite
+    (test_protected_capital_accounting.py) pins the refusal itself.
+    """
+    today = datetime.date.today().isoformat()
+    f = tmp_path / "holdings.yaml"
+    f.write_text(yaml.safe_dump({
+        "shares": {"AAA": 10.0},
+        "cash": {"balance": 500.0, "synced_at": today},
+        "margin": {"debt": 0.0, "buffer_pct": 60.0, "synced_at": today},
+    }))
+    monkeypatch.setattr(allocate, "HOLDINGS_FILE", f)
+    return f
 
 
 def test_appended_row_has_no_carriage_return(tmp_path, monkeypatch):

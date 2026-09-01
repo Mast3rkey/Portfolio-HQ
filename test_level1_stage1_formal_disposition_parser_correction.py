@@ -3037,18 +3037,32 @@ class TestTheGovernanceRecord:
         data = yaml.safe_load(CATALOG.read_text(encoding="utf-8"))
         return [e["decision_id"] for e in data["decisions"]]
 
-    def test_the_decision_is_catalogued_last(self):
+    @staticmethod
+    def _catalog_ids_at(sha: str) -> list[str]:
+        """The catalog's id order at an IMMUTABLE commit -- derived, never copied."""
+        return [d["decision_id"] for d in
+                yaml.safe_load(_git("show", f"{sha}:governance/decisions.yaml"))["decisions"]]
+
+    def test_the_decision_is_catalogued_where_this_unit_filed_it(self):
+        """RE-ANCHORED (PHQ-2026-07) to a MECHANICALLY DERIVED append-only invariant.
+
+        A hand-maintained ``SUCCESSORS_APPENDED_SINCE`` tuple and a fixed offset from
+        the END of the catalog are moving targets: EVERY later governance filing of any
+        kind appends a row and breaks them, which is not a defect in the later filing.
+        What this unit can claim permanently is that the catalog is append-only with
+        respect to it -- its row is unique, it sits exactly where this unit filed it, and
+        the whole prefix up to and including it is unchanged. A reordering or a rewritten
+        predecessor row still fails; a lawful later append does not.
+        """
         ids = self._catalog_ids()
-        # RE-ANCHORED BY XASSET-0057: successors append after this decision, so "last" is stated
-        # EXACTLY against the named successor set rather than relaxed to "present".
-        assert ids[len(ids) - 1 - len(SUCCESSORS_APPENDED_SINCE)] == DECISION_ID
-        assert tuple(ids[ids.index(DECISION_ID) + 1:]) == SUCCESSORS_APPENDED_SINCE
         assert ids.count(DECISION_ID) == 1
+        at_merge = self._catalog_ids_at(MERGE_SHA)
+        assert at_merge[-1] == DECISION_ID, at_merge[-1]
+        assert ids[:len(at_merge)] == at_merge
 
     def test_the_catalogued_file_path_resolves(self):
         data = yaml.safe_load(CATALOG.read_text(encoding="utf-8"))
-        entry = data["decisions"][-1 - len(SUCCESSORS_APPENDED_SINCE)]
-        assert entry["decision_id"] == DECISION_ID
+        entry = next(d for d in data["decisions"] if d["decision_id"] == DECISION_ID)
         assert (ROOT / entry["file"]).exists()
         assert entry["supporting_artifact"] == Path(__file__).name
 
