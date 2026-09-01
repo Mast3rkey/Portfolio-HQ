@@ -461,35 +461,8 @@ class TestTheFilingExistsAndIsWellFormed:
         assert gates[GATE]["pr"] in (None, THIS_PULL_REQUEST), gates[GATE]["pr"]
 
     def test_ws0014_self_reference_fields_point_at_the_current_binding(self):
-        """RE-ANCHORED (PHQ-2026-07) -- the same G1 defect this unit's siblings had.
-
-        These two fields are the workstream's LIVE self-reference: they name whichever
-        lane is currently active. Pinning them to THIS unit's own merge and PR number
-        asserts "no later unit may ever become the active lane", which is a moving
-        target, not an invariant -- it fails on the next lawful filing of any kind.
-
-        The claim that is actually this unit's to make is bound at its OWN immutable
-        merge: at that commit, the register named this unit. Live, the fields must
-        remain WELL-FORMED -- a real 40-hex SHA and a real PR number -- so a
-        corruption or a blanked field still fails, but a lawful successor does not.
-        """
-        at_merge = yaml.safe_load(subprocess.run(
-            ["git", "show", f"{BOUND_MERGE_SHA}:operations/WORKSTREAMS.yaml"],
-            cwd=ROOT, capture_output=True, check=True, text=True).stdout)
-        ws_then = next(w for w in at_merge["workstreams"] if w["id"] == "WS-0014")
-        # The register records the main SHA a unit VERIFIED AGAINST -- its base --
-        # not the merge commit it does not yet have when it writes the field.
-        assert ws_then["last_verified_main_sha"] == BOUND_MERGE_BASE
-        # At that merge the register named THIS UNIT'S OWN lane -- either the PR that
-        # authorized it or the PR that implemented it. Both are this unit's; neither
-        # is a successor's.
-        assert ws_then["active_pr"] in (
-            None, BOUND_AUTHORIZING_PULL_REQUEST, THIS_PULL_REQUEST), ws_then["active_pr"]
-
-        live_sha = WS0014["last_verified_main_sha"]
-        assert isinstance(live_sha, str) and re.fullmatch(r"[0-9a-f]{40}", live_sha), live_sha
-        live_pr = WS0014["active_pr"]
-        assert live_pr is None or (isinstance(live_pr, int) and live_pr > 0), live_pr
+        assert WS0014["last_verified_main_sha"] == BOUND_MERGE_SHA
+        assert WS0014["active_pr"] in (None, THIS_PULL_REQUEST), WS0014["active_pr"]
 
     def test_binding_the_pull_request_number_touched_no_other_workstream(self):
         """Reading back GitHub's issued number must not clobber a sibling workstream.
