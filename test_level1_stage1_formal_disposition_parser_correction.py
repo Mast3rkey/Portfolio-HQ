@@ -3061,9 +3061,24 @@ class TestTheGovernanceRecord:
         assert ids[:len(at_merge)] == at_merge
 
     def test_the_catalogued_file_path_resolves(self):
+        """The identity check here is RESTORED and widened, not dropped.
+
+        The superseded form selected the row POSITIONALLY and then asserted its id, so
+        that id assertion carried real weight. PHQ-2026-07's re-anchoring selects BY id,
+        which makes re-asserting the id tautological -- but the ``next(...)`` form
+        silently gave up two properties the positional form had: a DUPLICATE row is
+        accepted (``next`` returns the first match and ignores the rest), and an ABSENT
+        row raises a bare ``StopIteration`` instead of a readable failure. Both are
+        restored below. The resolved path is additionally required to BE this decision's
+        own file -- the superseded ``exists()`` check passed for ANY file that happened
+        to exist, so a row pointing at a DIFFERENT decision's file went undetected.
+        """
         data = yaml.safe_load(CATALOG.read_text(encoding="utf-8"))
-        entry = next(d for d in data["decisions"] if d["decision_id"] == DECISION_ID)
-        assert (ROOT / entry["file"]).exists()
+        rows = [d for d in data["decisions"] if d["decision_id"] == DECISION_ID]
+        assert len(rows) == 1, rows
+        entry = rows[0]
+        assert (ROOT / entry["file"]).exists(), entry["file"]
+        assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), entry["file"]
         assert entry["supporting_artifact"] == Path(__file__).name
 
     def test_the_consumed_identifier_is_not_reused(self):
