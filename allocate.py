@@ -891,9 +891,26 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         sma200 = m.get("sma200")
         vs200 = ((price / sma200 - 1) * 100) if (price and sma200) else None
 
+        # Every dollar in this row that is DERIVED FROM BOOK is withheld when the
+        # single availability fact says current dollars are unavailable. `target`
+        # and `gap` are `book * target_pct` and `target - current`; `current` is
+        # NOT book-derived -- it is the position's own resolved value, which the
+        # availability fact already required to be complete -- so it survives, as
+        # does price/RSI/trend. Independent review reproduced the escape here: a
+        # gated row published `target=560.0` from an unavailable book while the
+        # top-level book itself was correctly withheld. One fact, applied at the
+        # one place every emitted row is built.
         base = {"ticker": tk, "asset_class": asset_class, "price": price, "rsi": rsi,
-                "vs200": vs200, "target": target_dollars, "current": current,
-                "gap": gap}
+                "vs200": vs200,
+                "target": target_dollars if dollars_ok else None,
+                "current": current,
+                "gap": gap if dollars_ok else None,
+                # INTERNAL ranking value, never rendered. plan()'s contract is that
+                # ranking and gap ORDERING still run when dollars are unavailable, so
+                # the observational view survives; what must not escape is the dollar
+                # itself. Keeping the ordering key separate from the published figure
+                # is what lets both hold at once.
+                "_rank_gap": gap}
         tk_clusters = [c["name"] for c in clusters if tk in c["tickers"]]
         gate = gates_cfg.get(tk)
         # Independent review, PR #202, MAJOR finding 2: a gated or synthetic
@@ -955,9 +972,15 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
 
         max_by_name = max(0.0, target_dollars - current)  # canonical destination is the ceiling
 
+        # `max_by_name` and `want` are BOOK-DERIVED, the same as `target` and `gap`
+        # -- both descend from `book * target_pct`. The published figures are withheld
+        # under the one availability contract; the internal ranking values are kept
+        # separately, because ranking still runs in an unavailable state (the
+        # observational view survives) while no dollar may escape from it.
         buy_candidates.append({**base, "clusters": tk_clusters,
-                               "max_by_name": max_by_name,
-                               "want": min(gap, max_by_name),
+                               "max_by_name": max_by_name if dollars_ok else None,
+                               "want": min(gap, max_by_name) if dollars_ok else None,
+                               "_rank_max_by_name": max_by_name,
                                "earn_flag": base.get("earn_flag", "")})
 
     # ---- CLUSTER CAPS: mechanical trim, no RSI gate --------------------------
@@ -986,8 +1009,10 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             trims.append({
                 "ticker": cand["ticker"], "asset_class": cand["asset_class"],
                 "price": cand["price"], "rsi": cand["rsi"], "vs200": None,
-                "target": cand["target"], "current": cand["current"],
-                "gap": cand["target"] - cand["current"],
+                # Same one contract: a trim row's target and gap are book-derived.
+                "target": cand["target"] if dollars_ok else None,
+                "current": cand["current"],
+                "gap": (cand["target"] - cand["current"]) if dollars_ok else None,
                 "action": "TRIM", "dollars": amt,
                 "reason": f"{cname} cluster cap {cap_pct:.0f}% "
                           f"(${cand['overweight']:,.0f} over own target)"})
@@ -1003,7 +1028,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     # ceilings are NO-ADD controls (never a trim/sell), applied here as a
     # clip-or-block on the buy amount, same mechanism as a cluster cap.
     cluster_pct = {c["name"]: c["pct"] for c in clusters}
-    buy_candidates.sort(key=lambda r: r["gap"], reverse=True)
+    buy_candidates.sort(key=lambda r: r["_rank_gap"], reverse=True)
     # Actual cash spent this cycle, tracked separately from buying power so
     # cash_after_plan can never be inflated by unused margin capacity.
     cash_left = deployable
@@ -1013,7 +1038,12 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     no_add_common_driver: list[dict] = []
     for c in buy_candidates:
         tk = c["ticker"]
-        want = min(c["gap"], c["max_by_name"])
+        # `_rank_gap`, not the published `gap`, which is withheld when current
+        # dollars are unavailable. Nothing can actually be bought in that state --
+        # `deployable` is 0 because the cash surplus is unavailable -- so this
+        # clips to zero either way; using the internal value keeps it from
+        # raising on a withheld figure.
+        want = min(c["_rank_gap"], c["_rank_max_by_name"])
         blocked_by = None
         for cname in c["clusters"]:
             room = book * cluster_pct[cname] / 100.0 - cluster_value[cname]
@@ -1134,7 +1164,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             f"cash-funded buys ${cash_spent:,.2f} were made while the cash "
             f"observation was stale or unknown")
 
-    buy_candidates.sort(key=lambda r: r["gap"], reverse=True)
+    buy_candidates.sort(key=lambda r: r["_rank_gap"], reverse=True)
     unresolved = {t: float(v) for t, v in holdings.items() if t.upper() not in roster}
     leverage_current = (gross / net_equity) if net_equity > 0 else None
     return {
@@ -1260,9 +1290,13 @@ def render(result, review: bool) -> str:
         cs = result.get("cash_state") or {}
         L.append("### Protected-capital accounting — DOLLAR FIGURES UNAVAILABLE")
         L.append("")
-        L.append(f"The cash observation is **{cs.get('state', 'unknown')}**, so book, the "
-                 "protected floor, every target dollar figure, and any shortfall are "
-                 "**unavailable** — not zero, and not estimated.")
+        # Name the ACTUAL blocker. The superseded sentence always blamed the cash
+        # observation, so a run with CURRENT cash and a stale margin reading said
+        # "the cash observation is current, so ... unavailable" -- a contradiction
+        # independent review reproduced verbatim.
+        L.append(f"{_unavailability_reason(result)} — so book, the protected floor, "
+                 "every target dollar figure, and any shortfall are **unavailable** "
+                 "— not zero, and not estimated.")
         L.append("")
         if cs.get("state") == STATE_STALE and cs.get("balance") is not None:
             L.append(f"> **Stale historical evidence, not a current balance:** the last "
@@ -1272,7 +1306,15 @@ def render(result, review: bool) -> str:
             L.append("")
         L.append("| Item | Value |")
         L.append("|---|---:|")
-        L.append(f"| Actual tracked cash | UNAVAILABLE ({cs.get('state', 'unknown')}) |")
+        # A CURRENT cash reading is a real observation and is reported as one, even
+        # when some OTHER unavailable term blocks the book. Labelling it
+        # "UNAVAILABLE (current)" -- as the superseded line did -- asserts the
+        # opposite of what was measured.
+        if cs.get("usable") and cs.get("balance") is not None:
+            L.append(f"| Actual tracked cash | ${cs['balance']:,.2f} (current, "
+                     f"{cs.get('synced_at')}) |")
+        else:
+            L.append(f"| Actual tracked cash | UNAVAILABLE ({cs.get('state', 'unknown')}) |")
         L.append(f"| Book | UNAVAILABLE |")
         L.append(f"| Protected floor | UNAVAILABLE |")
         L.append(f"| Destination total | {prot['destination_total_pct']:.4f}% |")
@@ -1358,8 +1400,10 @@ def render(result, review: bool) -> str:
     L.append("")
     L.append("## Summary")
     if review:
-        under_total = sum(r["want"] for r in result["underweight"])
-        _tot = f"${under_total:,.0f}" if _ck else "an UNAVAILABLE dollar amount"
+        # Only summed when the availability fact says current dollars exist; each
+        # `want` is withheld (None) otherwise, and summing them would raise.
+        _tot = (f"${sum(r['want'] for r in result['underweight']):,.0f}" if _ck
+                else "an UNAVAILABLE dollar amount")
         L.append(f"- **Review mode** (no new cash). {len(result['underweight'])} underweight "
                  f"name(s) totaling {_tot} to target; "
                  f"{len(result['trims'])} trim candidate(s); "
@@ -1399,7 +1443,12 @@ def render(result, review: bool) -> str:
         L.append("|--------|-------:|--------:|--------|-----------|-----------|")
         for r in sorted(gated, key=lambda x: x["ticker"]):
             held = "holds existing shares" if r["holds_existing_shares"] else "no position"
-            L.append(f"| {r['ticker']:<6} | ${r['target']:,.0f} | ${r['current']:,.0f} "
+            # The gated TARGET is book-derived and is withheld with everything else
+            # when current dollars are unavailable. The CURRENT held value is not --
+            # it is the position's own resolved value, which the availability fact
+            # already required to be complete -- so it is still reported.
+            tgt = f"${r['target']:,.0f}" if r.get("target") is not None else "UNAVAILABLE"
+            L.append(f"| {r['ticker']:<6} | {tgt} | ${r['current']:,.0f} "
                      f"({held}) | {r['status']} | {r['authority']} | {r['next_gate']} |")
 
     issuer_no_add = result.get("no_add_issuer") or []
@@ -1478,7 +1527,12 @@ def render(result, review: bool) -> str:
             # Same rule as the protected-capital section above: withhold every
             # book-derived dollar rather than print a fabricated zero.
             _cs = result.get("cash_state") or {}
-            L.append(f"| Tracked cash | UNAVAILABLE ({_cs.get('state', 'unknown')}) |")
+            # A CURRENT cash reading stays a reported observation even when some
+            # OTHER unavailable term blocks the book. Never "UNAVAILABLE (current)".
+            if _cs.get("usable") and _cs.get("balance") is not None:
+                L.append(f"| Tracked cash | ${_cs['balance']:,.2f} (current) |")
+            else:
+                L.append(f"| Tracked cash | UNAVAILABLE ({_cs.get('state', 'unknown')}) |")
             L.append("| Book (invested + cash − debt) | UNAVAILABLE |")
             L.append("| Protected floor | UNAVAILABLE |")
         elif _p:
@@ -1577,7 +1631,12 @@ def render_health(result) -> str:
             # Same rule as render(): withhold every book-derived dollar figure
             # rather than print a fabricated zero. PHQ-2026-07 item 4.
             _cs = result.get("cash_state") or {}
-            L.append(f"| Tracked cash | UNAVAILABLE ({_cs.get('state', 'unknown')}) |")
+            # A CURRENT cash reading stays a reported observation even when some
+            # OTHER unavailable term blocks the book. Never "UNAVAILABLE (current)".
+            if _cs.get("usable") and _cs.get("balance") is not None:
+                L.append(f"| Tracked cash | ${_cs['balance']:,.2f} (current) |")
+            else:
+                L.append(f"| Tracked cash | UNAVAILABLE ({_cs.get('state', 'unknown')}) |")
             L.append("| Book (invested + cash − debt) | UNAVAILABLE |")
             L.append("| Protected floor | UNAVAILABLE |")
             L.append(f"| Static protected weight | {_p['static_protected_pct']:.4f}% |")
@@ -1922,16 +1981,26 @@ def log_performance(note: str = "", client=None, quiet: bool = False,
 
     c = client or AlpacaPaperClient()
     resolution_failed = False
+    # ONE finite boundary, applied to whichever mapping is actually about to be
+    # summed -- supplied by the caller or resolved internally. Independent review
+    # reproduced the gap: only the SUPPLIED branch was validated, so canonical
+    # manual holdings of ``{"MAN": nan}`` resolved internally and wrote a current
+    # row with gross=nan, net_equity=nan and book=nan. Coverage remains the
+    # caller's business for a supplied set -- that scoping is deliberate and
+    # unchanged -- but a value that is not a finite number is nobody's legitimate
+    # input on either path. PHQ-2026-07 items 8 and 9.
+    _to_sum = None
     if resolved_holdings is not None:
-        # A caller-supplied set is NOT exempt from value validation. Coverage is
-        # the caller's business -- second-guessing which symbols it resolved
-        # against a holdings file it may not be using would be wrong, and that
-        # scoping is deliberate and unchanged. But a value that is not a finite
-        # number is nobody's legitimate input: `{"MAN": nan}` previously wrote a
-        # current row with gross=nan, net_equity=nan and book=nan straight into
-        # the canonical ledger. The SAME completeness result that gates the
-        # allocator gates this write. PHQ-2026-07 items 8 and 9.
-        _vc = valuation_completeness(resolved_holdings, holdings_yaml)
+        _to_sum = resolved_holdings
+    else:
+        try:
+            _to_sum = resolve_holdings(c)
+        except Exception as e:
+            resolution_failed = True
+            if not quiet:
+                print(f"  (performance log: couldn't resolve live holdings — {e})", file=sys.stderr)
+    if _to_sum is not None:
+        _vc = valuation_completeness(_to_sum, holdings_yaml)
         if _vc["invalid"]:
             # Report ONLY the value-validity failure. `reason` also carries the
             # expected-symbol coverage complaint, which does not apply to a
@@ -1943,14 +2012,7 @@ def log_performance(note: str = "", client=None, quiet: bool = False,
                       + " — this would poison gross, net equity and book)",
                       file=sys.stderr)
             return
-        gross = sum(float(v) for v in resolved_holdings.values())
-    else:
-        try:
-            gross = sum(float(v) for v in resolve_holdings(c).values())
-        except Exception as e:
-            resolution_failed = True
-            if not quiet:
-                print(f"  (performance log: couldn't resolve live holdings — {e})", file=sys.stderr)
+        gross = sum(float(v) for v in _to_sum.values())
     net_equity = gross - margin_debt
     # Only a CURRENT cash observation may be recorded in a current row. A stale
     # balance is a real past fact, but writing it into today's row would assert
@@ -1977,8 +2039,21 @@ def log_performance(note: str = "", client=None, quiet: bool = False,
     try:
         qqq = c.get_bars("QQQ", "1Day", limit=1, days_back=5)
         voo = c.get_bars("VOO", "1Day", limit=1, days_back=5)
-        qqq_price = qqq[-1]["c"] if qqq else None
-        voo_price = voo[-1]["c"] if voo else None
+        # An optional benchmark observation is validated through the SAME finite
+        # boundary as everything else, and an invalid one is treated exactly like a
+        # failed fetch: unavailable, therefore blank. Independent review reproduced
+        # a NaN close being serialized as a CURRENT benchmark value -- which asserts
+        # a measurement that was never made. These are OPTIONAL, so an invalid value
+        # blanks the field rather than skipping the whole row; the portfolio figures
+        # in that row are still real.
+        qqq_price = _finite_scalar(qqq[-1]["c"], "QQQ close")[0] if qqq else None
+        voo_price = _finite_scalar(voo[-1]["c"], "VOO close")[0] if voo else None
+        if not quiet and qqq and qqq_price is None:
+            print("  (performance log: QQQ close is not a finite number — recorded "
+                  "as unavailable, not as a current value)", file=sys.stderr)
+        if not quiet and voo and voo_price is None:
+            print("  (performance log: VOO close is not a finite number — recorded "
+                  "as unavailable, not as a current value)", file=sys.stderr)
     except Exception as e:
         if not quiet:
             print(f"  (performance log: couldn't fetch QQQ/VOO — {e})", file=sys.stderr)
@@ -1990,7 +2065,10 @@ def log_performance(note: str = "", client=None, quiet: bool = False,
                 "gross": round(gross, 2), "margin_debt": round(margin_debt, 2),
                 "cash": ("" if cash_balance is None else round(cash_balance, 2)),
                 "book": ("" if book is None else round(book, 2)),
-                "qqq_price": qqq_price, "voo_price": voo_price, "note": note})
+                # Blank, exactly like `cash`/`book` above and exactly like a failed
+                # fetch -- an unavailable observation is never a current number.
+                "qqq_price": ("" if qqq_price is None else qqq_price),
+                "voo_price": ("" if voo_price is None else voo_price), "note": note})
     rows.sort(key=lambda r: r["date"])
 
     with open(PERF_LOG_FILE, "w", newline="") as f:

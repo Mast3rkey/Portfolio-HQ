@@ -23,6 +23,8 @@ from __future__ import annotations
 
 import ast
 import collections
+import copy
+import textwrap
 import hashlib
 import re
 import subprocess
@@ -340,66 +342,186 @@ WS0014 = _ws0014()
 
 
 
-def _assertion_strength(source: str) -> tuple[int, int]:
-    """(non-vacuous assertions, assertions that actually TEST something).
+_ANCHOR_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
-    RE-ANCHORED (PHQ-2026-07). This replaces ``_assert_count``, which returned only
-    the first number. Independent review showed a bare count cannot see a same-count
-    weakening: replacing
 
-        assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
+class _AnchorNormaliser(ast.NodeTransformer):
+    """Abstract LAWFUL ANCHOR SUBSTITUTIONS; preserve every operative predicate.
 
-    with
+    Abstracted -- a lawful re-anchor may change these, and doing so is not a
+    weakening:
 
-        assert entry["file"]
+    * string literals and f-strings -- SHAs, dates, decision IDs, branch names;
+    * ``SCREAMING_CASE`` names -- ``XASSET0060_MAIN_SHA`` -> ``XASSET0061_MAIN_SHA``.
 
-    destroys the catalog-path identity property -- a row pointing at a DIFFERENT
-    decision's file then passes -- while the total stays 441 -> 441.
+    Preserved -- changing any of these changes what is actually ASSERTED:
 
-    An exact-fingerprint inventory was tried first and REJECTED as too strong: it
-    also forbids re-anchoring a moving self-reference. A predecessor lawfully
-    changed ``== XASSET0060_MAIN_SHA`` to ``== XASSET0061_MAIN_SHA`` and ADDED two
-    assertions; an identity-based rule calls that a loss. That is whole-file
-    immutability wearing a different hat -- the exact defect this guard was
-    re-anchored to remove.
-
-    What actually distinguishes the two is SHAPE, not identity. A weakening
-    collapses a compound test -- a comparison, a call, a boolean operation -- into
-    bare truthiness. So the second number counts assertions whose test is NOT a bare
-    name, attribute, subscript or literal. Re-anchoring a constant leaves the shape
-    intact; hollowing an assertion does not.
+    * attribute and method names -- ``startswith`` vs ``endswith``;
+    * comparison and boolean operators -- ``>=`` vs ``>``, ``and`` vs ``or``;
+    * NUMERIC literals -- ``441`` vs ``440``;
+    * call/subscript/name structure -- a method call vs a bare truthiness test.
     """
-    total = hollow = 0
-    BARE = (ast.Name, ast.Attribute, ast.Subscript, ast.Constant)
+
+    def visit_Constant(self, node):
+        if isinstance(node.value, str):
+            return ast.copy_location(ast.Constant(value="<ANCHOR_STR>"), node)
+        return node
+
+    def visit_Name(self, node):
+        if _ANCHOR_NAME.match(node.id):
+            return ast.copy_location(ast.Name(id="<ANCHOR_NAME>", ctx=node.ctx), node)
+        return node
+
+    def visit_JoinedStr(self, node):
+        return ast.copy_location(ast.Constant(value="<ANCHOR_FSTR>"), node)
+
+
+def _assertion_inventory(source: str) -> collections.Counter:
+    """The suite's assertions as NORMALIZED SEMANTIC FINGERPRINTS.
+
+    RE-ANCHORED AGAIN (PHQ-2026-07, review 5085019004). Two superseded mechanisms
+    both failed, in opposite directions:
+
+    * a bare COUNT, then a count plus an AST-shape total, could not see an
+      EQUAL-SHAPE weakening. Independent review demonstrated
+
+          Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
+              ->  Path(entry["file"]).name.endswith(".md")
+
+      which loses the decision-ID/file binding entirely -- a row pointing at
+      ANOTHER decision's file then passes -- while both forms scored (441, 433)
+      and the guard reported no loss;
+
+    * an EXACT fingerprint inventory saw that, but also rejected a LAWFUL
+      predecessor re-anchor (``XASSET0060_MAIN_SHA`` -> ``XASSET0061_MAIN_SHA``,
+      which ADDED two assertions). That is whole-file immutability wearing a
+      different hat.
+
+    What separates the two is which parts of an assertion an anchor change may
+    lawfully touch. ``_AnchorNormaliser`` abstracts exactly those parts and
+    nothing else, so ``startswith`` -> ``endswith`` is a different fingerprint
+    while ``==  SHA_A`` -> ``== SHA_B`` is the same one.
+
+    A ``Counter``, so removing one of several identical assertions is still a loss.
+    ``assert True``/``assert 1`` are excluded: they are the shape a silent gutting
+    takes, and counting them would let a weakened file keep its total.
+    """
+    inv = collections.Counter()
     for node in ast.walk(ast.parse(source)):
         if not isinstance(node, ast.Assert):
             continue
         test = node.test
         if isinstance(test, ast.Constant) and bool(test.value) is True:
             continue          # vacuous by construction
-        total += 1
-        if isinstance(test, BARE):
-            hollow += 1
-    return total, total - hollow
+        inv[ast.dump(_AnchorNormaliser().visit(copy.deepcopy(test)))] += 1
+    return inv
 
 
 def _lost_assertions(pinned_src: str, live_src: str) -> list[str]:
-    """Empty unless the suite got WEAKER. Reports what shrank, and by how much.
+    """Fingerprints asserted when pinned that are no longer asserted now.
 
-    Both numbers must hold: the count of real assertions, and the count of those
-    that test something rather than merely evaluating truthy. A strengthening
-    raises either and lowers neither, so a lawful later improvement is never
-    reported; a deletion, an ``assert True`` gutting, or a collapse to bare
-    truthiness lowers one and is.
+    Empty unless the suite got WEAKER. A strengthening ADDS fingerprints and a
+    message-only change alters none, so neither is ever reported; a deletion, an
+    ``assert True`` gutting, a collapse to bare truthiness, and an equal-shape
+    predicate swap all remove one and are.
+
+    Residual limit, stated rather than implied: because string literals are
+    abstracted, a weakening expressed PURELY as a different string anchor -- and
+    nothing else -- is not distinguishable here from a lawful re-anchor. That is
+    the deliberate cost of not binding lawful re-anchoring, and it is why the
+    specific protected predicates also carry their own direct assertions below.
     """
-    p_total, p_real = _assertion_strength(pinned_src)
-    l_total, l_real = _assertion_strength(live_src)
-    lost = []
-    if l_total < p_total:
-        lost.append(f"non-vacuous assertions {p_total} -> {l_total}")
-    if l_real < p_real:
-        lost.append(f"assertions that actually test something {p_real} -> {l_real}")
-    return lost
+    missing = _assertion_inventory(pinned_src) - _assertion_inventory(live_src)
+    return sorted(missing.elements())
+
+
+#: DIRECT PROTECTED PREDICATES (PHQ-2026-07, second correction).
+#:
+#: Independent review's prescription for this defect class offered two mechanisms:
+#: direct assertions for the required protected predicates, OR a normalized semantic
+#: inventory abstracting only lawful anchor substitutions. Both are used here, and the
+#: split between them is not arbitrary -- it follows a real property of the corpus.
+#:
+#: The inventory answers "did this suite lose an assertion since its baseline?". That
+#: question is exactly right for a suite this filing did not re-anchor. It is the WRONG
+#: question for the seven suites whose catalog-position, catalog-cardinality and
+#: base-revision assertions this filing lawfully REWROTE under its own already-reviewed
+#: G4 correction: those assertions were replaced, not lost, and a diff against a
+#: pre-correction baseline cannot tell the two apart without reading intent.
+#:
+#: So for those seven, the invariant is stated positively instead: these named predicates
+#: must still be asserted. That is a semantic claim, not a count, hash or shape total. It
+#: is immune to a lawful re-anchor of some OTHER assertion, and it still catches the
+#: equal-shape predicate swap -- ``startswith`` and ``endswith`` are different attribute
+#: names, which the normaliser deliberately preserves.
+PROTECTED_PREDICATES = {
+    "test_level1_stage1_formal_disposition_parser_correction.py": (
+        'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")',
+        'assert len(rows) == 1',
+        'assert "*" not in inner',
+        'assert inner.startswith(PREFIX)',
+        'assert "category.strip()" not in source',
+    ),
+    "test_level1_stage1_formal_disposition_parser_correction_authorization.py": (
+        'assert PREFIX.endswith(":")',
+        'assert len(CANON_LABEL) == 18',
+        'assert len(NONSPACE_POSITIONS) == 17',
+    ),
+    "test_level1_stage1_parser_contract_correction_authorization.py": (
+        r'assert decision.startswith("---\n")',
+        'assert "stripped.upper().startswith(FORMAL_DISPOSITION_PREFIX)" in body',
+        'assert line.startswith("**") and line.endswith("**")',
+    ),
+    "test_level1_stage1_post_merge_ci_recovery_reconciliation.py": (
+        'assert A.AUTHORIZING_DECISION not in A.PERMANENTLY_INEFFECTIVE_DECISIONS',
+        'assert A.AUTHORIZING_PULL_REQUEST not in A.PERMANENTLY_INEFFECTIVE_PULL_REQUESTS',
+        'assert A.EXECUTION_ATTEMPT_ID == "ENDPOINT-0001::STAGE_1::ATTEMPT_1"',
+    ),
+    "test_level1_stage1_post_parser_correction_operational_rebinding.py": (
+        'assert ROLE4_SHA256 not in source',
+        'assert "REVIEWED_BASE_SHA" not in loaded',
+        'assert A.AUTHORIZING_DECISION not in A.PERMANENTLY_INEFFECTIVE_DECISIONS',
+    ),
+    "test_level1_stage1_verdict_boundary_governance.py": (
+        'assert relpath not in _changed_paths()',
+        'assert not [c for c in changed if c.startswith("governance/audits/")]',
+        'assert not [c for c in changed if c.startswith("governance/evidence/")]',
+    ),
+    "test_portfolio_hq_dashboard_decisions.py": (
+        'assert "<iframe" not in html.lower()',
+        'assert "<script" not in html.lower()',
+        'assert "<form" not in html.lower()',
+    ),
+}
+
+
+def _unasserted_predicates(relpath: str, live_src: str) -> list[str]:
+    """Which of ``relpath``'s named protected predicates are no longer asserted.
+
+    Membership is decided on the NORMALIZED form, not on the source text, so a
+    lawful message change or anchor substitution inside the predicate still counts
+    as asserted -- while a different operator, attribute or call structure does not.
+    """
+    live = _assertion_inventory(live_src)
+    missing = []
+    for text in PROTECTED_PREDICATES[relpath]:
+        want = _assertion_inventory(textwrap.dedent(text))
+        assert want, f"a protected predicate must itself parse to an assertion: {text}"
+        # TWO independent conditions, because each closes the other's blind spot.
+        #
+        # The normalized form catches a structural weakening -- a different operator,
+        # attribute, call shape or arity -- including the equal-shape ``startswith`` /
+        # ``endswith`` swap independent review named.
+        #
+        # Verbatim presence catches what abstraction deliberately cannot: two protected
+        # predicates in one suite may normalize to the SAME form when they differ only
+        # in a string anchor (``"category.strip()"`` and ``"category.strip("``), so
+        # gutting one still leaves the form present in the multiset. Requiring the
+        # predicate's own text closes that, and constrains nothing else in the file --
+        # it is not a whole-file hash, and a lawful message change lies outside it.
+        if not (want <= live) or text not in live_src:
+            missing.append(text)
+    return missing
 
 
 class TestTheFilingExistsAndIsWellFormed:
@@ -941,15 +1063,24 @@ class TestThisFilingMutatesNothingLoadBearing:
         losing or hollowing one does not.
         """
         assert PINNED_TEST_HASHES, "the pinned set must not be empty"
+        assert set(PROTECTED_PREDICATES) <= set(PINNED_TEST_HASHES), (
+            "a protected-predicate entry names a file this filing does not pin")
         weakened = {}
         for rel in sorted(PINNED_TEST_HASHES):
             live_path = ROOT / rel
             assert live_path.exists(), rel
             live_src = live_path.read_text(encoding="utf-8")
-            at_merge_src = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
-            lost = _lost_assertions(at_merge_src, live_src)
-            if lost:
-                weakened[rel] = lost[:3]
+            if rel in PROTECTED_PREDICATES:
+                # This filing lawfully re-anchored this suite's catalog-position,
+                # cardinality or base-revision assertions under its own already-reviewed
+                # G4 correction. A diff against the pre-correction baseline reports those
+                # REPLACEMENTS as losses, so the invariant is stated positively instead.
+                missing = _unasserted_predicates(rel, live_src)
+            else:
+                at_merge_src = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+                missing = _lost_assertions(at_merge_src, live_src)
+            if missing:
+                weakened[rel] = missing[:3]
         assert not weakened, weakened
 
     def test_the_pinned_set_is_exactly_the_changed_tests_less_this_artifact(self):
@@ -981,11 +1112,14 @@ class TestThisFilingMutatesNothingLoadBearing:
             assert BOUND_MERGE_BASE in live, (
                 f"{rel} dropped XASSET-0060's value instead of retaining it as a pin"
             )
-            # Same semantic inventory, not a textual count. The superseded regex
-            # counted lines beginning with ``assert``, which a same-count weakening
-            # slips straight past.
-            lost = _lost_assertions(base, live)
-            assert not lost, f"{rel} lost assertions: {lost[:3]}"
+            # Same semantic mechanism as above, not a textual count. The superseded
+            # regex counted lines beginning with ``assert``, which a same-count
+            # weakening slips straight past.
+            if rel in PROTECTED_PREDICATES:
+                missing = _unasserted_predicates(rel, live)
+            else:
+                missing = _lost_assertions(base, live)
+            assert not missing, f"{rel} no longer asserts: {missing[:3]}"
 
 
 class TestTheScopeGuardCatchesTheReviewedBypasses:
@@ -1023,12 +1157,169 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
 
         # The counts a weaker guard would have compared are IDENTICAL ...
         import re as _re
-        assert (len(_re.findall(r"^\s+assert ", src, _re.M))
-                == len(_re.findall(r"^\s+assert ", weakened, _re.M)))
-        assert _assertion_strength(src)[0] == _assertion_strength(weakened)[0], \
-            "the non-vacuous totals must be identical, or this proves nothing"
+        assert (len(re.findall(r"^\s+assert ", src, re.M))
+                == len(re.findall(r"^\s+assert ", weakened, re.M)))
+        assert (len(re.findall(r"^\\s+assert ", src, re.M))
+                == len(re.findall(r"^\\s+assert ", weakened, re.M))), \
+            "the raw totals must be identical, or this proves nothing"
         # ... and the semantic inventory still catches the loss.
         assert _lost_assertions(src, weakened), "same-count weakening slipped through"
+
+    def test_an_equal_shape_predicate_swap_is_caught(self):
+        """REQUIRED PROBE (review 5085019004). The construction that defeated the
+        superseded count-and-shape guard.
+
+            Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
+                ->  Path(entry["file"]).name.endswith(".md")
+
+        Identical assertion count, identical AST SHAPE (a method call on an
+        attribute of a call), and the weaker form ACCEPTS current catalog data --
+        while losing the decision-ID/file binding completely: a row pointing at
+        another decision's ``.md`` file passes it. The normalized inventory must
+        reject this, because the method NAME is operative and is not abstracted.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = ('assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                  'entry["file"]')
+        assert src.count(strong) == 1, "the pinned check moved; re-anchor this proof"
+        weakened = src.replace(
+            strong, 'assert Path(entry["file"]).name.endswith(".md"), entry["file"]')
+
+        # Same raw count AND same coarse shape -- the superseded guard saw nothing.
+        assert (len(re.findall(r"^\s+assert ", src, re.M))
+                == len(re.findall(r"^\s+assert ", weakened, re.M)))
+        # ... and the weakened predicate genuinely accepts the wrong file.
+        assert Path("GOV-0001-governance-architecture-adopted.md").name.endswith(".md")
+        assert not Path(
+            "GOV-0001-governance-architecture-adopted.md").name.startswith("XASSET-0056-")
+        # The normalized inventory must catch it.
+        assert _lost_assertions(src, weakened), \
+            "equal-shape predicate swap slipped through"
+
+    def test_a_lawful_anchor_substitution_is_not_reported_as_a_loss(self):
+        """The complement, and the reason an exact fingerprint inventory was rejected.
+
+        A predecessor lawfully re-anchored ``== XASSET0060_MAIN_SHA`` to
+        ``== XASSET0061_MAIN_SHA`` and ADDED two assertions. An identity-based rule
+        calls that a loss; abstracting anchor NAMES and STRING literals -- and only
+        those -- does not.
+        """
+        base = _git("show", f"{BOUND_MERGE_SHA}:test_level1_stage1_activation_authorization.py")
+        live = (ROOT / "test_level1_stage1_activation_authorization.py").read_text(
+            encoding="utf-8")
+        assert base != live, "this proof needs a genuinely re-anchored predecessor"
+        assert not _lost_assertions(base, live), \
+            "a lawful anchor substitution was reported as a weakening"
+
+    def test_the_operative_parts_of_an_assertion_are_not_abstracted(self):
+        """Pin exactly WHAT the normaliser is allowed to ignore.
+
+        Anchor strings and SCREAMING_CASE names may change; a method name, a
+        comparison operator, a numeric literal and the call structure may not.
+        Without this, a future widening of the normaliser would silently reopen
+        the very class this guard was rebuilt to close.
+        """
+        def one(expr):
+            return _assertion_inventory(f"def f():\n    assert {expr}\n")
+
+        # abstracted -- lawful anchor substitutions
+        assert one('x.startswith("aaa")') == one('x.startswith("bbb")')
+        assert one("v == SHA_ALPHA") == one("v == SHA_BETA")
+        assert one('x.startswith(f"{DECISION_ID}-")') == one('x.startswith(f"{OTHER}-")')
+        # NOT abstracted -- operative meaning
+        assert one('x.startswith("a")') != one('x.endswith("a")')
+        assert one("n >= 441") != one("n >= 440")
+        assert one("n >= 441") != one("n > 441")
+        assert one('x.startswith("a")') != one("x")
+
+    def test_the_protected_catalog_predicate_is_asserted_directly(self):
+        """Belt and braces: the ONE named protected property, pinned by name.
+
+        The normalized inventory is a general mechanism, and its own docstring
+        discloses a residual limit -- a weakening expressed purely as a different
+        string anchor is indistinguishable from a lawful re-anchor. So the specific
+        predicate independent review named is ALSO asserted directly here, where no
+        abstraction applies.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        assert 'Path(entry["file"]).name.startswith(f"{DECISION_ID}-")' in src, (
+            "the catalog-path identity predicate was removed or weakened")
+        assert 'assert len(rows) == 1' in src, (
+            "the catalog-row uniqueness predicate was removed or weakened")
+
+    def test_a_protected_predicate_cannot_be_swapped_for_an_equal_shape_one(self):
+        """REQUIRED PROBE (PHQ-2026-07, second correction).
+
+        Independent review named this exact mutation and required it to be caught:
+
+            assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
+            assert Path(entry["file"]).name.endswith(".md")
+
+        Both are one ``Assert`` holding one ``Call`` on one ``Attribute`` of one
+        ``Call`` on one ``Attribute`` of one ``Subscript``. Every aggregate the
+        superseded mechanism computed -- assertion count, non-vacuous count, AST node
+        totals -- is IDENTICAL across the pair, so each let it through. The named
+        predicate is checked here, and the attribute name is not abstracted, so the
+        swap is a loss.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")'
+        assert strong in src, "the probe's own target has moved"
+        swapped = src.replace(strong, 'assert Path(entry["file"]).name.endswith(".md")')
+        assert _unasserted_predicates(rel, swapped), (
+            "the equal-shape predicate swap was NOT caught")
+        # And the superseded mechanism's blind spot is demonstrated, not merely asserted:
+        # the ASSERTION COUNT -- the quantity it compared -- is identical across the pair,
+        # so it reported no loss. (Raw node totals do differ here, because an f-string
+        # anchor expands to more nodes than a plain literal; that difference is incidental
+        # to the anchor, not to the predicate, which is exactly why a total is the wrong
+        # instrument.)
+        def _n(text):
+            return sum(1 for x in ast.walk(ast.parse(text)) if isinstance(x, ast.Assert))
+        assert _n(src) == _n(swapped)
+
+    def test_every_protected_predicate_is_currently_asserted(self):
+        """Positive control. The named set must describe the corpus as it stands.
+
+        Without this the protected set could silently name predicates that no longer
+        exist anywhere, and every check over it would pass vacuously.
+        """
+        assert PROTECTED_PREDICATES, "the protected set must not be empty"
+        for rel in sorted(PROTECTED_PREDICATES):
+            assert PROTECTED_PREDICATES[rel], f"{rel} names no protected predicate"
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            assert not _unasserted_predicates(rel, live), rel
+
+    def test_the_other_named_protected_predicates_are_each_enforced(self):
+        """Each named predicate must be individually load-bearing, not decorative.
+
+        Removing any ONE of them, in any protected suite, must be reported. This is
+        what stops the set from degrading into a list that only its first entry
+        actually defends.
+        """
+        for rel in sorted(PROTECTED_PREDICATES):
+            src = (ROOT / rel).read_text(encoding="utf-8")
+            for text in PROTECTED_PREDICATES[rel]:
+                assert text in src, f"{rel}: protected predicate not found verbatim: {text}"
+                gutted = src.replace(text, "assert True")
+                assert _unasserted_predicates(rel, gutted), (
+                    f"{rel}: gutting {text} was not caught")
+
+    def test_a_lawful_reanchor_of_an_unprotected_assertion_is_not_a_loss(self):
+        """The complement, and the reason this mechanism exists.
+
+        This filing's own already-reviewed G4 correction rewrote catalog-position and
+        cardinality assertions in these suites. Those are moving targets a lawful
+        successor MUST re-anchor. Re-anchoring one must not read as a weakening.
+        """
+        rel = "test_portfolio_hq_dashboard_decisions.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        assert "== 163" in src, "the cardinality anchor this test re-anchors has moved"
+        assert not _unasserted_predicates(rel, src.replace("== 163", "== 164")), (
+            "a lawful cardinality re-anchor was reported as a weakening")
 
     def test_a_genuine_strengthening_is_not_reported_as_a_loss(self):
         """The complement: the guard must not bind a lawful later improvement.

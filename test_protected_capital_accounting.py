@@ -1318,8 +1318,25 @@ class TestCurrentDollarsRequireEveryRequiredState:
         res["margin"]["synced_at"] = margin_synced
         return res, avail
 
-    @staticmethod
-    def _escaped_dollars(res):
+    #: The keys under which ``plan()`` ACTUALLY publishes per-name rows.
+    #:
+    #: The superseded helper scanned ``res["rows"]``. ``plan()`` has never emitted that
+    #: key -- independent review reproduced the consequence: a gated row published
+    #: ``target=560.0`` derived from an unavailable book while every assertion built on
+    #: the helper passed, because it was iterating an empty default. These names are
+    #: verified against the live return value below, so the list cannot silently rot
+    #: the same way twice.
+    ROW_KEYS = ("buys", "trims", "underweight", "blocked", "no_add_gated",
+                "no_add_issuer", "no_add_common_driver")
+
+    #: Per-row fields that are DERIVED FROM BOOK and therefore withheld with it.
+    #: ``current`` is deliberately absent -- a position's own resolved value is not
+    #: book-derived, and the availability fact already required it to be complete.
+    ROW_DOLLAR_FIELDS = ("target", "gap", "amount", "trim_to", "headroom",
+                         "max_by_name", "want", "pct_of_book")
+
+    @classmethod
+    def _escaped_dollars(cls, res):
         """Every current book-derived dollar the result could publish."""
         prot = res.get("protection") or {}
         candidates = [res.get("book"), res.get("cash"), res.get("cash_left"),
@@ -1327,10 +1344,37 @@ class TestCurrentDollarsRequireEveryRequiredState:
                       prot.get("protected_floor_dollars"),
                       prot.get("cash_surplus_dollars"),
                       prot.get("cash_shortfall_dollars")]
-        for r in res.get("rows", []) or []:
-            candidates += [r.get("gap_dollars"), r.get("target_dollars"),
-                           r.get("pct_of_book")]
+        for key in cls.ROW_KEYS:
+            for r in res.get(key) or []:
+                if not isinstance(r, dict):
+                    continue
+                candidates += [r.get(f) for f in cls.ROW_DOLLAR_FIELDS]
         return [c for c in candidates if c is not None]
+
+    def test_the_row_keys_this_suite_scans_are_the_ones_plan_actually_emits(self):
+        """Positive control for the helper above -- the defect it exists to prevent.
+
+        A helper that iterates a key the producer does not emit asserts nothing while
+        reporting success. This pins the scanned names against a REAL result, so
+        renaming or dropping a row collection fails here rather than silently
+        hollowing every check that depends on it.
+        """
+        res, _ = self._run(self.TODAY, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0})
+        assert "rows" not in res, "plan() grew a 'rows' key; the helper must scan it"
+        for key in self.ROW_KEYS:
+            assert key in res, f"plan() no longer emits {key!r}"
+
+        # Naming the right keys is not enough -- the helper must actually READ them.
+        # Blank every TOP-LEVEL candidate, leaving only per-row dollars in place: a
+        # helper iterating a key the producer does not emit now returns nothing, and
+        # this fails. That is the exact defect the superseded version had.
+        rows_only = dict(res)
+        rows_only["book"] = rows_only["cash"] = rows_only["cash_left"] = None
+        rows_only["protection"] = {}
+        found = self._escaped_dollars(rows_only)
+        assert found, (
+            "the helper reported no per-row dollars from a fully available result -- "
+            "it is not reading the collections plan() actually emits")
 
     def test_bad_cash_good_margin_complete_valuation_withholds_dollars(self):
         res, avail = self._run(self.STALE, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0})
@@ -1557,3 +1601,162 @@ class TestTheLedgerRejectsPoisonFromASuppliedSet:
         assert (paths / "performance_log.csv").exists()
         text = (paths / "performance_log.csv").read_text()
         assert "nan" not in text.lower()
+
+
+# ── PHQ-2026-07 correction round 3 — independent DELTA review 5085019004 ───────
+# MAJOR 1 (reproduced): with a CURRENT cash observation, a STALE margin reading and
+# a complete valuation, current_dollar_availability() correctly returned available
+# False -- and plan() still published a gated name's ``target`` of $560, computed as
+# ``book * target_pct`` from the very book it had just withheld. render() published
+# that figure in the gated table while the protected-capital section simultaneously
+# described the cash observation as current and unavailable.
+#
+# The tests below pin the corrected contract at its OUTPUT boundary rather than at
+# an intermediate structure: the computed sentinel must not appear anywhere in
+# render() or render_health(), in either unavailable state.
+
+
+class TestTheComputedGatedTargetNeverReachesAnyRenderedSurface:
+    """The exact escape independent review reproduced, pinned at both render surfaces.
+
+    A gated name is the sharpest case: the allocator never buys it, so its published
+    ``target`` has no operational use at all -- it exists purely as a book-derived
+    figure, which is precisely the class the availability fact withholds.
+    """
+
+    TODAY = datetime.date.today().isoformat()
+    STALE = "2026-01-01"
+
+    #: Chosen so that ``book * target_pct`` lands on a value that cannot occur by
+    #: coincidence in unrelated output. book = 600 held + 1000 cash - 200 debt = 1400;
+    #: AAA's canonical weight is 40%; 1400 * 0.40 = 560.
+    SENTINEL_NUMERALS = ("560", "1,400", "1400")
+
+    def _plan(self, cash_synced, margin_synced, shares, resolved):
+        data = {"shares": shares,
+                "cash": {"balance": 1000.0, "synced_at": cash_synced},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0, "synced_at": margin_synced}}
+        cs = A.load_cash_state(data)
+        ms = A.load_margin_state(data)
+        val = A.valuation_completeness(resolved, data)
+        avail = A.current_dollar_availability(cs, ms, val)
+        t = _targets()
+        roster = build_roster(t)
+        gates = _gates("AAA")
+        res = plan(t, resolved, roster, _metrics(roster), True, True,
+                   cash=(cs["balance"] if cs["usable"] else None),
+                   margin_debt=(ms["debt"] or 0.0),
+                   margin_buffer_pct=(ms["buffer_pct"] or 0.0),
+                   gates_cfg=gates,
+                   holdings_state=data, dollars_available=avail["available"])
+        res["cash_state"] = cs
+        res["margin_state_check"] = ms
+        res["dollar_availability"] = avail
+        res["margin"]["synced_at"] = margin_synced
+        return res, avail
+
+    @staticmethod
+    def _numerals(text):
+        """Digit runs with separators stripped, so ``$560`` and ``560.00`` both match."""
+        return set(re.findall(r"\d[\d,]*", text))
+
+    def test_the_positive_control_actually_computes_the_sentinel(self):
+        """Without this the sentinel checks below could pass by never arising at all.
+
+        With EVERY observation current, the same inputs must produce the $560 gated
+        target -- proving the figure is real, reachable, and genuinely suppressed in
+        the unavailable cases rather than absent for an unrelated reason.
+        """
+        res, avail = self._plan(self.TODAY, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0})
+        assert avail["available"] is True, avail
+        gated = res["no_add_gated"]
+        assert gated, "the gated row must exist for this control to mean anything"
+        assert gated[0]["target"] == pytest.approx(560.0), gated[0]
+        assert "560" in A.render(res, review=True)
+
+    @pytest.mark.parametrize("case,cash_synced,margin_synced,shares,resolved", [
+        ("stale margin, current cash, complete valuation",
+         TODAY, STALE, {"AAA": 10.0}, {"AAA": 600.0}),
+        ("current margin, current cash, INCOMPLETE valuation",
+         TODAY, TODAY, {"AAA": 10.0, "BBB": 5.0}, {"AAA": 600.0}),
+        ("stale cash, current margin, complete valuation",
+         STALE, TODAY, {"AAA": 10.0}, {"AAA": 600.0}),
+    ])
+    def test_no_render_surface_publishes_the_computed_gated_target(
+            self, case, cash_synced, margin_synced, shares, resolved):
+        """The sentinel must appear in NEITHER render() NOR render_health()."""
+        res, avail = self._plan(cash_synced, margin_synced, shares, resolved)
+        assert avail["available"] is False, (case, avail)
+        for name, text in (("render", A.render(res, review=True)),
+                           ("render_health", A.render_health(res))):
+            found = self._numerals(text) & set(self.SENTINEL_NUMERALS)
+            assert not found, f"{case}: {name} published {sorted(found)}"
+
+    @pytest.mark.parametrize("case,cash_synced,margin_synced,shares,resolved", [
+        ("stale margin", TODAY, STALE, {"AAA": 10.0}, {"AAA": 600.0}),
+        ("incomplete valuation", TODAY, TODAY, {"AAA": 10.0, "BBB": 5.0}, {"AAA": 600.0}),
+        ("stale cash", STALE, TODAY, {"AAA": 10.0}, {"AAA": 600.0}),
+    ])
+    def test_the_gated_row_itself_carries_no_dollar_figure(
+            self, case, cash_synced, margin_synced, shares, resolved):
+        """The structural counterpart: withheld at the source, not merely unprinted."""
+        res, _ = self._plan(cash_synced, margin_synced, shares, resolved)
+        for r in res["no_add_gated"]:
+            assert r["target"] is None, (case, r)
+            assert r["gap"] is None, (case, r)
+            # ...while the position's own resolved value, which is NOT book-derived,
+            # survives. Withholding it would suppress an independently valid
+            # observation, which the correction is explicitly not allowed to do.
+            assert r["current"] is not None, (case, r)
+
+    def test_the_gated_table_renders_the_unavailable_word_not_a_zero(self):
+        """A withheld target must read as unavailable -- never as ``$0``.
+
+        ``$0`` is a claim about the world ("this name's destination is nothing"),
+        and it is false. This is the same substitution PHQ-2026-07 forbids for cash.
+        """
+        res, _ = self._plan(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0})
+        out = A.render(res, review=True)
+        gated_lines = [ln for ln in out.splitlines()
+                       if ln.startswith("| AAA") and "HOLD-TARGET-IN-CASH" in ln]
+        assert gated_lines, out
+        for ln in gated_lines:
+            assert "UNAVAILABLE" in ln, ln
+            assert "$0 " not in ln and "| $0" not in ln, ln
+
+    @pytest.mark.parametrize("cash_synced,margin_synced,shares,resolved,blocker", [
+        (TODAY, STALE, {"AAA": 10.0}, {"AAA": 600.0}, "margin"),
+        (TODAY, TODAY, {"AAA": 10.0, "BBB": 5.0}, {"AAA": 600.0}, "valuation"),
+    ])
+    def test_a_current_cash_observation_is_never_described_as_unavailable(
+            self, cash_synced, margin_synced, shares, resolved, blocker):
+        """The contradiction the review named, at every surface that reports cash.
+
+        When cash itself is current and something ELSE blocks the dollar figures,
+        the output must say so. Reporting the cash observation as unavailable is a
+        false statement about a reading the system actually holds.
+        """
+        res, avail = self._plan(cash_synced, margin_synced, shares, resolved)
+        assert avail["available"] is False
+        assert res["cash_state"]["usable"] is True
+        for name, text in (("render", A.render(res, review=True)),
+                           ("render_health", A.render_health(res))):
+            for ln in text.splitlines():
+                low = ln.lower()
+                if "cash" in low and "UNAVAILABLE" in ln:
+                    assert "actual tracked cash" not in low and "tracked cash" not in low, (
+                        f"{name} called a CURRENT cash observation unavailable: {ln}")
+
+    def test_the_explanation_names_the_actual_blocking_state(self):
+        """One fact, one reason -- and the reason must be the true one.
+
+        Before the correction the explanation always blamed cash, so a stale margin
+        reading produced a sentence contradicted by the line directly above it.
+        """
+        res, _ = self._plan(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0})
+        out = A.render(res, review=True)
+        reason = [ln for ln in out.splitlines() if "unavailable" in ln.lower()
+                  and ("not zero" in ln.lower() or "not estimated" in ln.lower())]
+        assert reason, out
+        joined = " ".join(reason).lower()
+        assert "margin" in joined, joined
