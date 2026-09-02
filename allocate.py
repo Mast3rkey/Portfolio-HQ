@@ -36,7 +36,8 @@ from indicators import compute_all
 from regime_gate import regime_ok_from_closes
 from earnings import days_until_earnings
 from crypto import fetch_crypto
-from margin_state import classify_margin_state, concentration_risk_score
+from margin_state import (VERIFY_MARGIN_DATA, classify_margin_state,
+                          concentration_risk_score)
 
 HERE = Path(__file__).resolve().parent
 TARGETS_FILE = HERE / "targets.yaml"
@@ -868,7 +869,9 @@ _OUTPUT_DEPENDENCIES = {
 }
 
 #: Row fields, applied to EVERY emitted row collection by the same rule, so a new
-#: collection inherits the contract instead of needing its own entry.
+#: collection inherits the contract instead of needing its own entry. Every field
+#: a row may carry appears here -- numeric, static and free-text alike -- because
+#: an unlisted field is a contract violation, not a value to pass through.
 _ROW_FIELD_DEPENDENCIES = {
     "price": "always", "rsi": "always", "vs200": "always",
     "target": "book", "gap": "book", "dollars": "book",
@@ -878,6 +881,13 @@ _ROW_FIELD_DEPENDENCIES = {
     "current_issuer_pct": "book", "ceiling_pct": "always",
     "overweight": "book", "trim_to": "book", "headroom": "book",
     "pct_of_book": "book", "target_pct": "always",
+    # ---- identity and status: no derived value, nothing to withhold ---------
+    "ticker": "static", "asset_class": "static", "status": "static",
+    "authority": "static", "next_gate": "static", "earn_flag": "static",
+    "clusters": "static", "holds_existing_shares": "static",
+    "issuer": "static", "fund": "static", "driver": "static",
+    # ---- free text: a reason may quote a book-derived dollar ----------------
+    "reason": "text", "action": "text", "note": "text",
 }
 
 #: Row collections plan() emits. Sourced here once so the boundary and the
@@ -892,14 +902,93 @@ _TEXT_FIELDS = ("reason", "action", "note")
 
 _DOLLAR_IN_TEXT = re.compile(r"\$[\d,]+(?:\.\d+)?")
 
+#: Non-row leaves whose value carries no book-derived quantity. Stated
+#: EXPLICITLY rather than skipped by runtime type, because "it happens not to be
+#: a number in this fixture" is not a contract (review 5092359752 MAJOR 1.2): an
+#: unrecognised string field slipped through on exactly that reasoning while
+#: carrying "derived $820 amount" in its text.
+_STATIC_LEAVES = {
+    "dollars_available": "static", "regime_ok": "static",
+    "regime_known": "static", "margin_funding_blocked": "static",
+    "margin.forced_delever": "static", "margin.block_reason": "text",
+    "margin_funding_block_reason": "text",
+    "valuation.complete": "static", "valuation.reason": "text",
+    "valuation.unresolved[]": "static", "valuation.invalid[]": "static",
+    "valuation.missing[]": "static",
+    "protection.cash_known": "static",
+    "clusters[].name": "static", "clusters[].tickers[]": "static",
+    "protection.gated_detail[].ticker": "static",
+    "retained_common_driver_measurement.source": "static",
+    "retained_common_driver_measurement.note": "text",
+    "issuer_exposure.*.name": "static",
+    # An OPTIONAL MAPPING that is absent is a leaf carrying None. There is
+    # nothing derived to withhold, and raising on it would make the absence
+    # of an optional record an error.
+    "retained_common_driver_measurement": "static",
+    "margin_state": "static",
+}
+
+
+#: Subtrees emitted VERBATIM from configuration, classified by PREFIX rather than
+#: leaf by leaf. The exception is stated, not convenient: this block is a frozen,
+#: point-in-time historical record copied straight out of issuer_lookthrough.yaml
+#: (PHQ-2026-01 point 9). It is not computed from the live book at all, so no live
+#: observation can make it unavailable -- and blanking it would erase an
+#: above-ceiling policy record. The distinction that earns the prefix is
+#: PROVENANCE: everything here is configuration passed through, not a derivation.
+#: `test_the_retained_measurement_is_a_verbatim_config_passthrough` pins that, so
+#: the subtree cannot quietly acquire a derived field under cover of the prefix.
+_FROZEN_CONFIG_SUBTREES = ("retained_common_driver_measurement.",)
+
 
 class UnclassifiedOutputPath(AssertionError):
-    """A numeric path reached the boundary with no stated dependency.
+    """An emitted leaf reached the boundary with no stated contract.
 
     Deliberately fatal rather than permissive. The alternative -- emit anything
     unrecognised -- is precisely the hand-selected-list failure mode that let
-    three separate escapes through review.
+    four separate escapes through review. Note the scope: EVERY leaf, not every
+    NUMERIC leaf. Classifying by runtime type let a renamed prose field and a
+    bare scalar list member cross unchanged.
     """
+
+
+def _normalise_leaf_path(path):
+    """Collapse instance-specific path segments to their SHAPE.
+
+    ``issuer_exposure.NVDA.direct_pct`` and ``unresolved.BBB`` are keyed by
+    TICKER, so the contract states the shape and the roster stays out of it.
+    Returns ``(key, ticker_or_None)``.
+    """
+    parts = path.split(".")
+    if len(parts) == 3 and parts[0] == "issuer_exposure":
+        return f"issuer_exposure.*.{parts[2]}", parts[1]
+    if len(parts) == 2 and parts[0] in ("unresolved", "orphans"):
+        return f"{parts[0]}.*", parts[1]
+    return path, None
+
+
+def _leaf_contract(path, row_collection=None):
+    """The stated contract for one emitted leaf, or raise.
+
+    FAIL-CLOSED and total. A leaf with no entry -- of any type, at any depth,
+    inside any sequence -- is an error, so a new numeric collection, a nested
+    scalar sequence or a renamed prose field cannot bypass the schema by simply
+    not being anticipated.
+    """
+    if row_collection is not None:
+        field = path.split(".")[-1].removesuffix("[]")
+        kind = _ROW_FIELD_DEPENDENCIES.get(field)
+        if kind is None:
+            raise UnclassifiedOutputPath(f"{row_collection}[].{field}")
+        return kind, None
+    for prefix in _FROZEN_CONFIG_SUBTREES:
+        if path.startswith(prefix):
+            return "always", None
+    key, ticker = _normalise_leaf_path(path)
+    kind = _OUTPUT_DEPENDENCIES.get(key) or _STATIC_LEAVES.get(key)
+    if kind is None:
+        raise UnclassifiedOutputPath(path)
+    return kind, ticker
 
 
 def _apply_output_dependencies(result, deps, unknown_tickers, cluster_members):
@@ -908,6 +997,10 @@ def _apply_output_dependencies(result, deps, unknown_tickers, cluster_members):
     Runs ONCE, immediately before plan() returns. Internal arithmetic above this
     point stays numeric -- ranking, cap enforcement and trim sizing all need real
     numbers -- but nothing unavailable crosses the boundary.
+
+    The walk is EXHAUSTIVE BY PATH AND SHAPE, not by runtime numeric type: every
+    leaf must carry a stated contract, and an unclassified one raises rather than
+    passing through.
     """
     def ok(dep, ticker=None, members=None):
         if dep == "always":
@@ -935,23 +1028,59 @@ def _apply_output_dependencies(result, deps, unknown_tickers, cluster_members):
         """A dollar figure inside prose is still a published dollar figure."""
         return _DOLLAR_IN_TEXT.sub("$UNAVAILABLE", value)
 
+    def apply_leaf(container, key, value, path, *, row_collection=None,
+                   ticker=None, members=None):
+        kind, path_ticker = _leaf_contract(path, row_collection)
+        if kind == "text":
+            if isinstance(value, str) and not deps["book"]:
+                container[key] = scrub_text(value)
+            return
+        if kind == "static":
+            # A static leaf that turns out to hold a number is a contract
+            # violation, not a value to wave through: it means a derived
+            # quantity has appeared under a name declared to carry none.
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                raise UnclassifiedOutputPath(
+                    f"{path} is declared static but carries a number")
+            return
+        if not ok(kind, ticker=(ticker if ticker is not None else path_ticker),
+                  members=members):
+            container[key] = None
+
+    def walk(node, path, *, row_collection=None, ticker=None, members=None):
+        if isinstance(node, dict):
+            for k, v in list(node.items()):
+                child = f"{path}.{k}" if path else str(k)
+                if isinstance(v, (dict, list)):
+                    walk(v, child, row_collection=row_collection,
+                         ticker=ticker, members=members)
+                else:
+                    apply_leaf(node, k, v, child, row_collection=row_collection,
+                               ticker=ticker, members=members)
+        elif isinstance(node, list):
+            for i, item in enumerate(node):
+                child = path + "[]"
+                if isinstance(item, (dict, list)):
+                    walk(item, child, row_collection=row_collection,
+                         ticker=ticker, members=members)
+                else:
+                    # A SCALAR SEQUENCE MEMBER IS A LEAF. Skipping these is how
+                    # `{"new_collection": [42.0]}` crossed the boundary intact.
+                    apply_leaf(node, i, item, child,
+                               row_collection=row_collection,
+                               ticker=ticker, members=members)
+
     # ---- row collections ---------------------------------------------------
     for coll in _ROW_COLLECTIONS:
-        for row in result.get(coll) or []:
+        rows = result.get(coll)
+        if rows is None:
+            continue
+        if not isinstance(rows, list):
+            raise UnclassifiedOutputPath(f"{coll} is not a row collection")
+        for row in rows:
             if not isinstance(row, dict):
-                continue
-            tk = row.get("ticker")
-            for field, value in list(row.items()):
-                if field in _TEXT_FIELDS and isinstance(value, str):
-                    if not deps["book"] and _DOLLAR_IN_TEXT.search(value):
-                        row[field] = scrub_text(value)
-                    continue
-                if isinstance(value, bool) or not isinstance(value, (int, float)):
-                    continue
-                if field not in _ROW_FIELD_DEPENDENCIES:
-                    raise UnclassifiedOutputPath(f"{coll}[].{field}")
-                if not ok(_ROW_FIELD_DEPENDENCIES[field], ticker=tk):
-                    row[field] = None
+                raise UnclassifiedOutputPath(f"{coll}[] is not a row")
+            walk(row, coll, row_collection=coll, ticker=row.get("ticker"))
             # `holds_existing_shares` claims a POSITION FACT derived from the
             # value. When the value is unknown the claim is unknown too --
             # reporting False would assert "no position" about a name whose
@@ -962,60 +1091,17 @@ def _apply_output_dependencies(result, deps, unknown_tickers, cluster_members):
 
     # ---- clusters ----------------------------------------------------------
     for c in result.get("clusters") or []:
-        members = cluster_members.get(c.get("name"), ())
-        for field, value in list(c.items()):
-            if isinstance(value, bool) or not isinstance(value, (int, float)):
-                continue
-            key = f"clusters[].{field}"
-            if key not in _OUTPUT_DEPENDENCIES:
-                raise UnclassifiedOutputPath(key)
-            if not ok(_OUTPUT_DEPENDENCIES[key], members=members):
-                c[field] = None
+        walk(c, "clusters[]", members=cluster_members.get(c.get("name"), ()))
 
-    # ---- everything else, recursively --------------------------------------
-    def walk(node, path):
-        if isinstance(node, dict):
-            for k, v in list(node.items()):
-                child = f"{path}.{k}" if path else str(k)
-                if isinstance(v, (dict, list)):
-                    walk(v, child)
-                elif isinstance(v, bool) or not isinstance(v, (int, float)):
-                    continue
-                else:
-                    key = child
-                    ticker = None
-                    if key not in _OUTPUT_DEPENDENCIES:
-                        # Two shapes are keyed by TICKER rather than by field, so
-                        # the schema states the SHAPE and the roster stays out of
-                        # it: issuer_exposure.<TK>.<field>, and the ticker->dollars
-                        # maps (`unresolved` and its `orphans` alias).
-                        parts = child.split(".")
-                        if len(parts) == 3 and parts[0] == "issuer_exposure":
-                            key = f"issuer_exposure.*.{parts[2]}"
-                        elif len(parts) == 2 and parts[0] in ("unresolved", "orphans"):
-                            key = f"{parts[0]}.*"
-                            ticker = parts[1]
-                    if key not in _OUTPUT_DEPENDENCIES:
-                        raise UnclassifiedOutputPath(child)
-                    if not ok(_OUTPUT_DEPENDENCIES[key], ticker=ticker):
-                        node[k] = None
-        elif isinstance(node, list):
-            for item in node:
-                if isinstance(item, (dict, list)):
-                    walk(item, path + "[]")
-
-    for key, value in list(result.items()):
+    # ---- everything else ---------------------------------------------------
+    for key in list(result):
         if key in _ROW_COLLECTIONS or key == "clusters":
             continue
+        value = result[key]
         if isinstance(value, (dict, list)):
             walk(value, key)
-        elif isinstance(value, bool) or not isinstance(value, (int, float)):
-            continue
         else:
-            if key not in _OUTPUT_DEPENDENCIES:
-                raise UnclassifiedOutputPath(key)
-            if not ok(_OUTPUT_DEPENDENCIES[key]):
-                result[key] = None
+            apply_leaf(result, key, value, key)
     return result
 
 
@@ -1077,7 +1163,38 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     # ONE switch, from the one owner. Cash alone was insufficient: a stale margin
     # debt or an unresolved tracked position leaves book unverified or understated
     # while cash itself is perfectly current.
-    dollars_ok = (cash is not None) and bool(dollars_available)
+    #
+    # DERIVED FROM THE SUPPLIED OBSERVATIONS, not from the argument (review
+    # 5092359752 MAJOR 1.1). `dollars_available=True` is the public default, so a
+    # caller that supplies a stale margin observation but omits the separately
+    # precomputed flag used to get current-looking output anyway -- book, targets
+    # and gaps -- from state the boundary already knew was unusable. The flag may
+    # RESTRICT further; it may never make unavailable observed state available.
+    #
+    # A caller supplying no `holdings_state` supplied no observations to derive
+    # from. That is the legitimate mechanics-only path (pure ranking/gating
+    # exercises), and it keeps the caller's own flag as the only switch, because
+    # there is nothing to contradict. Production always supplies state, so the
+    # derivation is always real on the path where a bad observation can hide.
+    # AN ABSENT OBSERVATION IS NOT A FAILED ONE. A caller supplying a state that
+    # carries no `cash:` block made no cash claim, so there is nothing to
+    # contradict -- that is the legitimate mechanics-only path (pure ranking and
+    # gating exercises that hand `cash` in directly). A caller that DID supply
+    # the block is held to it, whatever flag it passed. Production always
+    # supplies both blocks, so the derivation is always real on the one path
+    # where a bad observation can actually hide.
+    _observed_book_ok = True
+    if isinstance(holdings_state, dict):
+        _obs_blocks = []
+        if holdings_state.get("cash") is not None:
+            _obs_blocks.append(load_cash_state(holdings_state)["usable"])
+        if holdings_state.get("margin") is not None:
+            _obs_blocks.append(load_margin_state(holdings_state)["usable"])
+        _obs_blocks.append(
+            valuation_completeness(holdings, holdings_state)["complete"])
+        _observed_book_ok = all(bool(b) for b in _obs_blocks)
+    dollars_ok = ((cash is not None) and bool(dollars_available)
+                  and _observed_book_ok)
     cash_value = float(cash) if cash is not None else 0.0
     net_equity, margin_allowed, forced_delever, margin_block_reason = margin_capacity(
         gross, margin_debt, cash_value, leverage_cap, margin_buffer_pct,
@@ -1950,6 +2067,27 @@ def render(result, review: bool) -> str:
             L.append("> ⚠️ **No valid sync date on record for margin state** (missing, "
                       "malformed, or in the future) — run `update-margin` to establish one.")
         ms = result.get("margin_state")
+        _mu = result.get("margin_state_unavailable") or {}
+        if ms is None and _mu:
+            # No state word from an untrusted reading -- but the instruction to
+            # re-sync is exactly what the operator needs, so it is not lost.
+            L.append("")
+            L.append("**Margin risk state: UNAVAILABLE** — the margin observation "
+                     "is stale or invalid, so no current state is asserted from it.")
+            if _mu.get("reason"):
+                L.append(f"- Why: {_mu['reason']}")
+            for _r in _mu.get("reasons") or []:
+                if stale_banner_shown and _r.startswith("margin data is") \
+                        and "day(s) old" in _r:
+                    continue
+                if unverifiable_banner_shown and _r.startswith("margin sync date is"):
+                    continue
+                L.append(f"- {_r}")
+            if _mu.get("violated_constraints"):
+                L.append("- Data-quality flags: "
+                         + ", ".join(_mu["violated_constraints"]))
+            if _mu.get("actions"):
+                L.append("- Required actions: " + ", ".join(_mu["actions"]))
         if ms is not None:
             L.append("")
             L.append(f"**Margin risk state: {ms.current_state}**")
@@ -2056,9 +2194,22 @@ def render_health(result) -> str:
     L.append("## Margin risk state")
     ms = result.get("margin_state")
     if ms is None:
-        L.append("> ⚠️ **UNAVAILABLE** — margin risk state was not computed for this "
-                  "result (`classify_margin_state()` was never run against it). This is "
-                  "a data-availability gap, not a risk finding — do not read it as NORMAL.")
+        L.append("> ⚠️ **UNAVAILABLE** — no current margin risk state. Either the "
+                  "valuation is incomplete (no trustworthy gross) or the margin "
+                  "observation is stale/invalid, so no current state can be asserted "
+                  "from it. This is a data-availability gap, not a risk finding — do "
+                  "NOT read it as NORMAL. The raw dated debt/buffer evidence above "
+                  "stands; re-sync with `update-margin` to restore a current read.")
+        _mu = result.get("margin_state_unavailable") or {}
+        if _mu.get("reason"):
+            L.append(f"- Why: {_mu['reason']}")
+        for _r in _mu.get("reasons") or []:
+            L.append(f"- {_r}")
+        if _mu.get("violated_constraints"):
+            L.append("- Data-quality flags: "
+                     + ", ".join(_mu["violated_constraints"]))
+        if _mu.get("actions"):
+            L.append("- Required actions: " + ", ".join(_mu["actions"]))
     else:
         L.append(f"**{ms.current_state}**")
         for reason in ms.reasons:
@@ -2772,12 +2923,35 @@ def main():
     synced_at_raw = margin_state.get("synced_at")
     buffer_data_age_days = _margin_buffer_age_days(synced_at_raw)
     buffer_data_unverifiable = _margin_buffer_age_unverifiable(synced_at_raw)
-    # The classifier's own contract requires a real gross. When the valuation is
-    # incomplete the boundary has withheld it, so there is nothing to classify --
-    # and computing a risk state from a withheld input would be exactly the kind
-    # of confident-looking output this correction exists to prevent. Reported as
-    # unavailable instead, which render() already knows how to say.
-    result["margin_state"] = None if result["margin"].get("gross") is None else (
+    # POST-PLAN DERIVATION, INSIDE THE SAME CONTRACT (review 5092359752 MAJOR 1.3).
+    # `margin_state` is attached after plan()'s boundary has already run, so it
+    # must honour the same dependencies itself or it re-creates exactly what the
+    # boundary withheld. It did: with complete valuation and a STALE margin
+    # observation the sanitized result correctly carried net_equity=None and
+    # leverage_current=None, while this classifier recomputed net_equity=800.0,
+    # leverage_ratio=1.25 and utilization=0.3125 and the advisory printed
+    # "Margin risk state: NORMAL -- leverage and buffer within normal range".
+    #
+    # A risk state is a CONCLUSION about the current margin position. It needs a
+    # real gross (withheld when the valuation is incomplete) AND a usable current
+    # margin observation. Neither NORMAL nor CAUTION nor RESTRICTED nor
+    # FORCED_DELEVER may be asserted from a reading we have already said we
+    # cannot currently trust. The raw dated debt/buffer evidence and the
+    # re-sync instruction are rendered separately and are untouched by this --
+    # they are observations, not conclusions.
+    # Two DIFFERENT failures, handled differently, because they lose different
+    # things. Without a real gross the classifier cannot run at all (its own
+    # contract requires one), so there is nothing -- `None`, and render() says
+    # UNAVAILABLE. With a real gross but an UNUSABLE margin observation it can
+    # run, and its staleness reasons and its `verify_margin_data` instruction are
+    # exactly what the operator needs; only the CONCLUSION and the numeric risk
+    # metrics derived from that untrusted reading are withheld. Keeping the
+    # instruction while dropping the verdict is the whole point: the review
+    # required preserving "the instruction to verify/re-sync" and forbade calling
+    # the state NORMAL/CAUTION/RESTRICTED/FORCED_DELEVER from unusable data.
+    _classifiable = result["margin"].get("gross") is not None
+    _margin_conclusion_ok = _classifiable and bool(margin_state.get("usable"))
+    result["margin_state"] = None if not _classifiable else (
       classify_margin_state(
         gross=result["margin"]["gross"],
         margin_debt=result["margin"]["debt"],
@@ -2797,6 +2971,31 @@ def main():
         concentration_min_fraction=(0.5 if concentration_cfg.get("min_fraction") is None
                                      else concentration_cfg["min_fraction"]),
     ))
+    if result["margin_state"] is not None and not _margin_conclusion_ok:
+        # STRIP THE CONCLUSION, KEEP THE INSTRUCTION.
+        #
+        # The state word and every numeric risk metric go, because both are
+        # conclusions about a reading we have just said is untrusted -- this is
+        # the path that used to publish "Margin risk state: NORMAL / leverage and
+        # buffer within normal range" beside a withheld net equity and leverage.
+        #
+        # What STAYS is the instruction: the dated staleness fact and the
+        # `verify_margin_data` action, which are what the operator actually needs
+        # and which the review required preserving. It is carried in a field
+        # explicitly named "unavailable" rather than as a fifth state value:
+        # `margin_state.py`'s own vocabulary is exactly four states and stays
+        # exactly four states, so nothing downstream can mistake this for one.
+        _cls = result["margin_state"]
+        result["margin_state"] = None
+        result["margin_state_unavailable"] = {
+            "reason": margin_state.get("reason"),
+            # The DATA-QUALITY diagnostics survive in full: these describe the
+            # observation itself (how old it is, that its date cannot be
+            # verified, that it must be re-synced), not the portfolio's risk.
+            "reasons": list(_cls.reasons),
+            "violated_constraints": list(_cls.violated_constraints),
+            "actions": list(_cls.allowed_actions),
+        }
 
     if args.health:
         print(render_health(result))

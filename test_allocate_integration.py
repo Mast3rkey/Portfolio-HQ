@@ -1186,13 +1186,29 @@ def test_unverifiable_sync_dates_surface_verify_margin_data_without_crashing(
     allocate.main()   # must not raise for any of the three synced_at shapes
     assert "SENTINEL" in capsys.readouterr().out
 
-    ms = captured["result"]["margin_state"]
-    assert VERIFY_MARGIN_DATA in ms.allowed_actions
-    assert "unverifiable_margin_data" in ms.violated_constraints
-    assert "stale_margin_data" not in ms.violated_constraints
-    assert any("cannot be verified" in r for r in ms.reasons)
+    # PHQ-2026-07 / review 5092359752: an UNUSABLE margin observation no longer
+    # yields a margin-state CONCLUSION (no NORMAL/CAUTION/RESTRICTED/
+    # FORCED_DELEVER, no numeric risk metrics) -- but the data-quality
+    # diagnostics and the verify/re-sync INSTRUCTION are preserved exactly, now
+    # carried in `margin_state_unavailable`. Every assertion this test made is
+    # unchanged; only which carrier holds them moved.
+    res = captured["result"]
+    ms = res.get("margin_state")
+    if ms is not None:
+        actions, violated, reasons = (ms.allowed_actions, ms.violated_constraints,
+                                      ms.reasons)
+    else:
+        mu = res["margin_state_unavailable"]
+        actions, violated, reasons = (mu["actions"], mu["violated_constraints"],
+                                      mu["reasons"])
+        # The conclusion really is withheld, not merely relocated.
+        assert res["margin_state"] is None
+    assert VERIFY_MARGIN_DATA in actions
+    assert "unverifiable_margin_data" in violated
+    assert "stale_margin_data" not in violated
+    assert any("cannot be verified" in r for r in reasons)
     # never fabricate a numeric age for an invalid/missing/future date
-    assert not any("day(s) old" in r for r in ms.reasons)
+    assert not any("day(s) old" in r for r in reasons)
 
 
 def test_margin_buffer_age_days_fails_safe_on_missing_malformed_and_future():

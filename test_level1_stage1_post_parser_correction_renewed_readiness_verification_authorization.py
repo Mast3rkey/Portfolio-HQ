@@ -366,12 +366,17 @@ _ANCHOR_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
 #: a decision id interchangeable with a date, and a determination string with a
 #: merge SHA. Each category abstracts only within itself.
 _ANCHOR_CATEGORIES = (
+    # NUMBER FIRST, deliberately. A digits-only token is an IDENTIFIER -- a PR,
+    # run, job, review or comment number -- not a commit SHA. Independent review
+    # 5092359752 demonstrated the opposite ordering classifying the review id
+    # `4976985695` as a SHA, which made it interchangeable with a real 40-hex
+    # merge SHA and let a cross-domain weakening pass unseen.
+    ("NUMBER",        re.compile(r"^\d+$")),
     ("SHA",           re.compile(r"^[0-9a-f]{7,40}$")),
     ("DATE",          re.compile(r"^\d{4}-\d{2}-\d{2}")),
     ("DECISION",      re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{4}(-\d{2})?$")),
     ("BRANCH",        re.compile(r"^claude/[A-Za-z0-9._\-/]+$")),
     ("DECISION_FILE", re.compile(r"^governance/decisions/[A-Za-z0-9._\-]+\.md$")),
-    ("NUMBER",        re.compile(r"^\d+$")),
 )
 
 
@@ -391,35 +396,43 @@ def _anchor_category(text: str) -> str | None:
     return None
 
 
-def _is_lawful_anchor(text: str) -> bool:
-    """Whether this string is the kind of value a lawful re-anchor changes."""
-    return _anchor_category(text) is not None
+#: The instance-distinguishing token a constant name carries -- ``XASSET0061_``,
+#: ``OLD_``, ``B_``. Stripping it leaves the SEMANTIC ROLE: the slot the value
+#: occupies, independent of which decision instance owns it.
+_INSTANCE_PREFIX = re.compile(
+    r"^(?:[A-Z][A-Z0-9]*\d+|OLD|NEW|PREV|PREVIOUS|CURRENT|PRIOR|[AB])_")
 
 
-def _module_anchor_categories(source: str) -> dict:
-    """Category of every module-level constant, derived from its BOUND VALUE.
+def _anchor_role(name: str) -> str:
+    """The semantic slot a constant name occupies.
 
-    This is the correction independent review required. Typography proves
-    nothing: ``STEP10_DETERMINATION`` and ``BOUND_MERGE_SHA`` are both
-    SCREAMING_CASE, and collapsing both to one ``<ANCHOR_NAME>`` made
-
-        assert STEP10_DETERMINATION in section   ->   assert BOUND_MERGE_SHA in section
-
-    invisible -- a substantive Step-10 requirement replaced by an already-present
-    merge check, with the inventory unchanged. A name's category comes from what
-    it is actually bound to: a 40-hex value is a SHA anchor, ``STEP_10_NO_DRIFT``
-    is not an anchor at all. A name bound to anything non-literal has no category
-    and is never abstracted.
+    ``XASSET0060_MAIN_SHA`` and ``XASSET0061_MAIN_SHA`` are the SAME role
+    (``MAIN_SHA``) in two decision instances -- that pairing is what makes a
+    re-anchor lawful. ``BOUND_MERGE_SHA`` is a different role entirely, so it is
+    never interchangeable with either, however similar its typography or its
+    category.
     """
-    cats = {}
+    return _INSTANCE_PREFIX.sub("", name, count=1)
+
+
+def _module_anchor_constants(source: str) -> dict:
+    """``name -> (category, value)`` for every constant bound to an anchor value.
+
+    Category comes from the BOUND VALUE, never from typography:
+    ``STEP10_DETERMINATION = "STEP_10_NO_DRIFT"`` is not an anchor at all, while
+    ``BOUND_MERGE_SHA = "413e033a..."`` is a SHA. A name bound to anything
+    non-literal has no category and is never abstracted.
+
+    EVERY assignment is scanned, not only module-level ones: several predecessor
+    suites bind their re-anchor constants inside the test function that uses
+    them, and scanning only the module body missed those -- reporting a genuinely
+    lawful ``XASSET0060`` -> ``XASSET0061`` re-anchor as a weakening.
+    """
+    out = {}
     try:
         tree = ast.parse(source)
     except SyntaxError:
-        return cats
-    # EVERY assignment, not only module-level ones. Several predecessor suites
-    # bind their re-anchor constants inside the test function that uses them, and
-    # scanning only the module body missed those -- reporting a genuinely lawful
-    # XASSET0060 -> XASSET0061 re-anchor as a weakening.
+        return out
     for node in ast.walk(tree):
         if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Constant):
             continue
@@ -436,71 +449,179 @@ def _module_anchor_categories(source: str) -> dict:
             continue
         for tgt in node.targets:
             if isinstance(tgt, ast.Name) and _ANCHOR_NAME.match(tgt.id):
-                cats[tgt.id] = cat
-    return cats
+                out[tgt.id] = (cat, v)
+    return out
+
+
+def _module_anchor_categories(source: str) -> dict:
+    """``name -> category`` view of :func:`_module_anchor_constants`."""
+    return {n: cat for n, (cat, _v) in _module_anchor_constants(source).items()}
+
+
+def _literal_anchor_values(source: str) -> dict:
+    """``value -> category`` for every anchor-shaped STRING LITERAL in the module.
+
+    Named constants are not the only way this corpus carries an anchor: a
+    lawfully re-anchored suite moved a bare date literal from
+    ``startswith("2026-08-27")`` to ``startswith("2026-08-28")`` with no constant
+    involved at all. Those still need a pairing rule -- just not a category-wide
+    licence.
+    """
+    out = {}
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return out
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            cat = _anchor_category(node.value)
+            if cat is not None:
+                out[node.value] = cat
+    return out
+
+
+def _authorized_reanchor(pinned_src: str, live_src: str):
+    """The substitutions THIS DELTA's own predecessor->successor re-anchor authorizes.
+
+    Returns ``(name_placeholders, pinned_value_placeholders,
+    live_value_placeholders)`` -- the value maps differ deliberately; see below.
+
+    Independent review 5092359752 required that a permitted substitution be tied
+    to "the specific predecessor->successor anchor and semantic role actually
+    re-anchored", not granted "merely because two values share a broad category".
+    Two defects made the previous rule too generous:
+
+    * every recognized STRING LITERAL was normalized unconditionally, so two
+      values that no delta had re-anchored were interchangeable anyway -- the
+      real-corpus bypass, where a required independent-review id was swapped for
+      an unrelated merge SHA already present in the same text;
+    * a whole CATEGORY went into play the moment any constant of that category
+      was added, so unrelated roles of that category collided.
+
+    The evidence required here is a genuine PAIRING: the delta ADDED a constant
+    whose ``(role, category)`` slot the pinned side already occupied. In this
+    corpus a lawful re-anchor adds the successor and KEEPS the predecessor as
+    historical evidence, so the added constant -- not a removed one -- is the
+    signal. Only the names and the exact values in such a paired slot become
+    interchangeable, and only with each other.
+
+    With no added constant, or an added constant whose slot the predecessor never
+    occupied, NOTHING is interchangeable: literals and names alike are compared
+    verbatim. That is the fail-closed default.
+
+    KNOWN RESIDUAL, stated rather than hidden. Bare literals carry no name, so
+    they carry no role: within a category the delta genuinely re-anchored, a
+    predecessor literal of that category could in principle be matched by the
+    introduced successor even if the two were semantically unrelated. Two things
+    bound it -- the successor must be a value THIS DELTA INTRODUCED (a value
+    already present can never be substituted in), and the verbatim stage runs
+    first, so only an assertion that actually changed is ever retried. Narrowing
+    it further would need a role model bare literals do not carry. Named
+    constants, which do carry one, are already bound to their exact (role,
+    category) slot.
+    """
+    pinned = _module_anchor_constants(pinned_src)
+    live = _module_anchor_constants(live_src)
+    slots = set()
+    for name, (cat, _v) in live.items():
+        if name in pinned:
+            continue                       # not added by this delta
+        role = _anchor_role(name)
+        for pname, (pcat, _pv) in pinned.items():
+            if pname != name and pcat == cat and _anchor_role(pname) == role:
+                slots.add((role, cat))     # a real predecessor->successor pairing
+                break
+    names, pinned_values, live_values = {}, {}, {}
+
+    # ---- bare-literal re-anchors: THE LIVE SIDE MAY ONLY USE A NEW VALUE ------
+    # A lawful re-anchor does not always run through a named constant. One
+    # predecessor suite moved a bare date from ``startswith("2026-08-27")`` to
+    # ``"2026-08-28"``; another advanced a branch literal while KEEPING the
+    # predecessor as a negative pin. Both are lawful, and neither has a name to
+    # key a role off.
+    #
+    # The evidence that separates them from a weakening is ASYMMETRIC, and that
+    # asymmetry is the whole correction: the value the live side substitutes IN
+    # must be one THIS DELTA INTRODUCED. A delta may re-anchor onto something it
+    # just added; it may not reach for a value that was already sitting in the
+    # file. That is exactly the real-corpus bypass review 5092359752 found --
+    # a required independent-review id replaced by an unrelated merge SHA already
+    # present in the same text, adding nothing at all -- and it stays caught here
+    # because neither category has a newly-introduced value to pair with.
+    p_lits = _literal_anchor_values(pinned_src)
+    l_lits = _literal_anchor_values(live_src)
+    added_by_cat = {}
+    for v, c in l_lits.items():
+        if v not in p_lits:
+            added_by_cat.setdefault(c, []).append(v)
+    for cat, added in added_by_cat.items():
+        ph = f"<REANCHOR_LITERAL:{cat}>"
+        for v in added:
+            live_values[v] = ph          # the successor: introduced by this delta
+        for v, c in p_lits.items():
+            if c == cat:
+                pinned_values[v] = ph    # any predecessor it may have displaced
+
+    # ---- named-slot re-anchors, applied LAST so a role-specific pairing wins ----
+    # These ARE symmetric, because a name carries a role: only the constants whose
+    # ``(role, category)`` slot this delta actually re-anchored are in play, so
+    # two unrelated same-category names never collide.
+    for source_map in (pinned, live):
+        for name, (cat, val) in source_map.items():
+            slot = (_anchor_role(name), cat)
+            if slot not in slots:
+                continue
+            ph = f"<REANCHOR:{slot[0]}:{slot[1]}>"
+            names[name] = ph
+            if isinstance(val, str):
+                pinned_values[val] = ph
+                live_values[val] = ph
+    return names, pinned_values, live_values
 
 
 def _authorized_reanchor_placeholders(pinned_src: str, live_src: str) -> dict:
-    """Name substitutions THIS DELTA actually performed, same category only.
+    """Name-only view of :func:`_authorized_reanchor`."""
+    return _authorized_reanchor(pinned_src, live_src)[0]
 
-    The review's preferred construction: derive permitted substitutions from the
-    authorized predecessor re-anchor rather than accepting every name with
-    similar typography. A constant that exists in BOTH versions was not
-    re-anchored, so it is never abstracted -- which is precisely why the
-    ``STEP10_DETERMINATION`` -> ``BOUND_MERGE_SHA`` swap is caught: both names
-    are present on both sides, so neither is in play.
-    """
-    pinned = _module_anchor_categories(pinned_src)
-    live = _module_anchor_categories(live_src)
-    # A lawful re-anchor in this corpus ADDS the successor constant and KEEPS the
-    # predecessor as historical evidence -- XASSET0060_MAIN_SHA stays, and
-    # XASSET0061_MAIN_SHA appears beside it, while the assertion moves from one
-    # to the other. So the delta's own signal is the SET OF ADDED CONSTANTS, not
-    # a removed/added pairing: an earlier attempt required removal and wrongly
-    # reported that real re-anchor as a weakening.
-    added_categories = {cat for name, cat in live.items() if name not in pinned}
-    if not added_categories:
-        # Nothing was re-anchored, so nothing is interchangeable. This is the
-        # case that catches STEP10_DETERMINATION -> BOUND_MERGE_SHA: the mutation
-        # adds no constant, so both names stay literal and the swap is a loss.
-        return {}
-    ph = {}
-    for source_map in (pinned, live):
-        for name, cat in source_map.items():
-            if cat in added_categories:
-                ph[name] = f"<REANCHOR:{cat}>"
-    return ph
+
+def _authorized_reanchor_values(pinned_src: str, live_src: str) -> dict:
+    """The LIVE-side value substitutions this delta authorized, for probes."""
+    return _authorized_reanchor(pinned_src, live_src)[2]
 
 
 class _AnchorNormaliser(ast.NodeTransformer):
-    """Abstract LAWFUL ANCHOR SUBSTITUTIONS; preserve every operative predicate.
+    """Abstract ONLY the substitutions this delta's own re-anchor authorized.
 
     Abstracted:
 
-    * a string literal, to ITS OWN CATEGORY's placeholder -- SHA to ``<SHA>``,
-      date to ``<DATE>``, and so on, never to one shared token, so a
-      decision-for-date or determination-for-SHA swap is a change;
-    * an f-string whose every literal part is an anchor or bare punctuation;
-    * a module constant ONLY when this delta actually re-anchored it, and then
-      only within its own category.
+    * a constant NAME, and the exact string VALUE it is bound to, when this delta
+      added a successor constant in the same ``(role, category)`` slot the pinned
+      side already occupied.
 
     Preserved -- changing any of these changes what is asserted:
 
-    * every other string literal, including expected prose;
-    * every constant name not part of an authorized re-anchor;
+    * every string literal the delta did not re-anchor, anchor-shaped or not.
+      A SHA is not abstracted just for looking like a SHA: review 5092359752
+      showed a required review-id assertion swapped for an unrelated merge SHA
+      already present in the same text, with the inventory unchanged;
+    * every constant name outside an authorized slot -- typography is not
+      evidence, and neither is sharing a broad category;
     * attribute and method names -- ``startswith`` vs ``endswith``;
-    * comparison and boolean operators, numeric literals, call structure.
+    * comparison and boolean operators, numeric literals, call structure;
+    * f-strings, which are simply walked, so their interpolated names and literal
+      parts each get exactly the treatment above rather than collapsing whole.
     """
 
-    def __init__(self, name_placeholders=None):
+    def __init__(self, name_placeholders=None, value_placeholders=None):
         super().__init__()
         self._names = name_placeholders or {}
+        self._values = value_placeholders or {}
 
     def visit_Constant(self, node):
         if isinstance(node.value, str):
-            cat = _anchor_category(node.value)
-            if cat is not None:
-                return ast.copy_location(ast.Constant(value=f"<ANCHOR_{cat}>"), node)
+            ph = self._values.get(node.value)
+            if ph is not None:
+                return ast.copy_location(ast.Constant(value=ph), node)
         return node
 
     def visit_Name(self, node):
@@ -509,83 +630,93 @@ class _AnchorNormaliser(ast.NodeTransformer):
             return ast.copy_location(ast.Name(id=ph, ctx=node.ctx), node)
         return node
 
-    def visit_JoinedStr(self, node):
-        for part in node.values:
-            if isinstance(part, ast.Constant) and isinstance(part.value, str):
-                t = part.value.strip()
-                if t and not _is_lawful_anchor(t) and not _TRIVIAL_JOINER.match(t):
-                    return self.generic_visit(node)
-        return ast.copy_location(ast.Constant(value="<ANCHOR_FSTR>"), node)
+
+def _is_lawful_anchor(text: str) -> bool:
+    """Whether this string has the SHAPE of a value a re-anchor may change.
+
+    Shape alone no longer authorizes anything -- :func:`_authorized_reanchor`
+    requires the delta's own predecessor->successor pairing -- but the predicate
+    is still the honest statement of which forms are anchor-shaped at all, and
+    the empty string and operative prose are not among them.
+    """
+    return _anchor_category(text) is not None
 
 
-#: Punctuation that merely joins interpolated anchors and carries no meaning of
-#: its own -- ``f"{A}-{B}"``, ``f"{SHA}:{path}"``.
-_TRIVIAL_JOINER = re.compile(r"^[\-:/.,;_=~^@#|\s\[\](){}<>]+$")
-
-
-def _assertion_inventory(source: str, name_placeholders=None) -> collections.Counter:
+def _assertion_inventory(source: str, name_placeholders=None,
+                         value_placeholders=None) -> collections.Counter:
     """The suite's assertions as NORMALIZED SEMANTIC FINGERPRINTS.
-
-    RE-ANCHORED AGAIN (PHQ-2026-07, review 5085019004). Two superseded mechanisms
-    both failed, in opposite directions:
-
-    * a bare COUNT, then a count plus an AST-shape total, could not see an
-      EQUAL-SHAPE weakening. Independent review demonstrated
-
-          Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
-              ->  Path(entry["file"]).name.endswith(".md")
-
-      which loses the decision-ID/file binding entirely -- a row pointing at
-      ANOTHER decision's file then passes -- while both forms scored (441, 433)
-      and the guard reported no loss;
-
-    * an EXACT fingerprint inventory saw that, but also rejected a LAWFUL
-      predecessor re-anchor (``XASSET0060_MAIN_SHA`` -> ``XASSET0061_MAIN_SHA``,
-      which ADDED two assertions). That is whole-file immutability wearing a
-      different hat.
-
-    What separates the two is which parts of an assertion an anchor change may
-    lawfully touch. ``_AnchorNormaliser`` abstracts exactly those parts and
-    nothing else, so ``startswith`` -> ``endswith`` is a different fingerprint
-    while ``==  SHA_A`` -> ``== SHA_B`` is the same one.
 
     A ``Counter``, so removing one of several identical assertions is still a loss.
     ``assert True``/``assert 1`` are excluded: they are the shape a silent gutting
     takes, and counting them would let a weakened file keep its total.
     """
-    inv = collections.Counter()
+    return collections.Counter(
+        relaxed for _strict, relaxed in _assertion_pairs(
+            source, name_placeholders, value_placeholders))
+
+
+def _assertion_pairs(source: str, name_placeholders=None, value_placeholders=None):
+    """``[(verbatim_fingerprint, relaxed_fingerprint)]`` for each real assertion.
+
+    The verbatim form abstracts NOTHING but authorized constant NAMES (which are
+    role-bound and symmetric). The relaxed form additionally applies the value
+    substitutions this delta authorized. Keeping both is what lets
+    :func:`_lost_assertions` try the strict match first and fall back to an
+    authorized re-anchor only for what is genuinely missing -- so an assertion
+    that simply stayed put is never mistaken for one that moved.
+    """
+    out = []
     for node in ast.walk(ast.parse(source)):
         if not isinstance(node, ast.Assert):
             continue
         test = node.test
         if isinstance(test, ast.Constant) and bool(test.value) is True:
             continue          # vacuous by construction
-        norm = _AnchorNormaliser(name_placeholders).visit(copy.deepcopy(test))
-        inv[ast.dump(norm)] += 1
-    return inv
+        strict = _AnchorNormaliser(name_placeholders, None).visit(
+            copy.deepcopy(test))
+        relaxed = _AnchorNormaliser(name_placeholders, value_placeholders).visit(
+            copy.deepcopy(test))
+        out.append((ast.dump(strict), ast.dump(relaxed)))
+    return out
 
 
 def _lost_assertions(pinned_src: str, live_src: str) -> list[str]:
     """Fingerprints asserted when pinned that are no longer asserted now.
 
-    The permitted name substitutions are derived from THIS delta -- only a
-    constant the delta actually retired, replaced by a new one of the same
-    anchor category, is treated as interchangeable. A name present on both sides
-    was not re-anchored and is compared literally, which is what makes the
-    ``STEP10_DETERMINATION`` -> ``BOUND_MERGE_SHA`` swap visible.
+    TWO STAGES, in this order:
 
-    KNOWN RESIDUAL, stated rather than hidden: within a delta that DOES add a new
-    constant of some category, the constants of that same category become
-    interchangeable for that comparison. That is the "SHA-to-successor-SHA in the
-    same role" case the review names as lawful, and narrowing it further would
-    need a role model the sources do not carry. What is caught: any cross-category
-    substitution (determination for SHA, decision for date, comment for branch),
-    and ANY name substitution at all in a delta that re-anchors nothing.
+    1. **Verbatim.** An assertion still present unchanged is preserved. Nothing
+       about it is abstracted, so a negative pin that legitimately kept its own
+       literal matches its own twin and never enters stage 2.
+    2. **Authorized re-anchor.** Only what stage 1 could not match is retried
+       against the substitutions :func:`_authorized_reanchor` derived from THIS
+       delta -- a role-matched constant pairing, or a literal the delta itself
+       introduced. Anything still unmatched is a real loss.
+
+    This ordering is what makes the substitution allowance narrow. A weakening
+    that swaps in a value already sitting in the file introduces nothing, so
+    stage 2 has nothing to offer it and the loss is reported -- which is exactly
+    the real-corpus bypass independent review 5092359752 demonstrated.
     """
-    ph = _authorized_reanchor_placeholders(pinned_src, live_src)
-    missing = (_assertion_inventory(pinned_src, ph)
-               - _assertion_inventory(live_src, ph))
-    return sorted(missing.elements())
+    names, pinned_values, live_values = _authorized_reanchor(pinned_src, live_src)
+    pinned_pairs = _assertion_pairs(pinned_src, names, pinned_values)
+    live_pairs = _assertion_pairs(live_src, names, live_values)
+    live_strict = collections.Counter(st for st, _rx in live_pairs)
+    live_relaxed = collections.Counter(rx for _st, rx in live_pairs)
+    lost = []
+    deferred = []
+    for strict, relaxed in pinned_pairs:
+        if live_strict[strict] > 0:
+            live_strict[strict] -= 1
+            live_relaxed[relaxed] -= 1     # that live assertion is now spoken for
+        else:
+            deferred.append((strict, relaxed))
+    for strict, relaxed in deferred:
+        if live_relaxed.get(relaxed, 0) > 0:
+            live_relaxed[relaxed] -= 1
+        else:
+            lost.append(strict)
+    return sorted(lost)
 
 
 #: DIRECT PROTECTED PREDICATES (PHQ-2026-07, second correction).
@@ -1366,41 +1497,67 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
             "a lawful anchor substitution was reported as a weakening"
 
     def test_the_operative_parts_of_an_assertion_are_not_abstracted(self):
-        """Pin exactly WHAT the normaliser is allowed to ignore.
+        """Pin exactly WHAT the normaliser is allowed to ignore, and WHEN.
 
-        Anchor strings and SCREAMING_CASE names may change; a method name, a
-        comparison operator, a numeric literal and the call structure may not.
-        Without this, a future widening of the normaliser would silently reopen
-        the very class this guard was rebuilt to close.
+        REWRITTEN (PHQ-2026-07, review 5092359752). The superseded version
+        asserted that anchor-SHAPED literals are interchangeable with no delta at
+        all -- ``one('v == "413e..."') == one('v == "3db9..."')``. That
+        expectation WAS the defect: it is unconditional literal normalization,
+        and it is what let a required review id be swapped for an unrelated merge
+        SHA already present in the same text. Shape is now necessary but never
+        sufficient; the delta's own evidence decides.
         """
-        def one(expr):
-            return _assertion_inventory(f"def f():\n    assert {expr}\n")
+        def one(expr, names=None, values=None):
+            return _assertion_inventory(f"def f():\n    assert {expr}\n",
+                                        names, values)
 
-        # ABSTRACTED -- lawful anchor substitutions, each matching a pattern
-        assert one('v == "413e033ac33741829168762ab24d73327c047d4b"') == \
+        # NOT abstracted WITHOUT a delta -- not even a perfectly anchor-shaped
+        # value. This is the corrected contract, stated first because it is the
+        # one the review required.
+        assert one('v == "413e033ac33741829168762ab24d73327c047d4b"') != \
                one('v == "3db918530b10ffc1423ba0b749b086e349a4901d"')   # SHA
-        assert one('d == "2026-08-28"') == one('d == "2026-09-02"')      # date
-        assert one('i == "XASSET-0060"') == one('i == "XASSET-0061"')    # decision id
-        assert one('b == "claude/one"') == one('b == "claude/two"')      # branch
+        assert one('d == "2026-08-28"') != one('d == "2026-09-02"')      # date
+        assert one('i == "XASSET-0060"') != one('i == "XASSET-0061"')    # decision id
+        assert one('b == "claude/one"') != one('b == "claude/two"')      # branch
+
+        # ABSTRACTED only when THIS DELTA introduced the successor value. The map
+        # below is what `_authorized_reanchor()` derives for a delta that added
+        # the second value of each pair.
+        for a, b, cat in (
+                ('"413e033ac33741829168762ab24d73327c047d4b"',
+                 '"3db918530b10ffc1423ba0b749b086e349a4901d"', "SHA"),
+                ('"2026-08-28"', '"2026-09-02"', "DATE"),
+                ('"XASSET-0060"', '"XASSET-0061"', "DECISION"),
+                ('"claude/one"', '"claude/two"', "BRANCH")):
+            ph = {a.strip('"'): f"<R:{cat}>", b.strip('"'): f"<R:{cat}>"}
+            assert one(f"v == {a}", None, ph) == one(f"v == {b}", None, ph), cat
+
+        # ...and even then each category keeps its OWN placeholder, so a
+        # cross-category swap is a change rather than a wash.
+        both = {"2026-09-02": "<R:DATE>", "XASSET-0061": "<R:DECISION>",
+                "claude/one": "<R:BRANCH>",
+                "413e033ac33741829168762ab24d73327c047d4b": "<R:SHA>"}
+        assert one('v == "2026-09-02"', None, both) != \
+               one('v == "XASSET-0061"', None, both)                    # date/decision
+        assert one('v == "claude/one"', None, both) != \
+               one('v == "2026-09-02"', None, both)                     # branch/date
+        assert one('v == "413e033ac33741829168762ab24d73327c047d4b"', None, both) != \
+               one('v == "claude/one"', None, both)                     # SHA/branch
+
+        # A DIGITS-ONLY identifier is a NUMBER, never a SHA. Review 5092359752
+        # showed the opposite ordering classifying the review id 4976985695 as a
+        # SHA, which made it interchangeable with a real merge SHA.
+        assert _anchor_category("4976985695") == "NUMBER"
+        assert _anchor_category("637eaa30302f5a71f84ab1d215ecbd32c01399b5") == "SHA"
+        assert one('"4976985695" in d') != \
+               one('"637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d')
 
         # NOT abstracted by typography alone. Two SCREAMING_CASE names are only
-        # interchangeable when THIS delta actually re-anchored one -- see
-        # test_a_constant_name_substitution_across_roles_is_caught. Capitalization
-        # is not evidence, which is the correction review 5091155438 required.
+        # interchangeable when THIS delta re-anchored their shared ROLE.
         assert one("v == SHA_ALPHA") != one("v == SHA_BETA")
-        assert one('x.startswith(f"{DECISION_ID}-")') == one('x.startswith(f"{OTHER}-")')
+        assert one('x.startswith(f"{DECISION_ID}-")') != one('x.startswith(f"{OTHER}-")')
 
-        # ...and each recognized category keeps its OWN placeholder, so a
-        # cross-category string swap is a change rather than a wash.
-        assert one('v == "2026-09-02"') != one('v == "XASSET-0061"')        # date/decision
-        assert one('v == "claude/one"') != one('v == "2026-09-02"')         # branch/date
-        assert one('v == "413e033ac33741829168762ab24d73327c047d4b"') != \
-               one('v == "claude/one"')                                     # SHA/branch
-
-        # NOT abstracted -- operative expected TEXT is not an anchor. This is the
-        # correction independent review required: the superseded normaliser
-        # abstracted every string, so a searched-for phrase could be replaced by
-        # anything -- including "" -- with the inventory unchanged.
+        # NOT abstracted -- operative expected TEXT is not an anchor.
         assert one('"Merging it arms nothing" in section') != one('"" in section')
         assert one('"Merging it arms nothing" in section') != \
                one('"Merging it arms something" in section')
@@ -1412,8 +1569,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert one("n >= 441") != one("n > 441")
         assert one('x.startswith("a")') != one("x")
 
-        # An f-string carrying PROSE is not an anchor either, even though one
-        # carrying only an interpolated id is.
+        # An f-string is WALKED, not collapsed, so its prose parts stay operative.
         assert one('m == f"expected {x} in the header"') != \
                one('m == f"required {x} in the header"')
 
@@ -1580,6 +1736,119 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert not _lost_assertions(pinned, live), (
             "a lawful same-category re-anchor was reported as a weakening")
 
+    def test_the_real_corpus_cross_domain_id_for_sha_swap_is_caught(self):
+        """REQUIRED NEGATIVE CONTROL (PHQ-2026-07, review 5092359752).
+
+        The exact real-corpus probe independent review demonstrated, on a suite
+        that is PINNED but deliberately not in ``PROTECTED_PREDICATES``:
+
+            assert "4976985695" in description
+            assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in description
+
+        The substituted value is an unrelated merge SHA ALREADY PRESENT in the
+        same description, so the mutated assertion evaluates true and the suite
+        still passes -- while the required independent-review-id check is gone.
+
+        Two separate defects let this through and both are pinned here:
+
+        * the SHA pattern preceded NUMBER and accepted digits-only strings, so
+          the review id ``4976985695`` was categorized as a SHA;
+        * every recognized literal was normalized unconditionally, so two values
+          the delta never re-anchored were interchangeable anyway.
+        """
+        rel = "test_level1_stage1_post_correction_rebinding_authorization.py"
+        assert rel in PINNED_TEST_HASHES
+        assert rel not in PROTECTED_PREDICATES, (
+            "this probe proves the GENERAL mechanism, so its target must not be "
+            "covered by the direct-protection list")
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert "4976985695" in description'
+        swapped = 'assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in description'
+        assert strong in src, "the probe's own target has moved"
+        # The mutated assertion PASSES: its value is already in the same text.
+        assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in src
+        # Category separation is the first half of the fix.
+        assert _anchor_category("4976985695") == "NUMBER"
+        assert _anchor_category("637eaa30302f5a71f84ab1d215ecbd32c01399b5") == "SHA"
+        mutated = src.replace(strong, swapped)
+        assert mutated != src
+        assert not _lost_assertions(src, src), "the live suite must be clean"
+        assert _lost_assertions(src, mutated), (
+            "the cross-domain id-for-SHA substitution was NOT caught")
+
+    def test_a_literal_already_present_is_never_an_authorized_substitution(self):
+        """The general property behind that probe, stated directly.
+
+        A delta may re-anchor onto a value it INTRODUCED. It may never reach for
+        a value that was already sitting in the file -- that introduces no
+        predecessor->successor evidence at all, and is the shape every reviewed
+        literal bypass has taken.
+        """
+        pinned = ('def f():\n'
+                  '    assert "4976985695" in d\n'
+                  '    assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d\n')
+        # The swap reuses a value already present; nothing new is introduced.
+        live = ('def f():\n'
+                '    assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d\n'
+                '    assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d\n')
+        assert _authorized_reanchor_values(pinned, live) == {}, (
+            "a delta that introduced nothing authorized a substitution")
+        assert _lost_assertions(pinned, live), "the reused-value swap was not caught"
+
+    def test_an_in_play_category_still_forbids_reusing_an_existing_value(self):
+        """The ASYMMETRY itself, in the one case that actually exercises it.
+
+        Found by the mutation proof for this correction, not by review: the two
+        probes above both use a delta that adds NOTHING, so the category is out
+        of play entirely and the asymmetry is never reached. Here the delta DOES
+        introduce a new SHA -- the category is genuinely in play -- and the swap
+        still reuses a value that was already present on both sides.
+
+        Widening the live side to every value of an in-play category (rather than
+        only the ones this delta introduced) makes this pass, which is exactly the
+        weakening the rule exists to prevent.
+        """
+        old_v, kept_v, added_v = "a" * 40, "b" * 40, "c" * 40
+        for v in (old_v, kept_v, added_v):
+            assert _anchor_category(v) == "SHA", v
+        pinned = (f'def f():\n    assert "{old_v}" in d\n'
+                  f'    assert "{kept_v}" in d\n')
+        # A real re-anchor happens (NEW_SHA is introduced) AND the required
+        # `old_v` assertion is quietly replaced by a value already present.
+        live = (f'NEW_SHA = "{added_v}"\n'
+                f'def f():\n    assert "{kept_v}" in d\n'
+                f'    assert "{kept_v}" in d\n    assert NEW_SHA in d\n')
+        _n, _pv, live_values = _authorized_reanchor(pinned, live)
+        assert live_values == {added_v: "<REANCHOR_LITERAL:SHA>"}, (
+            "the live side may substitute in ONLY what this delta introduced")
+        assert _lost_assertions(pinned, live), (
+            "a reused pre-existing value was accepted inside an in-play category")
+
+    def test_the_role_filter_on_the_substitution_map_is_load_bearing(self):
+        """Category alone must never admit a name into an authorized slot.
+
+        DISCLOSED: the corresponding guard in the slot-DISCOVERY loop is
+        redundant -- removing it changes no observable result, because this
+        mapping filter already enforces the property. The mutation proof for this
+        correction showed that directly, so the probe was moved here, to the site
+        that actually decides. Documented rather than quietly dropped.
+        """
+        pinned = ('A_SHA = "' + "1" * 40 + '"\n'
+                  'UNRELATED_SHA = "' + "2" * 40 + '"\n'
+                  "def f():\n    assert x == UNRELATED_SHA\n")
+        live = ('A_SHA = "' + "1" * 40 + '"\n'
+                'UNRELATED_SHA = "' + "2" * 40 + '"\n'
+                'B_SHA = "' + "3" * 40 + '"\n'
+                "def f():\n    assert x == B_SHA\n")
+        names, _pv, _lv = _authorized_reanchor(pinned, live)
+        # B_SHA re-anchors the SHA role, so A_SHA/B_SHA are interchangeable...
+        assert names.get("A_SHA") == names.get("B_SHA") is not None
+        # ...and UNRELATED_SHA, a different role, is not admitted despite sharing
+        # the category with both.
+        assert "UNRELATED_SHA" not in names
+        assert _lost_assertions(pinned, live), (
+            "a different-role constant collided with a re-anchored one")
+
     def test_a_name_substitution_without_any_reanchor_is_always_caught(self):
         """Fail closed: with nothing re-anchored, NO name is interchangeable."""
         header = ('A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
@@ -1628,6 +1897,27 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         base = _git("show", f"{BOUND_MERGE_SHA}:{act}")
         assert base != act_src
         assert not _lost_assertions(base, act_src)
+        # 8. cross-domain review/run/job/comment ids never collapse into SHAs
+        for ident in ("4976985695", "5092359752", "100319912406", "33651659011"):
+            assert _anchor_category(ident) == "NUMBER", ident
+        assert _anchor_category("637eaa30302f5a71f84ab1d215ecbd32c01399b5") == "SHA"
+        rebind = "test_level1_stage1_post_correction_rebinding_authorization.py"
+        rb_src = (ROOT / rebind).read_text(encoding="utf-8")
+        assert _lost_assertions(
+            rb_src,
+            rb_src.replace('assert "4976985695" in description',
+                           'assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" '
+                           "in description")), \
+            "a review id was still interchangeable with a merge SHA"
+        # 9. an unrelated same-category constant cannot collide merely because
+        #    ANOTHER anchor of that category was added by the delta
+        header = ('A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+                  'UNRELATED_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"\n')
+        pinned_x = header + "def f():\n    assert x == A_SHA\n"
+        live_x = (header + 'B_SHA = "637eaa30302f5a71f84ab1d215ecbd32c01399b5"\n'
+                  + "def f():\n    assert x == UNRELATED_SHA\n")
+        assert _lost_assertions(pinned_x, live_x), (
+            "an unrelated same-category constant collided with a re-anchored one")
 
     def test_the_protected_catalog_predicate_is_asserted_directly(self):
         """Belt and braces: the ONE named protected property, pinned by name.

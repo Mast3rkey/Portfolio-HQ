@@ -2368,3 +2368,298 @@ class TestNoBookDerivedValueSurvivesInTheEmittedResult:
             text = (A.render(res, review=True) if surface == "render"
                     else A.render_health(res))
             assert text and isinstance(text, str)
+
+
+class TestAvailabilityIsDerivedFromObservationsNotFromTheArgument:
+    """PHQ-2026-07 / review 5092359752 MAJOR 1.1.
+
+    ``dollars_available=True`` is the public default. A caller that supplied a
+    stale margin observation but omitted the separately precomputed flag used to
+    get current-looking output anyway: `margin_usable=False` while the result
+    reported `dollars_available=True` and a numeric book with numeric gated
+    target/gap. The boundary already held every observation needed to reject
+    that; it just deferred to the argument.
+
+    The corrected rule, pinned here in both directions: a caller flag may
+    RESTRICT further, but may never make unavailable observed state available.
+    """
+
+    def _state(self, cash_s, margin_s):
+        return {"shares": {"AAA": 10.0},
+                "cash": {"balance": 1000.0, "synced_at": cash_s},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0, "synced_at": margin_s}}
+
+    def _plan(self, data, **kw):
+        t = _targets()
+        roster = build_roster(t)
+        cs = load_cash_state(data)
+        ms = load_margin_state(data)
+        return plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True,
+                    cash=(cs["balance"] if cs["usable"] else None),
+                    margin_debt=(ms["debt"] or 0.0),
+                    margin_buffer_pct=(ms["buffer_pct"] or 0.0),
+                    gates_cfg=_gates("AAA"), holdings_state=data, **kw)
+
+    def test_the_exact_reproduction_no_book_derived_number_survives(self):
+        """THE REQUIRED REPRODUCTION: current cash, complete valuation, stale
+        margin, holdings_state supplied, `dollars_available` OMITTED."""
+        data = self._state(FRESH, STALE)
+        assert load_cash_state(data)["usable"] is True
+        assert valuation_completeness({"AAA": 1000.0}, data)["complete"] is True
+        assert load_margin_state(data)["usable"] is False
+        res = self._plan(data)                       # flag omitted on purpose
+        assert res["dollars_available"] is False
+        assert res["book"] is None
+        assert res["protection"]["book"] is None
+        assert res["protection"]["protected_floor_dollars"] is None
+        for row in res["no_add_gated"]:
+            assert row["target"] is None, row
+            assert row["gap"] is None, row
+
+    def test_an_explicitly_true_flag_cannot_override_a_failed_observation(self):
+        """Not just the default: an ACTIVELY passed True is overridden too."""
+        res = self._plan(self._state(FRESH, STALE), dollars_available=True)
+        assert res["dollars_available"] is False
+        assert res["book"] is None
+
+    @pytest.mark.parametrize("cash_s,margin_s,resolved,label", [
+        (STALE, FRESH, {"AAA": 1000.0}, "stale cash"),
+        (FRESH, STALE, {"AAA": 1000.0}, "stale margin"),
+        (FRESH, FRESH, {}, "incomplete valuation"),
+    ])
+    def test_every_failed_observation_alone_withholds_the_book(
+            self, cash_s, margin_s, resolved, label):
+        data = self._state(cash_s, margin_s)
+        t = _targets()
+        roster = build_roster(t)
+        cs = load_cash_state(data)
+        ms = load_margin_state(data)
+        res = plan(t, resolved, roster, _metrics(roster), True, True,
+                   cash=(cs["balance"] if cs["usable"] else None),
+                   margin_debt=(ms["debt"] or 0.0),
+                   margin_buffer_pct=(ms["buffer_pct"] or 0.0),
+                   gates_cfg=_gates("AAA"), holdings_state=data)
+        assert res["dollars_available"] is False, label
+        assert res["book"] is None, label
+
+    def test_a_caller_flag_may_still_restrict_further(self):
+        """The allowance is one-directional, and that direction is preserved."""
+        data = self._state(FRESH, FRESH)
+        assert A.current_dollar_availability(
+            load_cash_state(data), load_margin_state(data),
+            valuation_completeness({"AAA": 1000.0}, data))["available"] is True
+        assert self._plan(data)["book"] is not None          # nothing restricts
+        assert self._plan(data, dollars_available=False)["book"] is None
+
+    def test_the_mechanics_only_caller_is_preserved_and_explicit(self):
+        """An ABSENT observation is not a FAILED one.
+
+        A caller supplying no `cash:` block made no cash claim, so there is
+        nothing to contradict -- that is the legitimate mechanics-only path, and
+        it stays open. It is stated here rather than left implicit, because it is
+        the one place the caller's own flag is still the only switch.
+        """
+        t = _targets()
+        roster = build_roster(t)
+        res = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True,
+                   cash=200.0, margin_debt=50.0, margin_buffer_pct=100.0,
+                   holdings_state={})
+        assert res["book"] == pytest.approx(1000.0 + 200.0 - 50.0)
+        # ...but a SUPPLIED and FAILED observation still governs, even here.
+        bad = {"margin": {"debt": 50.0, "buffer_pct": 100.0, "synced_at": STALE}}
+        assert plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True,
+                    cash=200.0, margin_debt=50.0, margin_buffer_pct=100.0,
+                    holdings_state=bad)["book"] is None
+
+    def test_removing_the_derivation_makes_this_class_fail(self):
+        """MUTATION PROBE: the protection is load-bearing, not decorative."""
+        src = inspect.getsource(plan)
+        assert "_observed_book_ok" in src
+        assert "and _observed_book_ok)" in src, (
+            "the derived fact is no longer conjoined into dollars_ok")
+
+
+class TestTheBoundaryIsExhaustiveByPathAndShape:
+    """PHQ-2026-07 / review 5092359752 MAJOR 1.2.
+
+    The superseded walker classified by RUNTIME TYPE: it skipped scalar list
+    members outright and ignored any string whose field name was not in a
+    selected list. Both of the review's probes crossed unchanged. Every EMITTED
+    LEAF now needs a stated contract -- of any type, at any depth, in any
+    sequence -- and an unclassified one raises.
+    """
+
+    DEPS = {"valuation": True, "margin": True, "book": False}
+
+    def _apply(self, payload):
+        return A._apply_output_dependencies(payload, dict(self.DEPS), set(), {})
+
+    def test_a_new_numeric_collection_fails_closed(self):
+        """THE REQUIRED REPRODUCTION 1."""
+        with pytest.raises(A.UnclassifiedOutputPath):
+            self._apply({"new_collection": [42.0]})
+
+    def test_a_renamed_prose_field_carrying_a_dollar_fails_closed(self):
+        """THE REQUIRED REPRODUCTION 2."""
+        with pytest.raises(A.UnclassifiedOutputPath):
+            self._apply({"buys": [{"ticker": "AAA",
+                                   "explanation": "derived $820 amount"}]})
+
+    @pytest.mark.parametrize("payload,label", [
+        ({"nested": {"deeper": {"amount": 5.0}}}, "nested mapping"),
+        ({"seq": [[1.0, 2.0]]}, "nested scalar sequence"),
+        ({"buys": [{"ticker": "AAA", "brand_new_pct": 12.0}]}, "new row field"),
+        ({"clusters": [{"name": "C", "invented": 3.0}]}, "new cluster field"),
+        ({"optional_thing": None}, "None-valued unknown leaf"),
+        ({"some_label": "a plain string"}, "unknown string leaf"),
+    ], ids=lambda v: v if isinstance(v, str) else "")
+    def test_every_unclassified_shape_fails_closed(self, payload, label):
+        with pytest.raises(A.UnclassifiedOutputPath):
+            self._apply(payload)
+
+    def test_a_static_leaf_that_acquires_a_number_fails_closed(self):
+        """Declaring a field static is a CLAIM, and it is checked."""
+        with pytest.raises(A.UnclassifiedOutputPath):
+            self._apply({"regime_ok": 1.5})
+
+    def test_recognized_static_and_config_output_is_retained(self):
+        """The complement: valid observations are not broadly blanked."""
+        out = self._apply({"regime_ok": True, "issuer_ceiling_pct": 8.0,
+                           "cash_spent": 0.0, "valuation": {
+                               "complete": False, "expected_count": 2,
+                               "reason": "no current value for BBB",
+                               "unresolved": ["BBB"]}})
+        assert out["regime_ok"] is True
+        assert out["issuer_ceiling_pct"] == 8.0
+        assert out["cash_spent"] == 0.0          # a KNOWN zero, not an unknown
+        assert out["valuation"]["expected_count"] == 2
+        assert out["valuation"]["unresolved"] == ["BBB"]
+
+    def test_the_frozen_config_subtree_is_a_verbatim_passthrough(self):
+        """The one PREFIX rule earns its exception by PROVENANCE, and this pins it.
+
+        `retained_common_driver_measurement` is copied verbatim out of
+        issuer_lookthrough.yaml -- nothing in it is computed here -- so it cannot
+        quietly acquire a derived field under cover of the prefix.
+        """
+        cfg = yaml.safe_load(open("issuer_lookthrough.yaml"))
+        block = cfg["retained_common_driver_measurement"]
+        src = inspect.getsource(plan)
+        assert ('"retained_common_driver_measurement": '
+                'lookthrough.get("retained_common_driver_measurement")') in src, (
+            "the retained block is no longer a verbatim config passthrough")
+        out = self._apply({"retained_common_driver_measurement": dict(block)})
+        assert out["retained_common_driver_measurement"] == block
+
+    def test_removing_the_raise_makes_this_class_fail(self):
+        """MUTATION PROBE: fail-closed is the mechanism, not a comment."""
+        src = inspect.getsource(A._leaf_contract)
+        assert src.count("raise UnclassifiedOutputPath") >= 2
+
+
+class TestPostPlanDerivationsHonourTheSameContract:
+    """PHQ-2026-07 / review 5092359752 MAJOR 1.3.
+
+    `margin_state` is attached AFTER plan()'s boundary. Gated only on gross, it
+    recreated exactly what the boundary had withheld: with complete valuation and
+    a stale margin observation the sanitized result carried `net_equity=None` and
+    `leverage_current=None` while the classifier returned `net_equity=800.0`,
+    `leverage_ratio=1.25`, `utilization=0.3125`, and the advisory printed
+    "Margin risk state: NORMAL -- leverage and buffer within normal range".
+    """
+
+    STATE_WORDS = ("NORMAL", "CAUTION", "RESTRICTED", "FORCED_DELEVER")
+
+    def _result(self, margin_s):
+        data = {"shares": {"AAA": 10.0},
+                "cash": {"balance": 1000.0, "synced_at": FRESH},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0, "synced_at": margin_s}}
+        cs = load_cash_state(data)
+        ms = load_margin_state(data)
+        val = valuation_completeness({"AAA": 1000.0}, data)
+        av = A.current_dollar_availability(cs, ms, val)
+        t = _targets()
+        roster = build_roster(t)
+        res = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True,
+                   cash=(cs["balance"] if cs["usable"] else None),
+                   margin_debt=(ms["debt"] or 0.0),
+                   margin_buffer_pct=(ms["buffer_pct"] or 0.0),
+                   gates_cfg={}, holdings_state=data,
+                   dollars_available=av["available"])
+        res["cash_state"] = cs
+        res["margin_state_check"] = ms
+        res["dollar_availability"] = av
+        res["margin"]["synced_at"] = margin_s
+        return res, ms, val
+
+    def test_main_gates_the_classifier_on_a_usable_observation_not_only_gross(self):
+        """THE REQUIRED REPRODUCTION, at the gate itself."""
+        res, ms, val = self._result(STALE)
+        assert val["complete"] is True            # gross IS available...
+        assert res["margin"]["gross"] is not None
+        assert ms["usable"] is False              # ...but the reading is not
+        assert res["margin"]["net_equity"] is None
+        assert res["margin"]["leverage_current"] is None
+        src = inspect.getsource(A.main)
+        assert "_margin_conclusion_ok" in src
+        assert 'bool(margin_state.get("usable"))' in src, (
+            "the classifier is gated on gross alone again")
+
+    @pytest.mark.parametrize("surface", ["render", "render_health"])
+    def test_no_risk_state_is_asserted_from_an_unusable_observation(self, surface):
+        res, _ms, _val = self._result(STALE)
+        res["margin_state"] = None
+        res["margin_state_unavailable"] = {
+            "reason": "margin synced 30d ago", "reasons": [],
+            "violated_constraints": ["stale_margin_data"],
+            "actions": ["verify_margin_data"]}
+        text = (A.render(res, review=True) if surface == "render"
+                else A.render_health(res))
+        for word in self.STATE_WORDS:
+            assert f"Margin risk state: {word}" not in text, word
+            assert f"**{word}**" not in text, word
+        assert "leverage and buffer within normal range" not in text
+        assert "UNAVAILABLE" in text
+
+    @pytest.mark.parametrize("surface", ["render", "render_health"])
+    def test_the_verify_and_resync_instruction_is_preserved(self, surface):
+        """Withholding the CONCLUSION must not withhold the INSTRUCTION."""
+        res, _ms, _val = self._result(STALE)
+        res["margin_state"] = None
+        res["margin_state_unavailable"] = {
+            "reason": "margin synced 30d ago (> 2d)",
+            "reasons": ["margin data is 30 day(s) old"],
+            "violated_constraints": ["stale_margin_data"],
+            "actions": ["verify_margin_data"]}
+        text = (A.render(res, review=True) if surface == "render"
+                else A.render_health(res))
+        assert "verify_margin_data" in text
+        assert "stale_margin_data" in text
+
+    def test_the_dated_raw_margin_evidence_still_stands(self):
+        """Debt and the broker's own displayed buffer are READINGS, not
+        conclusions, so they are reported with their staleness disclosed."""
+        res, _ms, _val = self._result(STALE)
+        assert res["margin"]["debt"] == 200.0
+        assert res["margin"]["buffer_pct"] == 60.0
+
+    def test_a_usable_observation_still_produces_a_real_state(self):
+        """The complement: this withholds nothing when the reading is current."""
+        res, ms, _val = self._result(FRESH)
+        assert ms["usable"] is True
+        assert res["margin"]["net_equity"] is not None
+        assert res["margin"]["leverage_current"] is not None
+
+    def test_margin_state_py_still_has_exactly_four_states(self):
+        """The advisory is NOT a fifth state value.
+
+        Widening `margin_state.py`'s own vocabulary would let an unavailability
+        marker travel anywhere a real state can. It stays four.
+        """
+        import margin_state as MS
+        assert MS.STATES == ("NORMAL", "CAUTION", "RESTRICTED", "FORCED_DELEVER")
+
+    def test_removing_the_usable_gate_makes_this_class_fail(self):
+        """MUTATION PROBE."""
+        src = inspect.getsource(A.main)
+        assert "_classifiable and bool(margin_state" in src
