@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import ast
 import collections
-import copy
 import datetime
 import textwrap
 import hashlib
@@ -347,8 +346,10 @@ WS0014 = _ws0014()
 _ANCHOR_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
 
-#: A string literal is a LAWFUL ANCHOR only if it looks like one. Everything else
-#: is operative expected text and must survive normalization untouched.
+#: A string value is an ANCHOR CANDIDATE only if it has one of these complete,
+#: domain-valid forms. Shape categorizes a registry endpoint; it never authorizes
+#: substitution. Every value remains exact unless its own assertion occurrence is
+#: explicitly registered below.
 #:
 #: Independent review reproduced why this distinction is load-bearing. The
 #: superseded normaliser abstracted EVERY string, so
@@ -361,12 +362,9 @@ _ANCHOR_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
 #:
 #: normalized identically -- a substantive Stage-1 safety assertion could be made
 #: vacuous with the inventory reporting no loss at all. These patterns are
-#: FAIL-CLOSED: a string that does not match one is preserved, so an unrecognised
-#: form is protected rather than silently abstracted.
-#: Anchor CATEGORIES, each with its own placeholder. Independent review required
-#: that recognized values not all collapse to one universal token: doing so makes
-#: a decision id interchangeable with a date, and a determination string with a
-#: merge SHA. Each category abstracts only within itself.
+#: FAIL-CLOSED: a string that does not match one cannot be a registry endpoint.
+#: Categories also prevent cross-domain endpoint pairings: a decision id cannot
+#: pair with a date, nor a determination string with a merge SHA.
 _ANCHOR_CATEGORIES = (
     # NUMBER FIRST, deliberately. A digits-only token is an IDENTIFIER -- a PR,
     # run, job, review or comment number -- not a commit SHA. Independent review
@@ -405,15 +403,14 @@ def _is_valid_date_or_timestamp(text: str) -> bool:
     SHAPE IS NOT A DOMAIN. Independent review 5093500583 demonstrated the gap
     directly: the previous check validated only ``text[:10]``, so
     ``2026-08-27T99:99:99Z`` -- a well-shaped string whose hour, minute and
-    second are all impossible -- was accepted as a DATE anchor and became
-    abstractable. Each component is now checked against its own range:
+    second are all impossible -- was accepted as a DATE anchor candidate. Each
+    component is now checked against its own range:
 
     * the calendar date must be real (``2026-02-30`` is not);
     * hour 0-23, minute 0-59, second 0-59;
     * a UTC offset's own hour 0-23 and minute 0-59.
 
-    Anything else is not an anchor and is therefore compared VERBATIM, which is
-    the fail-closed direction.
+    Anything else cannot be a registered endpoint and is compared VERBATIM.
     """
     m = _DATETIME_SHAPE.match(text)
     if m is None:
@@ -443,9 +440,10 @@ def _is_valid_date_or_timestamp(text: str) -> bool:
 def _anchor_category(text: str) -> str | None:
     """Which anchor category this exact string belongs to, or None.
 
-    FAIL-CLOSED. A string matching no category is not an anchor and is preserved
-    verbatim, so an unrecognised form is protected rather than abstracted. The
-    empty string is never an anchor -- it is the vacuous-``in`` bypass itself.
+    FAIL-CLOSED. A string matching no category cannot be a registry endpoint and
+    is preserved verbatim. A matching category is candidate evidence only; file
+    and assertion identity still decide authorization. The empty string is never
+    an anchor -- it is the vacuous-``in`` bypass itself.
     """
     t = text.strip()
     if not t:
@@ -455,7 +453,7 @@ def _anchor_category(text: str) -> str | None:
             continue
         if name == "DATE" and not _is_valid_date_or_timestamp(t):
             # A well-shaped string that is not a real date is not an anchor.
-            # Fail closed: it stays verbatim rather than becoming abstractable.
+            # Fail closed: it stays verbatim and cannot be a registry endpoint.
             return None
         return name
     return None
@@ -473,7 +471,7 @@ def _anchor_category(text: str) -> str | None:
 #:
 #: An entry is therefore ``(relpath, pinned_fingerprint_sha256, predecessor,
 #: successor, category)``. The identity is the exact FILE plus the exact PINNED
-#: ASSERTION -- its full normalized AST fingerprint, digested -- so a second
+#: ASSERTION -- its exact AST fingerprint, digested -- so a second
 #: assertion in the same file using the same values has a different fingerprint,
 #: matches no entry, and stays verbatim. Each entry is consumed AT MOST ONCE.
 #:
@@ -516,6 +514,70 @@ BARE_LITERAL_REANCHORS = (
 )
 
 
+#: THE COMPLETE, ENUMERATED SET of lawful NAMED-anchor re-anchors, identified by
+#: assertion occurrence rather than by a shared name role or raw value.
+#:
+#: Review 5094619011 demonstrated that ``(role, category)`` is only a candidate
+#: relationship, never an occurrence identity. Globally normalising every name in
+#: that slot let one legitimate current-anchor move hide a distinct historical
+#: negative-pin rewrite. Globally normalising the values bound to those names also
+#: let the same move hide an unrelated raw-literal rewrite.
+#:
+#: An entry is ``(relpath, pinned_fingerprint_sha256, predecessor_name,
+#: predecessor_value, successor_name, successor_value, category)``. It is honoured
+#: only when the exact declarations occur on the correct sides of the delta, the
+#: exact pinned assertion has the registered fingerprint, and replacing the
+#: predecessor NAME in that assertion produces an exact live assertion. Each entry
+#: is consumed at most once. Raw literal values are never substituted.
+#:
+#: These eleven entries are derived from the pinned corpus with all name and value
+#: normalisation disabled: eight MAIN_SHA sites and three ACTIVE_PR sites. No other
+#: unprotected predecessor assertion requires a named transition.
+NAMED_ANCHOR_REANCHORS = (
+    ("test_level1_stage1_activation_authorization.py",
+     "f6a3da01089237bfcb3a2c9f8f2a53e91004e350f004488fac0f14f9e3c08fc6",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_activation_authorization.py",
+     "754cc03b460b6177bab460349422c46f2d153b056601840d18add8c5ff428031",
+     "XASSET0060_ACTIVE_PR", 361, "XASSET0061_ACTIVE_PR", 362, "NUMBER"),
+    ("test_level1_stage1_post_correction_rebinding.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_correction_rebinding_authorization.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_rebinding_drift_authorization.py",
+     "f6a3da01089237bfcb3a2c9f8f2a53e91004e350f004488fac0f14f9e3c08fc6",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_rebinding_drift_authorization.py",
+     "754cc03b460b6177bab460349422c46f2d153b056601840d18add8c5ff428031",
+     "XASSET0060_ACTIVE_PR", 361, "XASSET0061_ACTIVE_PR", 362, "NUMBER"),
+    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_readiness_verification_authorization.py",
+     "f6a3da01089237bfcb3a2c9f8f2a53e91004e350f004488fac0f14f9e3c08fc6",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_readiness_verification_authorization.py",
+     "754cc03b460b6177bab460349422c46f2d153b056601840d18add8c5ff428031",
+     "XASSET0060_ACTIVE_PR", 361, "XASSET0061_ACTIVE_PR", 362, "NUMBER"),
+)
+
+
 #: The instance-distinguishing token a constant name carries -- ``XASSET0061_``,
 #: ``OLD_``, ``B_``. Stripping it leaves the SEMANTIC ROLE: the slot the value
 #: occupies, independent of which decision instance owns it.
@@ -541,7 +603,7 @@ def _module_anchor_constants(source: str) -> dict:
     Category comes from the BOUND VALUE, never from typography:
     ``STEP10_DETERMINATION = "STEP_10_NO_DRIFT"`` is not an anchor at all, while
     ``BOUND_MERGE_SHA = "413e033a..."`` is a SHA. A name bound to anything
-    non-literal has no category and is never abstracted.
+    non-literal has no category and cannot be a registered endpoint.
 
     EVERY assignment is scanned, not only module-level ones: several predecessor
     suites bind their re-anchor constants inside the test function that uses
@@ -578,164 +640,44 @@ def _module_anchor_categories(source: str) -> dict:
     return {n: cat for n, (cat, _v) in _module_anchor_constants(source).items()}
 
 
-def _authorized_reanchor(pinned_src: str, live_src: str):
-    """The substitutions THIS DELTA's own predecessor->successor re-anchor authorizes.
-
-    Returns ``(name_placeholders, pinned_value_placeholders,
-    live_value_placeholders)`` -- the value maps differ deliberately; see below.
-
-    Independent review 5092359752 required that a permitted substitution be tied
-    to "the specific predecessor->successor anchor and semantic role actually
-    re-anchored", not granted "merely because two values share a broad category".
-    Two defects made the previous rule too generous:
-
-    * every recognized STRING LITERAL was normalized unconditionally, so two
-      values that no delta had re-anchored were interchangeable anyway -- the
-      real-corpus bypass, where a required independent-review id was swapped for
-      an unrelated merge SHA already present in the same text;
-    * a whole CATEGORY went into play the moment any constant of that category
-      was added, so unrelated roles of that category collided.
-
-    The evidence required here is a genuine PAIRING: the delta ADDED a constant
-    whose ``(role, category)`` slot the pinned side already occupied. In this
-    corpus a lawful re-anchor adds the successor and KEEPS the predecessor as
-    historical evidence, so the added constant -- not a removed one -- is the
-    signal. Only the names and the exact values in such a paired slot become
-    interchangeable, and only with each other.
-
-    With no added constant, or an added constant whose slot the predecessor never
-    occupied, NOTHING is interchangeable: literals and names alike are compared
-    verbatim. That is the fail-closed default.
-
-    THE RESIDUAL THIS ONCE CARRIED IS GONE. It used to read: bare literals carry
-    no name, so they carry no role, so within a re-anchored category a
-    predecessor literal could in principle be matched by an unrelated successor.
-    Independent review 5093500583 showed that residual was not theoretical -- it
-    laundered a real unrelated assertion. Bare literals are therefore no longer
-    substituted here AT ALL. They are resolved per OCCURRENCE in
-    :func:`_lost_assertions`, against an enumerated registry keyed by file and by
-    exact pinned-assertion fingerprint, each usable once. Named constants, which
-    do carry a role, remain bound to their exact ``(role, category)`` slot.
-    """
-    pinned = _module_anchor_constants(pinned_src)
-    live = _module_anchor_constants(live_src)
-    slots = set()
-    for name, (cat, _v) in live.items():
-        if name in pinned:
-            continue                       # not added by this delta
-        role = _anchor_role(name)
-        for pname, (pcat, _pv) in pinned.items():
-            if pname != name and pcat == cat and _anchor_role(pname) == role:
-                slots.add((role, cat))     # a real predecessor->successor pairing
-                break
-    names, pinned_values, live_values = {}, {}, {}
-
-    # ---- bare-literal re-anchors are NOT handled by a value map at all --------
-    # They are resolved per OCCURRENCE, in `_lost_assertions()`, against
-    # `BARE_LITERAL_REANCHORS`. A value map cannot express occurrence identity:
-    # mapping `"2026-08-27" -> <ph>` rewrites EVERY assertion containing that
-    # value, which is precisely the laundering independent review 5093500583
-    # reproduced. So no literal enters `pinned_values`/`live_values` here; those
-    # carry only NAMED-constant substitutions, which are role-bound and symmetric.
-
-    # ---- named-slot re-anchors, applied LAST so a role-specific pairing wins ----
-    # These ARE symmetric, because a name carries a role: only the constants whose
-    # ``(role, category)`` slot this delta actually re-anchored are in play, so
-    # two unrelated same-category names never collide.
-    for source_map in (pinned, live):
-        for name, (cat, val) in source_map.items():
-            slot = (_anchor_role(name), cat)
-            if slot not in slots:
-                continue
-            ph = f"<REANCHOR:{slot[0]}:{slot[1]}>"
-            names[name] = ph
-            if isinstance(val, str):
-                pinned_values[val] = ph
-                live_values[val] = ph
-    return names, pinned_values, live_values
-
-
-def _authorized_reanchor_values(pinned_src: str, live_src: str) -> dict:
-    """The LIVE-side value substitutions this delta authorized, for probes."""
-    return _authorized_reanchor(pinned_src, live_src)[2]
-
-
-class _AnchorNormaliser(ast.NodeTransformer):
-    """Abstract ONLY the substitutions this delta's own re-anchor authorized.
-
-    Abstracted:
-
-    * a constant NAME, and the exact string VALUE it is bound to, when this delta
-      added a successor constant in the same ``(role, category)`` slot the pinned
-      side already occupied.
-
-    Preserved -- changing any of these changes what is asserted:
-
-    * every string literal the delta did not re-anchor, anchor-shaped or not.
-      A SHA is not abstracted just for looking like a SHA: review 5092359752
-      showed a required review-id assertion swapped for an unrelated merge SHA
-      already present in the same text, with the inventory unchanged;
-    * every constant name outside an authorized slot -- typography is not
-      evidence, and neither is sharing a broad category;
-    * attribute and method names -- ``startswith`` vs ``endswith``;
-    * comparison and boolean operators, numeric literals, call structure;
-    * f-strings, which are simply walked, so their interpolated names and literal
-      parts each get exactly the treatment above rather than collapsing whole.
-    """
-
-    def __init__(self, name_placeholders=None, value_placeholders=None):
-        super().__init__()
-        self._names = name_placeholders or {}
-        self._values = value_placeholders or {}
-
-    def visit_Constant(self, node):
-        if isinstance(node.value, str):
-            ph = self._values.get(node.value)
-            if ph is not None:
-                return ast.copy_location(ast.Constant(value=ph), node)
-        return node
-
-    def visit_Name(self, node):
-        ph = self._names.get(node.id)
-        if ph is not None:
-            return ast.copy_location(ast.Name(id=ph, ctx=node.ctx), node)
-        return node
+def _anchor_value_category(value) -> str | None:
+    """The anchor category of an exact constant value, with bool excluded."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, str):
+        return _anchor_category(value)
+    if isinstance(value, int):
+        return "NUMBER"
+    return None
 
 
 def _is_lawful_anchor(text: str) -> bool:
     """Whether this string has the SHAPE of a value a re-anchor may change.
 
-    Shape alone no longer authorizes anything -- :func:`_authorized_reanchor`
-    requires the delta's own predecessor->successor pairing -- but the predicate
-    is still the honest statement of which forms are anchor-shaped at all, and
-    the empty string and operative prose are not among them.
+    Shape alone no longer authorizes anything -- the occurrence registries require
+    exact file, fingerprint and endpoint evidence. This predicate states only
+    which forms are anchor-shaped at all; empty strings and operative prose are
+    not among them.
     """
     return _anchor_category(text) is not None
 
 
-def _assertion_inventory(source: str, name_placeholders=None,
-                         value_placeholders=None) -> collections.Counter:
-    """The suite's assertions as NORMALIZED SEMANTIC FINGERPRINTS.
+def _assertion_inventory(source: str) -> collections.Counter:
+    """The suite's assertions as exact semantic fingerprints.
 
     A ``Counter``, so removing one of several identical assertions is still a loss.
     ``assert True``/``assert 1`` are excluded: they are the shape a silent gutting
     takes, and counting them would let a weakened file keep its total.
+
+    No name or literal is normalized here. Lawful moving anchors are handled only
+    by the occurrence registries in :func:`_lost_assertions`; keeping the general
+    inventory exact prevents a registry from becoming a global substitution map.
     """
-    return collections.Counter(
-        relaxed for _strict, relaxed in _assertion_pairs(
-            source, name_placeholders, value_placeholders))
+    return collections.Counter(_assertion_fingerprints(source))
 
 
-def _assertion_pairs(source: str, name_placeholders=None, value_placeholders=None):
-    """``[(verbatim_fingerprint, relaxed_fingerprint)]`` for each real assertion.
-
-    The verbatim form abstracts NOTHING but authorized constant NAMES (which are
-    role-bound and symmetric). The relaxed form additionally applies the value
-    substitutions this delta authorized. Keeping both is what lets
-    :func:`_lost_assertions` try the strict match first and fall back to an
-    authorized re-anchor only for what is genuinely missing -- so an assertion
-    that simply stayed put is never mistaken for one that moved.
-    """
+def _assertion_fingerprints(source: str) -> list[str]:
+    """Exact AST fingerprints for every non-vacuous assertion in ``source``."""
     out = []
     for node in ast.walk(ast.parse(source)):
         if not isinstance(node, ast.Assert):
@@ -743,11 +685,7 @@ def _assertion_pairs(source: str, name_placeholders=None, value_placeholders=Non
         test = node.test
         if isinstance(test, ast.Constant) and bool(test.value) is True:
             continue          # vacuous by construction
-        strict = _AnchorNormaliser(name_placeholders, None).visit(
-            copy.deepcopy(test))
-        relaxed = _AnchorNormaliser(name_placeholders, value_placeholders).visit(
-            copy.deepcopy(test))
-        out.append((ast.dump(strict), ast.dump(relaxed)))
+        out.append(ast.dump(test))
     return out
 
 
@@ -757,7 +695,7 @@ def _fingerprint_digest(fingerprint: str) -> str:
 
 
 def _registered_occurrences(relpath):
-    """The lawful transitions registered for THIS FILE, each usable once.
+    """The lawful bare-literal transitions for THIS FILE, each usable once.
 
     Returns ``{pinned_fingerprint_digest: [(predecessor, successor, category), ...]}``.
     With no relpath -- a synthetic comparison, or a caller that did not say which
@@ -773,6 +711,48 @@ def _registered_occurrences(relpath):
     return out
 
 
+def _registered_named_occurrences(relpath, pinned_src: str, live_src: str):
+    """The lawful named transitions for this exact file and exact delta.
+
+    A registry row is inert unless both endpoint declarations and their values
+    match exactly, the successor is genuinely new, the predecessor is retained,
+    and the two names have the same candidate role and category. Those checks
+    validate the row; only its file plus pinned-assertion digest authorizes use.
+    """
+    out = {}
+    if not relpath:
+        return out
+    pinned = _module_anchor_constants(pinned_src)
+    live = _module_anchor_constants(live_src)
+    for (rel, digest, old_name, old_value, new_name, new_value,
+         category) in NAMED_ANCHOR_REANCHORS:
+        if rel != relpath:
+            continue
+        if old_name == new_name or _anchor_role(old_name) != _anchor_role(new_name):
+            continue
+        if (_anchor_value_category(old_value) != category
+                or _anchor_value_category(new_value) != category):
+            continue
+        if pinned.get(old_name) != (category, old_value):
+            continue
+        if new_name in pinned:                 # the successor must be introduced
+            continue
+        if live.get(old_name) != (category, old_value):
+            continue                           # historical predecessor retained
+        if live.get(new_name) != (category, new_value):
+            continue
+        out.setdefault(digest, []).append(
+            (old_name, old_value, new_name, new_value, category))
+    return out
+
+
+def _rename_in_fingerprint(fingerprint: str, old_name: str, new_name: str) -> str:
+    """Rename exactly one identifier spelling inside an assertion fingerprint."""
+    old = f"Name(id={old_name!r}, ctx=Load())"
+    new = f"Name(id={new_name!r}, ctx=Load())"
+    return fingerprint.replace(old, new)
+
+
 def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
     """Fingerprints asserted when pinned that are no longer asserted now.
 
@@ -781,66 +761,70 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
     1. **Verbatim.** An assertion still present unchanged is preserved. Nothing
        about it is abstracted, so a negative pin that legitimately kept its own
        literal matches its own twin and never reaches a later stage.
-    2. **Named-constant re-anchor.** A constant whose ``(role, category)`` slot
-       this delta actually re-anchored may be substituted, symmetrically.
+    2. **Registered named-anchor OCCURRENCE.** A still-unmatched assertion is
+       looked up by ``(relpath, its own fingerprint digest)``. Its exact declared
+       predecessor name/value may become only the registered successor name/value.
     3. **Registered literal OCCURRENCE.** A still-unmatched pinned assertion is
        looked up by ``(relpath, its own fingerprint digest)``. Only if THIS EXACT
        ASSERTION is registered may its predecessor literal be rewritten to the
        registered successor -- and then the result must appear verbatim among the
        live assertions. Each registration is consumed AT MOST ONCE.
 
-    Stage 3 is where independent review 5093500583's finding is answered. The
-    superseded mechanism mapped registered VALUES through a substitution map,
+    Stages 2 and 3 answer reviews 5094619011 and 5093500583 respectively. The
+    former global named-slot mechanism normalized every same-role name and every
+    raw literal equal to one of their values. One lawful move could therefore
+    hide a distinct negative-pin or literal rewrite. Named anchors now use the
+    same file/assertion identity and single-use rule as bare literals, while raw
+    literal values never enter a substitution map at all.
+
+    The former literal mechanism mapped registered VALUES through a substitution map,
     which rewrote every assertion containing them: one lawful WS-0014 date
     transition therefore laundered an unrelated ``freeze["cutoff"]`` assertion
     using the same pair. A value is not an identity. An assertion is -- so the
     unrelated occurrence now has a different fingerprint, matches no
     registration, stays verbatim, and is reported.
     """
-    names, pinned_values, live_values = _authorized_reanchor(pinned_src, live_src)
-    pinned_pairs = _assertion_pairs(pinned_src, names, pinned_values)
-    live_pairs = _assertion_pairs(live_src, names, live_values)
-    live_strict = collections.Counter(st for st, _rx in live_pairs)
-    live_relaxed = collections.Counter(rx for _st, rx in live_pairs)
-    registered = _registered_occurrences(relpath)
+    pinned_fingerprints = _assertion_fingerprints(pinned_src)
+    live_fingerprints = collections.Counter(_assertion_fingerprints(live_src))
+    named_registered = _registered_named_occurrences(relpath, pinned_src, live_src)
+    bare_registered = _registered_occurrences(relpath)
     # Each registration is spent once. Copying the lists makes that explicit and
     # keeps the module-level registry immutable.
-    remaining = {d: list(v) for d, v in registered.items()}
+    named_remaining = {d: list(v) for d, v in named_registered.items()}
+    bare_remaining = {d: list(v) for d, v in bare_registered.items()}
 
     # STAGE 1 -- exact match, and it is deliberately FIRST. An assertion that is
     # present unchanged is explained by itself, never by a re-anchor or a
     # registration, so nothing downstream can be spent on it.
     #
-    # Honest note on its current strength: since this correction stopped
-    # normalizing bare literals, an assertion carrying no named anchor constant
-    # has identical strict and relaxed forms, so Stage 2 would accept exactly
-    # what Stage 1 accepts for those. Stage 1 is therefore SUBSUMED today rather
-    # than independently load-bearing -- it is retained because strict-before-
-    # relaxed is the correct precedence, and because it becomes load-bearing
-    # again the moment any future normalisation is reintroduced.
     lost, deferred = [], []
-    for strict, relaxed in pinned_pairs:
-        if live_strict[strict] > 0:
-            live_strict[strict] -= 1
-            live_relaxed[relaxed] -= 1     # that live assertion is now spoken for
+    for strict in pinned_fingerprints:
+        if live_fingerprints[strict] > 0:
+            live_fingerprints[strict] -= 1
         else:
-            deferred.append((strict, relaxed))
+            deferred.append(strict)
 
+    # STAGE 2 -- exact registered named occurrence. A role can validate endpoint
+    # compatibility, but it never supplies identity and never creates a map.
     still = []
-    for strict, relaxed in deferred:
-        if live_relaxed.get(relaxed, 0) > 0:
-            live_relaxed[relaxed] -= 1     # a named-constant re-anchor explains it
-            # Spend the STRICT slot too. A live assertion that has already
-            # explained one pinned assertion must not remain available to the
-            # registry stage below; without this the two stages could each
-            # count the same live assertion once.
-            if live_strict.get(strict, 0) > 0:
-                live_strict[strict] -= 1
-        else:
+    for strict in deferred:
+        entries = named_remaining.get(_fingerprint_digest(strict)) or []
+        matched = False
+        for i, (old_name, _old_value, new_name, _new_value, _cat) in enumerate(entries):
+            expected = _rename_in_fingerprint(strict, old_name, new_name)
+            if expected == strict:
+                continue
+            if live_fingerprints.get(expected, 0) > 0:
+                live_fingerprints[expected] -= 1
+                entries.pop(i)
+                matched = True
+                break
+        if not matched:
             still.append(strict)
 
+    # STAGE 3 -- exact registered bare-literal occurrence.
     for strict in still:
-        entries = remaining.get(_fingerprint_digest(strict)) or []
+        entries = bare_remaining.get(_fingerprint_digest(strict)) or []
         matched = False
         for i, (old, new, cat) in enumerate(entries):
             # The registry's own claim about these values must still hold, so a
@@ -856,8 +840,8 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
                 # property of the identity scheme, not of this loop, and a future
                 # change to the identity scheme would make it load-bearing again.
                 continue
-            if live_strict.get(expected, 0) > 0:
-                live_strict[expected] -= 1
+            if live_fingerprints.get(expected, 0) > 0:
+                live_fingerprints[expected] -= 1
                 entries.pop(i)             # CONSUMED -- one registration, one use
                 matched = True
                 break
@@ -869,8 +853,9 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
 #: DIRECT PROTECTED PREDICATES (PHQ-2026-07, second correction).
 #:
 #: Independent review's prescription for this defect class offered two mechanisms:
-#: direct assertions for the required protected predicates, OR a normalized semantic
-#: inventory abstracting only lawful anchor substitutions. Both are used here, and the
+#: direct assertions for the required protected predicates, OR a semantic assertion
+#: inventory admitting only occurrence-registered anchor substitutions. Both are used
+#: here, and the
 #: split between them is not arbitrary -- it follows a real property of the corpus.
 #:
 #: The inventory answers "did this suite lose an assertion since its baseline?". That
@@ -884,7 +869,7 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
 #: must still be asserted. That is a semantic claim, not a count, hash or shape total. It
 #: is immune to a lawful re-anchor of some OTHER assertion, and it still catches the
 #: equal-shape predicate swap -- ``startswith`` and ``endswith`` are different attribute
-#: names, which the normaliser deliberately preserves.
+#: names, which the exact fingerprints deliberately preserve.
 PROTECTED_PREDICATES = {
     "test_level1_stage1_formal_disposition_parser_correction.py": (
         'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")',
@@ -929,9 +914,9 @@ PROTECTED_PREDICATES = {
 def _unasserted_predicates(relpath: str, live_src: str) -> list[str]:
     """Which of ``relpath``'s named protected predicates are no longer asserted.
 
-    Membership is decided on the NORMALIZED form, not on the source text, so a
-    lawful message change or anchor substitution inside the predicate still counts
-    as asserted -- while a different operator, attribute or call structure does not.
+    Membership requires both the exact semantic fingerprint and the protected
+    source text. A different operator, attribute, call structure, name, or literal
+    does not count as the required predicate.
     """
     live = _assertion_inventory(live_src)
     missing = []
@@ -940,12 +925,12 @@ def _unasserted_predicates(relpath: str, live_src: str) -> list[str]:
         assert want, f"a protected predicate must itself parse to an assertion: {text}"
         # TWO independent conditions, because each closes the other's blind spot.
         #
-        # The normalized form catches a structural weakening -- a different operator,
+        # The exact semantic form catches a structural weakening -- a different operator,
         # attribute, call shape or arity -- including the equal-shape ``startswith`` /
         # ``endswith`` swap independent review named.
         #
         # Verbatim presence catches what abstraction deliberately cannot: two protected
-        # predicates in one suite may normalize to the SAME form when they differ only
+        # predicates in one suite may have the SAME required structure when they differ only
         # in a string anchor (``"category.strip()"`` and ``"category.strip("``), so
         # gutting one still leaves the form present in the multiset. Requiring the
         # predicate's own text closes that, and constrains nothing else in the file --
@@ -1488,8 +1473,9 @@ class TestThisFilingMutatesNothingLoadBearing:
         RE-ANCHORED AGAIN (PHQ-2026-07). The first correction compared assertion
         COUNTS. Independent review showed a count is blind to a same-count weakening:
         replacing a specific negative check with a bare truthiness test loses the
-        property while the total is unchanged. What is enforced now is the normalized
-        SEMANTIC INVENTORY -- every assertion this suite made when pinned must still
+        property while the total is unchanged. What is enforced now is the exact
+        SEMANTIC INVENTORY plus occurrence-specific transition registries -- every
+        assertion this suite made when pinned must still
         be made. Adding assertions is free, so a lawful later strengthening passes;
         losing or hollowing one does not.
         """
@@ -1606,7 +1592,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         Identical assertion count, identical AST SHAPE (a method call on an
         attribute of a call), and the weaker form ACCEPTS current catalog data --
         while losing the decision-ID/file binding completely: a row pointing at
-        another decision's ``.md`` file passes it. The normalized inventory must
+        another decision's ``.md`` file passes it. The semantic inventory must
         reject this, because the method NAME is operative and is not abstracted.
         """
         rel = "test_level1_stage1_formal_disposition_parser_correction.py"
@@ -1624,7 +1610,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert Path("GOV-0001-governance-architecture-adopted.md").name.endswith(".md")
         assert not Path(
             "GOV-0001-governance-architecture-adopted.md").name.startswith("XASSET-0056-")
-        # The normalized inventory must catch it.
+        # The semantic inventory must catch it.
         assert _lost_assertions(src, weakened), \
             "equal-shape predicate swap slipped through"
 
@@ -1633,8 +1619,9 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
 
         A predecessor lawfully re-anchored ``== XASSET0060_MAIN_SHA`` to
         ``== XASSET0061_MAIN_SHA`` and ADDED two assertions. An identity-based rule
-        calls that a loss; abstracting anchor NAMES and STRING literals -- and only
-        those -- does not.
+        calls that a loss; its two exact occurrence registrations permit only the
+        named current-anchor transitions, while the separate bare registry permits
+        only its exact date occurrence.
         """
         rel = "test_level1_stage1_activation_authorization.py"
         base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
@@ -1648,19 +1635,14 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
             "an unidentified comparison still authorized a literal substitution")
 
     def test_the_operative_parts_of_an_assertion_are_not_abstracted(self):
-        """Pin exactly WHAT the normaliser is allowed to ignore, and WHEN.
+        """Every name, value and operative expression is exact by default.
 
-        REWRITTEN (PHQ-2026-07, review 5092359752). The superseded version
-        asserted that anchor-SHAPED literals are interchangeable with no delta at
-        all -- ``one('v == "413e..."') == one('v == "3db9..."')``. That
-        expectation WAS the defect: it is unconditional literal normalization,
-        and it is what let a required review id be swapped for an unrelated merge
-        SHA already present in the same text. Shape is now necessary but never
-        sufficient; the delta's own evidence decides.
+        Rewritten again for review 5094619011. The general inventory performs no
+        normalization at all. Only an explicit file/assertion registry entry may
+        explain a moving anchor later in :func:`_lost_assertions`.
         """
-        def one(expr, names=None, values=None):
-            return _assertion_inventory(f"def f():\n    assert {expr}\n",
-                                        names, values)
+        def one(expr):
+            return _assertion_inventory(f"def f():\n    assert {expr}\n")
 
         # NOT abstracted WITHOUT a delta -- not even a perfectly anchor-shaped
         # value. This is the corrected contract, stated first because it is the
@@ -1671,30 +1653,6 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert one('i == "XASSET-0060"') != one('i == "XASSET-0061"')    # decision id
         assert one('b == "claude/one"') != one('b == "claude/two"')      # branch
 
-        # ABSTRACTED only when THIS DELTA introduced the successor value. The map
-        # below is what `_authorized_reanchor()` derives for a delta that added
-        # the second value of each pair.
-        for a, b, cat in (
-                ('"413e033ac33741829168762ab24d73327c047d4b"',
-                 '"3db918530b10ffc1423ba0b749b086e349a4901d"', "SHA"),
-                ('"2026-08-28"', '"2026-09-02"', "DATE"),
-                ('"XASSET-0060"', '"XASSET-0061"', "DECISION"),
-                ('"claude/one"', '"claude/two"', "BRANCH")):
-            ph = {a.strip('"'): f"<R:{cat}>", b.strip('"'): f"<R:{cat}>"}
-            assert one(f"v == {a}", None, ph) == one(f"v == {b}", None, ph), cat
-
-        # ...and even then each category keeps its OWN placeholder, so a
-        # cross-category swap is a change rather than a wash.
-        both = {"2026-09-02": "<R:DATE>", "XASSET-0061": "<R:DECISION>",
-                "claude/one": "<R:BRANCH>",
-                "413e033ac33741829168762ab24d73327c047d4b": "<R:SHA>"}
-        assert one('v == "2026-09-02"', None, both) != \
-               one('v == "XASSET-0061"', None, both)                    # date/decision
-        assert one('v == "claude/one"', None, both) != \
-               one('v == "2026-09-02"', None, both)                     # branch/date
-        assert one('v == "413e033ac33741829168762ab24d73327c047d4b"', None, both) != \
-               one('v == "claude/one"', None, both)                     # SHA/branch
-
         # A DIGITS-ONLY identifier is a NUMBER, never a SHA. Review 5092359752
         # showed the opposite ordering classifying the review id 4976985695 as a
         # SHA, which made it interchangeable with a real merge SHA.
@@ -1703,8 +1661,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert one('"4976985695" in d') != \
                one('"637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d')
 
-        # NOT abstracted by typography alone. Two SCREAMING_CASE names are only
-        # interchangeable when THIS delta re-anchored their shared ROLE.
+        # NOT abstracted by typography, role, or category alone.
         assert one("v == SHA_ALPHA") != one("v == SHA_BETA")
         assert one('x.startswith(f"{DECISION_ID}-")') != one('x.startswith(f"{OTHER}-")')
 
@@ -1755,8 +1712,8 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert not _is_lawful_anchor("")
         assert not _is_lawful_anchor("   ")
 
-    def test_only_contextually_lawful_anchor_shapes_are_abstracted(self):
-        """Pin the classifier itself, both directions.
+    def test_only_contextually_lawful_anchor_shapes_are_candidates(self):
+        """Pin the endpoint classifier itself, both directions.
 
         Fail-closed: an unrecognised string is PRESERVED. So the risk this test
         guards is the opposite one -- a pattern quietly widening until prose
@@ -1856,9 +1813,9 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
     def test_every_cross_role_substitution_is_caught(self, old_name, new_name, label):
         """Cross-category swaps are losses even when a re-anchor IS in play.
 
-        The delta below adds a new SHA constant, so SHA names are legitimately
-        interchangeable within it -- and that allowance must not leak into any
-        other category.
+        The delta below adds a new SHA constant, but no occurrence is registered.
+        Candidate-role or category evidence cannot authorize this assertion, and
+        cannot leak into any other category.
         """
         header = ('A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
                   'A_DATE = "2026-09-02"\n'
@@ -1873,19 +1830,20 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
                 + f"def f():\n    assert {new_name} in section\n")
         assert _lost_assertions(pinned, live), f"{label} was not caught"
 
-    def test_a_same_category_reanchor_in_the_same_delta_is_permitted(self):
-        """The complement: the lawful case the review names explicitly.
+    def test_a_same_category_reanchor_requires_a_registered_occurrence(self):
+        """A plausible role/category pair is not authority on its own.
 
-        A successor SHA constant added beside its predecessor, with the assertion
-        moved onto it, is a re-anchor -- not a weakening.
+        The synthetic delta has all the old global mechanism's candidate signals,
+        but no file/fingerprint registry row. It must therefore fail closed.
+        Positive controls for all eleven lawful corpus occurrences appear below.
         """
         pinned = ('OLD_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"\n'
                   "def f():\n    assert ws['sha'] == OLD_SHA\n")
         live = ('OLD_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"\n'
                 'NEW_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
                 "def f():\n    assert ws['sha'] == NEW_SHA\n")
-        assert not _lost_assertions(pinned, live), (
-            "a lawful same-category re-anchor was reported as a weakening")
+        assert _lost_assertions(pinned, live), (
+            "a same-category pair was accepted without an occurrence registration")
 
     def test_the_real_corpus_cross_domain_id_for_sha_swap_is_caught(self):
         """REQUIRED NEGATIVE CONTROL (PHQ-2026-07, review 5092359752).
@@ -1942,8 +1900,8 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         live = ('def f():\n'
                 '    assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d\n'
                 '    assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d\n')
-        assert _authorized_reanchor_values(pinned, live) == {}, (
-            "a delta that introduced nothing authorized a substitution")
+        assert _registered_occurrences(None) == {}, (
+            "a comparison without file identity unexpectedly had a literal registry")
         assert _lost_assertions(pinned, live), "the reused-value swap was not caught"
 
     def test_an_in_play_category_still_forbids_reusing_an_existing_value(self):
@@ -1973,11 +1931,11 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
                              for v in (o, n)}
         assert added_v not in registered_values, "this probe needs an UNregistered value"
         # No file identity, and no registered occurrence for these assertions
-        # under ANY file identity -- so nothing is abstractable.
+        # under ANY file identity -- so no substitution is authorized.
         assert _registered_occurrences(None) == {}
         for rel in sorted(PINNED_TEST_HASHES):
             for digest in _registered_occurrences(rel):
-                for st, _rx in _assertion_pairs(pinned, {}, {}):
+                for st in _assertion_fingerprints(pinned):
                     assert _fingerprint_digest(st) != digest, (
                         "this probe's own assertions must be UNregistered")
         assert _lost_assertions(pinned, live), (
@@ -2175,44 +2133,26 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         # ...and the composition, which is what callers actually see.
         assert _anchor_category(prose) is None
 
-    def test_a_literal_only_assertion_has_identical_strict_and_relaxed_forms(self):
-        """Pins the PREMISE behind two deliberately redundant defensive stages.
+    def test_the_general_inventory_never_normalizes_names_or_values(self):
+        """Only a registry occurrence may explain a changed name or literal.
 
-        Stage 1 (verbatim) and the strict-slot spend inside Stage 2 are both
-        currently UNOBSERVABLE: removing either changes no answer. That is not an
-        accident and it is not dead code -- it follows from this correction
-        having stopped normalising bare literals. An assertion carrying no NAMED
-        anchor constant therefore has the same strict and relaxed form, so the
-        stages cannot disagree about it.
-
-        This test states that premise directly. If a future change reintroduces
-        any literal normalisation, the premise breaks HERE -- loudly -- rather
-        than silently making two unexercised branches load-bearing again.
+        This directly pins the premise of the correction: the general assertion
+        inventory is exact. Adding a plausible successor declaration cannot make
+        either an unregistered named assertion or a raw-literal assertion equal.
         """
-        rel, _digest, old, _new, _cat = BARE_LITERAL_REANCHORS[0]
-        src = "def f():\n    " + self._REG_LINE.format(v=old) + "\n"
-        names, values, _lv = _authorized_reanchor(src, src)
-        pairs = _assertion_pairs(src, names, values)
-        assert pairs, "the probe's own target has moved"
-        for strict, relaxed in pairs:
-            assert strict == relaxed, (
-                "a literal-only assertion no longer has one canonical form; the "
-                "redundancy argument for Stages 1 and 2 no longer holds")
-        # ...and the counterpart, so this is not vacuously true everywhere: when a
-        # NAMED anchor constant is genuinely re-anchored by the delta, the relaxed
-        # form really does abstract it and the two forms really do diverge.
-        # The assertion must carry the VALUE, not the name: the strict form
-        # abstracts authorized NAMES, the relaxed form additionally abstracts the
-        # VALUES this delta re-anchored, so only a value-carrying assertion makes
-        # the two forms diverge.
-        pin = ("XASSET0060_MAIN_SHA = '637eaa30302f5a71f84ab1d215ecbd32c01399b5'\n"
-               "def g():\n    assert cfg == '637eaa30302f5a71f84ab1d215ecbd32c01399b5'\n")
-        liv = ("XASSET0061_MAIN_SHA = 'aa11223344556677889900112233445566778899'\n"
-               "def g():\n    assert cfg == 'aa11223344556677889900112233445566778899'\n")
-        n2, v2, _l2 = _authorized_reanchor(pin, liv)
-        assert n2, "the delta re-anchors a named constant, so a mapping must exist"
-        npairs = [p for p in _assertion_pairs(pin, n2, v2) if p[0] != p[1]]
-        assert npairs, "named-constant abstraction is no longer happening at all"
+        old, new = "a1" * 20, "b2" * 20
+        pinned = (f'OLD_MAIN_SHA = "{old}"\n'
+                  'def f(current, history):\n'
+                  '    assert current == OLD_MAIN_SHA\n'
+                  f'    assert history["required"] == "{old}"\n')
+        live = (f'OLD_MAIN_SHA = "{old}"\n'
+                f'NEW_MAIN_SHA = "{new}"\n'
+                'def f(current, history):\n'
+                '    assert current == NEW_MAIN_SHA\n'
+                f'    assert history["required"] == "{new}"\n')
+        assert _assertion_inventory(pinned) != _assertion_inventory(live)
+        lost = _lost_assertions(pinned, live)
+        assert len(lost) == 2, lost
 
     def test_date_prefixed_operative_prose_is_not_an_anchor(self):
         """REQUIRED NEGATIVE CONTROL B (PHQ-2026-07, review 5093063766).
@@ -2275,6 +2215,85 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         """
         assert _anchor_category(text) == expected, text
 
+    def test_the_named_registry_identifies_occurrences_not_roles_or_values(self):
+        """Eleven corpus transitions are individually file/fingerprint bound."""
+        assert len(NAMED_ANCHOR_REANCHORS) == 11
+        by_names = collections.Counter(
+            (old_name, new_name)
+            for _r, _d, old_name, _ov, new_name, _nv, _c
+            in NAMED_ANCHOR_REANCHORS)
+        assert by_names[("XASSET0060_MAIN_SHA", "XASSET0061_MAIN_SHA")] == 8
+        assert by_names[("XASSET0060_ACTIVE_PR", "XASSET0061_ACTIVE_PR")] == 3
+        seen = set()
+        for (rel, digest, old_name, old_value, new_name, new_value,
+             category) in NAMED_ANCHOR_REANCHORS:
+            assert rel in PINNED_TEST_HASHES, rel
+            assert re.fullmatch(r"[0-9a-f]{64}", digest), digest
+            assert _anchor_role(old_name) == _anchor_role(new_name)
+            assert _anchor_value_category(old_value) == category
+            assert _anchor_value_category(new_value) == category
+            assert old_name != new_name and old_value != new_value
+            assert (rel, digest) not in seen, f"{rel}/{digest[:12]} registered twice"
+            seen.add((rel, digest))
+
+    @pytest.mark.parametrize(
+        "rel,digest,old_name,old_value,new_name,new_value,category",
+        NAMED_ANCHOR_REANCHORS,
+        ids=[f"{r.split('_')[-2]}-{c}"
+             for r, _d, _on, _ov, _nn, _nv, c in NAMED_ANCHOR_REANCHORS])
+    def test_every_named_occurrence_is_real_and_lawful(
+            self, rel, digest, old_name, old_value, new_name, new_value, category):
+        """POSITIVE CONTROLS: every explicit lawful named occurrence."""
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        pinned_constants = _module_anchor_constants(base)
+        live_constants = _module_anchor_constants(live)
+        assert pinned_constants.get(old_name) == (category, old_value)
+        assert new_name not in pinned_constants
+        assert live_constants.get(old_name) == (category, old_value)
+        assert live_constants.get(new_name) == (category, new_value)
+        fingerprints = _assertion_fingerprints(base)
+        matched = [fp for fp in fingerprints if _fingerprint_digest(fp) == digest]
+        assert len(matched) == 1, (rel, digest, len(matched))
+        expected = _rename_in_fingerprint(matched[0], old_name, new_name)
+        assert expected != matched[0]
+        assert expected in _assertion_fingerprints(live)
+        registered = _registered_named_occurrences(rel, base, live)
+        assert (old_name, old_value, new_name, new_value, category) in registered[digest]
+        assert not _lost_assertions(base, live, rel)
+
+    def test_every_named_registration_is_exercised_by_the_corpus(self):
+        """Removing any named row makes its own pinned assertion a loss."""
+        saved = globals()["NAMED_ANCHOR_REANCHORS"]
+        try:
+            for entry in saved:
+                rel, digest = entry[:2]
+                base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+                live = (ROOT / rel).read_text(encoding="utf-8")
+                globals()["NAMED_ANCHOR_REANCHORS"] = tuple(
+                    candidate for candidate in saved if candidate != entry)
+                lost = _lost_assertions(base, live, rel)
+                assert any(_fingerprint_digest(fp) == digest for fp in lost), (
+                    f"the named {rel}/{digest[:12]} registration is never needed")
+        finally:
+            globals()["NAMED_ANCHOR_REANCHORS"] = saved
+
+    def test_a_named_registration_is_consumed_at_most_once(self):
+        """One named registration cannot explain two identical pinned copies."""
+        entry = NAMED_ANCHOR_REANCHORS[0]
+        rel, _digest, old_name, _ov, new_name, _nv, _cat = entry
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        old_line = next(
+            line for line in base.splitlines()
+            if "assert" in line and old_name in line and "!=" not in line)
+        new_line = old_line.replace(old_name, new_name)
+        lost = _lost_assertions(
+            base + "\n" + old_line.strip() + "\n",
+            live + "\n" + new_line.strip() + "\n", rel)
+        assert len(lost) == 1, lost
+        assert old_name in lost[0]
+
     def test_the_registry_identifies_transitions_by_occurrence_not_by_value(self):
         """The registry's own shape is the guarantee, so it is pinned.
 
@@ -2323,7 +2342,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert old in base and new in live, "the entry's own endpoints have moved"
         # The registered digest is a real pinned assertion of this file...
         digests = {_fingerprint_digest(st)
-                   for st, _rx in _assertion_pairs(base, {}, {})}
+                   for st in _assertion_fingerprints(base)}
         assert digest in digests, f"{rel}: registered digest matches no assertion"
         # ...and the whole file is clean once that occurrence is honoured.
         assert not _lost_assertions(base, live, rel), (
@@ -2392,7 +2411,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert registered, "this probe needs a file with a registration"
         pinned = 'def f(freeze):\n    assert freeze["cutoff"] == "2026-08-27"\n'
         live = 'def f(freeze):\n    assert freeze["cutoff"] == "2026-08-28"\n'
-        fp = _assertion_pairs(pinned, {}, {})[0][0]
+        fp = _assertion_fingerprints(pinned)[0]
         assert _fingerprint_digest(fp) not in registered, (
             "this probe's own assertion must be UNregistered")
         assert _lost_assertions(pinned, live, rel), (
@@ -2456,18 +2475,19 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         so removing this check changes no real result -- this correction's own
         mutation proof showed that too. It guards a future registry whose entry
         has gone stale: if a value stops being the category the entry claims, the
-        entry stops firing rather than abstracting something it no longer
+        entry stops firing rather than substituting something it no longer
         understands.
         """
-        # Prose is not an anchor of any category, so this entry must never fire.
-        stale = (("Merging it arms nothing", "Merging it arms Stage 1", "DATE"),)
-        monkeypatch.setattr(
-            sys.modules[__name__], "BARE_LITERAL_REANCHORS", stale)
         pinned = 'def f():\n    assert "Merging it arms nothing" in s\n'
         live = 'def f():\n    assert "Merging it arms Stage 1" in s\n'
-        assert _authorized_reanchor(pinned, live)[2] == {}, (
-            "a stale registry entry fired on values of the wrong category")
-        assert _lost_assertions(pinned, live), (
+        fingerprint = _assertion_fingerprints(pinned)[0]
+        rel = "synthetic_stale_registry.py"
+        # Prose is not an anchor of any category, so this otherwise exact entry
+        # must never fire.
+        stale = ((rel, _fingerprint_digest(fingerprint),
+                  "Merging it arms nothing", "Merging it arms Stage 1", "DATE"),)
+        monkeypatch.setattr(sys.modules[__name__], "BARE_LITERAL_REANCHORS", stale)
+        assert _lost_assertions(pinned, live, rel), (
             "a stale registry entry laundered an operative-prose rewrite")
 
     def test_a_registry_entry_whose_predecessor_is_absent_is_inert(self):
@@ -2484,33 +2504,75 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         pinned = 'def f():\n    assert a == "1999-01-01"\n'
         live = 'def f():\n    assert a == "2026-08-28"\n'
         # The registered predecessor is nowhere in `pinned`, so nothing is
-        # abstractable and the unrelated swap is a plain loss.
+        # replaceable and the unrelated swap is a plain loss.
         assert _lost_assertions(pinned, live)
 
-    def test_the_role_filter_on_the_substitution_map_is_load_bearing(self):
-        """Category alone must never admit a name into an authorized slot.
+    def test_registered_current_anchor_does_not_launder_a_historical_negative_pin(
+            self, monkeypatch):
+        """REQUIRED NEGATIVE 1 (review 5094619011).
 
-        DISCLOSED: the corresponding guard in the slot-DISCOVERY loop is
-        redundant -- removing it changes no observable result, because this
-        mapping filter already enforces the property. The mutation proof for this
-        correction showed that directly, so the probe was moved here, to the site
-        that actually decides. Documented rather than quietly dropped.
+        The first assertion is explicitly registered as the next lawful current
+        anchor. The distinct XASSET-0060 negative pin is not registered and must
+        be reported when it is rewritten to duplicate XASSET-0061.
         """
-        pinned = ('A_SHA = "' + "1" * 40 + '"\n'
-                  'UNRELATED_SHA = "' + "2" * 40 + '"\n'
-                  "def f():\n    assert x == UNRELATED_SHA\n")
-        live = ('A_SHA = "' + "1" * 40 + '"\n'
-                'UNRELATED_SHA = "' + "2" * 40 + '"\n'
-                'B_SHA = "' + "3" * 40 + '"\n'
-                "def f():\n    assert x == B_SHA\n")
-        names, _pv, _lv = _authorized_reanchor(pinned, live)
-        # B_SHA re-anchors the SHA role, so A_SHA/B_SHA are interchangeable...
-        assert names.get("A_SHA") == names.get("B_SHA") is not None
-        # ...and UNRELATED_SHA, a different role, is not admitted despite sharing
-        # the category with both.
-        assert "UNRELATED_SHA" not in names
-        assert _lost_assertions(pinned, live), (
-            "a different-role constant collided with a re-anchored one")
+        a, b, c = "a1" * 20, "b2" * 20, "c3" * 20
+        pinned = (f'XASSET0060_MAIN_SHA = "{a}"\n'
+                  f'XASSET0061_MAIN_SHA = "{b}"\n'
+                  'def f(ws):\n'
+                  '    assert ws["last_verified_main_sha"] == XASSET0061_MAIN_SHA\n'
+                  '    assert ws["last_verified_main_sha"] != XASSET0060_MAIN_SHA\n')
+        live = (f'XASSET0060_MAIN_SHA = "{a}"\n'
+                f'XASSET0061_MAIN_SHA = "{b}"\n'
+                f'XASSET0062_MAIN_SHA = "{c}"\n'
+                'def f(ws):\n'
+                '    assert ws["last_verified_main_sha"] == XASSET0062_MAIN_SHA\n'
+                '    assert ws["last_verified_main_sha"] != XASSET0061_MAIN_SHA\n')
+        current = _assertion_fingerprints(pinned)[0]
+        rel = "synthetic_next_current_anchor.py"
+        entry = ((rel, _fingerprint_digest(current),
+                  "XASSET0061_MAIN_SHA", b,
+                  "XASSET0062_MAIN_SHA", c, "SHA"),)
+        monkeypatch.setattr(sys.modules[__name__], "NAMED_ANCHOR_REANCHORS", entry)
+        registered = _registered_named_occurrences(rel, pinned, live)
+        assert list(registered) == [_fingerprint_digest(current)]
+        lost = _lost_assertions(pinned, live, rel)
+        assert len(lost) == 1, lost
+        assert "NotEq()" in lost[0] and "XASSET0060_MAIN_SHA" in lost[0]
+
+    def test_a_named_reanchor_never_normalizes_the_same_raw_values(self):
+        """REQUIRED NEGATIVE 2 (review 5094619011).
+
+        A real registered MAIN_SHA occurrence remains lawful, while an unrelated
+        raw literal using the identical old/new pair is reported.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        old = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+        new = "413e033ac33741829168762ab24d73327c047d4b"
+        pinned = base + f'\n\ndef _raw(history):\n    assert history["required"] == "{old}"\n'
+        current = live + f'\n\ndef _raw(history):\n    assert history["required"] == "{new}"\n'
+        lost = _lost_assertions(pinned, current, rel)
+        assert len(lost) == 1, lost
+        assert "required" in lost[0] and f"Constant(value={old!r})" in lost[0]
+
+    def test_a_named_registration_cannot_cover_a_second_same_role_occurrence(self):
+        """REQUIRED NEGATIVE 3 (review 5094619011).
+
+        The real current-anchor occurrence is registered. A second assertion
+        changed with the same names in parallel has a different fingerprint and
+        remains protected verbatim.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        pinned = (base + '\n\ndef _other(history):\n'
+                  '    assert history["required"] == XASSET0060_MAIN_SHA\n')
+        current = (live + '\n\ndef _other(history):\n'
+                   '    assert history["required"] == XASSET0061_MAIN_SHA\n')
+        lost = _lost_assertions(pinned, current, rel)
+        assert len(lost) == 1, lost
+        assert "required" in lost[0] and "XASSET0060_MAIN_SHA" in lost[0]
 
     def test_a_name_substitution_without_any_reanchor_is_always_caught(self):
         """Fail closed: with nothing re-anchored, NO name is interchangeable."""
@@ -2591,13 +2653,15 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
             'def f():\n    assert "2026-08-28 Merging it arms Stage 1" in s\n'), \
             "date-prefixed operative prose was rewritten unseen"
         # 11. an unregistered literal buys NOTHING, whatever else the delta adds
-        assert _authorized_reanchor_values(
+        unregistered_pinned = (
             'X = "1111111111111111111111111111111111111111"\n'
-            'def f():\n    assert a == "2222222222222222222222222222222222222222"\n',
+            'def f():\n    assert a == "2222222222222222222222222222222222222222"\n')
+        unregistered_live = (
             'X = "1111111111111111111111111111111111111111"\n'
             'Y = "3333333333333333333333333333333333333333"\n'
-            'def f():\n    assert a == "3333333333333333333333333333333333333333"\n'
-        ) == {}, "an unregistered literal was granted a substitution licence"
+            'def f():\n    assert a == "3333333333333333333333333333333333333333"\n')
+        assert _lost_assertions(unregistered_pinned, unregistered_live), (
+            "an unregistered literal was granted a substitution licence")
         # 12. A REGISTERED OCCURRENCE NEVER LAUNDERS THE SAME PAIR ELSEWHERE
         p337 = "test_level1_stage1_pr337_actor_evidence_correction_authorization.py"
         p337_base = _git("show", f"{BOUND_MERGE_SHA}:{p337}")
@@ -2629,11 +2693,9 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
     def test_the_protected_catalog_predicate_is_asserted_directly(self):
         """Belt and braces: the ONE named protected property, pinned by name.
 
-        The normalized inventory is a general mechanism, and its own docstring
-        discloses a residual limit -- a weakening expressed purely as a different
-        string anchor is indistinguishable from a lawful re-anchor. So the specific
-        predicate independent review named is ALSO asserted directly here, where no
-        abstraction applies.
+        The semantic inventory is the general mechanism. This specific predicate
+        is also asserted directly because it belongs to the protected-predicate
+        set rather than the occurrence-registered predecessor comparison.
         """
         rel = "test_level1_stage1_formal_disposition_parser_correction.py"
         src = (ROOT / rel).read_text(encoding="utf-8")
