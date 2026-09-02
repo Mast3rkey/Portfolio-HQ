@@ -525,10 +525,11 @@ BARE_LITERAL_REANCHORS = (
 #:
 #: An entry is ``(relpath, pinned_fingerprint_sha256, predecessor_name,
 #: predecessor_value, successor_name, successor_value, category)``. It is honoured
-#: only when the exact declarations occur on the correct sides of the delta, the
-#: exact pinned assertion has the registered fingerprint, and replacing the
-#: predecessor NAME in that assertion produces an exact live assertion. Each entry
-#: is consumed at most once. Raw literal values are never substituted.
+#: only when each endpoint name has exactly one binding occurrence in its source,
+#: that unique occurrence is the exact registered literal declaration, the exact
+#: pinned assertion has the registered fingerprint, and replacing the predecessor
+#: NAME in that assertion produces an exact live assertion. Each entry is consumed
+#: at most once. Raw literal values are never substituted.
 #:
 #: These eleven entries are derived from the pinned corpus with all name and value
 #: normalisation disabled: eight MAIN_SHA sites and three ACTIVE_PR sites. No other
@@ -597,42 +598,88 @@ def _anchor_role(name: str) -> str:
     return _INSTANCE_PREFIX.sub("", name, count=1)
 
 
+def _anchor_name_bindings(source: str) -> dict:
+    """``name -> [binding, ...]`` for every name binding occurrence in ``source``.
+
+    A binding is ``(category, literal_value)`` only for a direct, anchor-shaped
+    literal assignment. Every other binding form is represented by ``None``. The
+    list retains multiplicity across every lexical scope: a nested assignment is
+    still a second occurrence and makes the name ambiguous for registry purposes.
+
+    Counting *bindings*, rather than only recognised anchor assignments, is the
+    fail-closed detail. Otherwise a non-literal or differently-shaped shadow could
+    be ignored while an unrelated decoy supplies the registry's approved value.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return {}
+
+    direct_literals = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            targets, value = node.targets, node.value
+        elif isinstance(node, (ast.AnnAssign, ast.NamedExpr)):
+            targets, value = (node.target,), node.value
+        else:
+            continue
+        if not isinstance(value, ast.Constant) or isinstance(value.value, bool):
+            continue
+        literal = value.value
+        if isinstance(literal, str):
+            category = _anchor_category(literal)
+        elif isinstance(literal, int):
+            category = "NUMBER"
+        else:
+            category = None
+        if category is None:
+            continue
+        for target in targets:
+            if isinstance(target, ast.Name):
+                direct_literals[id(target)] = (category, literal)
+
+    out = collections.defaultdict(list)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+            out[node.id].append(direct_literals.get(id(node)))
+        elif isinstance(node, ast.arg):
+            out[node.arg].append(None)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            out[node.name].append(None)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                out[alias.asname or alias.name.split(".", 1)[0]].append(None)
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            out[node.name].append(None)
+        elif isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name:
+            out[node.name].append(None)
+        elif isinstance(node, ast.MatchMapping) and node.rest:
+            out[node.rest].append(None)
+    return dict(out)
+
+
 def _module_anchor_constants(source: str) -> dict:
-    """``name -> (category, value)`` for every constant bound to an anchor value.
+    """``name -> (category, value)`` for unambiguous anchor declarations.
 
     Category comes from the BOUND VALUE, never from typography:
     ``STEP10_DETERMINATION = "STEP_10_NO_DRIFT"`` is not an anchor at all, while
     ``BOUND_MERGE_SHA = "413e033a..."`` is a SHA. A name bound to anything
     non-literal has no category and cannot be a registered endpoint.
 
-    EVERY assignment is scanned, not only module-level ones: several predecessor
-    suites bind their re-anchor constants inside the test function that uses
-    them, and scanning only the module body missed those -- reporting a genuinely
-    lawful ``XASSET0060`` -> ``XASSET0061`` re-anchor as a weakening.
+    Every lexical scope is scanned because several predecessor suites bind their
+    re-anchor constants inside the test function that uses them. A name is
+    returned only when it has EXACTLY ONE binding occurrence anywhere and that
+    occurrence is a direct anchor-shaped literal assignment. A second binding is
+    ambiguity even when it repeats the same value: uniqueness is occurrence
+    evidence, and an unrelated nested decoy must never certify a module binding.
     """
-    out = {}
-    try:
-        tree = ast.parse(source)
-    except SyntaxError:
-        return out
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Constant):
-            continue
-        v = node.value.value
-        if isinstance(v, bool):
-            continue
-        if isinstance(v, str):
-            cat = _anchor_category(v)
-        elif isinstance(v, int):
-            cat = "NUMBER"          # a PR number is an anchor too
-        else:
-            cat = None
-        if cat is None:
-            continue
-        for tgt in node.targets:
-            if isinstance(tgt, ast.Name) and _ANCHOR_NAME.match(tgt.id):
-                out[tgt.id] = (cat, v)
-    return out
+    return {
+        name: bindings[0]
+        for name, bindings in _anchor_name_bindings(source).items()
+        if (_ANCHOR_NAME.match(name)
+            and len(bindings) == 1
+            and bindings[0] is not None)
+    }
 
 
 def _module_anchor_categories(source: str) -> dict:
@@ -2246,6 +2293,12 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         """POSITIVE CONTROLS: every explicit lawful named occurrence."""
         base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
         live = (ROOT / rel).read_text(encoding="utf-8")
+        pinned_bindings = _anchor_name_bindings(base)
+        live_bindings = _anchor_name_bindings(live)
+        assert pinned_bindings.get(old_name) == [(category, old_value)]
+        assert new_name not in pinned_bindings
+        assert live_bindings.get(old_name) == [(category, old_value)]
+        assert live_bindings.get(new_name) == [(category, new_value)]
         pinned_constants = _module_anchor_constants(base)
         live_constants = _module_anchor_constants(live)
         assert pinned_constants.get(old_name) == (category, old_value)
@@ -2261,6 +2314,91 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         registered = _registered_named_occurrences(rel, base, live)
         assert (old_name, old_value, new_name, new_value, category) in registered[digest]
         assert not _lost_assertions(base, live, rel)
+
+    def test_scope_shadow_cannot_supply_a_registered_endpoint_value(
+            self, monkeypatch):
+        """REQUIRED NEGATIVE (corrective review 5095693529).
+
+        The assertion resolves the module-level successor to an UNAUTHORIZED
+        value. An unrelated nested assignment then repeats the same NAME with the
+        APPROVED registry value. The superseded flattened collector kept only the
+        last value and certified the rewrite even though the executable assertion
+        used the other declaration.
+
+        The production collector rejects the ambiguous name. The final block also
+        installs the old flattened behaviour as a non-equivalent mutant and proves
+        that it restores the exact escape, making the uniqueness condition
+        observably load-bearing rather than a documentary precaution.
+        """
+        old = "a1" * 20
+        approved = "b2" * 20
+        unauthorized = "c3" * 20
+        pinned = (f'OLD_MAIN_SHA = "{old}"\n'
+                  'def f(ws):\n'
+                  '    assert ws["last_verified_main_sha"] == OLD_MAIN_SHA\n')
+        live = (f'OLD_MAIN_SHA = "{old}"\n'
+                f'NEW_MAIN_SHA = "{unauthorized}"\n'
+                'def f(ws):\n'
+                '    assert ws["last_verified_main_sha"] == NEW_MAIN_SHA\n'
+                'def decoy():\n'
+                f'    NEW_MAIN_SHA = "{approved}"\n')
+
+        namespace = {}
+        exec(live, namespace)
+        namespace["f"]({"last_verified_main_sha": unauthorized})
+        with pytest.raises(AssertionError):
+            namespace["f"]({"last_verified_main_sha": approved})
+
+        fingerprint = _assertion_fingerprints(pinned)[0]
+        rel = "synthetic_scope_shadow.py"
+        entry = ((rel, _fingerprint_digest(fingerprint),
+                  "OLD_MAIN_SHA", old,
+                  "NEW_MAIN_SHA", approved, "SHA"),)
+        monkeypatch.setattr(
+            sys.modules[__name__], "NAMED_ANCHOR_REANCHORS", entry)
+
+        assert _anchor_name_bindings(live)["NEW_MAIN_SHA"] == [
+            ("SHA", unauthorized), ("SHA", approved)]
+        assert "NEW_MAIN_SHA" not in _module_anchor_constants(live)
+        assert not _registered_named_occurrences(rel, pinned, live)
+        lost = _lost_assertions(pinned, live, rel)
+        assert lost == [fingerprint]
+
+        def flattened_mutant(source):
+            return {
+                name: binding
+                for name, bindings in _anchor_name_bindings(source).items()
+                for binding in bindings
+                if _ANCHOR_NAME.match(name) and binding is not None
+            }
+
+        assert flattened_mutant(live)["NEW_MAIN_SHA"] == ("SHA", approved)
+        monkeypatch.setattr(
+            sys.modules[__name__], "_module_anchor_constants", flattened_mutant)
+        assert _registered_named_occurrences(rel, pinned, live)
+        assert not _lost_assertions(pinned, live, rel), (
+            "the flattened mutant no longer reproduces the reviewed escape")
+
+    def test_repeated_same_value_binding_is_still_ambiguous(self, monkeypatch):
+        """Uniqueness is occurrence evidence, not value agreement."""
+        old, new = "a1" * 20, "b2" * 20
+        pinned = (f'OLD_MAIN_SHA = "{old}"\n'
+                  'def f(ws):\n'
+                  '    assert ws["last_verified_main_sha"] == OLD_MAIN_SHA\n')
+        live = (f'OLD_MAIN_SHA = "{old}"\n'
+                f'NEW_MAIN_SHA = "{new}"\n'
+                'def f(ws):\n'
+                '    assert ws["last_verified_main_sha"] == NEW_MAIN_SHA\n'
+                'def decoy():\n'
+                f'    NEW_MAIN_SHA = "{new}"\n')
+        fingerprint = _assertion_fingerprints(pinned)[0]
+        rel = "synthetic_same_value_shadow.py"
+        monkeypatch.setattr(
+            sys.modules[__name__], "NAMED_ANCHOR_REANCHORS",
+            ((rel, _fingerprint_digest(fingerprint),
+              "OLD_MAIN_SHA", old, "NEW_MAIN_SHA", new, "SHA"),))
+        assert "NEW_MAIN_SHA" not in _module_anchor_constants(live)
+        assert _lost_assertions(pinned, live, rel) == [fingerprint]
 
     def test_every_named_registration_is_exercised_by_the_corpus(self):
         """Removing any named row makes its own pinned assertion a loss."""
