@@ -24,10 +24,12 @@ from __future__ import annotations
 import ast
 import collections
 import copy
+import datetime
 import textwrap
 import hashlib
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -373,11 +375,32 @@ _ANCHOR_CATEGORIES = (
     # merge SHA and let a cross-domain weakening pass unseen.
     ("NUMBER",        re.compile(r"^\d+$")),
     ("SHA",           re.compile(r"^[0-9a-f]{7,40}$")),
-    ("DATE",          re.compile(r"^\d{4}-\d{2}-\d{2}")),
+    # A COMPLETE date or timestamp, anchored at BOTH ends. Independent review
+    # 5093063766 demonstrated the prefix form treating arbitrary operative prose
+    # as an anchor: "2026-08-27 Merging it arms nothing" classified as a DATE, so
+    # rewriting it to "2026-08-28 Merging it arms Stage 1" was invisible. A date
+    # is the whole string or it is not a date.
+    ("DATE",          re.compile(
+        r"^\d{4}-\d{2}-\d{2}"
+        r"(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$")),
     ("DECISION",      re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{4}(-\d{2})?$")),
     ("BRANCH",        re.compile(r"^claude/[A-Za-z0-9._\-/]+$")),
     ("DECISION_FILE", re.compile(r"^governance/decisions/[A-Za-z0-9._\-]+\.md$")),
 )
+
+
+def _is_real_calendar_date(text: str) -> bool:
+    """Whether the leading YYYY-MM-DD is an actual date on the calendar.
+
+    Shape is not enough: ``2026-13-45`` matches the pattern and is not a date.
+    Only the date part is validated -- the optional time part is already fully
+    constrained by the pattern.
+    """
+    try:
+        datetime.date.fromisoformat(text[:10])
+    except ValueError:
+        return False
+    return True
 
 
 def _anchor_category(text: str) -> str | None:
@@ -391,9 +414,40 @@ def _anchor_category(text: str) -> str | None:
     if not t:
         return None
     for name, pattern in _ANCHOR_CATEGORIES:
-        if pattern.match(t):
-            return name
+        if not pattern.match(t):
+            continue
+        if name == "DATE" and not _is_real_calendar_date(t):
+            # A well-shaped string that is not a real date is not an anchor.
+            # Fail closed: it stays verbatim rather than becoming abstractable.
+            return None
+        return name
     return None
+
+
+#: THE COMPLETE, ENUMERATED SET of bare-literal re-anchors this delta performs.
+#:
+#: Derived from the corpus, not invented: running the assertion inventory with
+#: literal substitution disabled entirely across every pinned predecessor suite
+#: reports exactly these two, and nothing else. (Every other reported loss falls
+#: in a suite covered by ``PROTECTED_PREDICATES``, whose assertions this filing
+#: lawfully REWROTE under its own already-reviewed G4 correction and which the
+#: inventory therefore does not govern.)
+#:
+#: Each entry is ``(predecessor, successor, category)`` and buys exactly one
+#: one-to-one substitution. There is no rule to generalise and no category to
+#: widen: a literal that appears in no entry is compared verbatim, always. Adding
+#: an entry is a deliberate, reviewable act -- which is the point.
+BARE_LITERAL_REANCHORS = (
+    # WS-0014's `last_verified_date`, advanced by this unit. Asserted via
+    # `startswith(...)` in one suite and `== ...` in another.
+    ("2026-08-27", "2026-08-28", "DATE"),
+    # WS-0014's `active_branch`. The predecessor is RETAINED as a negative pin
+    # beside the successor, so the field stays bound at both ends -- which is
+    # why the successor's introduction, not the predecessor's removal, is the
+    # evidence this pairing is keyed on.
+    ("claude/xasset-0057-rebinding-gqtg9o",
+     "claude/xasset-0061-authorization-jux8p9", "BRANCH"),
+)
 
 
 #: The instance-distinguishing token a constant name carries -- ``XASSET0061_``,
@@ -533,34 +587,43 @@ def _authorized_reanchor(pinned_src: str, live_src: str):
                 break
     names, pinned_values, live_values = {}, {}, {}
 
-    # ---- bare-literal re-anchors: THE LIVE SIDE MAY ONLY USE A NEW VALUE ------
-    # A lawful re-anchor does not always run through a named constant. One
-    # predecessor suite moved a bare date from ``startswith("2026-08-27")`` to
-    # ``"2026-08-28"``; another advanced a branch literal while KEEPING the
-    # predecessor as a negative pin. Both are lawful, and neither has a name to
-    # key a role off.
+    # ---- bare-literal re-anchors: THE ENUMERATED REGISTRY, ONE PAIR AT A TIME --
+    # A lawful re-anchor does not always run through a named constant, and a bare
+    # literal carries no name, so it carries no role. Two successive attempts at
+    # a general rule for them both leaked, in the same direction: any rule keyed
+    # on a CATEGORY hands the whole category a substitution licence the moment one
+    # value of it is introduced, and a second, unrelated assertion in the same
+    # delta then spends that licence. Independent review 5093063766 demonstrated
+    # exactly that -- one genuine ``2026-08-27`` -> ``2026-08-28`` re-anchor
+    # laundering an unrelated ``cutoff == "2026-08-26"`` away, with the assertion
+    # count, operators and shapes all intact.
     #
-    # The evidence that separates them from a weakening is ASYMMETRIC, and that
-    # asymmetry is the whole correction: the value the live side substitutes IN
-    # must be one THIS DELTA INTRODUCED. A delta may re-anchor onto something it
-    # just added; it may not reach for a value that was already sitting in the
-    # file. That is exactly the real-corpus bypass review 5092359752 found --
-    # a required independent-review id replaced by an unrelated merge SHA already
-    # present in the same text, adding nothing at all -- and it stays caught here
-    # because neither category has a newly-introduced value to pair with.
+    # So the licence is not derived at all. It is ENUMERATED: each entry names one
+    # predecessor, one successor, and the category both must really be. Each gets
+    # its OWN placeholder, so pairs can never cross, and a value in no entry stays
+    # verbatim -- which is what makes ``2026-08-26`` a visible loss above. This is
+    # the review's own preferred construction where a sound general role model for
+    # bare literals is unavailable, and it fails closed by CONSTRUCTION rather
+    # than by argument.
     p_lits = _literal_anchor_values(pinned_src)
     l_lits = _literal_anchor_values(live_src)
-    added_by_cat = {}
-    for v, c in l_lits.items():
-        if v not in p_lits:
-            added_by_cat.setdefault(c, []).append(v)
-    for cat, added in added_by_cat.items():
-        ph = f"<REANCHOR_LITERAL:{cat}>"
-        for v in added:
-            live_values[v] = ph          # the successor: introduced by this delta
-        for v, c in p_lits.items():
-            if c == cat:
-                pinned_values[v] = ph    # any predecessor it may have displaced
+    for index, (old_value, new_value, cat) in enumerate(BARE_LITERAL_REANCHORS):
+        # Every condition is required, and each rules out a distinct bypass:
+        #   * the predecessor is really asserted on the pinned side;
+        #   * the successor is really asserted on the live side;
+        #   * the successor is genuinely INTRODUCED by this delta, so a value
+        #     already sitting in the file can never be substituted in;
+        #   * both endpoints really are the category the registry claims, so a
+        #     stale entry cannot outlive a change in what the values are.
+        if old_value not in p_lits or new_value not in l_lits:
+            continue
+        if new_value in p_lits:
+            continue
+        if _anchor_category(old_value) != cat or _anchor_category(new_value) != cat:
+            continue
+        ph = f"<REANCHOR_LITERAL:{index}:{cat}>"
+        pinned_values[old_value] = ph
+        live_values[new_value] = ph
 
     # ---- named-slot re-anchors, applied LAST so a role-specific pairing wins ----
     # These ARE symmetric, because a name carries a role: only the constants whose
@@ -1796,33 +1859,298 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert _lost_assertions(pinned, live), "the reused-value swap was not caught"
 
     def test_an_in_play_category_still_forbids_reusing_an_existing_value(self):
-        """The ASYMMETRY itself, in the one case that actually exercises it.
+        """A category is never "in play" at all: only an ENUMERATED PAIR is.
 
-        Found by the mutation proof for this correction, not by review: the two
-        probes above both use a delta that adds NOTHING, so the category is out
-        of play entirely and the asymmetry is never reached. Here the delta DOES
-        introduce a new SHA -- the category is genuinely in play -- and the swap
-        still reuses a value that was already present on both sides.
-
-        Widening the live side to every value of an in-play category (rather than
-        only the ones this delta introduced) makes this pass, which is exactly the
-        weakening the rule exists to prevent.
+        RE-ANCHORED (PHQ-2026-07, review 5093063766). This probe was written
+        against the superseded rule, where introducing one value of a category
+        put the whole category in play and the asymmetry was the only thing
+        holding the line. That rule is gone: a literal substitution now requires
+        a specific registry entry, so a synthetic SHA no delta ever registered
+        buys nothing whatsoever -- strictly stronger than the map this test used
+        to assert, and the reason the assertion below is now ``== {}``.
         """
         old_v, kept_v, added_v = "a" * 40, "b" * 40, "c" * 40
         for v in (old_v, kept_v, added_v):
             assert _anchor_category(v) == "SHA", v
         pinned = (f'def f():\n    assert "{old_v}" in d\n'
                   f'    assert "{kept_v}" in d\n')
-        # A real re-anchor happens (NEW_SHA is introduced) AND the required
-        # `old_v` assertion is quietly replaced by a value already present.
+        # A real constant IS introduced, AND the required `old_v` assertion is
+        # quietly replaced by a value already present.
         live = (f'NEW_SHA = "{added_v}"\n'
                 f'def f():\n    assert "{kept_v}" in d\n'
                 f'    assert "{kept_v}" in d\n    assert NEW_SHA in d\n')
         _n, _pv, live_values = _authorized_reanchor(pinned, live)
-        assert live_values == {added_v: "<REANCHOR_LITERAL:SHA>"}, (
-            "the live side may substitute in ONLY what this delta introduced")
+        registered = {new for _old, new, _cat in BARE_LITERAL_REANCHORS}
+        assert added_v not in registered, "this probe needs an UNregistered value"
+        assert live_values == {}, (
+            "an unregistered literal bought a substitution licence")
         assert _lost_assertions(pinned, live), (
             "a reused pre-existing value was accepted inside an in-play category")
+
+    def test_one_lawful_date_reanchor_does_not_launder_an_unrelated_date_swap(self):
+        """REQUIRED NEGATIVE CONTROL A (PHQ-2026-07, review 5093063766).
+
+        The exact reproduction independent review supplied. One genuine, REGISTERED
+        date re-anchor happens in the same delta as an unrelated same-category
+        assertion rewrite. Under the superseded category-wide rule the second
+        assertion spent the first one's licence and vanished with the assertion
+        count, operators and shapes all intact -- the precise semantic-weakening
+        class G5 exists to catch.
+
+        ``2026-08-26`` appears in no registry entry, so it is compared verbatim
+        and its loss is visible. That is the whole difference.
+        """
+        old1, old2, new = "2026-08-27", "2026-08-26", "2026-08-28"
+        assert (old1, new, "DATE") in BARE_LITERAL_REANCHORS, (
+            "this probe needs the FIRST swap to be a genuinely lawful re-anchor")
+        assert not any(old2 in (o, n) for o, n, _c in BARE_LITERAL_REANCHORS), (
+            "the laundered value must appear in no registry entry")
+        pinned = (f'def f():\n    assert record.startswith("{old1}")\n'
+                  f'    assert cutoff == "{old2}"\n')
+        live = (f'def f():\n    assert record.startswith("{new}")\n'
+                f'    assert cutoff == "{new}"\n')
+        assert old2 not in live, "the protected value must really be gone"
+        lost = _lost_assertions(pinned, live)
+        assert lost, "an unrelated same-category swap was laundered by a re-anchor"
+        assert any(old2 in fp for fp in lost), (
+            "the reported loss must be the laundered assertion itself")
+
+    def test_date_prefixed_operative_prose_is_not_an_anchor(self):
+        """REQUIRED NEGATIVE CONTROL B (PHQ-2026-07, review 5093063766).
+
+        The second exact reproduction. ``DATE`` matched a PREFIX, so any operative
+        expectation that happened to begin with a date was treated as an anchor
+        and rewriting its meaning was invisible. A date is now the whole string
+        or it is not a date.
+        """
+        p_text = "2026-08-27 Merging it arms nothing"
+        l_text = "2026-08-28 Merging it arms Stage 1"
+        assert _anchor_category(p_text) is None, "prose is not an anchor"
+        assert _anchor_category(l_text) is None, "prose is not an anchor"
+        pinned = f'def f():\n    assert "{p_text}" in section\n'
+        live = f'def f():\n    assert "{l_text}" in section\n'
+        assert _lost_assertions(pinned, live), (
+            "a date-prefixed operative expectation was rewritten unseen")
+
+    @pytest.mark.parametrize("text,expected", [
+        ("2026-08-27", "DATE"),
+        ("2026-08-27T12:30:00Z", "DATE"),
+        ("2026-08-27 12:30", "DATE"),
+        ("2026-08-27T12:30:00+01:00", "DATE"),
+        # ...and nothing else. A shape that is not a whole date, or not a real
+        # one, is not an anchor and is therefore never abstractable.
+        ("2026-08-27 Merging it arms nothing", None),
+        ("2026-08-27-extra", None),
+        ("2026-13-45", None),
+        ("2026-02-30", None),
+        ("2026-08-27 the register says otherwise", None),
+    ])
+    def test_date_recognition_accepts_only_complete_real_dates(self, text, expected):
+        assert _anchor_category(text) == expected, text
+
+    def test_the_bare_literal_registry_is_enumerated_and_one_to_one(self):
+        """The registry's own shape is the guarantee, so it is pinned.
+
+        No rule generalises from these entries. Each buys exactly one
+        predecessor->successor substitution, each gets its own placeholder, and a
+        literal in no entry is compared verbatim -- which is what makes the rule
+        fail closed by CONSTRUCTION rather than by argument.
+        """
+        assert BARE_LITERAL_REANCHORS, "the registry must not be empty"
+        assert len(BARE_LITERAL_REANCHORS) <= 8, (
+            "a registry this large is a general rule wearing a list's clothing")
+        seen_old, seen_new = set(), set()
+        for old, new, cat in BARE_LITERAL_REANCHORS:
+            assert _anchor_category(old) == cat, (old, cat)
+            assert _anchor_category(new) == cat, (new, cat)
+            assert old != new
+            # ONE-TO-ONE: no value may appear on either side of two entries, so a
+            # single predecessor can never be redirected onto a second successor.
+            assert old not in seen_old, f"{old} is a predecessor twice"
+            assert new not in seen_new, f"{new} is a successor twice"
+            assert old not in seen_new and new not in seen_old, "entries chain"
+            seen_old.add(old)
+            seen_new.add(new)
+
+    def test_each_registry_entry_gets_its_own_placeholder(self):
+        """Two registered pairs must never be interchangeable with each other."""
+        (o1, n1, _c1), (o2, n2, _c2) = BARE_LITERAL_REANCHORS[:2]
+        pinned = f'def f():\n    assert a == "{o1}"\n    assert b == "{o2}"\n'
+        live = f'def f():\n    assert a == "{n1}"\n    assert b == "{n2}"\n'
+        assert not _lost_assertions(pinned, live), (
+            "both registered re-anchors must be permitted together")
+        # ...but crossing them is a loss: pair 1's successor cannot stand in for
+        # pair 0's, however lawful each pair is on its own.
+        crossed = f'def f():\n    assert a == "{n2}"\n    assert b == "{n1}"\n'
+        assert _lost_assertions(pinned, crossed), (
+            "two registered pairs collapsed into one interchangeable licence")
+
+    @pytest.mark.parametrize("rel,old,new", [
+        ("test_level1_stage1_activation_authorization.py", "2026-08-27", "2026-08-28"),
+        ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+         "2026-08-27", "2026-08-28"),
+        ("test_level1_stage1_readiness_verification_authorization.py",
+         "2026-08-27", "2026-08-28"),
+        ("test_level1_stage1_post_rebinding_drift_authorization.py",
+         "2026-08-27", "2026-08-28"),
+        ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
+         "2026-08-27", "2026-08-28"),
+        ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+         "claude/xasset-0057-rebinding-gqtg9o",
+         "claude/xasset-0061-authorization-jux8p9"),
+    ])
+    def test_every_lawful_corpus_bare_literal_reanchor_stays_permitted(
+            self, rel, old, new):
+        """POSITIVE CONTROLS: the real re-anchors this registry exists to allow.
+
+        Narrowing the rule must not break the corpus it was derived from. Each
+        case is a REAL predecessor suite whose live source genuinely moved this
+        literal, checked against its own pinned baseline.
+        """
+        assert rel in PINNED_TEST_HASHES, rel
+        assert any(o == old and n == new for o, n, _c in BARE_LITERAL_REANCHORS), (
+            f"{old} -> {new} is not registered")
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        assert base != live, "this proof needs a genuinely re-anchored predecessor"
+        assert old in base and new in live, (
+            "the probe's own endpoints have moved")
+        assert not _lost_assertions(base, live), (
+            f"the lawful {old} -> {new} re-anchor in {rel} was reported as a loss")
+
+    def test_the_registry_is_complete_for_the_whole_pinned_corpus(self):
+        """Nothing outside ``PROTECTED_PREDICATES`` needs an unregistered literal.
+
+        This is how the registry was derived, kept executable so it cannot drift:
+        every pinned suite is compared against its baseline, and any suite the
+        registry does not fully explain is a suite whose assertions this filing
+        rewrote under its own G4 correction -- which the direct protected-predicate
+        mechanism governs instead.
+        """
+        unexplained = []
+        for rel in sorted(PINNED_TEST_HASHES):
+            if rel in PROTECTED_PREDICATES:
+                continue
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            try:
+                base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+            except Exception:
+                continue
+            if base == live:
+                continue
+            if _lost_assertions(base, live):
+                unexplained.append(rel)
+        assert not unexplained, (
+            "these suites lose an assertion the registry does not explain: "
+            f"{unexplained}")
+
+    def test_a_registered_successor_already_present_buys_nothing(self):
+        """Each registry guard is load-bearing, and this one is observable.
+
+        Found by this correction's own mutation proof, not by review. A registry
+        entry only fires when the successor is genuinely INTRODUCED by the delta.
+        Without that condition, a delta whose live side merely REUSES a value
+        already sitting in the pinned file would spend the entry's licence -- the
+        same reach-for-what-is-already-there shape every reviewed literal bypass
+        has taken.
+        """
+        old, new_v = "2026-08-27", "2026-08-28"
+        assert (old, new_v, "DATE") in BARE_LITERAL_REANCHORS
+        # `new_v` is ALREADY asserted on the pinned side, so nothing is introduced.
+        pinned = f'def f():\n    assert a == "{old}"\n    assert b == "{new_v}"\n'
+        live = f'def f():\n    assert a == "{new_v}"\n    assert b == "{new_v}"\n'
+        assert _authorized_reanchor(pinned, live)[2] == {}, (
+            "an entry fired although its successor was already present")
+        assert _lost_assertions(pinned, live), (
+            "a registered pair laundered a swap onto an already-present value")
+
+    def test_the_verbatim_stage_prevents_a_false_loss_on_a_partial_reanchor(self):
+        """The verbatim-first stage is load-bearing in the PERMISSIVE direction.
+
+        Also found by this correction's own mutation proof. When a registered
+        predecessor is asserted twice and only ONE occurrence moves, the
+        unmoved one must match itself verbatim. Without that stage it is
+        normalized to the pair's placeholder, finds the moved assertion's
+        placeholder already consumed, and is reported as a loss that never
+        happened.
+        """
+        old, new_v = "2026-08-27", "2026-08-28"
+        pinned = f'def f():\n    assert a == "{old}"\n    assert b == "{old}"\n'
+        live = f'def f():\n    assert a == "{new_v}"\n    assert b == "{old}"\n'
+        assert not _lost_assertions(pinned, live), (
+            "an unmoved occurrence of a registered predecessor was reported lost")
+        # ...and the genuinely-moved one is still governed: moving BOTH onto the
+        # successor is fine, but moving one onto something unregistered is not.
+        bad = f'def f():\n    assert a == "{new_v}"\n    assert b == "2026-08-26"\n'
+        assert _lost_assertions(pinned, bad)
+
+    def test_each_entry_gets_its_own_placeholder_even_within_one_category(
+            self, monkeypatch):
+        """DIRECT GUARD TEST. Two entries of the SAME category must not merge.
+
+        DISCLOSED: the live registry holds one DATE entry and one BRANCH entry,
+        so the per-entry index is not observable against it -- dropping the index
+        changes no real result, and this correction's mutation proof showed that.
+        The guard is still required, because a second entry of an existing
+        category is exactly the kind of addition a future unit would make. It is
+        therefore tested DIRECTLY, against a synthetic two-DATE registry, rather
+        than left unproved or waved through.
+        """
+        synthetic = (("2020-01-01", "2020-01-02", "DATE"),
+                     ("2030-05-05", "2030-05-06", "DATE"))
+        monkeypatch.setattr(
+            sys.modules[__name__], "BARE_LITERAL_REANCHORS", synthetic)
+        pinned = ('def f():\n    assert a == "2020-01-01"\n'
+                  '    assert b == "2030-05-05"\n')
+        straight = ('def f():\n    assert a == "2020-01-02"\n'
+                    '    assert b == "2030-05-06"\n')
+        assert not _lost_assertions(pinned, straight), (
+            "two lawful same-category entries were not both permitted")
+        # Crossing them must be a loss: entry 1's successor may not stand in for
+        # entry 0's, however lawful each entry is on its own.
+        crossed = ('def f():\n    assert a == "2030-05-06"\n'
+                   '    assert b == "2020-01-02"\n')
+        assert _lost_assertions(pinned, crossed), (
+            "two same-category entries collapsed into one shared licence")
+
+    def test_a_stale_registry_entry_cannot_outlive_its_category(
+            self, monkeypatch):
+        """DIRECT GUARD TEST for the category re-check.
+
+        DISCLOSED: with the live registry both entries are correctly categorised,
+        so removing this check changes no real result -- this correction's own
+        mutation proof showed that too. It guards a future registry whose entry
+        has gone stale: if a value stops being the category the entry claims, the
+        entry stops firing rather than abstracting something it no longer
+        understands.
+        """
+        # Prose is not an anchor of any category, so this entry must never fire.
+        stale = (("Merging it arms nothing", "Merging it arms Stage 1", "DATE"),)
+        monkeypatch.setattr(
+            sys.modules[__name__], "BARE_LITERAL_REANCHORS", stale)
+        pinned = 'def f():\n    assert "Merging it arms nothing" in s\n'
+        live = 'def f():\n    assert "Merging it arms Stage 1" in s\n'
+        assert _authorized_reanchor(pinned, live)[2] == {}, (
+            "a stale registry entry fired on values of the wrong category")
+        assert _lost_assertions(pinned, live), (
+            "a stale registry entry laundered an operative-prose rewrite")
+
+    def test_a_registry_entry_whose_predecessor_is_absent_is_inert(self):
+        """DISCLOSED EQUIVALENCE, recorded rather than dropped.
+
+        The ``old_value not in p_lits`` guard is not observable: a placeholder
+        mapped onto a value that appears nowhere in the pinned source cannot
+        change any pinned fingerprint, and the only reachable effect of removing
+        it is an EXTRA reported loss -- the safe direction. This correction's
+        mutation proof demonstrated that, so the guard is documented as
+        defence-in-depth and its inertness is pinned here instead of being
+        claimed as a caught mutant.
+        """
+        pinned = 'def f():\n    assert a == "1999-01-01"\n'
+        live = 'def f():\n    assert a == "2026-08-28"\n'
+        # The registered predecessor is nowhere in `pinned`, so nothing is
+        # abstractable and the unrelated swap is a plain loss.
+        assert _lost_assertions(pinned, live)
 
     def test_the_role_filter_on_the_substitution_map_is_load_bearing(self):
         """Category alone must never admit a name into an authorized slot.
@@ -1909,8 +2237,31 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
                            'assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" '
                            "in description")), \
             "a review id was still interchangeable with a merge SHA"
-        # 9. an unrelated same-category constant cannot collide merely because
-        #    ANOTHER anchor of that category was added by the delta
+        # 9. ONE LAWFUL DATE RE-ANCHOR NEVER LAUNDERS AN UNRELATED DATE SWAP
+        assert _lost_assertions(
+            'def f():\n    assert r.startswith("2026-08-27")\n'
+            '    assert c == "2026-08-26"\n',
+            'def f():\n    assert r.startswith("2026-08-28")\n'
+            '    assert c == "2026-08-28"\n'), \
+            "a registered re-anchor laundered an unrelated same-category swap"
+        # 10. DATE means a COMPLETE, REAL date -- never date-prefixed prose
+        assert _anchor_category("2026-08-27 Merging it arms nothing") is None
+        assert _anchor_category("2026-02-30") is None
+        assert _anchor_category("2026-08-27") == "DATE"
+        assert _lost_assertions(
+            'def f():\n    assert "2026-08-27 Merging it arms nothing" in s\n',
+            'def f():\n    assert "2026-08-28 Merging it arms Stage 1" in s\n'), \
+            "date-prefixed operative prose was rewritten unseen"
+        # 11. an unregistered literal buys NOTHING, whatever else the delta adds
+        assert _authorized_reanchor_values(
+            'X = "1111111111111111111111111111111111111111"\n'
+            'def f():\n    assert a == "2222222222222222222222222222222222222222"\n',
+            'X = "1111111111111111111111111111111111111111"\n'
+            'Y = "3333333333333333333333333333333333333333"\n'
+            'def f():\n    assert a == "3333333333333333333333333333333333333333"\n'
+        ) == {}, "an unregistered literal was granted a substitution licence"
+        # 12. an unrelated same-category constant cannot collide merely because
+        #     ANOTHER anchor of that category was added by the delta
         header = ('A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
                   'UNRELATED_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"\n')
         pinned_x = header + "def f():\n    assert x == A_SHA\n"
