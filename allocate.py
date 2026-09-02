@@ -824,6 +824,9 @@ _OUTPUT_DEPENDENCIES = {
     # ---- configuration: true regardless of any observation -----------------
     "issuer_ceiling_pct": "always", "common_driver_ceiling_pct": "always",
     "valuation.expected_count": "always",
+    # ticker -> dollars, for holdings carrying no canonical target. Each entry is
+    # that name's OWN resolved value, so it depends on that name alone.
+    "unresolved.*": "ticker", "orphans.*": "ticker",
     # The RETAINED policy measurement is a frozen, point-in-time figure read
     # straight from issuer_lookthrough.yaml (PHQ-2026-01 point 9). It is not
     # computed from the live book at all, so no live observation can make it
@@ -980,15 +983,21 @@ def _apply_output_dependencies(result, deps, unknown_tickers, cluster_members):
                     continue
                 else:
                     key = child
+                    ticker = None
                     if key not in _OUTPUT_DEPENDENCIES:
-                        # issuer_exposure is keyed by TICKER; normalise that one
-                        # level so the schema states the shape, not the roster.
+                        # Two shapes are keyed by TICKER rather than by field, so
+                        # the schema states the SHAPE and the roster stays out of
+                        # it: issuer_exposure.<TK>.<field>, and the ticker->dollars
+                        # maps (`unresolved` and its `orphans` alias).
                         parts = child.split(".")
                         if len(parts) == 3 and parts[0] == "issuer_exposure":
                             key = f"issuer_exposure.*.{parts[2]}"
+                        elif len(parts) == 2 and parts[0] in ("unresolved", "orphans"):
+                            key = f"{parts[0]}.*"
+                            ticker = parts[1]
                     if key not in _OUTPUT_DEPENDENCIES:
                         raise UnclassifiedOutputPath(child)
-                    if not ok(_OUTPUT_DEPENDENCIES[key]):
+                    if not ok(_OUTPUT_DEPENDENCIES[key], ticker=ticker):
                         node[k] = None
         elif isinstance(node, list):
             for item in node:
@@ -1414,16 +1423,25 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     # Every dependency needed to decide what may be emitted, gathered from the
     # observations themselves rather than from one collapsed boolean.
     _margin_state = load_margin_state(holdings_state or {})
+    # Scoped to what the CALLER actually supplied. `valuation_completeness(h, None)`
+    # falls back to reading the real holdings.yaml, so a direct plan() caller that
+    # passes no holdings_state would be judged against a tracked-shares claim it
+    # never made -- every name "unresolved", gross withheld, for no real reason.
+    # With no state supplied there is nothing to reconcile against. Production is
+    # unaffected: main() always supplies holdings_state, so the check stays real
+    # there, which is the only path where a missing holding can actually hide.
+    _emit_valuation = (valuation if holdings_state is not None
+                       else valuation_completeness(holdings, {}))
     _emit_deps = {
-        "valuation": bool(valuation.get("complete")),
+        "valuation": bool(_emit_valuation.get("complete")),
         "margin": bool(_margin_state.get("usable")),
         "book": bool(dollars_ok),
     }
     # Per-NAME coverage. A ticker is resolved when it carries a value the
     # valuation actually accepted -- so one missing holding blanks its own row
     # and the aggregates containing it, and nothing else.
-    _unknown = {t.upper() for t in (valuation.get("unresolved") or [])}
-    _unknown |= {t.upper() for t in (valuation.get("invalid") or [])}
+    _unknown = {t.upper() for t in (_emit_valuation.get("unresolved") or [])}
+    _unknown |= {t.upper() for t in (_emit_valuation.get("invalid") or [])}
     # CONFIGURED membership, not the subset that happened to reach cluster_info.
     # An unresolved member never enters cluster_info at all, so sourcing it there
     # would make the aggregate look complete precisely when a member is missing --
@@ -1661,9 +1679,14 @@ def render(result, review: bool) -> str:
         L.append(f"| Actual tracked cash | ${prot['actual_cash']:,.2f} |")
         L.append(f"| Cash synced | {cs.get('synced_at')} "
                  f"({'usable' if cs.get('usable') else 'NOT USABLE'}) |")
-        L.append(f"| Invested gross | ${result['margin']['gross']:,.2f} |")
+        _g = result["margin"].get("gross")
+        L.append("| Invested gross | "
+                 + (f"${_g:,.2f} |" if _g is not None
+                    else "UNAVAILABLE — the valuation is incomplete |"))
         L.append(f"| Margin debt | ${result['margin']['debt']:,.2f} |")
-        L.append(f"| **Book** (invested + cash − debt) | **${prot['book']:,.2f}** |")
+        _bk = prot.get("book")
+        L.append("| **Book** (invested + cash − debt) | "
+                 + (f"**${_bk:,.2f}** |" if _bk is not None else "**UNAVAILABLE** |"))
         L.append(f"| Destination total | {prot['destination_total_pct']:.4f}% |")
         L.append(f"| Unreconciled remainder | {prot['unreconciled_pct']:.4f}% |")
         L.append(f"| CASH target | {prot['cash_pct']:.4f}% |")
@@ -1811,7 +1834,12 @@ def render(result, review: bool) -> str:
                      f"{r['ceiling_pct']:.1f}% |")
 
     cd_pct = result.get("common_driver_current_pct")
-    if cd_pct is not None:
+    # Presence of the KEY, not of a value. Before the output boundary, a run with
+    # no lookthrough data carried 0.0 here and the section always rendered; keying
+    # on `is not None` would now make the whole section VANISH whenever the book is
+    # unavailable -- silently dropping a heading the reader expects, rather than
+    # reporting the one figure inside it as unavailable.
+    if "common_driver_current_pct" in result:
         retained = result.get("retained_common_driver_measurement") or {}
         L.append("")
         L.append("## 40% AI/platform common-driver exposure")
@@ -1901,7 +1929,9 @@ def render(result, review: bool) -> str:
         L.append(f"| Leverage (gross/equity) | {_lev_out} vs {mg['leverage_cap']:.2f}x cap |")
         L.append(f"| Buffer (last synced) | {buf_s} vs {mg['buffer_floor_pct']:.0f}% floor |")
         if mg["requested"] > 0:
-            L.append(f"| Margin requested / allowed | ${mg['requested']:,.0f} / ${mg['allowed']:,.0f} |")
+            _alw = (f"${mg['allowed']:,.0f}" if mg.get("allowed") is not None
+                    else "UNAVAILABLE")
+            L.append(f"| Margin requested / allowed | ${mg['requested']:,.0f} / {_alw} |")
         if mg["forced_delever"]:
             L.append("")
             L.append(f"> ⚠️ **FORCED DE-LEVER — {mg['block_reason']}.** "
@@ -2742,7 +2772,13 @@ def main():
     synced_at_raw = margin_state.get("synced_at")
     buffer_data_age_days = _margin_buffer_age_days(synced_at_raw)
     buffer_data_unverifiable = _margin_buffer_age_unverifiable(synced_at_raw)
-    result["margin_state"] = classify_margin_state(
+    # The classifier's own contract requires a real gross. When the valuation is
+    # incomplete the boundary has withheld it, so there is nothing to classify --
+    # and computing a risk state from a withheld input would be exactly the kind
+    # of confident-looking output this correction exists to prevent. Reported as
+    # unavailable instead, which render() already knows how to say.
+    result["margin_state"] = None if result["margin"].get("gross") is None else (
+      classify_margin_state(
         gross=result["margin"]["gross"],
         margin_debt=result["margin"]["debt"],
         buffer_pct=result["margin"]["buffer_pct"],
@@ -2760,7 +2796,7 @@ def main():
         concentration_tightening_coefficient=concentration_cfg.get("tightening_coefficient") or 0.0,
         concentration_min_fraction=(0.5 if concentration_cfg.get("min_fraction") is None
                                      else concentration_cfg["min_fraction"]),
-    )
+    ))
 
     if args.health:
         print(render_health(result))
