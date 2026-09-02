@@ -1760,3 +1760,216 @@ class TestTheComputedGatedTargetNeverReachesAnyRenderedSurface:
         assert reason, out
         joined = " ".join(reason).lower()
         assert "margin" in joined, joined
+
+
+# ── PHQ-2026-07 correction round 4 — independent DELTA review 5090097708 ──────
+# MAJOR 1 (reproduced three ways): the availability contract stopped short of the
+# actual result and render boundary.
+#
+#   A. plan() withheld a row's `target`/`gap`/`want`/`max_by_name` and then
+#      returned `_rank_gap=990.0` and `_rank_max_by_name=990.0` in the SAME public
+#      row. An underscore is a naming convention, not a boundary.
+#   B. With an incomplete valuation, render() printed `Gross / net equity |
+#      $600 / $400` and `Leverage 1.50x` from the deliberately understated gross.
+#   C. With stale margin, render() withheld net equity but BOTH surfaces still
+#      printed `Leverage 1.50x` — computed from the denominator just refused.
+
+
+class TestNoInternalValueEscapesTheResultBoundary:
+    """Structural, over the returned object — not a search of rendered text.
+
+    A sentinel search cannot see a private key, and a fixed field list cannot see
+    one introduced later. This asserts the SHAPE invariant instead: nothing whose
+    name marks it internal leaves plan(), whatever it is called.
+    """
+
+    TODAY = datetime.date.today().isoformat()
+    STALE = "2026-01-01"
+
+    ROW_KEYS = ("buys", "trims", "underweight", "blocked", "no_add_gated",
+                "no_add_issuer", "no_add_common_driver")
+
+    def _plan(self, cash_synced, margin_synced, shares, resolved):
+        data = {"shares": shares,
+                "cash": {"balance": 1000.0, "synced_at": cash_synced},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0, "synced_at": margin_synced}}
+        cs = A.load_cash_state(data)
+        ms = A.load_margin_state(data)
+        val = A.valuation_completeness(resolved, data)
+        avail = A.current_dollar_availability(cs, ms, val)
+        t = _targets()
+        roster = build_roster(t)
+        res = plan(t, resolved, roster, _metrics(roster), True, True,
+                   cash=(cs["balance"] if cs["usable"] else None),
+                   margin_debt=(ms["debt"] or 0.0),
+                   margin_buffer_pct=(ms["buffer_pct"] or 0.0),
+                   holdings_state=data, dollars_available=avail["available"])
+        res["cash_state"] = cs
+        res["margin_state_check"] = ms
+        res["dollar_availability"] = avail
+        res["margin"]["synced_at"] = margin_synced
+        return res, avail
+
+    @staticmethod
+    def _private_keys(res):
+        """Every leading-underscore key on every emitted row, wherever it lives."""
+        found = []
+        for key, rows in res.items():
+            if not isinstance(rows, list):
+                continue
+            for r in rows:
+                if not isinstance(r, dict):
+                    continue
+                for f, v in r.items():
+                    if isinstance(f, str) and f.startswith("_"):
+                        found.append((key, r.get("ticker"), f, v))
+        return found
+
+    @pytest.mark.parametrize("case,cash_synced,margin_synced,shares,resolved", [
+        ("stale margin", TODAY, STALE, {"AAA": 10.0}, {"AAA": 600.0}),
+        ("incomplete valuation", TODAY, TODAY, {"AAA": 10.0, "BBB": 5.0}, {"AAA": 600.0}),
+        ("stale cash", STALE, TODAY, {"AAA": 10.0}, {"AAA": 600.0}),
+        ("all current — control", TODAY, TODAY, {"AAA": 10.0}, {"AAA": 600.0}),
+    ])
+    def test_no_row_in_any_collection_carries_a_private_key(
+            self, case, cash_synced, margin_synced, shares, resolved):
+        """Discovered by shape, so a NEW private name is covered automatically.
+
+        Asserted in the available case too: ranking state has no business in a
+        published row regardless of whether dollars happen to be withheld.
+        """
+        res, _ = self._plan(cash_synced, margin_synced, shares, resolved)
+        assert not self._private_keys(res), (case, self._private_keys(res))
+
+    def test_the_underweight_ordering_still_holds_when_dollars_are_withheld(self):
+        """The complement: stripping ranking state must not cost the ordering.
+
+        plan()'s contract is that the OBSERVATIONAL view survives an unavailable
+        book — names still rank by gap — while no dollar escapes. Both at once.
+        """
+        res, avail = self._plan(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0})
+        assert avail["available"] is False
+        uw = res["underweight"]
+        assert len(uw) >= 2, uw
+        # Every published dollar is withheld...
+        for r in uw:
+            assert r["target"] is None and r["gap"] is None
+            assert r.get("want") is None and r.get("max_by_name") is None
+        # ...and the order still matches the order the available run produces.
+        avail_res, avail_fact = self._plan(self.TODAY, self.TODAY,
+                                           {"AAA": 10.0}, {"AAA": 600.0})
+        assert avail_fact["available"] is True
+        assert [r["ticker"] for r in uw] == [r["ticker"] for r in avail_res["underweight"]]
+
+
+class TestBookDerivedFiguresHonourTheirOwnDependencies:
+    """Behavioral, over BOTH render surfaces, for each unavailable state.
+
+    gross depends on the valuation alone; net equity and leverage depend on the
+    valuation AND the margin observation. Collapsing the three into one boolean
+    is what produced a printed 1.50x beside an UNAVAILABLE net equity.
+    """
+
+    TODAY = datetime.date.today().isoformat()
+    STALE = "2026-01-01"
+
+    _plan = TestNoInternalValueEscapesTheResultBoundary._plan
+
+    def test_the_dependency_map_is_stated_per_figure_not_collapsed(self):
+        """Unit-level: the helper itself, before any rendering."""
+        res, _ = self._plan(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0})
+        bd = A.book_derived_availability(res)
+        assert bd["valuation_complete"] is True
+        assert bd["margin_usable"] is False
+        assert bd["gross"] is True, "gross depends on the valuation alone"
+        assert bd["net_equity"] is False and bd["leverage"] is False
+
+        res, _ = self._plan(self.TODAY, self.TODAY,
+                            {"AAA": 10.0, "BBB": 5.0}, {"AAA": 600.0})
+        bd = A.book_derived_availability(res)
+        assert bd["valuation_complete"] is False
+        assert bd["gross"] is False and bd["net_equity"] is False
+        assert bd["leverage"] is False
+
+        res, _ = self._plan(self.TODAY, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0})
+        bd = A.book_derived_availability(res)
+        assert all(bd[k] for k in ("gross", "net_equity", "leverage", "book_ratios"))
+
+    @pytest.mark.parametrize("surface", ["render", "render_health"])
+    def test_stale_margin_withholds_net_equity_and_leverage_on_both_surfaces(self, surface):
+        res, avail = self._plan(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0})
+        assert avail["available"] is False
+        text = A.render(res, review=True) if surface == "render" else A.render_health(res)
+        lev = [ln for ln in text.splitlines() if "Leverage (gross/equity)" in ln]
+        assert lev, text
+        for ln in lev:
+            assert "UNAVAILABLE" in ln, f"{surface}: {ln}"
+            assert "1.50x" not in ln, f"{surface}: {ln}"
+        ne = [ln for ln in text.splitlines() if "Net equity" in ln]
+        assert ne, text
+        for ln in ne:
+            assert "UNAVAILABLE" in ln, f"{surface}: {ln}"
+        # Gross survives: only the debt term is unusable.
+        gr = [ln for ln in text.splitlines() if "Invested gross" in ln]
+        assert gr and any("$600" in ln for ln in gr), (surface, gr)
+
+    @pytest.mark.parametrize("surface", ["render", "render_health"])
+    def test_incomplete_valuation_withholds_gross_net_equity_and_leverage(self, surface):
+        res, avail = self._plan(self.TODAY, self.TODAY,
+                                {"AAA": 10.0, "BBB": 5.0}, {"AAA": 600.0})
+        assert avail["available"] is False
+        text = A.render(res, review=True) if surface == "render" else A.render_health(res)
+        for label in ("Invested gross", "Net equity", "Leverage (gross/equity)"):
+            lines = [ln for ln in text.splitlines() if label in ln]
+            assert lines, (surface, label, text)
+            for ln in lines:
+                assert "UNAVAILABLE" in ln, f"{surface}: {ln}"
+        # The understated figures must not appear anywhere at all.
+        for bad in ("$600 / $400", "1.50x"):
+            assert bad not in text, f"{surface} published {bad}"
+
+    @pytest.mark.parametrize("surface", ["render", "render_health"])
+    def test_all_current_still_prints_every_figure(self, surface):
+        """Positive control: fail-closed, not fail-shut."""
+        res, avail = self._plan(self.TODAY, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0})
+        assert avail["available"] is True
+        text = A.render(res, review=True) if surface == "render" else A.render_health(res)
+        lev = [ln for ln in text.splitlines() if "Leverage (gross/equity)" in ln]
+        assert lev and all("UNAVAILABLE" not in ln for ln in lev), (surface, lev)
+        assert "1.50x" in text, surface
+
+    @pytest.mark.parametrize("surface", ["render", "render_health"])
+    def test_book_denominated_ratios_are_withheld_with_the_book(self, surface):
+        """Cluster %-of-book, ratio-to-cap and the common-driver percentage.
+
+        All three are `value / book`, so each inherits the book's availability —
+        the dependency the review asked to be inspected alongside leverage.
+        """
+        res, avail = self._plan(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0})
+        assert avail["available"] is False
+        text = A.render(res, review=True) if surface == "render" else A.render_health(res)
+        for ln in text.splitlines():
+            if "Common-driver current" in ln or "Current calculated" in ln:
+                assert "UNAVAILABLE" in ln, f"{surface}: {ln}"
+            if "% of book" in ln:
+                assert "n/a" in ln or "UNAVAILABLE" in ln, f"{surface}: {ln}"
+
+    @pytest.mark.parametrize("surface", ["render", "render_health"])
+    def test_both_surfaces_stay_internally_consistent_and_do_not_crash(self, surface):
+        """No state may produce a report that contradicts itself or raises."""
+        cases = [(self.TODAY, self.STALE, {"AAA": 10.0}, {"AAA": 600.0}),
+                 (self.TODAY, self.TODAY, {"AAA": 10.0, "BBB": 5.0}, {"AAA": 600.0}),
+                 (self.STALE, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0}),
+                 (self.TODAY, self.TODAY, {"AAA": 10.0}, {"AAA": 600.0})]
+        for c in cases:
+            res, _ = self._plan(*c)
+            text = A.render(res, review=True) if surface == "render" else A.render_health(res)
+            assert text and isinstance(text, str)
+            bd = A.book_derived_availability(res)
+            # If net equity is withheld, leverage must be too — never one without
+            # the other, since one is computed from the other.
+            ne_lines = [ln for ln in text.splitlines() if "Net equity" in ln]
+            lev_lines = [ln for ln in text.splitlines() if "Leverage (gross/equity)" in ln]
+            if ne_lines and any("UNAVAILABLE" in ln for ln in ne_lines):
+                assert all("UNAVAILABLE" in ln for ln in lev_lines), (c, text)
+            assert bd["leverage"] == bd["net_equity"]

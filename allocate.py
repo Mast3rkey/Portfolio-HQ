@@ -1165,6 +1165,24 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             f"observation was stale or unknown")
 
     buy_candidates.sort(key=lambda r: r["_rank_gap"], reverse=True)
+
+    # ONE choke point: no internal key leaves plan(). Ordering has already been
+    # decided above, so the ranking values have served their whole purpose and
+    # must not travel any further. Independent review reproduced the escape --
+    # `_rank_gap=990.0` was returned on a row whose published `gap` was withheld.
+    # An underscore is a naming convention, not a boundary; the boundary is here.
+    #
+    # This strips by SHAPE (any leading-underscore key), not by a list of names,
+    # so a private key introduced later is covered without anyone remembering to
+    # add it. It runs over every collection plan() emits, sourced from the same
+    # tuple the return statement uses, so a new collection cannot silently skip it.
+    for _rows in (buys, trims, rows, buy_candidates, no_add_gated,
+                  no_add_issuer, no_add_common_driver):
+        for _r in _rows:
+            if isinstance(_r, dict):
+                for _k in [k for k in _r if isinstance(k, str) and k.startswith("_")]:
+                    del _r[_k]
+
     unresolved = {t: float(v) for t, v in holdings.items() if t.upper() not in roster}
     leverage_current = (gross / net_equity) if net_equity > 0 else None
     return {
@@ -1233,6 +1251,54 @@ def _unavailability_reason(result) -> str:
     return reason if reason else "a required current observation is unavailable"
 
 
+def book_derived_availability(result) -> dict:
+    """What each book-derived figure may honestly claim, from ONE set of observations.
+
+    PHQ-2026-07's availability fact is a single boolean, which is exactly right for
+    "may a target dollar be published". It is too coarse for the margin section,
+    where three figures have three DIFFERENT dependency sets:
+
+      gross       = Σ resolved position values      -> valuation only
+      net equity  = gross − margin debt             -> valuation AND margin
+      leverage    = gross / net equity              -> valuation AND margin
+
+    Independent review reproduced both consequences of collapsing them. With an
+    incomplete valuation the render printed ``Gross / net equity | $600 / $400``
+    from a deliberately understated gross; with a stale margin it withheld net
+    equity but still printed ``Leverage 1.50x``, computed from the very
+    denominator it had just refused to state.
+
+    Derived from the observations themselves rather than from the collapsed
+    boolean, so each figure is withheld for its own reason and an independently
+    valid one still survives -- gross remains reportable when only margin is
+    stale, which is the case the superseded code got right and must keep.
+    """
+    val = result.get("valuation") or {}
+    ms = result.get("margin_state_check") or {}
+    # Absent state means a direct caller supplied none; assume nothing is broken
+    # rather than inventing an unavailability the caller never reported.
+    valuation_ok = bool(val.get("complete", True))
+    margin_ok = bool(ms.get("usable", True)) if ms else True
+    return {
+        "valuation_complete": valuation_ok,
+        "margin_usable": margin_ok,
+        "gross": valuation_ok,
+        "net_equity": valuation_ok and margin_ok,
+        "leverage": valuation_ok and margin_ok,
+        # Every ratio whose denominator is the book inherits the book's own
+        # availability: cluster percentages, issuer exposure and the
+        # common-driver percentage are all `value / book`.
+        "book_ratios": bool(result.get("dollars_available", True)),
+        "valuation_reason": (
+            "valuation is incomplete — "
+            + ", ".join(sorted(set((val.get("unresolved") or [])
+                                   + (val.get("invalid") or []))))
+            if not valuation_ok else None),
+        "margin_reason": (f"margin state is {ms.get('state', 'unknown')}"
+                          if not margin_ok else None),
+    }
+
+
 def _fmt_row(r, dollars_available: bool = True):
     px = f"${r['price']:.2f}" if r.get("price") else "n/a"
     rsi = f"{r['rsi']:.0f}" if r.get("rsi") is not None else "n/a"
@@ -1253,6 +1319,13 @@ def render(result, review: bool) -> str:
     #: below. Percentages, tickers, prices, RSI and trend are unaffected -- they
     #: do not depend on the cash balance, so the observational view survives.
     _ck = bool(result.get("dollars_available", True))
+    #: Per-figure availability, derived from the SAME observations as `_ck` but
+    #: kept separate because gross, net equity, leverage and the book-denominated
+    #: ratios have three different dependency sets. Computed once, at the top, so
+    #: every section below reads one answer -- and so no section can read it
+    #: before it exists, which is exactly how the margin block's local copy went
+    #: out of order.
+    _bd = book_derived_availability(result)
     regime = ("ABOVE 200-EMA (risk-on)" if result["regime_ok"]
               else "BELOW 200-EMA (risk-off)") if result["regime_known"] else "UNKNOWN"
 
@@ -1476,7 +1549,10 @@ def render(result, review: bool) -> str:
         retained = result.get("retained_common_driver_measurement") or {}
         L.append("")
         L.append("## 40% AI/platform common-driver exposure")
-        L.append(f"- **Current calculated: {cd_pct:.4f}%** (live, from reconciled holdings "
+        # `value / book` again: withheld with the book, never printed as a live
+        # percentage of a denominator the system has just said it does not have.
+        _cd_s = f"{cd_pct:.4f}%" if _bd["book_ratios"] else "UNAVAILABLE"
+        L.append(f"- **Current calculated: {_cd_s}** (live, from reconciled holdings "
                  f"+ current prices, {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}) vs "
                  f"**{result.get('common_driver_ceiling_pct', 40.0):.1f}% ceiling**.")
         if retained:
@@ -1511,10 +1587,19 @@ def render(result, review: bool) -> str:
         # and the debt behind it is shown as DATED EVIDENCE rather than as a
         # current reading. PHQ-2026-07 item 4.
         _ms = result.get("margin_state_check") or {}
-        if _ms and not _ms.get("usable", True):
+        if not _bd["gross"]:
+            # An incomplete valuation understates gross by exactly the positions
+            # that failed to resolve, so gross is not a smaller true number -- it
+            # is a wrong one, and every figure below it inherits that.
+            L.append(f"| Invested gross | UNAVAILABLE — {_bd['valuation_reason']} |")
+            L.append("| Net equity (gross − debt) | UNAVAILABLE — derived from gross |")
+            L.append(f"| Margin debt | ${mg['debt']:,.0f} |")
+        elif not _bd["net_equity"]:
+            # Gross survives: it depends on the valuation alone, which is complete
+            # here. Only the debt term is unusable, so only what USES it is withheld.
             L.append(f"| Invested gross | ${mg['gross']:,.0f} |")
-            L.append("| Net equity (gross − debt) | UNAVAILABLE — margin state is "
-                     f"{_ms.get('state', 'unknown')} |")
+            L.append("| Net equity (gross − debt) | UNAVAILABLE — "
+                     f"{_bd['margin_reason']} |")
             L.append(f"| Margin debt (dated evidence, {_ms.get('synced_at')}) | "
                      f"${mg['debt']:,.0f} — not a current reading |")
         else:
@@ -1543,7 +1628,11 @@ def render(result, review: bool) -> str:
                 L.append(f"| **Protected shortfall** | **−${_p['cash_shortfall_dollars']:,.0f}** |")
             else:
                 L.append(f"| Protected surplus | ${_p['cash_surplus_dollars']:,.0f} |")
-        L.append(f"| Leverage (gross/equity) | {lev_s} vs {mg['leverage_cap']:.2f}x cap |")
+        # Leverage is `gross / net equity`, so it is withheld for exactly the same
+        # reasons net equity is. Printing it beside an UNAVAILABLE net equity was
+        # the contradiction independent review reproduced.
+        _lev_out = lev_s if _bd["leverage"] else "UNAVAILABLE"
+        L.append(f"| Leverage (gross/equity) | {_lev_out} vs {mg['leverage_cap']:.2f}x cap |")
         L.append(f"| Buffer (last synced) | {buf_s} vs {mg['buffer_floor_pct']:.0f}% floor |")
         if mg["requested"] > 0:
             L.append(f"| Margin requested / allowed | ${mg['requested']:,.0f} / ${mg['allowed']:,.0f} |")
@@ -1612,11 +1701,28 @@ def render_health(result) -> str:
     mg = result["margin"]
     lev_s = f"{mg['leverage_current']:.2f}x" if mg["leverage_current"] is not None else "n/a"
     buf_s = f"{mg['buffer_pct']:.1f}%" if mg["buffer_pct"] is not None else "unsynced"
+    # SAME fact, SAME helper as render(). Two surfaces reading one rule is the
+    # point: independent review found this one still printing 1.50x while render()
+    # had already been taught to withhold it.
+    _bd = book_derived_availability(result)
     L.append("")
     L.append("## Margin")
     L.append("| | |")
     L.append("|---|---:|")
-    L.append(f"| Leverage (gross/equity) | {lev_s} vs {mg['leverage_cap']:.2f}x cap |")
+    if _bd["gross"]:
+        L.append(f"| Invested gross | ${mg['gross']:,.0f} |")
+    else:
+        L.append(f"| Invested gross | UNAVAILABLE — {_bd['valuation_reason']} |")
+    if _bd["net_equity"]:
+        L.append(f"| Net equity (gross − debt) | ${mg['net_equity']:,.0f} |")
+    else:
+        L.append("| Net equity (gross − debt) | UNAVAILABLE — "
+                 f"{_bd['margin_reason'] or 'derived from gross'} |")
+    _lev_out = lev_s if _bd["leverage"] else "UNAVAILABLE"
+    L.append(f"| Leverage (gross/equity) | {_lev_out} vs {mg['leverage_cap']:.2f}x cap |")
+    # The buffer is Robinhood's OWN displayed reading, not a book-derived ratio,
+    # so it is an independently valid observation and survives -- shown with its
+    # own staleness caveat rather than suppressed.
     L.append(f"| Buffer (last synced) | {buf_s} vs {mg['buffer_floor_pct']:.0f}% floor |")
 
     # Tracked cash is part of the book identity, so the health view reports it
@@ -1676,15 +1782,27 @@ def render_health(result) -> str:
         L.append("| Cluster | %-of-book | Cap | Ratio-to-cap |")
         L.append("|---|---:|---:|---:|")
         for c in clusters:
-            pct_s = f"{c['current_pct']:.1f}%" if c.get("current_pct") is not None else "n/a"
-            ratio_s = f"{c['ratio_to_cap']:.2f}x" if c.get("ratio_to_cap") is not None else "n/a"
+            # %-of-book and ratio-to-cap are `value / book`, so both inherit the
+            # book's own availability. The cluster's DOLLAR VALUE does not -- it
+            # is the sum of resolved positions -- so it keeps being reported.
+            if _bd["book_ratios"]:
+                pct_s = (f"{c['current_pct']:.1f}%"
+                         if c.get("current_pct") is not None else "n/a")
+                ratio_s = (f"{c['ratio_to_cap']:.2f}x"
+                           if c.get("ratio_to_cap") is not None else "n/a")
+            else:
+                pct_s = ratio_s = "UNAVAILABLE"
             L.append(f"| {c['name']} | {pct_s} | {c['pct']:.0f}% | {ratio_s} |")
     else:
         L.append("_No clusters configured._")
 
     L.append("")
     L.append("## 8%/40% no-add ceilings (PHQ-2026-02)")
-    L.append(f"- Common-driver current: {result.get('common_driver_current_pct', 0.0):.2f}% "
+    # Same denominator, same rule.
+    _cd = result.get('common_driver_current_pct')
+    _cd_s = (f"{_cd:.2f}%" if (_bd["book_ratios"] and _cd is not None)
+             else "UNAVAILABLE")
+    L.append(f"- Common-driver current: {_cd_s} "
              f"vs {result.get('common_driver_ceiling_pct', 40.0):.1f}% ceiling.")
     retained = result.get("retained_common_driver_measurement") or {}
     if retained:
@@ -2096,26 +2214,57 @@ def render_performance() -> str:
     first, last = rows[0], rows[-1]
     prev = rows[-2] if len(rows) >= 2 else first
 
+    def _num(v):
+        """A ledger cell as a finite float, or None if it does not carry one.
+
+        Blank was ALREADY the ledger's representation of a benchmark fetch that
+        failed, and PHQ-2026-07 makes it the representation of an invalid value
+        too -- so `float(v)` on a comparison cell is a crash waiting for the
+        first row that has one. Independent review reproduced exactly that:
+        ``ValueError: could not convert string to float: ''``.
+
+        Nothing is backfilled or fabricated. An absent observation stays absent
+        and the comparison that needed it reads `n/a`; every other figure in the
+        report is independently valid and survives.
+        """
+        if v is None:
+            return None
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return None
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return None
+        return f if math.isfinite(f) else None
+
     def pct(a, b):
-        a, b = float(a), float(b)
+        a, b = _num(a), _num(b)
+        if a is None or b is None:
+            return None          # one end of the comparison does not exist
         return (b / a - 1) * 100 if a else None
 
     def fmt(p):
         return f"{p:+.1f}%" if p is not None else "n/a"
 
+    def money(v):
+        n = _num(v)
+        return f"${n:,.0f}" if n is not None else "n/a"
+
     L = ["# Performance log — net equity vs QQQ/VOO", "",
         f"**{len(rows)} snapshot(s)** logged, {first['date']} → {last['date']}", "",
         "| | Since first log | Since last log |",
         "|---|---:|---:|",
-        f"| Net equity | {fmt(pct(first['net_equity'], last['net_equity']))} "
-        f"| {fmt(pct(prev['net_equity'], last['net_equity']))} |",
-        f"| QQQ | {fmt(pct(first['qqq_price'], last['qqq_price']))} "
-        f"| {fmt(pct(prev['qqq_price'], last['qqq_price']))} |",
-        f"| VOO | {fmt(pct(first['voo_price'], last['voo_price']))} "
-        f"| {fmt(pct(prev['voo_price'], last['voo_price']))} |",
+        f"| Net equity | {fmt(pct(first.get('net_equity'), last.get('net_equity')))} "
+        f"| {fmt(pct(prev.get('net_equity'), last.get('net_equity')))} |",
+        f"| QQQ | {fmt(pct(first.get('qqq_price'), last.get('qqq_price')))} "
+        f"| {fmt(pct(prev.get('qqq_price'), last.get('qqq_price')))} |",
+        f"| VOO | {fmt(pct(first.get('voo_price'), last.get('voo_price')))} "
+        f"| {fmt(pct(prev.get('voo_price'), last.get('voo_price')))} |",
         "", "_Latest snapshot:_",
-        f"- {last['date']}: net equity ${float(last['net_equity']):,.0f}, "
-        f"gross ${float(last['gross']):,.0f}, margin debt ${float(last['margin_debt']):,.0f}"
+        f"- {last['date']}: net equity {money(last.get('net_equity'))}, "
+        f"gross {money(last.get('gross'))}, margin debt {money(last.get('margin_debt'))}"
         + (f" — _{last['note']}_" if last.get("note") else ""),
         "",
         "> ⚠️ **This is a rough directional check, not a precise return calc.** "

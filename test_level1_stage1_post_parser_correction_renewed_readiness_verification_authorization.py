@@ -345,17 +345,63 @@ WS0014 = _ws0014()
 _ANCHOR_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
 
+#: A string literal is a LAWFUL ANCHOR only if it looks like one. Everything else
+#: is operative expected text and must survive normalization untouched.
+#:
+#: Independent review reproduced why this distinction is load-bearing. The
+#: superseded normaliser abstracted EVERY string, so
+#:
+#:     assert "Merging it arms nothing" in section
+#:
+#: and
+#:
+#:     assert "" in section
+#:
+#: normalized identically -- a substantive Stage-1 safety assertion could be made
+#: vacuous with the inventory reporting no loss at all. These patterns are
+#: FAIL-CLOSED: a string that does not match one is preserved, so an unrecognised
+#: form is protected rather than silently abstracted.
+_ANCHOR_PATTERNS = (
+    re.compile(r"^[0-9a-f]{7,40}$"),                  # git object name
+    re.compile(r"^\d{4}-\d{2}-\d{2}"),               # ISO date (optionally + time)
+    re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{4}(-\d{2})?$"),  # XASSET-0061, PHQ-2026-07
+    re.compile(r"^claude/[A-Za-z0-9._\-/]+$"),        # branch name
+    re.compile(r"^governance/decisions/[A-Za-z0-9._\-]+\.md$"),
+    re.compile(r"^\d+$"),                             # a number carried as text
+)
+
+
+def _is_lawful_anchor(text: str) -> bool:
+    """Whether this exact string is the kind of value a lawful re-anchor changes.
+
+    Deliberately NARROW. A SHA, a date, a decision identifier, a branch name or a
+    decision filename is a moving target that every successor filing must
+    re-point; expected prose, a substring being searched for, an error message
+    fragment and a field name are not, and abstracting those is what let the
+    reviewed bypass through.
+    """
+    t = text.strip()
+    if not t:
+        return False          # "" is never an anchor -- it is the bypass itself
+    return any(p.match(t) for p in _ANCHOR_PATTERNS)
+
+
 class _AnchorNormaliser(ast.NodeTransformer):
     """Abstract LAWFUL ANCHOR SUBSTITUTIONS; preserve every operative predicate.
 
     Abstracted -- a lawful re-anchor may change these, and doing so is not a
     weakening:
 
-    * string literals and f-strings -- SHAs, dates, decision IDs, branch names;
+    * string literals that MATCH ``_ANCHOR_PATTERNS`` -- SHAs, dates, decision
+      IDs, branch names, decision filenames;
+    * f-strings whose every literal part is itself such an anchor (or bare
+      punctuation) -- e.g. ``f"{DECISION_ID}-"``;
     * ``SCREAMING_CASE`` names -- ``XASSET0060_MAIN_SHA`` -> ``XASSET0061_MAIN_SHA``.
 
     Preserved -- changing any of these changes what is actually ASSERTED:
 
+    * every OTHER string literal, including expected prose and searched-for
+      substrings -- ``"Merging it arms nothing"`` is not an anchor;
     * attribute and method names -- ``startswith`` vs ``endswith``;
     * comparison and boolean operators -- ``>=`` vs ``>``, ``and`` vs ``or``;
     * NUMERIC literals -- ``441`` vs ``440``;
@@ -363,7 +409,7 @@ class _AnchorNormaliser(ast.NodeTransformer):
     """
 
     def visit_Constant(self, node):
-        if isinstance(node.value, str):
+        if isinstance(node.value, str) and _is_lawful_anchor(node.value):
             return ast.copy_location(ast.Constant(value="<ANCHOR_STR>"), node)
         return node
 
@@ -373,7 +419,20 @@ class _AnchorNormaliser(ast.NodeTransformer):
         return node
 
     def visit_JoinedStr(self, node):
+        # An f-string is an anchor only when its LITERAL parts are anchors (or
+        # trivial punctuation joining interpolations). ``f"{DECISION_ID}-"`` is;
+        # ``f"expected {x} in the header"`` is not, and its prose is preserved.
+        for part in node.values:
+            if isinstance(part, ast.Constant) and isinstance(part.value, str):
+                t = part.value.strip()
+                if t and not _is_lawful_anchor(t) and not _TRIVIAL_JOINER.match(t):
+                    return self.generic_visit(node)
         return ast.copy_location(ast.Constant(value="<ANCHOR_FSTR>"), node)
+
+
+#: Punctuation that merely joins interpolated anchors and carries no meaning of
+#: its own -- ``f"{A}-{B}"``, ``f"{SHA}:{path}"``.
+_TRIVIAL_JOINER = re.compile(r"^[\-:/.,;_=~^@#|\s\[\](){}<>]+$")
 
 
 def _assertion_inventory(source: str) -> collections.Counter:
@@ -1223,15 +1282,107 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         def one(expr):
             return _assertion_inventory(f"def f():\n    assert {expr}\n")
 
-        # abstracted -- lawful anchor substitutions
-        assert one('x.startswith("aaa")') == one('x.startswith("bbb")')
-        assert one("v == SHA_ALPHA") == one("v == SHA_BETA")
+        # ABSTRACTED -- lawful anchor substitutions, each matching a pattern
+        assert one('v == "413e033ac33741829168762ab24d73327c047d4b"') == \
+               one('v == "3db918530b10ffc1423ba0b749b086e349a4901d"')   # SHA
+        assert one('d == "2026-08-28"') == one('d == "2026-09-02"')      # date
+        assert one('i == "XASSET-0060"') == one('i == "XASSET-0061"')    # decision id
+        assert one('b == "claude/one"') == one('b == "claude/two"')      # branch
+        assert one("v == SHA_ALPHA") == one("v == SHA_BETA")             # SCREAMING_CASE
         assert one('x.startswith(f"{DECISION_ID}-")') == one('x.startswith(f"{OTHER}-")')
+
+        # NOT abstracted -- operative expected TEXT is not an anchor. This is the
+        # correction independent review required: the superseded normaliser
+        # abstracted every string, so a searched-for phrase could be replaced by
+        # anything -- including "" -- with the inventory unchanged.
+        assert one('"Merging it arms nothing" in section') != one('"" in section')
+        assert one('"Merging it arms nothing" in section') != \
+               one('"Merging it arms something" in section')
+        assert one('x.startswith("aaa")') != one('x.startswith("bbb")')
+
         # NOT abstracted -- operative meaning
         assert one('x.startswith("a")') != one('x.endswith("a")')
         assert one("n >= 441") != one("n >= 440")
         assert one("n >= 441") != one("n > 441")
         assert one('x.startswith("a")') != one("x")
+
+        # An f-string carrying PROSE is not an anchor either, even though one
+        # carrying only an interpolated id is.
+        assert one('m == f"expected {x} in the header"') != \
+               one('m == f"required {x} in the header"')
+
+    def test_a_semantic_string_weakening_on_an_unprotected_suite_is_caught(self):
+        """REQUIRED NEGATIVE CONTROL (PHQ-2026-07, third correction).
+
+        Independent review demonstrated this exact mutation on a suite that is
+        PINNED but deliberately NOT in ``PROTECTED_PREDICATES``:
+
+            assert "Merging it arms nothing" in section   ->   assert "" in section
+
+        The weakened form accepts any string whatsoever, including the empty one,
+        so a substantive Stage-1 safety assertion becomes vacuous. Under the
+        superseded normaliser both forms abstracted to the same thing and the
+        inventory reported no loss. The searched-for phrase is not a SHA, a date,
+        a decision id or a branch name, so it is not an anchor and is preserved.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        assert rel in PINNED_TEST_HASHES, "the probe's own target is no longer pinned"
+        assert rel not in PROTECTED_PREDICATES, (
+            "this probe exists to prove the GENERAL mechanism, so its target must "
+            "not be covered by the direct-protection list")
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert "Merging it arms nothing" in section'
+        assert strong in src, "the probe's own target has moved"
+        weak = src.replace(strong, 'assert "" in section')
+        assert _lost_assertions(src, weak), (
+            "the semantic-string weakening was NOT caught")
+
+    def test_the_empty_string_is_never_treated_as_an_anchor(self):
+        """The specific value that makes an ``in`` test vacuous."""
+        assert not _is_lawful_anchor("")
+        assert not _is_lawful_anchor("   ")
+
+    def test_only_contextually_lawful_anchor_shapes_are_abstracted(self):
+        """Pin the classifier itself, both directions.
+
+        Fail-closed: an unrecognised string is PRESERVED. So the risk this test
+        guards is the opposite one -- a pattern quietly widening until prose
+        matches it again.
+        """
+        for lawful in ("413e033ac33741829168762ab24d73327c047d4b", "3db91853",
+                       "2026-09-02", "2026-09-02T13:17:24Z",
+                       "XASSET-0061", "PHQ-2026-07", "OPS-0014",
+                       "claude/protected-capital-accounting",
+                       "governance/decisions/XASSET-0061-something.md", "364"):
+            assert _is_lawful_anchor(lawful), lawful
+        for operative in ("Merging it arms nothing", "", "   ", "startswith",
+                          "UNAVAILABLE", "arms", "Stage 1", "nothing",
+                          "the catalog row must be unique", "assert True",
+                          "net_equity", "qqq_price", "hold_no_add"):
+            assert not _is_lawful_anchor(operative), operative
+
+    def test_every_required_property_of_the_guard_holds_together(self):
+        """One place stating all five retained properties, so none can drift alone."""
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")'
+        assert strong in src
+
+        # 1. startswith -> endswith is caught
+        assert _lost_assertions(
+            src, src.replace(strong, 'assert Path(entry["file"]).name.endswith(".md")'))
+        # 2. replacing a required assertion with assert True is caught
+        assert _lost_assertions(src, src.replace(strong, "assert True"))
+        # 3. deleting it outright is caught
+        assert _lost_assertions(
+            src, src.replace("        " + strong + ', entry["file"]\n', ""))
+        # 4. a genuine ADDITION is permitted
+        assert not _lost_assertions(
+            src, src.replace("        " + strong + ', entry["file"]\n',
+                             "        " + strong + ', entry["file"]\n'
+                             '        assert entry["id"], entry\n'))
+        # 5. a lawful, specifically recognised re-anchor is permitted
+        assert not _lost_assertions(src, src.replace("== 162", "== 163"))
 
     def test_the_protected_catalog_predicate_is_asserted_directly(self):
         """Belt and braces: the ONE named protected property, pinned by name.

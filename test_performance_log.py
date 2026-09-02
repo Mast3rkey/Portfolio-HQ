@@ -289,3 +289,180 @@ def test_no_ledger_field_ever_carries_a_non_finite_spelling(
             allocate.log_performance(client=_NonFiniteBenchClient(bad), quiet=True,
                                      resolved_holdings=supplied)
         _assert_ledger_has_no_non_finite_spelling(perf_log)
+
+
+# ── PHQ-2026-07 correction round 4 — independent DELTA review 5090097708 ──────
+# MAJOR 2 (reproduced): the writer correctly stores an unavailable benchmark as
+# blank, but render_performance() ran `float(a), float(b)` unconditionally and
+# raised `ValueError: could not convert string to float: ''` on the first such
+# row. Blank was ALREADY the representation of a failed fetch, and this PR makes
+# it the representation of an invalid value too — so the reader must render the
+# affected comparison as n/a while every independently valid figure survives.
+
+
+def _write_rows(perf_log, rows):
+    """Seed a ledger directly, for the positions a writer cannot easily produce."""
+    hdr = ["date", "gross", "net_equity", "book", "cash", "margin_debt",
+           "qqq_price", "voo_price", "note"]
+    with perf_log.open("w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(hdr)
+        w.writerows(rows)
+
+
+class _BenchClient:
+    """Feeds a chosen close, so the WRITER produces the blank rather than a test."""
+
+    def __init__(self, value):
+        self._v = value
+
+    def get_bars(self, *a, **k):
+        return [{"c": 100.0}, {"c": self._v}]
+
+
+@pytest.mark.parametrize("position,rows", [
+    ("first row blank", [
+        ["2026-08-30", "1000", "800", "1000", "0", "0", "", "", "blank first"],
+        ["2026-08-31", "1010", "810", "1010", "0", "0", "400.0", "390.0", ""],
+        ["2026-09-01", "1020", "820", "1020", "0", "0", "410.0", "395.0", ""]]),
+    ("previous row blank", [
+        ["2026-08-30", "1000", "800", "1000", "0", "0", "400.0", "390.0", ""],
+        ["2026-08-31", "1010", "810", "1010", "0", "0", "", "", "blank prev"],
+        ["2026-09-01", "1020", "820", "1020", "0", "0", "410.0", "395.0", ""]]),
+    ("latest row blank", [
+        ["2026-08-30", "1000", "800", "1000", "0", "0", "400.0", "390.0", ""],
+        ["2026-08-31", "1010", "810", "1010", "0", "0", "405.0", "392.0", ""],
+        ["2026-09-01", "1020", "820", "1020", "0", "0", "", "", "blank latest"]]),
+    ("mixed blank and finite", [
+        ["2026-08-30", "1000", "800", "1000", "0", "0", "", "390.0", "half blank"],
+        ["2026-08-31", "1010", "810", "1010", "0", "0", "405.0", "", "other half"],
+        ["2026-09-01", "1020", "820", "1020", "0", "0", "410.0", "395.0", ""]]),
+])
+def test_blank_benchmarks_render_as_na_without_raising(
+        position, rows, tmp_path, monkeypatch):
+    """The reader must never raise on a representation the writer produces."""
+    perf_log = tmp_path / "performance_log.csv"
+    monkeypatch.setattr(allocate, "PERF_LOG_FILE", perf_log)
+    _write_rows(perf_log, rows)
+
+    out = allocate.render_performance()
+
+    assert isinstance(out, str) and out
+    # Net equity is independently valid in every one of these ledgers, so the
+    # report must still carry a real comparison rather than degrading wholesale.
+    net_line = [ln for ln in out.splitlines() if ln.startswith("| Net equity")]
+    assert net_line and "%" in net_line[0], (position, out)
+    assert "nan" not in out.lower()
+
+
+def test_all_finite_benchmarks_still_compute_percentages(tmp_path, monkeypatch):
+    """Positive control: nothing is degraded when every value is present."""
+    perf_log = tmp_path / "performance_log.csv"
+    monkeypatch.setattr(allocate, "PERF_LOG_FILE", perf_log)
+    _write_rows(perf_log, [
+        ["2026-08-30", "1000", "800", "1000", "0", "0", "400.0", "390.0", ""],
+        ["2026-08-31", "1100", "880", "1100", "0", "0", "440.0", "429.0", ""]])
+
+    out = allocate.render_performance()
+
+    for label in ("| Net equity", "| QQQ", "| VOO"):
+        line = [ln for ln in out.splitlines() if ln.startswith(label)]
+        assert line, out
+        assert "n/a" not in line[0], (label, line[0])
+        assert "%" in line[0], (label, line[0])
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_writer_to_reader_integration_never_raises(bad, tmp_path, monkeypatch,
+                                                   current_state):
+    """End to end through the REAL writer, not a hand-built ledger.
+
+    This is the path the defect actually lived on: log_performance() blanks the
+    unusable benchmark, then render_performance() reads its own output back.
+    """
+    perf_log = tmp_path / "performance_log.csv"
+    monkeypatch.setattr(allocate, "PERF_LOG_FILE", perf_log)
+
+    # Row one: the benchmark fetch yields an unusable close, so it is blanked.
+    allocate.log_performance(client=_BenchClient(bad), quiet=True,
+                             resolved_holdings={"AAA": 1000.0})
+    raw = perf_log.read_text()
+    assert raw.count("\n") == 2, raw
+    row = list(csv.DictReader(raw.splitlines()))[0]
+    assert row["qqq_price"] == "" and row["voo_price"] == "", row
+
+    # Row two, a later date with a finite close: the comparison now spans a blank
+    # and a real value -- exactly the shape that raised.
+    import datetime as _dt
+    rows = list(csv.reader(raw.splitlines()))
+    later = (_dt.date.today() + _dt.timedelta(days=1)).isoformat()
+    second = list(rows[1])
+    second[0] = later
+    second[rows[0].index("qqq_price")] = "432.25"
+    second[rows[0].index("voo_price")] = "398.10"
+    _write_rows(perf_log, [rows[1], second])
+
+    out = allocate.render_performance()
+
+    assert isinstance(out, str) and out
+    for label in ("| QQQ", "| VOO"):
+        line = [ln for ln in out.splitlines() if ln.startswith(label)]
+        assert line and "n/a" in line[0], (label, out)
+    assert "nan" not in out.lower() and "inf" not in out.lower()
+
+
+def test_a_blank_portfolio_figure_renders_as_na_rather_than_raising(
+        tmp_path, monkeypatch):
+    """The latest-snapshot line reads the same ledger and must be as tolerant."""
+    perf_log = tmp_path / "performance_log.csv"
+    monkeypatch.setattr(allocate, "PERF_LOG_FILE", perf_log)
+    _write_rows(perf_log, [
+        ["2026-08-30", "1000", "800", "1000", "0", "0", "400.0", "390.0", ""],
+        ["2026-08-31", "", "", "1010", "0", "", "405.0", "392.0", "no figures"]])
+
+    out = allocate.render_performance()
+
+    assert "n/a" in out
+    assert "nan" not in out.lower()
+
+
+def test_the_reader_never_fabricates_a_missing_price(tmp_path, monkeypatch):
+    """No backfill, no carry-forward, no zero substitution."""
+    perf_log = tmp_path / "performance_log.csv"
+    monkeypatch.setattr(allocate, "PERF_LOG_FILE", perf_log)
+    _write_rows(perf_log, [
+        ["2026-08-30", "1000", "800", "1000", "0", "0", "400.0", "390.0", ""],
+        ["2026-08-31", "1010", "810", "1010", "0", "0", "", "", "blank"]])
+
+    out = allocate.render_performance()
+
+    qqq = [ln for ln in out.splitlines() if ln.startswith("| QQQ")][0]
+    assert qqq.count("n/a") == 2, qqq          # both comparisons, not one guess
+    assert "0.0%" not in qqq and "+0.0%" not in qqq
+
+
+@pytest.mark.parametrize("junk", ["n/a", "abc", "nan", "inf", "-inf", "None", "--"])
+def test_a_non_numeric_or_non_finite_cell_also_renders_as_na(junk, tmp_path,
+                                                             monkeypatch):
+    """"Unavailable" and "invalid" get the same treatment, per PHQ-2026-07.
+
+    Blank is the representation the writer produces today, but a ledger that has
+    been hand-edited, produced by an older writer, or carries a serialized
+    non-finite float must not crash the report either -- and a non-finite value
+    must never be read back as a real observation.
+    """
+    perf_log = tmp_path / "performance_log.csv"
+    monkeypatch.setattr(allocate, "PERF_LOG_FILE", perf_log)
+    _write_rows(perf_log, [
+        ["2026-08-30", "1000", "800", "1000", "0", "0", junk, junk, "junk"],
+        ["2026-08-31", "1010", "810", "1010", "0", "0", "405.0", "392.0", ""]])
+
+    out = allocate.render_performance()
+
+    for label in ("| QQQ", "| VOO"):
+        line = [ln for ln in out.splitlines() if ln.startswith(label)]
+        assert line and "n/a" in line[0], (junk, label, out)
+    # Net equity is untouched by the junk benchmark and must still compute.
+    net = [ln for ln in out.splitlines() if ln.startswith("| Net equity")][0]
+    assert "%" in net and "n/a" not in net, (junk, net)
+    assert "nan" not in out.lower() and "inf" not in out.lower()
