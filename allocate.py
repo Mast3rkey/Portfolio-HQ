@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import csv
 import math
+import re
 import sys
 from datetime import date, datetime
 from decimal import Decimal
@@ -786,6 +787,229 @@ def _issuer_exposure(holdings: dict, book: float, lookthrough: dict) -> dict:
     return {"issuers": issuers, "common_driver_current_pct": common_driver_pct}
 
 
+#: THE OUTPUT DEPENDENCY SCHEMA (PHQ-2026-07, fourth correction).
+#:
+#: Every numeric path plan() can emit, mapped to what must actually be observed
+#: for that number to be true. Independent review found three separate escapes --
+#: a trim dollar and its "$820 over own target" reason text, a missing holding
+#: reported as "$0 (no position)", and issuer/cluster/net-equity figures computed
+#: from an unavailable book -- each because masking was applied to selected
+#: PRESENTATION fields rather than to the emitted result itself.
+#:
+#: Dependencies:
+#:   "always"      independent of every observation (configuration: a target
+#:                 percentage, a cap percentage, a ceiling, a requested amount)
+#:   "valuation"   needs a COMPLETE valuation (gross and anything summed from it)
+#:   "val+margin"  needs a complete valuation AND a usable margin observation
+#:                 (net equity, leverage -- both carry the debt term)
+#:   "book"        needs the whole book: cash, valuation and margin together
+#:   "ticker"      needs THAT ROW'S OWN ticker resolved -- a per-name value, not
+#:                 a global one, so one missing holding does not blank the rest
+#:   "members"     needs every member of that aggregate valued
+#:
+#: A path absent from this map is UNCLASSIFIED and the boundary REFUSES to emit
+#: it. That is the mechanism the review asked for: a new numeric field cannot
+#: reach a caller until someone states what it depends on.
+_OUTPUT_DEPENDENCIES = {
+    # ---- top-level book identity -------------------------------------------
+    "book": "book", "cash": "book", "cash_left": "book",
+    "cash_after_plan": "book", "cash_funded_capacity": "book",
+    "unused_margin_capacity": "book",
+    # `cash_spent` is NOT book-derived. It reports what this plan actually did,
+    # and when the book is unavailable it provably did nothing -- a known zero,
+    # not an unknown. Withholding it would DESTROY the safety invariant
+    # "nothing was funded while the observation was not current", which several
+    # tests assert directly. Classified honestly rather than conservatively.
+    "cash_spent": "always",
+    # ---- configuration: true regardless of any observation -----------------
+    "issuer_ceiling_pct": "always", "common_driver_ceiling_pct": "always",
+    "valuation.expected_count": "always",
+    # The RETAINED policy measurement is a frozen, point-in-time figure read
+    # straight from issuer_lookthrough.yaml (PHQ-2026-01 point 9). It is not
+    # computed from the live book at all, so no live observation can make it
+    # unavailable -- and blanking it would erase an above-ceiling policy record.
+    "retained_common_driver_measurement.value_pct": "always",
+    "margin.leverage_cap": "always", "margin.buffer_floor_pct": "always",
+    "margin.requested": "always",
+    # ---- margin ------------------------------------------------------------
+    "margin.gross": "valuation",
+    "margin.net_equity": "val+margin", "margin.leverage_current": "val+margin",
+    # The DEBT and the broker's own displayed BUFFER are readings, not
+    # derivations -- they stay, with their own staleness disclosed by render().
+    "margin.debt": "always", "margin.buffer_pct": "always",
+    "margin.allowed": "book", "margin.used": "book",
+    # ---- book-denominated ratios -------------------------------------------
+    "common_driver_current_pct": "book",
+    "issuer_exposure.*.direct_pct": "book",
+    "issuer_exposure.*.embedded_pct": "book",
+    "issuer_exposure.*.effective_pct": "book",
+    "clusters[].pct": "always",
+    "clusters[].value": "members",
+    "clusters[].current_pct": "book", "clusters[].ratio_to_cap": "book",
+    # ---- protected capital: every dollar here is book-derived ---------------
+    "protection.book": "book", "protection.actual_cash": "book",
+    "protection.protected_floor_dollars": "book",
+    "protection.cash_surplus_dollars": "book",
+    "protection.cash_shortfall_dollars": "book",
+    "protection.static_protected_dollars": "book",
+    "protection.gated_cash_required_dollars": "book",
+    "protection.cash_pct": "always", "protection.reserve_pct": "always",
+    "protection.unreconciled_pct": "always",
+    "protection.gated_target_pct": "always",
+    "protection.static_protected_pct": "always",
+    "protection.destination_total_pct": "always",
+    "protection.gated_detail[].target_pct": "always",
+    "protection.gated_detail[].target_dollars": "book",
+    "protection.gated_detail[].cash_required_dollars": "book",
+    "protection.gated_detail[].held_dollars": "ticker",
+}
+
+#: Row fields, applied to EVERY emitted row collection by the same rule, so a new
+#: collection inherits the contract instead of needing its own entry.
+_ROW_FIELD_DEPENDENCIES = {
+    "price": "always", "rsi": "always", "vs200": "always",
+    "target": "book", "gap": "book", "dollars": "book",
+    "want": "book", "max_by_name": "book",
+    "current": "ticker",
+    "current_effective_pct": "book", "current_common_driver_pct": "book",
+    "current_issuer_pct": "book", "ceiling_pct": "always",
+    "overweight": "book", "trim_to": "book", "headroom": "book",
+    "pct_of_book": "book", "target_pct": "always",
+}
+
+#: Row collections plan() emits. Sourced here once so the boundary and the
+#: return statement cannot drift apart.
+_ROW_COLLECTIONS = ("buys", "trims", "blocked", "underweight", "no_add_gated",
+                    "no_add_issuer", "no_add_common_driver")
+
+#: Free-text fields that may quote a book-derived dollar. A reason string is an
+#: output too: "$820 over own target" published the very figure the Dollars
+#: column had just withheld.
+_TEXT_FIELDS = ("reason", "action", "note")
+
+_DOLLAR_IN_TEXT = re.compile(r"\$[\d,]+(?:\.\d+)?")
+
+
+class UnclassifiedOutputPath(AssertionError):
+    """A numeric path reached the boundary with no stated dependency.
+
+    Deliberately fatal rather than permissive. The alternative -- emit anything
+    unrecognised -- is precisely the hand-selected-list failure mode that let
+    three separate escapes through review.
+    """
+
+
+def _apply_output_dependencies(result, deps, unknown_tickers, cluster_members):
+    """Withhold every emitted value whose dependency is not satisfied.
+
+    Runs ONCE, immediately before plan() returns. Internal arithmetic above this
+    point stays numeric -- ranking, cap enforcement and trim sizing all need real
+    numbers -- but nothing unavailable crosses the boundary.
+    """
+    def ok(dep, ticker=None, members=None):
+        if dep == "always":
+            return True
+        if dep == "valuation":
+            return deps["valuation"]
+        if dep == "val+margin":
+            return deps["valuation"] and deps["margin"]
+        if dep == "book":
+            return deps["book"]
+        if dep == "ticker":
+            # Per-NAME coverage. A value is UNKNOWN only when the ticker is
+            # tracked with nonzero shares and failed to price -- that is exactly
+            # `valuation["unresolved"]`. A name with no holding at all is a
+            # KNOWN zero, not an unknown, so blanking it would destroy a true
+            # observation just as surely as printing $0 for a missing one
+            # invented a false one.
+            return ticker is not None and ticker.upper() not in unknown_tickers
+        if dep == "members":
+            return members is not None and all(
+                t.upper() not in unknown_tickers for t in members)
+        raise UnclassifiedOutputPath(f"unknown dependency {dep!r}")
+
+    def scrub_text(value):
+        """A dollar figure inside prose is still a published dollar figure."""
+        return _DOLLAR_IN_TEXT.sub("$UNAVAILABLE", value)
+
+    # ---- row collections ---------------------------------------------------
+    for coll in _ROW_COLLECTIONS:
+        for row in result.get(coll) or []:
+            if not isinstance(row, dict):
+                continue
+            tk = row.get("ticker")
+            for field, value in list(row.items()):
+                if field in _TEXT_FIELDS and isinstance(value, str):
+                    if not deps["book"] and _DOLLAR_IN_TEXT.search(value):
+                        row[field] = scrub_text(value)
+                    continue
+                if isinstance(value, bool) or not isinstance(value, (int, float)):
+                    continue
+                if field not in _ROW_FIELD_DEPENDENCIES:
+                    raise UnclassifiedOutputPath(f"{coll}[].{field}")
+                if not ok(_ROW_FIELD_DEPENDENCIES[field], ticker=tk):
+                    row[field] = None
+            # `holds_existing_shares` claims a POSITION FACT derived from the
+            # value. When the value is unknown the claim is unknown too --
+            # reporting False would assert "no position" about a name whose
+            # nonzero shares are tracked, which is the false claim review
+            # 5091155438 reproduced.
+            if "holds_existing_shares" in row and row.get("current") is None:
+                row["holds_existing_shares"] = None
+
+    # ---- clusters ----------------------------------------------------------
+    for c in result.get("clusters") or []:
+        members = cluster_members.get(c.get("name"), ())
+        for field, value in list(c.items()):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                continue
+            key = f"clusters[].{field}"
+            if key not in _OUTPUT_DEPENDENCIES:
+                raise UnclassifiedOutputPath(key)
+            if not ok(_OUTPUT_DEPENDENCIES[key], members=members):
+                c[field] = None
+
+    # ---- everything else, recursively --------------------------------------
+    def walk(node, path):
+        if isinstance(node, dict):
+            for k, v in list(node.items()):
+                child = f"{path}.{k}" if path else str(k)
+                if isinstance(v, (dict, list)):
+                    walk(v, child)
+                elif isinstance(v, bool) or not isinstance(v, (int, float)):
+                    continue
+                else:
+                    key = child
+                    if key not in _OUTPUT_DEPENDENCIES:
+                        # issuer_exposure is keyed by TICKER; normalise that one
+                        # level so the schema states the shape, not the roster.
+                        parts = child.split(".")
+                        if len(parts) == 3 and parts[0] == "issuer_exposure":
+                            key = f"issuer_exposure.*.{parts[2]}"
+                    if key not in _OUTPUT_DEPENDENCIES:
+                        raise UnclassifiedOutputPath(child)
+                    if not ok(_OUTPUT_DEPENDENCIES[key]):
+                        node[k] = None
+        elif isinstance(node, list):
+            for item in node:
+                if isinstance(item, (dict, list)):
+                    walk(item, path + "[]")
+
+    for key, value in list(result.items()):
+        if key in _ROW_COLLECTIONS or key == "clusters":
+            continue
+        if isinstance(value, (dict, list)):
+            walk(value, key)
+        elif isinstance(value, bool) or not isinstance(value, (int, float)):
+            continue
+        else:
+            if key not in _OUTPUT_DEPENDENCIES:
+                raise UnclassifiedOutputPath(key)
+            if not ok(_OUTPUT_DEPENDENCIES[key]):
+                result[key] = None
+    return result
+
+
 def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
          margin_debt=0.0, margin_buffer_pct=None, margin_requested=0.0,
          gates_cfg=None, lookthrough=None, holdings_state=None,
@@ -1185,7 +1409,28 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
 
     unresolved = {t: float(v) for t, v in holdings.items() if t.upper() not in roster}
     leverage_current = (gross / net_equity) if net_equity > 0 else None
-    return {
+
+    # ---- THE OUTPUT BOUNDARY -----------------------------------------------
+    # Every dependency needed to decide what may be emitted, gathered from the
+    # observations themselves rather than from one collapsed boolean.
+    _margin_state = load_margin_state(holdings_state or {})
+    _emit_deps = {
+        "valuation": bool(valuation.get("complete")),
+        "margin": bool(_margin_state.get("usable")),
+        "book": bool(dollars_ok),
+    }
+    # Per-NAME coverage. A ticker is resolved when it carries a value the
+    # valuation actually accepted -- so one missing holding blanks its own row
+    # and the aggregates containing it, and nothing else.
+    _unknown = {t.upper() for t in (valuation.get("unresolved") or [])}
+    _unknown |= {t.upper() for t in (valuation.get("invalid") or [])}
+    # CONFIGURED membership, not the subset that happened to reach cluster_info.
+    # An unresolved member never enters cluster_info at all, so sourcing it there
+    # would make the aggregate look complete precisely when a member is missing --
+    # which is the defect. The cap's own ticker list is the honest denominator.
+    _cluster_members = {c["name"]: tuple(c["tickers"]) for c in clusters}
+
+    _result = {
         # `book`/`cash` are None when the cash observation is unusable: a book
         # computed without a cash balance we do not have is not the book.
         "book": book if dollars_ok else None,
@@ -1233,6 +1478,12 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             "block_reason": margin_block_reason,
         },
     }
+
+    # ONE pass, immediately before the caller sees anything. Internal arithmetic
+    # above stayed numeric because ranking, cap enforcement and trim sizing all
+    # need real numbers; nothing unavailable crosses this line.
+    return _apply_output_dependencies(_result, _emit_deps, _unknown,
+                                      _cluster_members)
 
 
 # ── rendering ──────────────────────────────────────────────────────────────────
@@ -1496,14 +1747,18 @@ def render(result, review: bool) -> str:
                  f"**{n_buy} buy(s)**; ${result['cash_left']:,.0f} left.")
     L.append(f"- Regime **{regime}** (informational — no longer gates buys; "
              "see `reports/regime_backtest.md`).")
-    # Cluster VALUE is a real holdings figure and stays. Its %-of-book is
-    # book-derived, so it is withheld -- never silently rendered as 0.0%.
-    cluster_bits = "; ".join(
-        f"{c['name']} ${c['value']:,.0f} "
-        + (f"({c['value']/result['book']*100:.1f}% of book, "
-           if (_ck and result['book']) else "(%-of-book n/a, ")
-        + f"cap {c['pct']:.0f}%)"
-        for c in result.get("clusters", []))
+    # Cluster VALUE is a real holdings figure -- but only when EVERY member of
+    # that cluster was actually valued. The boundary has already decided; render()
+    # reads the decision rather than recomputing it, and never divides by a book
+    # it was told it does not have.
+    def _cluster_bit(c):
+        val = (f"${c['value']:,.0f}" if c.get("value") is not None
+               else "value UNAVAILABLE (a member is unresolved)")
+        pct = (f"({c['current_pct']:.1f}% of book, "
+               if c.get("current_pct") is not None else "(%-of-book n/a, ")
+        return f"{c['name']} {val} {pct}cap {c['pct']:.0f}%)"
+
+    cluster_bits = "; ".join(_cluster_bit(c) for c in result.get("clusters", []))
     L.append(f"- **{len(result['trims'])} trim(s)**, "
              f"**{len(result['blocked'])} blocked**"
              + (f"; {cluster_bits}." if cluster_bits else "."))
@@ -1515,13 +1770,20 @@ def render(result, review: bool) -> str:
         L.append("| Ticker | Target | Current | Status | Authority | Next gate |")
         L.append("|--------|-------:|--------:|--------|-----------|-----------|")
         for r in sorted(gated, key=lambda x: x["ticker"]):
-            held = "holds existing shares" if r["holds_existing_shares"] else "no position"
-            # The gated TARGET is book-derived and is withheld with everything else
-            # when current dollars are unavailable. The CURRENT held value is not --
-            # it is the position's own resolved value, which the availability fact
-            # already required to be complete -- so it is still reported.
+            # THREE states, not two. `holds_existing_shares` is None when the
+            # ticker was never resolved: we then know neither its value nor --
+            # from the value alone -- whether a position exists. Printing
+            # "no position" there was a false claim about tracked shares.
+            _h = r.get("holds_existing_shares")
+            held = ("holds existing shares" if _h else
+                    "no position" if _h is False else
+                    "position UNKNOWN — not resolved")
+            # Both figures are read from the SANITIZED result; render() never
+            # reconstructs one the boundary withheld.
             tgt = f"${r['target']:,.0f}" if r.get("target") is not None else "UNAVAILABLE"
-            L.append(f"| {r['ticker']:<6} | {tgt} | ${r['current']:,.0f} "
+            cur = (f"${r['current']:,.0f}" if r.get("current") is not None
+                   else "UNAVAILABLE")
+            L.append(f"| {r['ticker']:<6} | {tgt} | {cur} "
                      f"({held}) | {r['status']} | {r['authority']} | {r['next_gate']} |")
 
     issuer_no_add = result.get("no_add_issuer") or []
@@ -1531,7 +1793,9 @@ def render(result, review: bool) -> str:
         L.append("| Ticker | Current effective | Ceiling |")
         L.append("|--------|-------------------:|--------:|")
         for r in issuer_no_add:
-            L.append(f"| {r['ticker']:<6} | {r['current_effective_pct']:.2f}% | "
+            _eff = (f"{r['current_effective_pct']:.2f}%"
+                    if r.get("current_effective_pct") is not None else "UNAVAILABLE")
+            L.append(f"| {r['ticker']:<6} | {_eff} | "
                      f"{r['ceiling_pct']:.1f}% |")
 
     cd_no_add = result.get("no_add_common_driver") or []
@@ -1541,7 +1805,9 @@ def render(result, review: bool) -> str:
         L.append("| Ticker | Current aggregate | Ceiling |")
         L.append("|--------|-------------------:|--------:|")
         for r in cd_no_add:
-            L.append(f"| {r['ticker']:<6} | {r['current_common_driver_pct']:.2f}% | "
+            _cd = (f"{r['current_common_driver_pct']:.2f}%"
+                   if r.get("current_common_driver_pct") is not None else "UNAVAILABLE")
+            L.append(f"| {r['ticker']:<6} | {_cd} | "
                      f"{r['ceiling_pct']:.1f}% |")
 
     cd_pct = result.get("common_driver_current_pct")
@@ -1812,8 +2078,16 @@ def render_health(result) -> str:
     if issuer_exp:
         L.append("| Issuer | Effective | Ceiling |")
         L.append("|--------|----------:|--------:|")
-        for tk, v in sorted(issuer_exp.items(), key=lambda kv: -kv[1]["effective_pct"]):
-            L.append(f"| {tk:<6} | {v['effective_pct']:.2f}% | "
+        # Issuer exposure is `holding / book * 100`, so it is withheld with the
+        # book. Independent review found both issuer tables printing 55.56%
+        # while book-ratio availability was false. Sorted by a key that tolerates
+        # the withheld value rather than raising on it.
+        for tk, v in sorted(issuer_exp.items(),
+                            key=lambda kv: (kv[1].get("effective_pct") is None,
+                                            -(kv[1].get("effective_pct") or 0.0))):
+            eff = (f"{v['effective_pct']:.2f}%"
+                   if v.get("effective_pct") is not None else "UNAVAILABLE")
+            L.append(f"| {tk:<6} | {eff} | "
                      f"{result.get('issuer_ceiling_pct', 8.0):.1f}% |")
 
     L.append("")

@@ -361,67 +361,155 @@ _ANCHOR_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
 #: vacuous with the inventory reporting no loss at all. These patterns are
 #: FAIL-CLOSED: a string that does not match one is preserved, so an unrecognised
 #: form is protected rather than silently abstracted.
-_ANCHOR_PATTERNS = (
-    re.compile(r"^[0-9a-f]{7,40}$"),                  # git object name
-    re.compile(r"^\d{4}-\d{2}-\d{2}"),               # ISO date (optionally + time)
-    re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{4}(-\d{2})?$"),  # XASSET-0061, PHQ-2026-07
-    re.compile(r"^claude/[A-Za-z0-9._\-/]+$"),        # branch name
-    re.compile(r"^governance/decisions/[A-Za-z0-9._\-]+\.md$"),
-    re.compile(r"^\d+$"),                             # a number carried as text
+#: Anchor CATEGORIES, each with its own placeholder. Independent review required
+#: that recognized values not all collapse to one universal token: doing so makes
+#: a decision id interchangeable with a date, and a determination string with a
+#: merge SHA. Each category abstracts only within itself.
+_ANCHOR_CATEGORIES = (
+    ("SHA",           re.compile(r"^[0-9a-f]{7,40}$")),
+    ("DATE",          re.compile(r"^\d{4}-\d{2}-\d{2}")),
+    ("DECISION",      re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{4}(-\d{2})?$")),
+    ("BRANCH",        re.compile(r"^claude/[A-Za-z0-9._\-/]+$")),
+    ("DECISION_FILE", re.compile(r"^governance/decisions/[A-Za-z0-9._\-]+\.md$")),
+    ("NUMBER",        re.compile(r"^\d+$")),
 )
 
 
-def _is_lawful_anchor(text: str) -> bool:
-    """Whether this exact string is the kind of value a lawful re-anchor changes.
+def _anchor_category(text: str) -> str | None:
+    """Which anchor category this exact string belongs to, or None.
 
-    Deliberately NARROW. A SHA, a date, a decision identifier, a branch name or a
-    decision filename is a moving target that every successor filing must
-    re-point; expected prose, a substring being searched for, an error message
-    fragment and a field name are not, and abstracting those is what let the
-    reviewed bypass through.
+    FAIL-CLOSED. A string matching no category is not an anchor and is preserved
+    verbatim, so an unrecognised form is protected rather than abstracted. The
+    empty string is never an anchor -- it is the vacuous-``in`` bypass itself.
     """
     t = text.strip()
     if not t:
-        return False          # "" is never an anchor -- it is the bypass itself
-    return any(p.match(t) for p in _ANCHOR_PATTERNS)
+        return None
+    for name, pattern in _ANCHOR_CATEGORIES:
+        if pattern.match(t):
+            return name
+    return None
+
+
+def _is_lawful_anchor(text: str) -> bool:
+    """Whether this string is the kind of value a lawful re-anchor changes."""
+    return _anchor_category(text) is not None
+
+
+def _module_anchor_categories(source: str) -> dict:
+    """Category of every module-level constant, derived from its BOUND VALUE.
+
+    This is the correction independent review required. Typography proves
+    nothing: ``STEP10_DETERMINATION`` and ``BOUND_MERGE_SHA`` are both
+    SCREAMING_CASE, and collapsing both to one ``<ANCHOR_NAME>`` made
+
+        assert STEP10_DETERMINATION in section   ->   assert BOUND_MERGE_SHA in section
+
+    invisible -- a substantive Step-10 requirement replaced by an already-present
+    merge check, with the inventory unchanged. A name's category comes from what
+    it is actually bound to: a 40-hex value is a SHA anchor, ``STEP_10_NO_DRIFT``
+    is not an anchor at all. A name bound to anything non-literal has no category
+    and is never abstracted.
+    """
+    cats = {}
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return cats
+    # EVERY assignment, not only module-level ones. Several predecessor suites
+    # bind their re-anchor constants inside the test function that uses them, and
+    # scanning only the module body missed those -- reporting a genuinely lawful
+    # XASSET0060 -> XASSET0061 re-anchor as a weakening.
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Constant):
+            continue
+        v = node.value.value
+        if isinstance(v, bool):
+            continue
+        if isinstance(v, str):
+            cat = _anchor_category(v)
+        elif isinstance(v, int):
+            cat = "NUMBER"          # a PR number is an anchor too
+        else:
+            cat = None
+        if cat is None:
+            continue
+        for tgt in node.targets:
+            if isinstance(tgt, ast.Name) and _ANCHOR_NAME.match(tgt.id):
+                cats[tgt.id] = cat
+    return cats
+
+
+def _authorized_reanchor_placeholders(pinned_src: str, live_src: str) -> dict:
+    """Name substitutions THIS DELTA actually performed, same category only.
+
+    The review's preferred construction: derive permitted substitutions from the
+    authorized predecessor re-anchor rather than accepting every name with
+    similar typography. A constant that exists in BOTH versions was not
+    re-anchored, so it is never abstracted -- which is precisely why the
+    ``STEP10_DETERMINATION`` -> ``BOUND_MERGE_SHA`` swap is caught: both names
+    are present on both sides, so neither is in play.
+    """
+    pinned = _module_anchor_categories(pinned_src)
+    live = _module_anchor_categories(live_src)
+    # A lawful re-anchor in this corpus ADDS the successor constant and KEEPS the
+    # predecessor as historical evidence -- XASSET0060_MAIN_SHA stays, and
+    # XASSET0061_MAIN_SHA appears beside it, while the assertion moves from one
+    # to the other. So the delta's own signal is the SET OF ADDED CONSTANTS, not
+    # a removed/added pairing: an earlier attempt required removal and wrongly
+    # reported that real re-anchor as a weakening.
+    added_categories = {cat for name, cat in live.items() if name not in pinned}
+    if not added_categories:
+        # Nothing was re-anchored, so nothing is interchangeable. This is the
+        # case that catches STEP10_DETERMINATION -> BOUND_MERGE_SHA: the mutation
+        # adds no constant, so both names stay literal and the swap is a loss.
+        return {}
+    ph = {}
+    for source_map in (pinned, live):
+        for name, cat in source_map.items():
+            if cat in added_categories:
+                ph[name] = f"<REANCHOR:{cat}>"
+    return ph
 
 
 class _AnchorNormaliser(ast.NodeTransformer):
     """Abstract LAWFUL ANCHOR SUBSTITUTIONS; preserve every operative predicate.
 
-    Abstracted -- a lawful re-anchor may change these, and doing so is not a
-    weakening:
+    Abstracted:
 
-    * string literals that MATCH ``_ANCHOR_PATTERNS`` -- SHAs, dates, decision
-      IDs, branch names, decision filenames;
-    * f-strings whose every literal part is itself such an anchor (or bare
-      punctuation) -- e.g. ``f"{DECISION_ID}-"``;
-    * ``SCREAMING_CASE`` names -- ``XASSET0060_MAIN_SHA`` -> ``XASSET0061_MAIN_SHA``.
+    * a string literal, to ITS OWN CATEGORY's placeholder -- SHA to ``<SHA>``,
+      date to ``<DATE>``, and so on, never to one shared token, so a
+      decision-for-date or determination-for-SHA swap is a change;
+    * an f-string whose every literal part is an anchor or bare punctuation;
+    * a module constant ONLY when this delta actually re-anchored it, and then
+      only within its own category.
 
-    Preserved -- changing any of these changes what is actually ASSERTED:
+    Preserved -- changing any of these changes what is asserted:
 
-    * every OTHER string literal, including expected prose and searched-for
-      substrings -- ``"Merging it arms nothing"`` is not an anchor;
+    * every other string literal, including expected prose;
+    * every constant name not part of an authorized re-anchor;
     * attribute and method names -- ``startswith`` vs ``endswith``;
-    * comparison and boolean operators -- ``>=`` vs ``>``, ``and`` vs ``or``;
-    * NUMERIC literals -- ``441`` vs ``440``;
-    * call/subscript/name structure -- a method call vs a bare truthiness test.
+    * comparison and boolean operators, numeric literals, call structure.
     """
 
+    def __init__(self, name_placeholders=None):
+        super().__init__()
+        self._names = name_placeholders or {}
+
     def visit_Constant(self, node):
-        if isinstance(node.value, str) and _is_lawful_anchor(node.value):
-            return ast.copy_location(ast.Constant(value="<ANCHOR_STR>"), node)
+        if isinstance(node.value, str):
+            cat = _anchor_category(node.value)
+            if cat is not None:
+                return ast.copy_location(ast.Constant(value=f"<ANCHOR_{cat}>"), node)
         return node
 
     def visit_Name(self, node):
-        if _ANCHOR_NAME.match(node.id):
-            return ast.copy_location(ast.Name(id="<ANCHOR_NAME>", ctx=node.ctx), node)
+        ph = self._names.get(node.id)
+        if ph is not None:
+            return ast.copy_location(ast.Name(id=ph, ctx=node.ctx), node)
         return node
 
     def visit_JoinedStr(self, node):
-        # An f-string is an anchor only when its LITERAL parts are anchors (or
-        # trivial punctuation joining interpolations). ``f"{DECISION_ID}-"`` is;
-        # ``f"expected {x} in the header"`` is not, and its prose is preserved.
         for part in node.values:
             if isinstance(part, ast.Constant) and isinstance(part.value, str):
                 t = part.value.strip()
@@ -435,7 +523,7 @@ class _AnchorNormaliser(ast.NodeTransformer):
 _TRIVIAL_JOINER = re.compile(r"^[\-:/.,;_=~^@#|\s\[\](){}<>]+$")
 
 
-def _assertion_inventory(source: str) -> collections.Counter:
+def _assertion_inventory(source: str, name_placeholders=None) -> collections.Counter:
     """The suite's assertions as NORMALIZED SEMANTIC FINGERPRINTS.
 
     RE-ANCHORED AGAIN (PHQ-2026-07, review 5085019004). Two superseded mechanisms
@@ -472,25 +560,31 @@ def _assertion_inventory(source: str) -> collections.Counter:
         test = node.test
         if isinstance(test, ast.Constant) and bool(test.value) is True:
             continue          # vacuous by construction
-        inv[ast.dump(_AnchorNormaliser().visit(copy.deepcopy(test)))] += 1
+        norm = _AnchorNormaliser(name_placeholders).visit(copy.deepcopy(test))
+        inv[ast.dump(norm)] += 1
     return inv
 
 
 def _lost_assertions(pinned_src: str, live_src: str) -> list[str]:
     """Fingerprints asserted when pinned that are no longer asserted now.
 
-    Empty unless the suite got WEAKER. A strengthening ADDS fingerprints and a
-    message-only change alters none, so neither is ever reported; a deletion, an
-    ``assert True`` gutting, a collapse to bare truthiness, and an equal-shape
-    predicate swap all remove one and are.
+    The permitted name substitutions are derived from THIS delta -- only a
+    constant the delta actually retired, replaced by a new one of the same
+    anchor category, is treated as interchangeable. A name present on both sides
+    was not re-anchored and is compared literally, which is what makes the
+    ``STEP10_DETERMINATION`` -> ``BOUND_MERGE_SHA`` swap visible.
 
-    Residual limit, stated rather than implied: because string literals are
-    abstracted, a weakening expressed PURELY as a different string anchor -- and
-    nothing else -- is not distinguishable here from a lawful re-anchor. That is
-    the deliberate cost of not binding lawful re-anchoring, and it is why the
-    specific protected predicates also carry their own direct assertions below.
+    KNOWN RESIDUAL, stated rather than hidden: within a delta that DOES add a new
+    constant of some category, the constants of that same category become
+    interchangeable for that comparison. That is the "SHA-to-successor-SHA in the
+    same role" case the review names as lawful, and narrowing it further would
+    need a role model the sources do not carry. What is caught: any cross-category
+    substitution (determination for SHA, decision for date, comment for branch),
+    and ANY name substitution at all in a delta that re-anchors nothing.
     """
-    missing = _assertion_inventory(pinned_src) - _assertion_inventory(live_src)
+    ph = _authorized_reanchor_placeholders(pinned_src, live_src)
+    missing = (_assertion_inventory(pinned_src, ph)
+               - _assertion_inventory(live_src, ph))
     return sorted(missing.elements())
 
 
@@ -1288,8 +1382,20 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert one('d == "2026-08-28"') == one('d == "2026-09-02"')      # date
         assert one('i == "XASSET-0060"') == one('i == "XASSET-0061"')    # decision id
         assert one('b == "claude/one"') == one('b == "claude/two"')      # branch
-        assert one("v == SHA_ALPHA") == one("v == SHA_BETA")             # SCREAMING_CASE
+
+        # NOT abstracted by typography alone. Two SCREAMING_CASE names are only
+        # interchangeable when THIS delta actually re-anchored one -- see
+        # test_a_constant_name_substitution_across_roles_is_caught. Capitalization
+        # is not evidence, which is the correction review 5091155438 required.
+        assert one("v == SHA_ALPHA") != one("v == SHA_BETA")
         assert one('x.startswith(f"{DECISION_ID}-")') == one('x.startswith(f"{OTHER}-")')
+
+        # ...and each recognized category keeps its OWN placeholder, so a
+        # cross-category string swap is a change rather than a wash.
+        assert one('v == "2026-09-02"') != one('v == "XASSET-0061"')        # date/decision
+        assert one('v == "claude/one"') != one('v == "2026-09-02"')         # branch/date
+        assert one('v == "413e033ac33741829168762ab24d73327c047d4b"') != \
+               one('v == "claude/one"')                                     # SHA/branch
 
         # NOT abstracted -- operative expected TEXT is not an anchor. This is the
         # correction independent review required: the superseded normaliser
@@ -1383,6 +1489,145 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
                              '        assert entry["id"], entry\n'))
         # 5. a lawful, specifically recognised re-anchor is permitted
         assert not _lost_assertions(src, src.replace("== 162", "== 163"))
+
+    def test_a_constant_name_substitution_across_roles_is_caught(self):
+        """REQUIRED NEGATIVE CONTROL (PHQ-2026-07, review 5091155438).
+
+        The exact mutation independent review demonstrated, on a suite that is
+        PINNED but deliberately not in ``PROTECTED_PREDICATES``:
+
+            assert STEP10_DETERMINATION in section
+            assert BOUND_MERGE_SHA in section
+
+        Both constants exist and both values are present in the section, so the
+        weakened suite still PASSES -- while the Step-10 determination
+        requirement is gone and the merge-SHA check it was replaced with is
+        already asserted elsewhere. Under the superseded rule both names
+        collapsed to one ``<ANCHOR_NAME>`` and the guard reported no loss.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        assert rel in PINNED_TEST_HASHES
+        assert rel not in PROTECTED_PREDICATES, (
+            "this probe proves the GENERAL mechanism, so its target must not be "
+            "covered by the direct-protection list")
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = "assert STEP10_DETERMINATION in section"
+        assert strong in src, "the probe's own target has moved"
+        # Both constants are real, and the substituted one is already asserted --
+        # which is exactly why the mutated suite still passes.
+        assert "STEP10_DETERMINATION = " in src and "BOUND_MERGE_SHA = " in src
+        mutated = src.replace(strong, "assert BOUND_MERGE_SHA in section")
+        at_merge = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        assert not _lost_assertions(at_merge, src), "the live suite must be clean"
+        assert _lost_assertions(at_merge, mutated), (
+            "the cross-role constant substitution was NOT caught")
+
+    def test_typography_alone_never_authorizes_a_substitution(self):
+        """A name's category comes from its BOUND VALUE, not its capitalization."""
+        cats = _module_anchor_categories(
+            'A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+            'A_DATE = "2026-09-02"\n'
+            'A_DECISION = "XASSET-0061"\n'
+            'A_BRANCH = "claude/x"\n'
+            'A_PR = 364\n'
+            'A_DETERMINATION = "STEP_10_NO_DRIFT"\n'
+            'A_PROSE = "Merging it arms nothing"\n'
+            'A_COMPUTED = some_call()\n')
+        assert cats == {"A_SHA": "SHA", "A_DATE": "DATE", "A_DECISION": "DECISION",
+                        "A_BRANCH": "BRANCH", "A_PR": "NUMBER"}, cats
+        # A determination string, prose, and anything non-literal have NO category
+        # and are therefore never interchangeable with anything.
+        for absent in ("A_DETERMINATION", "A_PROSE", "A_COMPUTED"):
+            assert absent not in cats
+
+    @pytest.mark.parametrize("old_name,new_name,label", [
+        ("A_DETERMINATION", "A_SHA", "determination -> SHA"),
+        ("A_PROSE", "A_BRANCH", "comment -> branch"),
+        ("A_DECISION", "A_DATE", "decision -> date"),
+        ("A_BRANCH", "A_PR", "branch -> number"),
+    ])
+    def test_every_cross_role_substitution_is_caught(self, old_name, new_name, label):
+        """Cross-category swaps are losses even when a re-anchor IS in play.
+
+        The delta below adds a new SHA constant, so SHA names are legitimately
+        interchangeable within it -- and that allowance must not leak into any
+        other category.
+        """
+        header = ('A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+                  'A_DATE = "2026-09-02"\n'
+                  'A_DECISION = "XASSET-0061"\n'
+                  'A_BRANCH = "claude/x"\n'
+                  'A_PR = 364\n'
+                  'A_DETERMINATION = "STEP_10_NO_DRIFT"\n'
+                  'A_PROSE = "Merging it arms nothing"\n')
+        pinned = header + f"def f():\n    assert {old_name} in section\n"
+        # A genuine re-anchor happening in the same delta.
+        live = (header + 'B_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"\n'
+                + f"def f():\n    assert {new_name} in section\n")
+        assert _lost_assertions(pinned, live), f"{label} was not caught"
+
+    def test_a_same_category_reanchor_in_the_same_delta_is_permitted(self):
+        """The complement: the lawful case the review names explicitly.
+
+        A successor SHA constant added beside its predecessor, with the assertion
+        moved onto it, is a re-anchor -- not a weakening.
+        """
+        pinned = ('OLD_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"\n'
+                  "def f():\n    assert ws['sha'] == OLD_SHA\n")
+        live = ('OLD_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"\n'
+                'NEW_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+                "def f():\n    assert ws['sha'] == NEW_SHA\n")
+        assert not _lost_assertions(pinned, live), (
+            "a lawful same-category re-anchor was reported as a weakening")
+
+    def test_a_name_substitution_without_any_reanchor_is_always_caught(self):
+        """Fail closed: with nothing re-anchored, NO name is interchangeable."""
+        header = ('A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+                  'B_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"\n')
+        pinned = header + "def f():\n    assert x == A_SHA\n"
+        live = header + "def f():\n    assert x == B_SHA\n"
+        assert _lost_assertions(pinned, live), (
+            "a substitution was permitted in a delta that re-anchored nothing")
+
+    def test_all_required_g5_properties_hold_together(self):
+        """Every property the review required kept, stated in one place.
+
+        Listing them together is deliberate: each has been re-derived at least
+        once during this PR, and a single test makes it impossible for one to be
+        satisfied while another silently regresses.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")'
+        assert strong in src
+
+        act = "test_level1_stage1_activation_authorization.py"
+        act_src = (ROOT / act).read_text(encoding="utf-8")
+        prose = 'assert "Merging it arms nothing" in section'
+        det = "assert STEP10_DETERMINATION in section"
+
+        # 1. semantic prose weakening
+        assert _lost_assertions(act_src, act_src.replace(prose, 'assert "" in section'))
+        # 2. startswith -> endswith
+        assert _lost_assertions(
+            src, src.replace(strong, 'assert Path(entry["file"]).name.endswith(".md")'))
+        # 3. deletion
+        assert _lost_assertions(
+            src, src.replace("        " + strong + ', entry["file"]\n', ""))
+        # 4. assert True replacement
+        assert _lost_assertions(src, src.replace(strong, "assert True"))
+        # 5. cross-role uppercase-name substitution
+        assert _lost_assertions(
+            act_src, act_src.replace(det, "assert BOUND_MERGE_SHA in section"))
+        # 6. genuine addition permitted
+        assert not _lost_assertions(
+            src, src.replace("        " + strong + ', entry["file"]\n',
+                             "        " + strong + ', entry["file"]\n'
+                             '        assert entry["id"], entry\n'))
+        # 7. specifically lawful same-role re-anchor permitted
+        base = _git("show", f"{BOUND_MERGE_SHA}:{act}")
+        assert base != act_src
+        assert not _lost_assertions(base, act_src)
 
     def test_the_protected_catalog_predicate_is_asserted_directly(self):
         """Belt and braces: the ONE named protected property, pinned by name.

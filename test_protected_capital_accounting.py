@@ -1973,3 +1973,398 @@ class TestBookDerivedFiguresHonourTheirOwnDependencies:
             if ne_lines and any("UNAVAILABLE" in ln for ln in ne_lines):
                 assert all("UNAVAILABLE" in ln for ln in lev_lines), (c, text)
             assert bd["leverage"] == bd["net_equity"]
+
+
+# ── PHQ-2026-07 correction round 5 — independent DELTA review 5091155438 ─────
+# MAJOR 1 (reproduced three ways): masking selected PRESENTATION fields left the
+# emitted RESULT itself carrying values derived from an unavailable book.
+#
+#   A. stale margin -> trims[0]["dollars"] == 640.0 and the reason text
+#      "C cluster cap 20% ($820 over own target)", rendered verbatim while the
+#      Dollars column said n/a.
+#   B. tracked-but-unresolved BBB -> current == 0.0, holds_existing_shares False,
+#      "$0 (no position)" rendered, and a cluster containing BBB reporting $600.
+#   C. stale margin -> numeric margin.net_equity / margin.leverage_current,
+#      cluster current_pct / ratio_to_cap, issuer_exposure percentages, and both
+#      issuer tables printing 55.56% while book-ratio availability was false.
+#
+# The correction is ONE dependency-aware boundary immediately before plan()
+# returns, driven by an explicit output schema. A numeric path with no stated
+# dependency raises rather than being emitted, so a new field cannot reach a
+# caller until someone says what it depends on.
+
+
+class TestTheOutputBoundaryIsExhaustiveAndFailsClosed:
+    """The schema itself, before any individual defect."""
+
+    TODAY = datetime.date.today().isoformat()
+    STALE = "2026-01-01"
+
+    @staticmethod
+    def _numeric_paths(node, path=""):
+        """Every emitted numeric path, found recursively — not from a list."""
+        out = []
+        if isinstance(node, dict):
+            for k, v in node.items():
+                out += TestTheOutputBoundaryIsExhaustiveAndFailsClosed._numeric_paths(
+                    v, f"{path}.{k}" if path else str(k))
+        elif isinstance(node, list):
+            for v in node:
+                out += TestTheOutputBoundaryIsExhaustiveAndFailsClosed._numeric_paths(
+                    v, path + "[]")
+        elif isinstance(node, bool):
+            pass
+        elif isinstance(node, (int, float)):
+            out.append(path)
+        return out
+
+    def _rich_plan(self, cash_s, margin_s, shares, resolved):
+        """A result exercising every collection, nested mapping and aggregate."""
+        data = {"shares": shares,
+                "cash": {"balance": 1000.0, "synced_at": cash_s},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0, "synced_at": margin_s}}
+        cs = A.load_cash_state(data)
+        ms = A.load_margin_state(data)
+        val = A.valuation_completeness(resolved, data)
+        avail = A.current_dollar_availability(cs, ms, val)
+        t = _targets()
+        t["caps"] = {"clusters": [{"name": "C", "pct": 20.0, "tickers": ["AAA", "BBB"]}]}
+        lt = {"issuers": [{"ticker": "AAA", "funds": []}],
+              "common_driver_ceiling_pct": 40.0}
+        gates = _gates("GGG")
+        roster = build_roster(t)
+        res = plan(t, resolved, roster, _metrics(roster), True, True,
+                   cash=(cs["balance"] if cs["usable"] else None),
+                   margin_debt=(ms["debt"] or 0.0),
+                   margin_buffer_pct=(ms["buffer_pct"] or 0.0),
+                   gates_cfg=gates, lookthrough=lt,
+                   holdings_state=data, dollars_available=avail["available"])
+        # Returned BEFORE the render-support keys are attached: those are added
+        # by callers, not emitted by plan(), and the schema governs plan()'s own
+        # output.
+        raw = {k: v for k, v in res.items()}
+        res["cash_state"] = cs
+        res["margin_state_check"] = ms
+        res["dollar_availability"] = avail
+        res["margin"]["synced_at"] = margin_s
+        return res, avail, raw
+
+    @pytest.mark.parametrize("case,cash_s,margin_s,shares,resolved", [
+        ("all current", TODAY, TODAY, {"AAA": 10.0, "BBB": 2.0},
+         {"AAA": 1000.0, "BBB": 200.0}),
+        ("stale margin", TODAY, STALE, {"AAA": 10.0, "BBB": 2.0},
+         {"AAA": 1000.0, "BBB": 200.0}),
+        ("stale cash", STALE, TODAY, {"AAA": 10.0, "BBB": 2.0},
+         {"AAA": 1000.0, "BBB": 200.0}),
+        ("incomplete valuation", TODAY, TODAY, {"AAA": 10.0, "BBB": 2.0},
+         {"AAA": 1000.0}),
+    ])
+    def test_every_emitted_numeric_path_is_classified(
+            self, case, cash_s, margin_s, shares, resolved):
+        """The mechanism the review asked for: no unclassified numeric path.
+
+        plan() raises `UnclassifiedOutputPath` rather than emitting one, so this
+        passing at all IS the proof — and the assertion below makes the intent
+        explicit rather than relying on the absence of an exception.
+        """
+        _, _, raw = self._rich_plan(cash_s, margin_s, shares, resolved)
+        paths = self._numeric_paths(raw)
+        assert paths, "the fixture must actually emit numbers"
+        for p in paths:
+            key = p
+            if key not in A._OUTPUT_DEPENDENCIES:
+                parts = p.split(".")
+                if len(parts) == 3 and parts[0] == "issuer_exposure":
+                    key = f"issuer_exposure.*.{parts[2]}"
+                elif "[]." in p:
+                    key = p.split("[].")[-1]
+                    assert key in A._ROW_FIELD_DEPENDENCIES, p
+                    continue
+            assert key in A._OUTPUT_DEPENDENCIES, p
+
+    def test_an_unclassified_numeric_field_is_refused_not_emitted(self):
+        """Fail-closed, demonstrated rather than asserted in prose."""
+        res = {"buys": [{"ticker": "AAA", "brand_new_dollar_field": 1.0}]}
+        with pytest.raises(A.UnclassifiedOutputPath):
+            A._apply_output_dependencies(
+                res, {"valuation": True, "margin": True, "book": True},
+                {"AAA"}, {})
+
+    def test_an_unclassified_top_level_numeric_field_is_refused(self):
+        res = {"some_new_total": 5.0}
+        with pytest.raises(A.UnclassifiedOutputPath):
+            A._apply_output_dependencies(
+                res, {"valuation": True, "margin": True, "book": True}, set(), {})
+
+    def test_the_row_collection_list_matches_what_plan_emits(self):
+        """A new row collection cannot skip the boundary unnoticed."""
+        _, _, raw = self._rich_plan(self.TODAY, self.TODAY, {"AAA": 10.0},
+                                    {"AAA": 1000.0})
+        emitted = {k for k, v in raw.items()
+                   if isinstance(v, list) and any(isinstance(r, dict) for r in v)}
+        unguarded = emitted - set(A._ROW_COLLECTIONS) - {"clusters"}
+        # `gated_detail` lives under protection and is covered by the recursive
+        # walk with its own explicit paths; anything else would be unguarded.
+        assert not unguarded, unguarded
+
+
+class TestNoBookDerivedValueSurvivesInTheEmittedResult:
+    """The three exact reproductions, plus recursive checks over the result."""
+
+    TODAY = datetime.date.today().isoformat()
+    STALE = "2026-01-01"
+
+    def _trim_case(self):
+        """Review's case A: current cash, complete valuation, STALE margin."""
+        t = _targets(rows=[
+            {"ticker": "AAA", "target_pct": 10.0, "asset_class": "equity"},
+            {"ticker": "RESERVE", "target_pct": 15.0, "asset_class": "reserve"},
+            {"ticker": "CASH", "target_pct": 4.0, "asset_class": "cash"}])
+        t["caps"] = {"clusters": [{"name": "C", "pct": 20.0, "tickers": ["AAA"]}]}
+        data = {"shares": {"AAA": 10.0},
+                "cash": {"balance": 1000.0, "synced_at": self.TODAY},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0, "synced_at": self.STALE}}
+        cs = A.load_cash_state(data)
+        ms = A.load_margin_state(data)
+        val = A.valuation_completeness({"AAA": 1000.0}, data)
+        avail = A.current_dollar_availability(cs, ms, val)
+        roster = build_roster(t)
+        res = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True,
+                   cash=cs["balance"], margin_debt=200.0, margin_buffer_pct=60.0,
+                   holdings_state=data, dollars_available=avail["available"])
+        res["cash_state"] = cs
+        res["margin_state_check"] = ms
+        res["dollar_availability"] = avail
+        res["margin"]["synced_at"] = self.STALE
+        return res, avail
+
+    def test_a_trim_dollar_is_withheld_when_the_book_is_unavailable(self):
+        """Review case A, structural half."""
+        res, avail = self._trim_case()
+        assert avail["available"] is False
+        assert res["trims"], "the cluster cap must actually produce a trim"
+        assert res["trims"][0]["dollars"] is None, res["trims"][0]
+
+    def test_a_trim_reason_never_quotes_a_book_derived_dollar(self):
+        """Review case A, free-text half.
+
+        The reason string is an OUTPUT: "$820 over own target" published the very
+        figure the Dollars column had just withheld.
+        """
+        res, _ = self._trim_case()
+        reason = res["trims"][0]["reason"]
+        assert "$820" not in reason, reason
+        assert "UNAVAILABLE" in reason, reason
+        assert not re.search(r"\$[\d,]+(?:\.\d+)?", reason), reason
+
+    def test_no_render_surface_prints_the_trim_dollar_or_its_reason_figure(self):
+        res, _ = self._trim_case()
+        for name, text in (("render", A.render(res, review=True)),
+                           ("render_health", A.render_health(res))):
+            assert "$820" not in text, name
+            assert "$640" not in text, name
+
+    def test_the_trim_still_happens_and_is_still_explained(self):
+        """The complement: withholding a dollar must not lose the FINDING.
+
+        The cap breach is real and independently knowable; only its dollar
+        magnitude depends on the book.
+        """
+        res, _ = self._trim_case()
+        assert len(res["trims"]) == 1
+        assert res["trims"][0]["ticker"] == "AAA"
+        assert "cluster cap" in res["trims"][0]["reason"]
+        assert "TRIM" in A.render(res, review=True)
+
+    def _missing_holding_case(self):
+        """Review's case B: tracked BBB shares, BBB absent from resolved."""
+        t = _targets()
+        t["caps"] = {"clusters": [{"name": "BOTH", "pct": 50.0,
+                                   "tickers": ["AAA", "BBB"]}]}
+        data = {"shares": {"AAA": 6.0, "BBB": 5.0},
+                "cash": {"balance": 1000.0, "synced_at": self.TODAY},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0, "synced_at": self.TODAY}}
+        cs = A.load_cash_state(data)
+        ms = A.load_margin_state(data)
+        val = A.valuation_completeness({"AAA": 600.0}, data)
+        avail = A.current_dollar_availability(cs, ms, val)
+        roster = build_roster(t)
+        res = plan(t, {"AAA": 600.0}, roster, _metrics(roster), True, True,
+                   cash=cs["balance"], margin_debt=200.0, margin_buffer_pct=60.0,
+                   gates_cfg=_gates("BBB"),
+                   holdings_state=data, dollars_available=avail["available"])
+        res["cash_state"] = cs
+        res["margin_state_check"] = ms
+        res["dollar_availability"] = avail
+        return res, avail, val
+
+    def test_a_missing_tracked_holding_is_unknown_not_zero(self):
+        """Review case B. `$0` and `no position` were both false claims."""
+        res, avail, val = self._missing_holding_case()
+        assert "BBB" in (val.get("unresolved") or []), val
+        row = [r for r in res["no_add_gated"] if r["ticker"] == "BBB"][0]
+        assert row["current"] is None, row
+        assert row["holds_existing_shares"] is not False, row
+
+    def test_the_render_never_calls_a_missing_holding_a_zero_position(self):
+        res, _, _ = self._missing_holding_case()
+        text = A.render(res, review=True)
+        bbb = [ln for ln in text.splitlines() if ln.startswith("| BBB")]
+        assert bbb, text
+        for ln in bbb:
+            assert "$0 (no position)" not in ln, ln
+            assert "UNAVAILABLE" in ln, ln
+            # The POSITION CLAIM matters independently of the dollar figure. A
+            # line reading "UNAVAILABLE (no position)" still asserts, falsely,
+            # that BBB holds nothing -- while its nonzero shares are tracked.
+            assert "(no position)" not in ln, ln
+            assert "UNKNOWN" in ln, ln
+
+    def test_an_aggregate_is_unavailable_when_any_member_is_unvalued(self):
+        """Review case B, aggregate half: BOTH reported $600 without BBB."""
+        res, _, _ = self._missing_holding_case()
+        both = [c for c in res["clusters"] if c["name"] == "BOTH"][0]
+        assert both["value"] is None, both
+        text = A.render(res, review=True)
+        assert "BOTH $600" not in text, text
+        assert "UNAVAILABLE" in text
+
+    def test_a_resolved_ticker_keeps_its_own_value_despite_another_being_missing(self):
+        """Per-NAME coverage: one missing holding must not blank the rest."""
+        res, _, _ = self._missing_holding_case()
+        rows = {r["ticker"]: r for coll in A._ROW_COLLECTIONS
+                for r in (res.get(coll) or []) if isinstance(r, dict)}
+        # BBB is tracked but unpriced -> unknown.
+        assert rows["BBB"]["current"] is None, rows["BBB"]
+        # GGG holds nothing at all -> a KNOWN zero, which must survive. Blanking
+        # it would destroy a true observation exactly as surely as printing $0
+        # for BBB invented a false one.
+        assert rows["GGG"]["current"] == 0.0, rows["GGG"]
+        # ...and BBB's own position CLAIM is unknown rather than a false "no
+        # position", which is the second half of the reproduced defect.
+        assert rows["BBB"]["holds_existing_shares"] is None, rows["BBB"]
+
+    def _issuer_case(self):
+        """Review's case C: stale margin plus issuer lookthrough."""
+        t = _targets(rows=[
+            {"ticker": "AAA", "target_pct": 10.0, "asset_class": "equity"},
+            {"ticker": "RESERVE", "target_pct": 15.0, "asset_class": "reserve"},
+            {"ticker": "CASH", "target_pct": 4.0, "asset_class": "cash"}])
+        t["caps"] = {"clusters": [{"name": "C", "pct": 20.0, "tickers": ["AAA"]}]}
+        lt = {"issuers": [{"ticker": "AAA", "funds": []}],
+              "common_driver_ceiling_pct": 40.0}
+        data = {"shares": {"AAA": 10.0},
+                "cash": {"balance": 1000.0, "synced_at": self.TODAY},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0, "synced_at": self.STALE}}
+        cs = A.load_cash_state(data)
+        ms = A.load_margin_state(data)
+        val = A.valuation_completeness({"AAA": 1000.0}, data)
+        avail = A.current_dollar_availability(cs, ms, val)
+        roster = build_roster(t)
+        res = plan(t, {"AAA": 1000.0}, roster, _metrics(roster), True, True,
+                   cash=cs["balance"], margin_debt=200.0, margin_buffer_pct=60.0,
+                   lookthrough=lt,
+                   holdings_state=data, dollars_available=avail["available"])
+        res["cash_state"] = cs
+        res["margin_state_check"] = ms
+        res["dollar_availability"] = avail
+        res["margin"]["synced_at"] = self.STALE
+        return res, avail
+
+    def test_the_public_result_carries_no_book_derived_number(self):
+        """Review case C, structural. Every named path, checked on the result."""
+        res, avail = self._issuer_case()
+        assert avail["available"] is False
+        assert res["margin"]["net_equity"] is None
+        assert res["margin"]["leverage_current"] is None
+        for c in res["clusters"]:
+            assert c["current_pct"] is None, c
+            assert c["ratio_to_cap"] is None, c
+        for tk, v in (res["issuer_exposure"] or {}).items():
+            assert v["direct_pct"] is None, (tk, v)
+            assert v["embedded_pct"] is None, (tk, v)
+            assert v["effective_pct"] is None, (tk, v)
+        assert res["common_driver_current_pct"] is None
+
+    def test_independently_valid_observations_survive(self):
+        """Positive control: fail-closed, never fail-shut.
+
+        Gross depends on the valuation alone and it is complete here; the debt
+        and the broker's own displayed buffer are readings, not derivations.
+        """
+        res, _ = self._issuer_case()
+        assert res["margin"]["gross"] == pytest.approx(1000.0)
+        assert res["margin"]["debt"] == pytest.approx(200.0)
+        assert res["margin"]["buffer_pct"] == pytest.approx(60.0)
+        assert res["margin"]["leverage_cap"] is not None
+        assert res["cash_spent"] == 0.0, "a known zero, not an unknown"
+        cluster = res["clusters"][0]
+        assert cluster["value"] is not None, "AAA is resolved, so the value is real"
+        assert cluster["pct"] == pytest.approx(20.0), "a configured cap is always true"
+
+    @pytest.mark.parametrize("surface", ["render", "render_health"])
+    def test_no_issuer_percentage_is_printed_while_book_ratios_are_unavailable(
+            self, surface):
+        """Review case C, presentation. Both issuer tables printed 55.56%."""
+        res, _ = self._issuer_case()
+        assert A.book_derived_availability(res)["book_ratios"] is False
+        text = A.render(res, review=True) if surface == "render" else A.render_health(res)
+        assert "55.56%" not in text, surface
+        for ln in text.splitlines():
+            if ln.startswith("| AAA") and "%" in ln:
+                assert "UNAVAILABLE" in ln or "n/a" in ln, f"{surface}: {ln}"
+
+    @pytest.mark.parametrize("cash_s,margin_s,shares,resolved,label", [
+        ("2026-01-01", None, {"AAA": 10.0}, {"AAA": 1000.0}, "stale cash"),
+        (None, "2026-01-01", {"AAA": 10.0}, {"AAA": 1000.0}, "stale margin"),
+        (None, None, {"AAA": 10.0, "BBB": 5.0}, {"AAA": 1000.0}, "incomplete valuation"),
+    ])
+    def test_recursively_no_unavailable_number_escapes_in_any_state(
+            self, cash_s, margin_s, shares, resolved, label):
+        """A recursive sweep, so a nested mapping cannot hide one."""
+        today = self.TODAY
+        data = {"shares": shares,
+                "cash": {"balance": 1000.0, "synced_at": cash_s or today},
+                "margin": {"debt": 200.0, "buffer_pct": 60.0,
+                           "synced_at": margin_s or today}}
+        cs = A.load_cash_state(data)
+        ms = A.load_margin_state(data)
+        val = A.valuation_completeness(resolved, data)
+        avail = A.current_dollar_availability(cs, ms, val)
+        assert avail["available"] is False, label
+        t = _targets()
+        t["caps"] = {"clusters": [{"name": "C", "pct": 20.0, "tickers": ["AAA", "BBB"]}]}
+        roster = build_roster(t)
+        res = plan(t, resolved, roster, _metrics(roster), True, True,
+                   cash=(cs["balance"] if cs["usable"] else None),
+                   margin_debt=(ms["debt"] or 0.0),
+                   margin_buffer_pct=(ms["buffer_pct"] or 0.0),
+                   holdings_state=data, dollars_available=avail["available"])
+
+        def sweep(node, path=""):
+            bad = []
+            if isinstance(node, dict):
+                for k, v in node.items():
+                    bad += sweep(v, f"{path}.{k}" if path else str(k))
+            elif isinstance(node, list):
+                for v in node:
+                    bad += sweep(v, path + "[]")
+            elif isinstance(node, str):
+                if re.search(r"\$[\d,]+(?:\.\d+)?", node):
+                    bad.append((path, node))
+            return bad
+
+        # Every book-dependent path must be None; free text must quote no dollar.
+        assert res["book"] is None, label
+        assert res["protection"]["protected_floor_dollars"] is None, label
+        assert not sweep(res), (label, sweep(res))
+
+    @pytest.mark.parametrize("surface", ["render", "render_health"])
+    def test_both_surfaces_render_every_state_without_raising(self, surface):
+        """The boundary hands render() Nones; neither may crash or rebuild them."""
+        for maker in (self._trim_case, self._missing_holding_case, self._issuer_case):
+            out = maker()
+            res = out[0]
+            text = (A.render(res, review=True) if surface == "render"
+                    else A.render_health(res))
+            assert text and isinstance(text, str)
