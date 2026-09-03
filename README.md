@@ -284,8 +284,9 @@ python allocate.py update-holdings        # paste "TICKER value" lines, Ctrl-D
                                            # (manual $ fallback — only needed
                                            # for a ticker with no live-price
                                            # coverage, e.g. a very recent listing)
-python allocate.py update-margin <debt> <buffer_pct>   # sync from Robinhood's
-                                           # own displayed margin screen
+python allocate.py update-margin <debt> <buffer_pct> [note]  # sync from
+                                           # Robinhood's own displayed margin
+                                           # screen and append a debt/buffer event
 ```
 
 `update-shares`/`update-crypto-shares`/`update-holdings` **merge** into the
@@ -335,14 +336,31 @@ python allocate.py log-performance [note]   # add a snapshot manually (rarely
                                              # needed — every update-* command
                                              # and every allocate.py run already
                                              # auto-snapshots)
+python allocate.py log-cashflow <deposit|withdrawal> <amount> \
+                   <book_before> <book_after> [note]
+                                      # external flows only; bracketing whole-book
+                                      # values are required for exact TWR
+python allocate.py log-interest <amount> <period_start> <period_end> [note]
+                                      # actual broker charge from a statement;
+                                      # estimates are refused by policy
 ```
 
-`performance_log.csv` is a rough directional check, not a precise return
-calculation — deposits, withdrawals, and margin draws/paydowns all move net
-equity without being backed out, so a big deposit will show up looking like
-"growth." Treat divergence from QQQ/VOO as a prompt to look closer, not a
-verdict. (A true TWR-based tracker that correctly separates cash-flow effects
-from market return is a known gap — see `docs/PORTFOLIO_HQ_AUDIT.md`.)
+`performance_log.csv` records timestamped whole-book snapshots. Historical rows
+predating the timestamp/book schema remain blank rather than being reconstructed.
+`cashflow_log.csv` records external deposits and withdrawals only, including
+immediately-before and immediately-after whole-book values. When at least two
+complete snapshots and every intervening flow reconcile, `--performance` links
+the exact subperiod returns and displays cash-flow-adjusted TWR. Otherwise exact
+TWR is explicitly unavailable; the older net-equity/QQQ/VOO percentages remain
+rough directional comparisons.
+
+`margin_log.csv` is appended by every `update-margin` call. It classifies the
+debt delta as an initial sync, draw, paydown, or unchanged resync and preserves
+Robinhood's displayed buffer. `interest_log.csv` records actual statement
+charges. Margin draws/paydowns never enter `cashflow_log.csv`: financing is not
+an external contribution and backing it out would corrupt investment return.
+
+See `docs/MEASUREMENT_FOUNDATION.md` for the evidence rules and limitations.
 
 ## Backtesting framework
 

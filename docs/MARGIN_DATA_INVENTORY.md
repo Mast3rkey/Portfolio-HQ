@@ -64,6 +64,23 @@ What needs to start being recorded *today* so this exact question — "has margi
 
 None of this requires new code beyond simple CSV-append helpers structurally identical to `log_performance()`'s existing pattern — the gap here is a missing habit/schedule, not a missing capability.
 
+### Implementation status — 2026-09-03
+
+The minimum collection capability is now implemented by
+`measurement_ledger.py` and the `allocate.py` commands documented in
+`docs/MEASUREMENT_FOUNDATION.md`:
+
+- `update-margin` appends debt delta and displayed-buffer evidence to
+  `margin_log.csv`;
+- `log-cashflow` records only external deposits/withdrawals and requires exact
+  immediately-before/after whole-book values;
+- `log-interest` records actual statement charges; and
+- timestamped complete performance rows can produce exact linked TWR, while
+  incomplete historical evidence remains explicitly unavailable.
+
+The historical Category C facts above remain unreconstructable. This change
+starts prospective collection; it does not backfill or estimate missing history.
+
 ## What logging must be added going forward (summary, engineering-facing)
 
 | New artifact | Schema (minimum) | Populated by |

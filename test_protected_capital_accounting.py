@@ -1178,7 +1178,8 @@ class TestTheCliMigrationIsComplete:
         # Subcommands only -- flags are checked separately by argparse itself.
         prescribed = re.findall(r"python allocate\.py (?!--)([a-z][a-z-]+)", readme)
         known = {"update-cash", "update-shares", "update-crypto-shares",
-                 "update-holdings", "update-margin", "log-performance"}
+                 "update-holdings", "update-margin", "log-performance",
+                 "log-cashflow", "log-interest"}
         assert prescribed, "the README must actually prescribe commands"
         assert "update-cash" in prescribed
         for cmd in set(prescribed):

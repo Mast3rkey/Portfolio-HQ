@@ -38,6 +38,9 @@ from earnings import days_until_earnings
 from crypto import fetch_crypto
 from margin_state import (VERIFY_MARGIN_DATA, classify_margin_state,
                           concentration_risk_score)
+from measurement_ledger import (MeasurementError, exact_twr, read_cashflows,
+                                record_cashflow, record_interest,
+                                record_margin_sync, utc_now)
 
 HERE = Path(__file__).resolve().parent
 TARGETS_FILE = HERE / "targets.yaml"
@@ -46,12 +49,15 @@ GATES_FILE = HERE / "gates.yaml"
 LOOKTHROUGH_FILE = HERE / "issuer_lookthrough.yaml"
 LOGS_DIR = HERE / "logs"
 PERF_LOG_FILE = HERE / "performance_log.csv"
+CASHFLOW_LOG_FILE = HERE / "cashflow_log.csv"
+MARGIN_LOG_FILE = HERE / "margin_log.csv"
+INTEREST_LOG_FILE = HERE / "interest_log.csv"
 # `net_equity` keeps its historical meaning (gross - margin_debt) so the existing
 # series stays continuous and comparable; `cash` and `book` are ADDED rather than
 # redefining it, so tracked cash is never omitted from the recorded book value.
 # Rows written before this change carry empty cash/book — honestly blank, not
 # back-filled with a number nobody measured.
-PERF_FIELDS = ["date", "net_equity", "gross", "margin_debt", "cash", "book",
+PERF_FIELDS = ["date", "observed_at", "net_equity", "gross", "margin_debt", "cash", "book",
                "qqq_price", "voo_price", "note"]
 
 DAILY_LIMIT = 320  # margin above the ~290-300 trading days in DAYS_BACK, so a
@@ -2484,7 +2490,7 @@ def update_cash(balance: float):
     print(f"cash synced: total balance ${balance:,.2f} in {HOLDINGS_FILE}", file=sys.stderr)
 
 
-def update_margin(debt: float, buffer_pct: float):
+def update_margin(debt: float, buffer_pct: float, note: str = ""):
     """Record margin debt and Robinhood's OWN displayed buffer percentage.
 
     Both values are validated through the shared boundary before anything is
@@ -2500,11 +2506,59 @@ def update_margin(debt: float, buffer_pct: float):
     if bad is not None:
         raise ValueError(f"refusing to sync margin: {bad}")
     prior = load_yaml(HOLDINGS_FILE) or {}
+    prior_margin = prior.get("margin") or {}
+    prior_debt, prior_bad = _finite_scalar(
+        prior_margin.get("debt"), "prior margin debt", minimum=0.0
+    )
+    if prior_bad is not None:
+        prior_debt = None
     write_state(prior.get("holdings"), {"debt": debt, "buffer_pct": buffer_pct,
                           "synced_at": date.today().isoformat()}, prior.get("shares"),
                prior.get("crypto_shares"))
+    event = record_margin_sync(
+        MARGIN_LOG_FILE,
+        prior_debt=prior_debt,
+        resulting_debt=debt,
+        resulting_buffer_pct=buffer_pct,
+        note=note,
+    )
     print(f"margin synced: debt=${debt:,.2f} buffer={buffer_pct:.2f}% in {HOLDINGS_FILE}",
           file=sys.stderr)
+    print(f"margin event logged: {event['event_type']} ${float(event['amount']):,.2f} "
+          f"in {MARGIN_LOG_FILE}", file=sys.stderr)
+
+
+def log_cashflow(direction: str, amount: float, book_before: float,
+                 book_after: float, note: str = ""):
+    """Record one EXTERNAL contribution/withdrawal with exact bracketing values.
+
+    Margin draws and paydowns are internal financing and must use update-margin;
+    recording them here would corrupt time-weighted return.
+    """
+    row = record_cashflow(
+        CASHFLOW_LOG_FILE,
+        direction=direction,
+        amount=amount,
+        book_before=book_before,
+        book_after=book_after,
+        note=note,
+    )
+    print(f"cash flow logged: {row['direction']} ${float(row['amount']):,.2f} "
+          f"in {CASHFLOW_LOG_FILE}", file=sys.stderr)
+
+
+def log_interest(amount: float, period_start: str, period_end: str,
+                 note: str = ""):
+    """Record an ACTUAL broker interest charge, never an estimate."""
+    row = record_interest(
+        INTEREST_LOG_FILE,
+        amount_charged=amount,
+        statement_period_start=period_start,
+        statement_period_end=period_end,
+        note=note,
+    )
+    print(f"interest logged: ${float(row['amount_charged']):,.2f} "
+          f"in {INTEREST_LOG_FILE}", file=sys.stderr)
 
 
 # ── performance log (net equity vs QQQ/VOO) ─────────────────────────────────────
@@ -2634,7 +2688,9 @@ def log_performance(note: str = "", client=None, quiet: bool = False,
     rows = _read_perf_log()
     today = date.today().isoformat()
     rows = [r for r in rows if r["date"] != today]   # idempotent same-day re-log
-    rows.append({"date": today, "net_equity": round(net_equity, 2),
+    rows.append({"date": today,
+                "observed_at": utc_now().isoformat().replace("+00:00", "Z"),
+                "net_equity": round(net_equity, 2),
                 "gross": round(gross, 2), "margin_debt": round(margin_debt, 2),
                 "cash": ("" if cash_balance is None else round(cash_balance, 2)),
                 "book": ("" if book is None else round(book, 2)),
@@ -2707,6 +2763,14 @@ def render_performance() -> str:
         n = _num(v)
         return f"${n:,.0f}" if n is not None else "n/a"
 
+    try:
+        twr = exact_twr(rows, read_cashflows(CASHFLOW_LOG_FILE))
+        twr_line = (f"- Exact cash-flow-adjusted TWR: **{twr.return_pct:+.2f}%** "
+                    f"({twr.valuation_count} valuations, {twr.cashflow_count} external flows, "
+                    f"{twr.start_at} → {twr.end_at})")
+    except MeasurementError as exc:
+        twr_line = f"- Exact cash-flow-adjusted TWR: **unavailable** — {exc}"
+
     L = ["# Performance log — net equity vs QQQ/VOO", "",
         f"**{len(rows)} snapshot(s)** logged, {first['date']} → {last['date']}", "",
         "| | Since first log | Since last log |",
@@ -2721,12 +2785,12 @@ def render_performance() -> str:
         f"- {last['date']}: net equity {money(last.get('net_equity'))}, "
         f"gross {money(last.get('gross'))}, margin debt {money(last.get('margin_debt'))}"
         + (f" — _{last['note']}_" if last.get("note") else ""),
+        twr_line,
         "",
-        "> ⚠️ **This is a rough directional check, not a precise return calc.** "
-        "Net equity moves from deposits, withdrawals, and margin draws/paydowns, "
-        "none of which are backed out here — a big deposit between snapshots will "
-        "show up as \"growth\" that has nothing to do with market performance. "
-        "Treat divergence from QQQ/VOO as a prompt to look closer, not a verdict.",
+        "> The simple net-equity and benchmark percentages remain rough directional "
+        "comparisons. Only the separately labeled exact TWR backs external flows out, "
+        "and it remains unavailable unless timestamped whole-book snapshots and every "
+        "external flow's immediately-before/after valuations are complete and reconcile.",
     ]
     return "\n".join(L)
 
@@ -2751,10 +2815,26 @@ def main():
         update_cash(float(sys.argv[2]))
         return
     if len(sys.argv) > 1 and sys.argv[1] == "update-margin":
-        if len(sys.argv) != 4:
-            print("usage: allocate.py update-margin <debt> <buffer_pct>", file=sys.stderr)
+        if len(sys.argv) < 4:
+            print("usage: allocate.py update-margin <debt> <buffer_pct> [note]", file=sys.stderr)
             sys.exit(1)
-        update_margin(float(sys.argv[2]), float(sys.argv[3]))
+        update_margin(float(sys.argv[2]), float(sys.argv[3]), " ".join(sys.argv[4:]))
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == "log-cashflow":
+        if len(sys.argv) < 6:
+            print("usage: allocate.py log-cashflow <deposit|withdrawal> <amount> "
+                  "<book_before> <book_after> [note]", file=sys.stderr)
+            sys.exit(1)
+        log_cashflow(sys.argv[2], float(sys.argv[3]), float(sys.argv[4]),
+                     float(sys.argv[5]), " ".join(sys.argv[6:]))
+        return
+    if len(sys.argv) > 1 and sys.argv[1] == "log-interest":
+        if len(sys.argv) < 5:
+            print("usage: allocate.py log-interest <amount> <period_start> "
+                  "<period_end> [note]", file=sys.stderr)
+            sys.exit(1)
+        log_interest(float(sys.argv[2]), sys.argv[3], sys.argv[4],
+                     " ".join(sys.argv[5:]))
         return
     if len(sys.argv) > 1 and sys.argv[1] == "log-performance":
         log_performance(note=" ".join(sys.argv[2:]))
