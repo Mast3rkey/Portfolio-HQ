@@ -73,14 +73,13 @@ relayed via secondary source -- self-reported, not independently audited.
 ## Recent financial results
 
 **Q2 2026** (reported 2026-07-30, the same day as the MarketAxess
-announcement below): net revenue $2.7B (growth rate inconsistently
-reported as +5% or +6.2% YoY across snippets); GAAP diluted EPS $1.69
-(+14% YoY); adjusted diluted EPS $1.90 (beat consensus $1.88);
-consolidated operating income $1.391B GAAP (52% margin) vs. a separately
-cited "$1.6B adjusted operating income" figure -- not independently
-reconciled; recurring revenue record $1.35B (+8% YoY constant currency).
-Company language (relayed via secondary source) describes this as the
-best second-quarter performance in company history.
+announcement below): the directly read issuer release reports net revenue
+of $2.666B (+5% YoY); GAAP diluted EPS of $1.69 (+14% YoY); adjusted
+diluted EPS of $1.90; GAAP operating income of $1.391B (52% margin); and
+adjusted operating income of $1.6B (61% margin). The GAAP and adjusted
+operating-income figures are distinct measures, not a conflict. Recurring
+revenue reached a record $1.35B (+8% YoY constant currency). ICE describes
+the result as its best second-quarter performance.
 
 **FY2025** (reported ~2026-02-05): net revenue $9.9B (+7% YoY, described
 as a 20th consecutive year of record revenue); net income $3.3B GAAP /
@@ -92,8 +91,7 @@ target -- one secondary/opinion-toned outlet characterized this guidance
 as "growth guidance cools" relative to 2025's pace; that framing is
 relayed as third-party commentary, not adopted here.
 
-Q3 2026 earnings date could not be confirmed this session (historically
-late October).
+ICE scheduled its Q3 2026 earnings release for 2026-10-29.
 
 ## The MarketAxess acquisition -- the transaction underlying the gate
 
@@ -101,10 +99,11 @@ On 2026-07-30, ICE announced a definitive agreement to acquire
 MarketAxess Holdings (MKTX), an electronic fixed-income (RFQ-model)
 trading platform serving ~2,100 institutional investors/broker-dealers
 across 90+ countries. [ICE-R01] Terms: $167.00/share cash (~33% premium
-to MKTX's prior close), equity value ~$6.0B (enterprise value cited
-separately as ~$5.7B -- the two figures are used somewhat interchangeably
-across outlets and not fully reconciled here). Unanimously approved by
-both boards; ICE shareholder approval is **not** required. Expected close
+to MKTX's prior close), approximately $6.0B of equity value, and
+approximately $5.7B of enterprise value. The issuer release identifies the
+two valuation measures separately; they are not conflicting estimates.
+Unanimously approved by both boards; ICE shareholder approval is **not**
+required. Expected close
 H1 2027, subject to MKTX shareholder approval and HSR/antitrust
 clearance, with an outside date of 2027-07-29 (extendable up to two
 6-month periods if only antitrust approvals remain outstanding). ICE
@@ -193,11 +192,11 @@ costs.
 
 1. **Leverage from the newly announced, all-debt-financed MarketAxess
    acquisition** -- pro forma gross leverage ~3.4x at close, on top of an
-   already-substantial pre-deal debt load (~$19.8B total debt as of
-   2026-06-30 against ~$1.1B cash, single unverified secondary figure).
-   No 2026 credit-rating-agency action following the announcement was
-   found this session -- directly relevant to this leverage concern and
-   flagged as an open item.
+   already-substantial pre-deal debt load. ICE's directly read Q2 release
+   reports $19.846B of outstanding debt and $1.067B of unrestricted cash at
+   2026-06-30. No 2026 credit-rating-agency action following the
+   announcement was found in this refresh -- directly relevant to this
+   leverage concern and flagged as an open item.
 2. **Concurrent, unfinished prior integration** (Black Knight/Mortgage
    Technology) layering a second major integration workstream on top of
    an unfinished one.

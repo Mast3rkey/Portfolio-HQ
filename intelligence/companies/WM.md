@@ -110,14 +110,14 @@ not independently audited by this session.**
 
 ## Recent financial results
 
-**Q2 2026** (reported/discussed 2026-07-27 through 2026-07-29): revenue
-$6.684B (+4.0% YoY); net income $785M or $786M (a $1M discrepancy across
-secondary sources, unreconciled); adjusted EBITDA $2.067B (+5.5% reported,
-+9.1% excluding 2025 wildfire-cleanup comparisons); adjusted EBITDA
-margin ~30.9%; adjusted EPS $2.02 (beat consensus $1.98); free cash flow
-$1.104B for the quarter alone (+34.5-35% YoY); H1 2026 cumulative
-operating cash flow $3.23B, H1 free cash flow $2.02B; shareholder
-returns >$1B in the quarter (dividends + buybacks).
+**Q2 2026** (reported 2026-07-28): the directly read issuer release reports
+revenue of $6.684B (+4.0% YoY), net income attributable to WM of $785M,
+GAAP operating income of $1.253B, adjusted operating EBITDA of $2.067B
+(+5.5% reported, +9.1% excluding 2025 wildfire-cleanup comparisons), an
+adjusted operating EBITDA margin of ~30.9%, adjusted EPS of $2.02, and free
+cash flow of $1.104B for the quarter. H1 2026 operating cash flow was
+$3.227B and H1 free cash flow was $2.024B; shareholder returns exceeded
+$1B in the quarter through dividends and buybacks.
 
 Segment detail: combined Recycling + Renewable Energy adjusted operating
 EBITDA **$163M**, up 32.5% from $123M a year earlier, driven by higher
@@ -213,8 +213,11 @@ function as de facto regional monopolies.
    guidance maintained and margin guidance raised, so the softness has
    not yet flowed through to profitability guidance, but worth
    monitoring.
-6. **Landfill closure/post-closure liability reserves** -- not
-   independently quantified this session; a disclosed gap.
+6. **Landfill closure/post-closure liability reserves** -- WM's filed Q2
+   10-Q reports $3.339B of landfill liabilities and $230M of environmental
+   remediation liabilities at 2026-06-30, plus $144M of restricted funds
+   for final capping, closure, post-closure, and remediation obligations.
+   Site-level timing and exposure remain material estimation uncertainties.
 7. **Fuel/labor cost inflation** -- not separately quantified this
    session; a disclosed gap.
 8. **Valuation evidence** -- primary source access is now resolved, but the
@@ -288,7 +291,10 @@ guidance trim.
    -- not reconciled to a consistent Q2 2026 leverage picture.
 4. Republic Services' landfill count cited as both 190 and 209 across
    sources.
-5. Landfill closure/post-closure liability reserve figures -- not found.
+5. The filed Q2 10-Q quantifies landfill liabilities at $3.339B and
+   environmental remediation liabilities at $230M, but does not eliminate
+   uncertainty around site-level timing, estimate revisions, or ultimate
+   settlement costs.
 6. WM-specific PFAS litigation/reserve exposure -- not found (disclosed
    gap, not a clean-record finding).
 7. Waste Connections (WCN), a third major public competitor, was not
