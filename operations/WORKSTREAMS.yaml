@@ -20076,7 +20076,7 @@ workstreams:
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
     active_branch: claude/phq-allocator-restore-2a2zxw
-    active_pr: 364
+    active_pr: 369
     last_verified_main_sha: b3a647aa064260dc293fad2fa1b21d7222c9109a
     last_verified_date: 2026-09-03
     authorized_by: >
