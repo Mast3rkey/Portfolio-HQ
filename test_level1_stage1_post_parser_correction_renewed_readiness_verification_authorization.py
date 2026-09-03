@@ -602,138 +602,138 @@ HISTORICALIZED_REGISTER_ASSERTIONS = (
     ("test_level1_stage1_activation_authorization.py",
      "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
      "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
-     "39e26e71655d46edf82d7c113f3face201c942fc5add52ae0c8e71e1e026b653"),
+     "48b54482563e707461d39a8958c25da0fab681f266c6bb987a6ce95351827c92"),
     ("test_level1_stage1_activation_authorization.py",
      "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
      "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
-     "e345b8ecd6d5e976911399b7abf6b20808e8492fe10248f7c05940c8f83651a7"),
+     "9d2676b60270774e85c4bf2512914a2223367a7e3a178aa7e418399853aa2a6a"),
     ("test_level1_stage1_activation_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
-     "0395e2bd2c7012099735696e74db89279418b8b2912a3ee6acc70b86266360a3"),
+     "8e8e8f9c8e534b30a55ccc93041b7405d36e6e4db544f5a084a13808603d3c53"),
     ("test_level1_stage1_post_correction_rebinding.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "2ed46b326b8e69726009b0c828e34e88edf605ce8eb67cdbb983a03f8125706e"),
+     "2bb152d6c448e70b6fbf0d8a2bea20916730b7d5ab880c62499bd55ca444456d"),
     ("test_level1_stage1_post_correction_rebinding_authorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "7af1804adba441d0608211d5d5285a306d789821680d885936111f147bbde0be"),
+     "5d53799b7630b2463e330d2cd9dec16d4bcb7053ead1a57ebe277b841d30f429"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "54bd8856d67b755da4c3ef1355452c1ef76106d3a6a78e4da2f53310f7d46bba"),
+     "d141383e922e038bc253751d021bde7a5e1a2dcab65cadd4fa550ef40445d1e0"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
      "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
      "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444",
-     "afaa1a2e55bfac34033c63890d2e50fb9d91f3aa8a0dbc76931f346f8f2a2627"),
+     "c4e5549e30e39379d91a0b0bf16f0af93100f796465cb3113b5e45318086660a"),
     ("test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "38ebf20dc53d989a10c0c03dc71989d0fa0abbb5b4487c9df1a6bfc3d61467c5"),
+     "25559cf74f2310f8a61916cf31d39dc6885dcf23ee0a1cb31d3216a7be443f95"),
     ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
      "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
      "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f",
-     "b6dfb38cc76514990bca183f84946f873662ef3ba079c103fea4faf2183f6fd6"),
+     "7ca2c49052283866dffa4c2d31ad80b0d5abcd1fb68488cafdbcacd26231ab1b"),
     ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
      "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
      "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0",
-     "d2674c9d374e3a12de6e72c3f22b2bc8a946e69ff55b9ae50a069e4f6842caf6"),
+     "f4ff14ad1d84fd097ae88b11da73a43327f8906caabd3e081482f6a0686ff4e5"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
      "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
-     "39e26e71655d46edf82d7c113f3face201c942fc5add52ae0c8e71e1e026b653"),
+     "6b600b19282c6dd3da06a7aa60bb37b9e4978e33608e6226a5ecfeedc0353bae"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
      "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
-     "e345b8ecd6d5e976911399b7abf6b20808e8492fe10248f7c05940c8f83651a7"),
+     "8c7bef1e77889171d3199a1038e79f8fd367cdeb4c0a64a3e5e74861a1dc5658"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
-     "0395e2bd2c7012099735696e74db89279418b8b2912a3ee6acc70b86266360a3"),
+     "9676841ad4cc2ebfb7974fa119f613bd21b62fc84930be87ace413542acfc36b"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "f5ce46c934051b62f3df6ae4dfd1f6fa9a03f79838059f6a894976e2d0ed9362",
      "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
-     "ea6ce4db1c6f209ebee141c3e1120f044e23dccddd8d70857a6a6b93c8fc3a0a"),
+     "f0933ddf824a0d1bb8f0d185550e765a6810c1e0ac9d974a001e768534cd5d1f"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "7af1804adba441d0608211d5d5285a306d789821680d885936111f147bbde0be"),
+     "fddb23994010e9dc3228199856aa715090d3755ab681b9f3d4fa82b68d640aa9"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
      "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444",
-     "be4d7509d2541fc0b9a5235585875c90fbdcd4f94b3ba917a99c3dd514529006"),
+     "c5c0a3d69ef57a3cca7d49561860688624da3c52d8c532672d096f1a0d82d174"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
      "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
-     "39e26e71655d46edf82d7c113f3face201c942fc5add52ae0c8e71e1e026b653"),
+     "830a47cb5b1f00684bd6e95c45d2c4b0b21ee7e40f563b301256d2492c3e8f9a"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
      "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
-     "e345b8ecd6d5e976911399b7abf6b20808e8492fe10248f7c05940c8f83651a7"),
+     "07f9dbec94e6c3a3f4859c42f8d327cdf5e5f0358f616cb0331146f6c8a2b83f"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
-     "0395e2bd2c7012099735696e74db89279418b8b2912a3ee6acc70b86266360a3"),
+     "307cda57a9a33ce7628a1b618e05435106275c957536496fa51762154ca064c4"),
 
     # The five suites routed through PROTECTED_PREDICATES need the same exact
     # occurrence protection for their newly historical register predicates.
     ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
      "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
      "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f",
-     "b6dfb38cc76514990bca183f84946f873662ef3ba079c103fea4faf2183f6fd6"),
+     "cafe5ee23a78156a34fe2a879f6e9c23595de421ccd09cd09c7b7e5083f69ac0"),
     ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
      "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
      "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0",
-     "d2674c9d374e3a12de6e72c3f22b2bc8a946e69ff55b9ae50a069e4f6842caf6"),
+     "95885ab8f224c1ac0a2bd002bb195528711898e88dfd3f8882319e0f84f8ba62"),
     ("test_level1_stage1_parser_contract_correction_authorization.py",
      "e44d97a2654922db1d77ccdc014e490118777039e671de7a8907e79db560e9be",
      "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
-     "053c128c7fd2f244a42fba62294fc0503b63286fa1e652df63e01400bb8f8d43"),
+     "6bd87c98cd09bfbbfbb8db91c2fc77468362e727d15a9b546019567f84410a9a"),
     ("test_level1_stage1_parser_contract_correction_authorization.py",
      "e4f4231a90d6bab860535b4798918114f8eca81beea106326899fc99545d369f",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "d9f985dc94412b63f670761dc17c1dde5516a248b32aecd2b76968abed5fd174"),
+     "11e846e1c453d180fca7fb0ba92be2291d1aa7b9266a39f1c5eb2c4afa2a8025"),
     ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
      "6531fc8ab57ca19e7edfbed9dee040bcc8fd95823173e7b8abbd6c2f1a117560",
      "c864fa0567da6bb474892c2e2735277fbef880454c6b3b317e3af1f7f3e9909e",
-     "251e57dab5d9d2931b15b6b6d210be99361c66dd2754c7c4cc2afbbd367007b8"),
+     "3eba9ab17458bdfc9c91bf835a179e088ad2838f9e4e2bc08f46c05df6cdaa9b"),
     ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
      "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
      "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7",
-     "66193c7a7c30665ad982c2065b72efa7c5a5c7af0b057a3c8a08a83fffba1285"),
+     "c766568eb709a7e97acb722c27a69ff433a381fc6581b96ce86b22d514266574"),
     ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
      "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
      "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7",
-     "68c2d5d8deb249465c20e3e023bd2b29e7d2a74dccc531c338a323c40dbd6870"),
+     "5279a466fa2724b6dc17cf488488989df982ce95f2c26f696fef8c54d9f8e2fa"),
     ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
      "98832ed7c8ea617746dab05af3a976436b6b4f0564624162acf865402bdb3ce3",
      "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
-     "37d9a2883174c8b39ff07ea14fd637ff3dbc18959e8e91cc4bfe9c156ea96352"),
+     "53a0b63471083a0f1d38d0de8ded079b944f2aa5b449c1182ee96c10482bbfc5"),
     ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
      "c3d19fec7a3c6520ddb615e7dcda1ecc2dd793de8769009c57c05c00a2244fff",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "3314be5a159cd1b53e30ecbe45f13f16273a20ca31ea903d974e05c55aa3fdd0"),
+     "5c9ac260d8f4f22c700ac40118256eb274e9d3f632de73a57dc6af296ebcbaa1"),
     ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
      "c5a9a677842c286ee149fe058fe9f00a5d9062638b5f9b7a96a02ceb914fdeb8",
      "800a2a0eb3d5b305b1415770aad86aa66b19d79d3dc01e95aa8bb5fba210c3ce",
-     "8a6ebf8d7cab9806f82002696d1a35d3651328496db7ad898f873944756ec1e7"),
+     "3fbe233eaa88be9806dc8fbe9d2feef3d6ddc830fe1b2db09671266445ec5f46"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "a7ff7d9401d1ca98525e7030552ded339e4e96d3fb84c9a4fe2dfc8949e8d79b",
      "bdecd00f37afa0aec457cc30ac1a7f1df4a7b4a1bddf4a67545ed81b2973b11c",
-     "f5b4cf6bc0467b9f4c8c01c3395fd556ff97311136e174f4ff82a1ae8ca4c2c8"),
+     "f28e7fc63a6ea0c16e2bd4dd3a04314a5e397fd32b075e462c5976afff92993a"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
      "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
-     "029b1d99989b2439f241315dc865e598ba30d59596560b7ff8a84d1a650f7666"),
+     "84500cef73f74f841d7b14b852d5e35765b8a736e5a8bc706cf679954eb2d0d3"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "7d5311f304ec46ba1ac6a8d1200f0e4942ca4c2c66ecc9dd5066272b84bcc5c8",
      "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
-     "bc2e483086b48fa84d3164106437bfc40bc201acb6e0d37cde7661e6cf7ab35d"),
+     "0bfbd124e7cb7a8335cf6a1f60ef6716944aa38d0c71718ef5ea0aadb9b809fd"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
      "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
-     "59d0f4f1e39c0888bdef24af7364e0ccab4d492e92d145adbcb791da272e3650"),
+     "c6d1e1b0041eb46e8e4e31eff2aa2f23f08ae606e56f0a6effd7fa01dcb03263"),
 )
 
 
@@ -897,18 +897,87 @@ def _assertion_fingerprints(source: str) -> list[str]:
 def _assertion_occurrences(source: str) -> list[tuple[str, str]]:
     """Return each assertion fingerprint with its executable-site identity.
 
-    The identity keeps named lexical scopes and compound control-flow ancestry.
-    It deliberately ignores line numbers and unrelated sibling statements, so a
-    harmless comment or strengthening does not move the site. Identical
-    assertions in the same executable site retain an ordinal, preserving exact
-    multiplicity without allowing another function or a dead branch to stand in
-    for the registered occurrence.
+    The identity keeps named lexical scopes, compound control-flow ancestry, the
+    complete AST of the containing function, and the pytest-collection metadata
+    of its class/module.  It deliberately ignores comments, line numbers, and
+    unrelated functions, but makes every executable sibling and decorator in the
+    containing test load-bearing.  Duplicate same-name definitions in one
+    lexical namespace are marked ambiguous, so an overwritten decoy can never
+    inherit the registered site's identity.  Class/module ``__test__`` and
+    ``pytestmark`` controls are load-bearing too.  Identical assertions in the
+    same site retain an ordinal, preserving exact multiplicity.
     """
+    tree = ast.parse(source)
     raw = []
 
+    parents = {
+        child: parent
+        for parent in ast.walk(tree)
+        for child in ast.iter_child_nodes(parent)
+    }
+    named = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+    named_groups = collections.defaultdict(list)
+    for node in ast.walk(tree):
+        if not isinstance(node, named):
+            continue
+        owner = parents[node]
+        while not isinstance(owner, named + (ast.Module,)):
+            owner = parents[owner]
+        named_groups[(id(owner), type(node).__name__, node.name)].append(node)
+    ambiguous_named_nodes = {
+        id(node)
+        for nodes in named_groups.values() if len(nodes) > 1
+        for node in nodes
+    }
+
+    def collection_digest(node):
+        """Collection-relevant metadata without unrelated test definitions."""
+        parts = []
+        if isinstance(node, ast.ClassDef):
+            parts.append((
+                node.name,
+                [ast.dump(item) for item in node.bases],
+                [ast.dump(item) for item in node.keywords],
+                [ast.dump(item) for item in node.decorator_list],
+                [ast.dump(item) for item in getattr(node, "type_params", [])],
+            ))
+        for statement in node.body:
+            if isinstance(statement, named):
+                continue
+            stored = {
+                child.id for child in ast.walk(statement)
+                if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Store)
+            }
+            if stored & {"__test__", "pytestmark"}:
+                parts.append(ast.dump(statement))
+        return hashlib.sha256(repr(parts).encode("utf-8")).hexdigest()
+
+    module_collection = collection_digest(tree)
+
+    def execution_skeleton(node):
+        """AST structure with assertion predicates treated as opaque leaves."""
+        if isinstance(node, ast.Assert):
+            return ("Assert",)
+        if isinstance(node, ast.AST):
+            return (
+                type(node).__name__,
+                tuple((field, execution_skeleton(value))
+                      for field, value in ast.iter_fields(node)),
+            )
+        if isinstance(node, list):
+            return tuple(execution_skeleton(item) for item in node)
+        return node
+
     def compound_segment(node, field):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            return f"{field}:{type(node).__name__}:{node.name}"
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            digest = hashlib.sha256(
+                repr(execution_skeleton(node)).encode("utf-8")).hexdigest()
+            ambiguity = ":AMBIGUOUS" if id(node) in ambiguous_named_nodes else ""
+            return f"{field}:{type(node).__name__}:{node.name}:{digest}{ambiguity}"
+        if isinstance(node, ast.ClassDef):
+            digest = collection_digest(node)
+            ambiguity = ":AMBIGUOUS" if id(node) in ambiguous_named_nodes else ""
+            return f"{field}:ClassDef:{node.name}:{digest}{ambiguity}"
         compound = (
             ast.If, ast.For, ast.AsyncFor, ast.While, ast.With, ast.AsyncWith,
             ast.Try, ast.TryStar, ast.ExceptHandler, ast.Match,
@@ -942,7 +1011,7 @@ def _assertion_occurrences(source: str) -> list[tuple[str, str]]:
                 segment = compound_segment(child, field)
                 visit(child, path + ((segment,) if segment else ()))
 
-    visit(ast.parse(source), ("Module",))
+    visit(tree, (f"Module:{module_collection}",))
     seen = collections.Counter()
     out = []
     for fingerprint, path in raw:
@@ -1046,6 +1115,10 @@ def _historicalized_registration_losses(pinned_src: str, live_src: str, relpath)
     for digest, count in required_sources.items():
         if pinned[digest] < count:
             losses.append(f"missing registered source {digest}: {pinned[digest]} < {count}")
+        if live_digests[digest] > 0:
+            losses.append(
+                f"closed historical source {digest} restored in live file: "
+                f"{live_digests[digest]}")
     for (digest, site), count in required_targets.items():
         if live[(digest, site)] < count:
             losses.append(
@@ -2439,14 +2512,20 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
     _REG_LINE = 'assert str(workstream["last_verified_date"]).startswith("{v}")'
     _REG_HIST_LINE = 'assert not str(workstream["last_verified_date"]).startswith("{v}")'
 
-    def _synthetic_historical_row(self, rel, value):
+    def _synthetic_historical_row(self, rel, value, live_source=None):
         positive = "def f():\n    " + self._REG_LINE.format(v=value) + "\n"
         negative = "def f():\n    " + self._REG_HIST_LINE.format(v=value) + "\n"
+        target = _fingerprint_digest(_assertion_fingerprints(negative)[0])
+        site_source = live_source if live_source is not None else negative
+        target_site = next(
+            site for fingerprint, site in _assertion_occurrences(site_source)
+            if _fingerprint_digest(fingerprint) == target
+        )
         return (
             rel,
             _fingerprint_digest(_assertion_fingerprints(positive)[0]),
-            _fingerprint_digest(_assertion_fingerprints(negative)[0]),
-            _assertion_occurrences(negative)[0][1],
+            target,
+            target_site,
         )
 
     def test_a_registered_occurrence_cannot_be_spent_by_reusing_a_present_value(
@@ -2475,7 +2554,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         live = "def f():\n" + reg_new + other_moved
         monkeypatch.setattr(
             sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
-            (self._synthetic_historical_row(rel, new),))
+            (self._synthetic_historical_row(rel, new, live),))
         lost = _lost_assertions(pinned, live, rel)
         assert lost, "an unregistered site was laundered by a present successor value"
         assert any("cutoff" in fp for fp in lost), (
@@ -2501,7 +2580,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         live = "def f():\n" + reg_new + unmoved
         monkeypatch.setattr(
             sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
-            (self._synthetic_historical_row(rel, new),))
+            (self._synthetic_historical_row(rel, new, live),))
         assert not _lost_assertions(pinned, live, rel), (
             "an unmoved occurrence of a registered predecessor was reported lost")
         # ...and that unmoved site is still governed: moving it anywhere is reported.
@@ -2932,6 +3011,8 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
                 assert re.fullmatch(r"[0-9a-f]{64}", digest), digest
                 assert base_counts[digest] == count, (
                     rel, digest, base_counts[digest], count)
+                assert live_counts[digest] == 0, (
+                    rel, digest, "a closed historical positive returned")
             for (target_digest, target_site), count in required_targets.items():
                 assert re.fullmatch(r"[0-9a-f]{64}", target_digest), target_digest
                 assert re.fullmatch(r"[0-9a-f]{64}", target_site), target_site
@@ -3020,6 +3101,31 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         lost = _lost_assertions(base, attacked, rel)
         assert any(_fingerprint_digest(fp) == source_digest for fp in lost), lost
 
+    def test_a_protected_suite_rejects_a_restored_historical_positive(self):
+        """Direct protected-route control for review comment 3920390795."""
+        rel = "test_level1_stage1_formal_disposition_parser_correction_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        source_digest = next(
+            source for row_rel, source, _target, _site
+            in HISTORICALIZED_REGISTER_ASSERTIONS
+            if row_rel == rel
+        )
+        node = next(
+            assertion for assertion in ast.walk(ast.parse(base))
+            if isinstance(assertion, ast.Assert)
+            and _fingerprint_digest(ast.dump(assertion.test)) == source_digest
+        )
+        attacked = (
+            live
+            + "\nclass _G5UncollectedRestoredPositive:\n"
+            + "    def check(self, register):\n"
+            + f"        {ast.unparse(node)}\n"
+        )
+        assert _unasserted_predicates(rel, attacked) == []
+        losses = _historicalized_registration_losses(base, attacked, rel)
+        assert any("restored in live file" in loss for loss in losses), losses
+
     @pytest.mark.parametrize(
         "relocation",
         ("helper", "class", "dead-control", "duplicate"),
@@ -3070,6 +3176,77 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         lost = _lost_assertions(base, attacked, rel)
         assert any(_fingerprint_digest(fp) == source_digest for fp in lost), (
             relocation, lost, target_site)
+
+    @pytest.mark.parametrize(
+        "attack",
+        ("early-return", "skip-decorator", "duplicate-method",
+         "class-not-test", "module-skip"),
+    )
+    def test_a_historical_target_requires_its_complete_execution_envelope(
+            self, attack):
+        """A present target cannot survive an execution/collection bypass.
+
+        Direct controls for review 5097212245 and inline comment 3920533602.
+        The duplicate-method case is the exact lexical-overwrite construction:
+        the original method, including its registered target, is inserted first;
+        Python then overwrites it with the later weakened method before pytest
+        collection.  The other cases leave the target text untouched but make it
+        unreachable or uncollected.  All must change the immutable AST envelope.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        source_digest, target_digest, target_site = next(
+            (source, target, site)
+            for row_rel, source, target, site
+            in HISTORICALIZED_REGISTER_ASSERTIONS
+            if row_rel == rel
+        )
+        tree = ast.parse(live)
+        parents = {
+            child: parent
+            for parent in ast.walk(tree)
+            for child in ast.iter_child_nodes(parent)
+        }
+        target = next(
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Assert)
+            and _fingerprint_digest(ast.dump(node.test)) == target_digest
+        )
+        method = parents[target]
+        while not isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            method = parents[method]
+        test_class = parents[method]
+        while not isinstance(test_class, ast.ClassDef):
+            test_class = parents[test_class]
+
+        lines = live.splitlines(keepends=True)
+        if attack == "early-return":
+            lines.insert(target.lineno - 1, " " * target.col_offset + "return\n")
+        elif attack == "skip-decorator":
+            lines.insert(
+                method.lineno - 1,
+                " " * method.col_offset + "@pytest.mark.skip\n")
+        elif attack == "duplicate-method":
+            original_method = lines[method.lineno - 1:method.end_lineno]
+            lines[target.lineno - 1:target.end_lineno] = [
+                " " * target.col_offset + "assert True\n"]
+            lines[method.lineno - 1:method.lineno - 1] = original_method + ["\n"]
+        elif attack == "class-not-test":
+            first_statement = test_class.body[0]
+            lines.insert(
+                first_statement.lineno - 1,
+                " " * first_statement.col_offset + "__test__ = False\n")
+        else:
+            lines.extend(["\n", "pytestmark = pytest.mark.skip\n"])
+        attacked = "".join(lines)
+
+        occurrence_losses = _historicalized_registration_losses(
+            base, attacked, rel)
+        assert occurrence_losses, (attack, target_site)
+        lost = _lost_assertions(base, attacked, rel)
+        assert any(_fingerprint_digest(fp) == source_digest for fp in lost), (
+            attack, lost, target_site)
 
     def test_one_historicalization_registration_cannot_cover_two_occurrences(
             self, monkeypatch):
