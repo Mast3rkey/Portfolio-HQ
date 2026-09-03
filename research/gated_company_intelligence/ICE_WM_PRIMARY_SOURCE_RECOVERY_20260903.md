@@ -1,7 +1,9 @@
 # ICE and WM primary-source recovery and valuation screen
 
-As of: 2026-09-03 14:47 UTC  
-Scope: ICE and WM only  
+As of: 2026-09-03 14:47 UTC
+
+Scope: ICE and WM only
+
 Decision effect: research evidence only; no target, gate, holding, order, margin, or Stage-1 change
 
 ## Purpose
