@@ -18256,7 +18256,7 @@ workstreams:
           AUTHORIZATION_ROOT absent, no stage1_results.yaml, all three authorization predicates
           False, and ATTEMPT_1 INTACT, UNCLAIMED and UNCONSUMED.
       - gate: protected-capital-accounting-and-full-book-reconciliation
-        status: in_progress
+        status: complete
         pr: 364
         description: >-
           PROTECTED-CAPITAL ACCOUNTING AND FULL-BOOK RECONCILIATION. One bounded
@@ -19357,6 +19357,20 @@ workstreams:
       entry's own roadmap_preservation field names remain wholly
       unauthorized, unchanged.
     blocker: >
+      LIVE-STATE CORRECTION, 2026-09-03 (Class 2 factual sync, OPS-0014): the
+      "sole active lane / sole mutation lane" statement dated 2026-08-16 below is
+      STALE and is retained only as history. Verified against live GitHub state at
+      main b3a647aa064260dc293fad2fa1b21d7222c9109a (CI run 33780621218,
+      completed/success): ZERO open pull requests, so NO mutation lane is currently
+      held by any unit, and WS-0014 holds no active branch or PR. PR #364
+      (PHQ-2026-07, protected-capital accounting and full-book reconciliation) is
+      MERGED — merged_by Mast3rkey at 2026-09-03T04:30:36Z, head
+      40b9f09b8fade3e323596838be6b5aeda2a2e599 confirmed an ancestor of main, merge
+      commit fa8584d5376dfa08feaaab2ef4499efb47eecb32 — and its gate above is now
+      status: complete. This correction records confirmed merge state only. It
+      advances, revives, arms, or reauthorizes NOTHING in the ENDPOINT-0001 /
+      XASSET Stage-1 chain: Stage 1 remains UNARMED and NOT EXECUTABLE, the lane
+      ABSENT, and ATTEMPT_1 intact, unclaimed and unconsumed.
       Current critical path, 2026-08-16 (post-XASSET-0026 merge): XASSET-0027
       is the sole active lane and the sole mutation lane. It is a combined Lane
       G governance unit — constituting competent Level-1 endpoint authority and
@@ -20061,10 +20075,10 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/protected-capital-accounting
+    active_branch: claude/phq-allocator-restore-2a2zxw
     active_pr: 364
-    last_verified_main_sha: 3db918530b10ffc1423ba0b749b086e349a4901d
-    last_verified_date: 2026-09-02
+    last_verified_main_sha: b3a647aa064260dc293fad2fa1b21d7222c9109a
+    last_verified_date: 2026-09-03
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively
