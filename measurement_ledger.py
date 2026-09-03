@@ -173,7 +173,8 @@ def record_cashflow(path: Path, *, direction: str, amount,
 
 def record_margin_sync(path: Path, *, resulting_debt, resulting_buffer_pct,
                        prior_debt=None, source: str = "robinhood_displayed",
-                       note: str = "", observed_at: str | datetime | None = None) -> dict:
+                       note: str = "", observed_at: str | datetime | None = None,
+                       validate_only: bool = False) -> dict:
     """Record a debt/buffer observation and infer its event class from debt delta."""
     debt = _number(resulting_debt, field="resulting_debt", minimum=0.0)
     buffer_pct = _number(
@@ -203,7 +204,8 @@ def record_margin_sync(path: Path, *, resulting_debt, resulting_buffer_pct,
     if rows and _timestamp(row["observed_at"], field="observed_at") <= _timestamp(
             rows[-1]["observed_at"], field="existing observed_at"):
         raise MeasurementError("margin observation timestamps must be strictly increasing")
-    _append(path, MARGIN_FIELDS, row)
+    if not validate_only:
+        _append(path, MARGIN_FIELDS, row)
     return row
 
 

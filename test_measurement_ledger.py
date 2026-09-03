@@ -213,6 +213,28 @@ def test_update_margin_preserves_state_and_adds_audit_event(tmp_path, monkeypatc
     assert "debt: 80.0" in holdings.read_text(encoding="utf-8")
 
 
+def test_update_margin_preflights_ledger_before_state_mutation(tmp_path, monkeypatch):
+    holdings = tmp_path / "holdings.yaml"
+    holdings.write_text(
+        "margin:\n  debt: 100.0\n  buffer_pct: 60.0\n  synced_at: 2026-09-03\n"
+        "holdings: {}\nshares: {}\ncrypto_shares: {}\n",
+        encoding="utf-8",
+    )
+    margin_log = tmp_path / "margin_log.csv"
+    margin_log.write_text("wrong,columns\n1,2\n", encoding="utf-8")
+    original_holdings = holdings.read_bytes()
+    original_log = margin_log.read_bytes()
+    monkeypatch.setattr(allocate, "HOLDINGS_FILE", holdings)
+    monkeypatch.setattr(allocate, "MARGIN_LOG_FILE", margin_log)
+    monkeypatch.setattr(allocate, "log_performance", lambda *args, **kwargs: None)
+
+    with pytest.raises(MeasurementError, match="unexpected columns"):
+        allocate.update_margin(80, 65, "must not partially apply")
+
+    assert holdings.read_bytes() == original_holdings
+    assert margin_log.read_bytes() == original_log
+
+
 def test_render_performance_labels_exact_twr_unavailable_for_legacy_log(
         tmp_path, monkeypatch):
     perf = tmp_path / "performance_log.csv"

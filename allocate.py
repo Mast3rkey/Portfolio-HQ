@@ -2512,15 +2512,30 @@ def update_margin(debt: float, buffer_pct: float, note: str = ""):
     )
     if prior_bad is not None:
         prior_debt = None
-    write_state(prior.get("holdings"), {"debt": debt, "buffer_pct": buffer_pct,
-                          "synced_at": date.today().isoformat()}, prior.get("shares"),
-               prior.get("crypto_shares"))
+    # Validate the complete durable ledger and the candidate event BEFORE
+    # rewriting canonical state.  Without this preflight, a malformed ledger
+    # made record_margin_sync() fail only after holdings.yaml had already been
+    # changed, leaving an unlogged debt/buffer update despite a failed command.
+    observed_at = utc_now()
     event = record_margin_sync(
         MARGIN_LOG_FILE,
         prior_debt=prior_debt,
         resulting_debt=debt,
         resulting_buffer_pct=buffer_pct,
         note=note,
+        observed_at=observed_at,
+        validate_only=True,
+    )
+    write_state(prior.get("holdings"), {"debt": debt, "buffer_pct": buffer_pct,
+                          "synced_at": date.today().isoformat()}, prior.get("shares"),
+               prior.get("crypto_shares"))
+    record_margin_sync(
+        MARGIN_LOG_FILE,
+        prior_debt=prior_debt,
+        resulting_debt=debt,
+        resulting_buffer_pct=buffer_pct,
+        note=note,
+        observed_at=observed_at,
     )
     print(f"margin synced: debt=${debt:,.2f} buffer={buffer_pct:.2f}% in {HOLDINGS_FILE}",
           file=sys.stderr)
