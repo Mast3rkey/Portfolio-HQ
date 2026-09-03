@@ -656,6 +656,51 @@ HISTORICALIZED_REGISTER_ASSERTIONS = (
     ("test_level1_stage1_readiness_verification_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29"),
+
+    # The five suites routed through PROTECTED_PREDICATES need the same exact
+    # occurrence protection for their newly historical register predicates.
+    ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
+     "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
+     "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f"),
+    ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
+     "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
+     "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0"),
+    ("test_level1_stage1_parser_contract_correction_authorization.py",
+     "e44d97a2654922db1d77ccdc014e490118777039e671de7a8907e79db560e9be",
+     "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0"),
+    ("test_level1_stage1_parser_contract_correction_authorization.py",
+     "e4f4231a90d6bab860535b4798918114f8eca81beea106326899fc99545d369f",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2"),
+    ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
+     "6531fc8ab57ca19e7edfbed9dee040bcc8fd95823173e7b8abbd6c2f1a117560",
+     "c864fa0567da6bb474892c2e2735277fbef880454c6b3b317e3af1f7f3e9909e"),
+    ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
+     "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
+     "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7"),
+    ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
+     "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
+     "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7"),
+    ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
+     "98832ed7c8ea617746dab05af3a976436b6b4f0564624162acf865402bdb3ce3",
+     "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0"),
+    ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
+     "c3d19fec7a3c6520ddb615e7dcda1ecc2dd793de8769009c57c05c00a2244fff",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2"),
+    ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
+     "c5a9a677842c286ee149fe058fe9f00a5d9062638b5f9b7a96a02ceb914fdeb8",
+     "800a2a0eb3d5b305b1415770aad86aa66b19d79d3dc01e95aa8bb5fba210c3ce"),
+    ("test_level1_stage1_verdict_boundary_governance.py",
+     "a7ff7d9401d1ca98525e7030552ded339e4e96d3fb84c9a4fe2dfc8949e8d79b",
+     "bdecd00f37afa0aec457cc30ac1a7f1df4a7b4a1bddf4a67545ed81b2973b11c"),
+    ("test_level1_stage1_verdict_boundary_governance.py",
+     "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
+     "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43"),
+    ("test_level1_stage1_verdict_boundary_governance.py",
+     "7d5311f304ec46ba1ac6a8d1200f0e4942ca4c2c66ecc9dd5066272b84bcc5c8",
+     "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43"),
+    ("test_level1_stage1_verdict_boundary_governance.py",
+     "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
+     "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43"),
 )
 
 
@@ -881,6 +926,31 @@ def _historicalized_occurrences(relpath):
     return out
 
 
+def _historicalized_registration_losses(pinned_src: str, live_src: str, relpath):
+    """Missing registered sources or literal targets, including multiplicity."""
+    rows = [
+        (source, target)
+        for rel, source, target in HISTORICALIZED_REGISTER_ASSERTIONS
+        if rel == relpath
+    ]
+    if not rows:
+        return []
+    pinned = collections.Counter(
+        _fingerprint_digest(fp) for fp in _assertion_fingerprints(pinned_src))
+    live = collections.Counter(
+        _fingerprint_digest(fp) for fp in _assertion_fingerprints(live_src))
+    required_sources = collections.Counter(source for source, _target in rows)
+    required_targets = collections.Counter(target for _source, target in rows)
+    losses = []
+    for digest, count in required_sources.items():
+        if pinned[digest] < count:
+            losses.append(f"missing registered source {digest}: {pinned[digest]} < {count}")
+    for digest, count in required_targets.items():
+        if live[digest] < count:
+            losses.append(f"missing literal target {digest}: {live[digest]} < {count}")
+    return losses
+
+
 def _registered_named_occurrences(relpath, pinned_src: str, live_src: str):
     """The lawful named transitions for this exact file and exact delta.
 
@@ -971,6 +1041,12 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
     def consume_historical(candidate: str) -> bool:
         digest = _fingerprint_digest(candidate)
         targets = historical_remaining.get(digest) or []
+        # A historicalized positive is closed, not optional. Keeping the exact
+        # literal-bound negative while restoring the former positive would make
+        # both predicates part of the live suite and could let a runtime name
+        # rewrite choose which value the positive actually enforces.
+        if live_fingerprints.get(candidate, 0) > 0:
+            return False
         for i, target_digest in enumerate(targets):
             for live in live_fingerprints:
                 if (_fingerprint_digest(live) == target_digest
@@ -1717,6 +1793,7 @@ class TestThisFilingMutatesNothingLoadBearing:
             live_path = ROOT / rel
             assert live_path.exists(), rel
             live_src = live_path.read_text(encoding="utf-8")
+            at_merge_src = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
             if rel in PROTECTED_PREDICATES:
                 # This filing lawfully re-anchored this suite's catalog-position,
                 # cardinality or base-revision assertions under its own already-reviewed
@@ -1724,8 +1801,9 @@ class TestThisFilingMutatesNothingLoadBearing:
                 # REPLACEMENTS as losses, so the invariant is stated positively instead.
                 missing = _unasserted_predicates(rel, live_src)
             else:
-                at_merge_src = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
                 missing = _lost_assertions(at_merge_src, live_src, rel)
+            missing.extend(
+                _historicalized_registration_losses(at_merge_src, live_src, rel))
             if missing:
                 weakened[rel] = missing[:3]
         assert not weakened, weakened
@@ -1766,6 +1844,9 @@ class TestThisFilingMutatesNothingLoadBearing:
                 missing = _unasserted_predicates(rel, live)
             else:
                 missing = _lost_assertions(base, live, rel)
+            at_merge = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            missing.extend(
+                _historicalized_registration_losses(at_merge, live, rel))
             assert not missing, f"{rel} no longer asserts: {missing[:3]}"
 
 
@@ -2626,8 +2707,10 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         lost = _lost_assertions(
             base + "\n" + old_line.strip() + "\n",
             live + "\n" + new_line.strip() + "\n", rel)
-        assert len(lost) == 1, lost
-        assert old_name in lost[0]
+        # The added successor positive is itself forbidden once this occurrence
+        # has been historicalized, so neither predecessor copy may be licensed.
+        assert len(lost) == 2, lost
+        assert all(old_name in fingerprint for fingerprint in lost)
 
     def test_the_registry_identifies_transitions_by_occurrence_not_by_value(self):
         """The registry's own shape is the guarantee, so it is pinned.
@@ -2661,43 +2744,116 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
 
     def test_historicalization_registry_is_finite_exact_and_real(self):
         """The one-time conversion is an occurrence list, not a value licence."""
-        assert len(HISTORICALIZED_REGISTER_ASSERTIONS) == 19
-        assert len(set(HISTORICALIZED_REGISTER_ASSERTIONS)) == 19
-        for rel, digest, target_digest in HISTORICALIZED_REGISTER_ASSERTIONS:
+        assert len(HISTORICALIZED_REGISTER_ASSERTIONS) == 33
+        by_file = collections.defaultdict(list)
+        for rel, source_digest, target_digest in HISTORICALIZED_REGISTER_ASSERTIONS:
+            by_file[rel].append((source_digest, target_digest))
+        protected_conversions = {
+            "test_level1_stage1_formal_disposition_parser_correction_authorization.py",
+            "test_level1_stage1_parser_contract_correction_authorization.py",
+            "test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
+            "test_level1_stage1_post_parser_correction_operational_rebinding.py",
+            "test_level1_stage1_verdict_boundary_governance.py",
+        }
+        assert set(by_file) & set(PROTECTED_PREDICATES) == protected_conversions
+        for rel, rows in by_file.items():
             assert rel in PINNED_TEST_HASHES, rel
-            assert re.fullmatch(r"[0-9a-f]{64}", digest), digest
-            assert re.fullmatch(r"[0-9a-f]{64}", target_digest), target_digest
             base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
-            candidates = [
-                fp for fp in _assertion_fingerprints(base)
-                if _fingerprint_digest(fp) == digest
-            ]
-            assert len(candidates) == 1, (rel, digest, len(candidates))
-            live = [
-                fp for fp in _assertion_fingerprints(
-                    (ROOT / rel).read_text(encoding="utf-8"))
-                if _fingerprint_digest(fp) == target_digest
-            ]
-            assert len(live) == 1, (rel, target_digest, len(live))
-            assert "NotEq()" in live[0] or live[0].startswith("UnaryOp(op=Not()")
-            assert "XASSET0061_" not in live[0]
-            assert "SUCCESSOR_" not in live[0]
+            live_src = (ROOT / rel).read_text(encoding="utf-8")
+            base_fingerprints = _assertion_fingerprints(base)
+            live_fingerprints = _assertion_fingerprints(live_src)
+            base_counts = collections.Counter(
+                _fingerprint_digest(fp) for fp in base_fingerprints)
+            live_counts = collections.Counter(
+                _fingerprint_digest(fp) for fp in live_fingerprints)
+            required_sources = collections.Counter(source for source, _ in rows)
+            required_targets = collections.Counter(target for _, target in rows)
+            for digest, count in required_sources.items():
+                assert re.fullmatch(r"[0-9a-f]{64}", digest), digest
+                assert base_counts[digest] == count, (
+                    rel, digest, base_counts[digest], count)
+            for target_digest, count in required_targets.items():
+                assert re.fullmatch(r"[0-9a-f]{64}", target_digest), target_digest
+                assert live_counts[target_digest] == count, (
+                    rel, target_digest, live_counts[target_digest], count)
+                matching = [
+                    fp for fp in live_fingerprints
+                    if _fingerprint_digest(fp) == target_digest
+                ]
+                assert all(
+                    "NotEq()" in fp or fp.startswith("UnaryOp(op=Not()")
+                    for fp in matching)
+                assert all("XASSET0061_" not in fp for fp in matching)
+                assert all("SUCCESSOR_" not in fp for fp in matching)
+            assert not _historicalized_registration_losses(base, live_src, rel)
 
     def test_every_historicalization_registration_is_load_bearing(self):
-        """Removing any row exposes that exact historical predicate as lost."""
-        saved = HISTORICALIZED_REGISTER_ASSERTIONS
-        try:
-            for entry in saved:
-                rel, digest, _target_digest = entry
-                globals()["HISTORICALIZED_REGISTER_ASSERTIONS"] = tuple(
-                    candidate for candidate in saved if candidate != entry)
-                base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
-                live = (ROOT / rel).read_text(encoding="utf-8")
-                lost = _lost_assertions(base, live, rel)
-                assert any(_fingerprint_digest(fp) == digest for fp in lost), (
-                    f"the {rel}/{digest[:12]} historicalization is never needed")
-        finally:
-            globals()["HISTORICALIZED_REGISTER_ASSERTIONS"] = saved
+        """Removing any row's target exposes that exact occurrence as lost."""
+        for index, (rel, _digest, target_digest) in enumerate(
+                HISTORICALIZED_REGISTER_ASSERTIONS):
+            base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            tree = ast.parse(live)
+            node = next(
+                assertion for assertion in ast.walk(tree)
+                if isinstance(assertion, ast.Assert)
+                and _fingerprint_digest(ast.dump(assertion.test)) == target_digest
+            )
+            lines = live.splitlines(keepends=True)
+            del lines[node.lineno - 1:node.end_lineno]
+            losses = _historicalized_registration_losses(
+                base, "".join(lines), rel)
+            assert losses, (
+                f"historicalization row {index} for {rel} is never needed")
+
+    def test_removing_a_registered_protected_target_fails_closed(self):
+        """Direct control for review 3920157771: protected conversions load-bear."""
+        protected_rows = collections.defaultdict(list)
+        for rel, _source, target in HISTORICALIZED_REGISTER_ASSERTIONS:
+            if rel in PROTECTED_PREDICATES:
+                protected_rows[rel].append(target)
+        assert len(protected_rows) == 5
+        for rel, targets in protected_rows.items():
+            base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            tree = ast.parse(live)
+            target = targets[0]
+            node = next(
+                assertion for assertion in ast.walk(tree)
+                if isinstance(assertion, ast.Assert)
+                and _fingerprint_digest(ast.dump(assertion.test)) == target
+            )
+            lines = live.splitlines(keepends=True)
+            del lines[node.lineno - 1:node.end_lineno]
+            weakened = "".join(lines)
+            losses = _historicalized_registration_losses(base, weakened, rel)
+            assert losses, f"removing a protected target escaped in {rel}"
+
+    def test_restoring_a_historical_positive_alongside_its_negative_fails_closed(
+            self):
+        """Direct control for review 3920270781: a closed positive stays closed."""
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        source_digest = next(
+            source for row_rel, source, _target
+            in HISTORICALIZED_REGISTER_ASSERTIONS
+            if row_rel == rel
+        )
+        node = next(
+            assertion for assertion in ast.walk(ast.parse(base))
+            if isinstance(assertion, ast.Assert)
+            and _fingerprint_digest(ast.dump(assertion.test)) == source_digest
+        )
+        restored = ast.unparse(node)
+        attacked = (
+            live
+            + '\nglobals()["XASSET0061_MAIN_SHA"] = "c3" * 20\n'
+            + '\ndef restored_positive(workstream):\n'
+            + f"    {restored}\n"
+        )
+        lost = _lost_assertions(base, attacked, rel)
+        assert any(_fingerprint_digest(fp) == source_digest for fp in lost), lost
 
     def test_one_historicalization_registration_cannot_cover_two_occurrences(
             self, monkeypatch):

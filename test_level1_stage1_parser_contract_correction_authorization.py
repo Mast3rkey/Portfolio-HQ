@@ -1906,7 +1906,6 @@ class TestRegisterSynchronisation:
     def test_the_last_verified_main_sha_advanced_and_is_bound_at_both_ends(self, ws0014):
         """The successor SHA is now immutable history and remains excluded."""
         assert ws0014["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
-        assert ws0014["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # ADVANCED BY XASSET-0061: XASSET-0060 joins the negative pins rather than being
         # deleted, so the field stays bound at BOTH ends.
         assert ws0014["last_verified_main_sha"] != XASSET0060_MAIN_SHA
