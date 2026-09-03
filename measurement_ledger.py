@@ -103,13 +103,27 @@ def _clean_text(value, *, field: str, required: bool = False) -> str:
 def _read_rows(path: Path, fields: tuple[str, ...]) -> list[dict[str, str]]:
     if not path.exists():
         return []
-    with path.open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        if tuple(reader.fieldnames or ()) != fields:
-            raise MeasurementError(
-                f"{path.name} has unexpected columns: {reader.fieldnames!r}"
-            )
-        return [dict(row) for row in reader]
+    try:
+        with path.open(newline="", encoding="utf-8") as handle:
+            reader = csv.DictReader(handle, strict=True)
+            if tuple(reader.fieldnames or ()) != fields:
+                raise MeasurementError(
+                    f"{path.name} has unexpected columns: {reader.fieldnames!r}"
+                )
+            rows = []
+            for line_number, row in enumerate(reader, start=2):
+                # DictReader stores surplus cells under a None key and missing
+                # cells as None values.  Neither may be silently discarded:
+                # accepting either would let a malformed durable record survive
+                # validation and then influence later measurement.
+                if set(row) != set(fields) or any(value is None for value in row.values()):
+                    raise MeasurementError(
+                        f"{path.name} row {line_number} does not match its schema"
+                    )
+                rows.append({field: row[field] for field in fields})
+            return rows
+    except csv.Error as exc:
+        raise MeasurementError(f"{path.name} contains malformed CSV") from exc
 
 
 def _append(path: Path, fields: tuple[str, ...], row: Mapping[str, object]) -> None:

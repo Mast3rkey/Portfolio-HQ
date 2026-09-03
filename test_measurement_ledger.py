@@ -58,6 +58,34 @@ def test_cashflow_is_append_only_and_strictly_ordered(tmp_path):
     assert b"\r" not in path.read_bytes()
 
 
+@pytest.mark.parametrize(
+    "bad_row",
+    [
+        "2026-09-03T13:00:00Z,deposit,1,1,2,statement,note,extra\n",
+        "2026-09-03T13:00:00Z,deposit,1,1,2,statement\n",
+        '2026-09-03T13:00:00Z,deposit,1,1,2,statement,"unterminated\n',
+    ],
+)
+def test_existing_malformed_rows_block_reads_and_appends(tmp_path, bad_row):
+    path = tmp_path / "cashflow.csv"
+    path.write_text(
+        ",".join((
+            "occurred_at", "direction", "amount", "book_before", "book_after",
+            "source", "note",
+        )) + "\n" + bad_row,
+        encoding="utf-8",
+    )
+    original = path.read_bytes()
+    with pytest.raises(MeasurementError, match="schema|malformed CSV"):
+        read_cashflows(path)
+    with pytest.raises(MeasurementError, match="schema|malformed CSV"):
+        record_cashflow(
+            path, direction="deposit", amount=1, book_before=2,
+            book_after=3, occurred_at=T2,
+        )
+    assert path.read_bytes() == original
+
+
 @pytest.mark.parametrize("bad", [float("nan"), float("inf"), -1, True])
 def test_measurement_numbers_fail_closed(tmp_path, bad):
     path = tmp_path / "cashflow.csv"
