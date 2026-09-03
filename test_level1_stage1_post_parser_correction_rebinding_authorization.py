@@ -2512,9 +2512,9 @@ class TestTheRegisterIsSynchronized:
     XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
     XASSET0058_MAIN_SHA = "556a43cf91679d3e8ca95703c8d49e672b662b73"
 
-    def test_the_shared_live_fields_name_this_unit(self, register):
-        assert register["active_branch"] == self.SUCCESSOR_BRANCH
-        assert register["last_verified_main_sha"] == self.SUCCESSOR_MAIN_SHA
+    def test_the_shared_live_fields_have_advanced_beyond_this_unit(self, register):
+        assert register["active_branch"] != "claude/xasset-0061-authorization-jux8p9"
+        assert register["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         assert register["last_verified_main_sha"] != self.XASSET0060_MAIN_SHA_PIN
         assert register["active_branch"] != BRANCH
         assert register["active_branch"] != self.XASSET0059_BRANCH

@@ -334,6 +334,12 @@ def _crypto_targets():
             {"ticker": "BTC", "target_pct": 6.0, "asset_class": "crypto"},
             {"ticker": "ETH", "target_pct": 3.0, "asset_class": "crypto"},
             {"ticker": "SOL", "target_pct": 1.0, "asset_class": "crypto"},
+            # PAD completes the destination to 100%. Without it this synthetic
+            # config allocated only 10% of book, leaving 90% UNRECONCILED --
+            # which protected-capital accounting correctly protects, blocking
+            # every buy. The 90% was an artifact of a partial fixture, not the
+            # behavior these tests exist to check (independent crypto rows).
+            {"ticker": "PAD", "target_pct": 90.0, "asset_class": "equity"},
         ],
         "caps": {"clusters": []},
         "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
@@ -736,8 +742,12 @@ def test_health_flag_cli_path_is_read_only(tmp_path, monkeypatch, capsys):
                                                           # vocabulary was not
 
     assert len(plan_calls) == 1
-    # observational: no deployable cash or margin capacity reaches plan()
-    assert plan_calls[0]["cash"] == 0.0
+    # observational: no deployable margin capacity reaches plan(), and cash comes
+    # from TRACKED STATE rather than a runtime argument (PHQ-2026-07 item 1). The
+    # earlier `== 0.0` pinned the fabricated zero that item 4 now forbids: this
+    # fixture's holdings.yaml carries no current cash observation, so the correct
+    # value is None -- "unknown", never "zero dollars".
+    assert plan_calls[0]["cash"] is None
     assert plan_calls[0]["margin_requested"] == 0.0
 
     assert len(render_health_calls) == 1
@@ -1087,7 +1097,12 @@ def test_production_wall_clock_behaviour_is_unchanged(tmp_path, monkeypatch, cap
 # required test 5: normal --cash/--margin/--review logging is unchanged
 # (without --no-log involved at all).
 
-@pytest.mark.parametrize("argv_tail", [["--cash", "500"], ["--margin", "500"], ["--review"]])
+# `--cash 500` was dropped from this list when the additive --cash deposit
+# argument was RETIRED in favour of a tracked total cash balance: the flag now
+# exits 2 with a migration message, so asserting it still logs was asserting a
+# behavior that no longer exists. The retirement itself is covered by
+# test_protected_capital_accounting.py::TestNoDoubleCounting.
+@pytest.mark.parametrize("argv_tail", [["--margin", "500"], ["--review"]])
 def test_normal_logging_unchanged_without_no_log(argv_tail, tmp_path, monkeypatch, capsys):
     targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path)
     logs_dir = tmp_path / "logs"
@@ -1171,13 +1186,29 @@ def test_unverifiable_sync_dates_surface_verify_margin_data_without_crashing(
     allocate.main()   # must not raise for any of the three synced_at shapes
     assert "SENTINEL" in capsys.readouterr().out
 
-    ms = captured["result"]["margin_state"]
-    assert VERIFY_MARGIN_DATA in ms.allowed_actions
-    assert "unverifiable_margin_data" in ms.violated_constraints
-    assert "stale_margin_data" not in ms.violated_constraints
-    assert any("cannot be verified" in r for r in ms.reasons)
+    # PHQ-2026-07 / review 5092359752: an UNUSABLE margin observation no longer
+    # yields a margin-state CONCLUSION (no NORMAL/CAUTION/RESTRICTED/
+    # FORCED_DELEVER, no numeric risk metrics) -- but the data-quality
+    # diagnostics and the verify/re-sync INSTRUCTION are preserved exactly, now
+    # carried in `margin_state_unavailable`. Every assertion this test made is
+    # unchanged; only which carrier holds them moved.
+    res = captured["result"]
+    ms = res.get("margin_state")
+    if ms is not None:
+        actions, violated, reasons = (ms.allowed_actions, ms.violated_constraints,
+                                      ms.reasons)
+    else:
+        mu = res["margin_state_unavailable"]
+        actions, violated, reasons = (mu["actions"], mu["violated_constraints"],
+                                      mu["reasons"])
+        # The conclusion really is withheld, not merely relocated.
+        assert res["margin_state"] is None
+    assert VERIFY_MARGIN_DATA in actions
+    assert "unverifiable_margin_data" in violated
+    assert "stale_margin_data" not in violated
+    assert any("cannot be verified" in r for r in reasons)
     # never fabricate a numeric age for an invalid/missing/future date
-    assert not any("day(s) old" in r for r in ms.reasons)
+    assert not any("day(s) old" in r for r in reasons)
 
 
 def test_margin_buffer_age_days_fails_safe_on_missing_malformed_and_future():

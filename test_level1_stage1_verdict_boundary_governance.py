@@ -775,8 +775,13 @@ class TestCatalogAndRegisterSynchronisation:
         ids = [d["decision_id"] for d in yaml.safe_load(CATALOG.read_text())["decisions"]]
         assert ids.count(DECISION_ID) == 1
         assert len(ids) == len(set(ids))
-        assert ids[len(ids) - 1 - len(SUCCESSORS_APPENDED_SINCE)] == DECISION_ID
-        assert tuple(ids[ids.index(DECISION_ID) + 1:]) == SUCCESSORS_APPENDED_SINCE
+        # RE-ANCHORED (PHQ-2026-07): the named-successor tuple and the offset-from-the-end
+        # are moving targets that every later governance filing breaks. Pinned instead to
+        # the mechanically derived append-only invariant at this unit's own merge.
+        at_merge = [d["decision_id"] for d in yaml.safe_load(
+            _git("show", f"{MERGE_SHA}:governance/decisions.yaml"))["decisions"]]
+        assert at_merge[-1] == DECISION_ID, at_merge[-1]
+        assert ids[:len(at_merge)] == at_merge
         assert "XASSET-0054" not in ids  # consumed by the closed-unmerged unit, never reused
 
     def test_the_catalog_entry_points_at_the_real_file(self):
@@ -884,9 +889,9 @@ class TestCatalogAndRegisterSynchronisation:
         assert merged_ws["last_verified_main_sha"] == BASE_SHA
         assert merged_ws["active_branch"] != "claude/xasset-0054-parser-contract-correction-h3nq7p"
         live = _ws0014()
-        assert live["active_branch"] == SUCCESSOR_BRANCH
-        assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
-        assert live["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        assert live["active_branch"] != "claude/xasset-0061-authorization-jux8p9"
+        assert live["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
+        assert live["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert live["last_verified_main_sha"] != XASSET0060_MAIN_SHA
@@ -932,12 +937,14 @@ class TestNonVacuityAgainstTheBase:
     def test_the_catalog_gained_exactly_one_entry(self):
         """RE-ANCHORED (XASSET-0056): successors append too, so the growth THIS unit caused
         stays EXACT by naming them rather than being relaxed to an inequality."""
+        # RE-ANCHORED (PHQ-2026-07) to this unit's own CLOSED range: the growth THIS unit
+        # caused is exactly one entry. Growth caused by later, separately authorized
+        # filings is not this unit's to count.
         before = yaml.safe_load(_git("show", f"{BASE_SHA}:governance/decisions.yaml"))["decisions"]
-        after = yaml.safe_load(CATALOG.read_text())["decisions"]
-        assert len(after) == len(before) + 1 + len(SUCCESSORS_APPENDED_SINCE)
+        after = yaml.safe_load(_git("show", f"{MERGE_SHA}:governance/decisions.yaml"))["decisions"]
+        assert len(after) == len(before) + 1
         assert DECISION_ID not in {d["decision_id"] for d in before}
-        for successor in SUCCESSORS_APPENDED_SINCE:
-            assert successor not in {d["decision_id"] for d in before}
+        assert after[-1]["decision_id"] == DECISION_ID
 
     def test_the_base_did_not_already_name_this_decision_anywhere(self):
         result = subprocess.run(
@@ -1064,8 +1071,8 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             assert f'XASSET0060_MAIN_SHA = "{XASSET0060_MAIN_SHA}"' in live, name
             assert "!= XASSET0060_MAIN_SHA" in live, name
             assert f'XASSET0061_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
-            # ADVANCED BY XASSET-0061: the POSITIVE pin is now the newest generation.
-            assert "== XASSET0061_MAIN_SHA" in live, name
+            # XASSET-0061 is historical and must remain an exact negative pin.
+            assert '!= "413e033ac33741829168762ab24d73327c047d4b"' in live, name
             # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
             # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
             # itself in the third person -- so the constant is asserted exactly where it is
@@ -1104,8 +1111,8 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
         assert before["active_branch"] != at_merge["active_branch"]
         assert before["last_verified_main_sha"] == SUPERSEDED_GENERATION_SHA
         assert at_merge["last_verified_main_sha"] == BASE_SHA
-        # NEGATIVE PIN: the live field has since moved on to the named successor.
-        assert live["last_verified_main_sha"] == SUCCESSOR_MAIN_SHA
+        # NEGATIVE PIN: the live field has since moved beyond this successor.
+        assert live["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
 
     def test_the_register_gate_discloses_the_re_anchoring_honestly(self):
         """The register must record the same discipline the suite enforces. If it ever admits a

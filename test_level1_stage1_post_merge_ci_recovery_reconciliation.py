@@ -345,6 +345,19 @@ def _commit_exists(sha: str, repo_root: Path = ROOT) -> bool:
     ).returncode == 0
 
 
+def _frozen_blob_digest(sha: str, relative: str, repo_root: Path = ROOT) -> str:
+    """SHA-256 of ``relative`` as it stood at the immutable commit ``sha``.
+
+    Reads the committed blob, never the worktree: a frozen-surface claim made by a
+    CLOSED historical unit must be measured at both of that unit's own endpoints.
+    """
+    blob = subprocess.run(
+        ["git", "cat-file", "blob", f"{sha}:{relative}"],
+        cwd=repo_root, capture_output=True, check=True,
+    ).stdout
+    return hashlib.sha256(blob).hexdigest()
+
+
 def _range_is_present(*shas: str, repo_root: Path = ROOT) -> bool:
     """Whether ANY of the named anchors is in this checkout.
 
@@ -913,22 +926,22 @@ def _load_bearing_at(commit: str) -> tuple[str, ...]:
 
 class TestFrozenSurfaceIsUnchanged:
     def test_every_frozen_path_is_byte_identical_to_this_units_base(self):
-        """Compared against PR346_MERGE_SHA -- an IMMUTABLE commit that is this pull request's
-        own base -- so the comparison neither moves nor collapses to empty once this branch
-        merges. That is the whole difference from the guard that stopped PR #345.
+        """RE-ANCHORED to this unit's own CLOSED range: PR346_MERGE_SHA (its base) ->
+        PR347_MERGE_SHA (its own merge). Both endpoints immutable.
+
+        The base was already immutable, but the other end was the LIVE worktree, which
+        turned a claim about what THIS unit froze into a claim that no later, separately
+        authorized unit may ever change any frozen path -- authority this filing never
+        had and never claimed. The closed range measures what this unit actually did,
+        exactly and permanently.
         """
-        if not _commit_exists(PR346_MERGE_SHA):
-            pytest.skip("this unit's base is not present in this checkout")
+        if not (_commit_exists(PR346_MERGE_SHA) and _commit_exists(PR347_MERGE_SHA)):
+            pytest.skip("this unit's own range is not present in this checkout")
         changed = []
         for relative in FROZEN_AGAINST_BASE_RELPATHS:
-            live = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
-            at_base = hashlib.sha256(
-                subprocess.run(
-                    ["git", "cat-file", "blob", f"{PR346_MERGE_SHA}:{relative}"],
-                    cwd=ROOT, capture_output=True, check=True,
-                ).stdout
-            ).hexdigest()
-            if live != at_base:
+            at_end = _frozen_blob_digest(PR347_MERGE_SHA, relative)
+            at_base = _frozen_blob_digest(PR346_MERGE_SHA, relative)
+            if at_end != at_base:
                 changed.append(relative)
         assert changed == [], changed
         # Non-vacuity: the list is real, and covers every category SS-G.9 names.
@@ -1849,9 +1862,9 @@ class TestCatalogAndRegisterSynchronisation:
         # onto the successor. Bound at BOTH ends rather than relaxed to an inequality.
         # ADVANCED AGAIN BY XASSET-0049: PR #349 is the live unit, so the shared fields moved
         # onto its own base and its own number. Bound at BOTH ends, with every prior generation's
-        # value retained as a negative pin -- and the module/register agreement is now an
-        # EQUALITY, because the live unit is a REBINDING and therefore does bind its own number.
-        assert ws["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        # value retained as a negative pin. XASSET-0061 is now historical; the
+        # one current positive binding is asserted centrally.
+        assert ws["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert ws["last_verified_main_sha"] != XASSET0060_MAIN_SHA
@@ -1869,7 +1882,7 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws["last_verified_main_sha"] != PR346_MERGE_SHA
         assert ws["last_verified_main_sha"] != PR346_BASE_SHA
         assert ws["last_verified_main_sha"] != PR345_BASE_SHA
-        assert ws["active_pr"] == XASSET0061_ACTIVE_PR
+        assert ws["active_pr"] != 362
         assert ws["active_pr"] != XASSET0060_ACTIVE_PR
         assert ws["active_pr"] != XASSET0059_ACTIVE_PR
         assert ws["active_pr"] != XASSET0058_ACTIVE_PR
@@ -2003,26 +2016,41 @@ def test_the_audit_would_catch_a_reintroduced_moving_anchor():
     assert _declared_historical_proofs(SUITE_PATH.name) == HISTORICAL_PROOF_FUNCTIONS
 
 
-def test_the_two_predecessor_working_tree_guards_are_deliberately_left_alone():
-    """Two pre-existing guards compare the WORKING TREE against ``HEAD``.
+def test_the_predecessor_working_tree_guard_is_deliberately_left_alone():
+    """ONE pre-existing guard compares the WORKING TREE against ``HEAD``, and stays.
 
-    Classified, not corrected: their subject is genuinely LIVE -- "are there uncommitted edits
-    to a protected path" -- so they fire while a branch is mid-edit and pass once it is
-    committed, which is exactly the behaviour their own docstrings describe and exactly the
-    behaviour XASSET-0044's own report recorded for them. Re-anchoring them to a closed range
-    would DESTROY the property they exist for. This test pins that classification so a future
-    reader does not mistake them for instances of the defect class.
+    Classified, not corrected: its subject is genuinely LIVE -- "are there uncommitted
+    edits to a protected path" -- so it fires while a branch is mid-edit and passes once
+    the branch is committed, which is exactly the behaviour its own docstring describes
+    and exactly the behaviour XASSET-0044's own report recorded for it. Re-anchoring it
+    to a closed range would DESTROY the property it exists for. This test pins that
+    classification so a future reader does not mistake it for the defect class.
+
+    CORRECTED under PHQ-2026-07. This test previously classified a SECOND guard --
+    ``test_portfolio_path_is_unchanged_from_the_pr_base_to_head`` -- the same way, on the
+    ground that pinning the lower bound and letting the far end move "can never collapse
+    to empty". That reasoning was sound about vacuity and wrong about authority: with
+    ``HEAD`` as the far end, a CLOSED historical unit was asserting that no later,
+    separately authorized unit may ever touch a portfolio path. It could not collapse to
+    empty, but it could -- and did -- block lawful successor work. It is now re-anchored
+    to that unit's own closed base..merge range and is pinned here in its corrected form,
+    so the correction cannot be silently reverted either.
     """
     source = (ROOT / "test_level1_stage1_post_correction_rebinding.py").read_text(
         encoding="utf-8"
     )
     live_state_guard = _function_source(source, "test_portfolio_path_is_unchanged_against_head")
     assert "Worktree cleanliness" in live_state_guard
-    # The other shape in that file pins the LOWER bound and lets only the far end move, so it
-    # can never collapse to empty the way `diff origin/main` on a merged branch does.
-    widening = _function_source(source, "test_portfolio_path_is_unchanged_from_the_pr_base_to_head")
-    assert "PR_BASE_SHA" in widening
-    assert '"HEAD"' in widening
+    assert "HEAD:" in live_state_guard           # genuinely live, by design
+    # The re-anchored guard: closed on BOTH ends, and no longer reads HEAD at all.
+    reanchored = _function_source(
+        source, "test_portfolio_path_is_unchanged_across_this_units_own_range"
+    )
+    assert "PR_BASE_SHA" in reanchored
+    assert "XASSET0045_MAIN_SHA" in reanchored
+    assert '"HEAD"' not in reanchored
+    # And the superseded name is gone, so the old shape cannot quietly return.
+    assert "def test_portfolio_path_is_unchanged_from_the_pr_base_to_head" not in source
 
 
 # ======================================================================================
@@ -2241,8 +2269,8 @@ class TestTheBoundPullRequestNumber:
         # XASSET-0048, so they are asserted against the successor's values, not this unit's.
         assert gate["pr"] == THIS_PULL_REQUEST
         # ADVANCED BY XASSET-0049: the register's shared active_pr now names the LIVE unit, and
-        # the live unit is a rebinding, so it and the module agree exactly.
-        assert ws["active_pr"] == XASSET0061_ACTIVE_PR
+        # XASSET-0061 is historical, so its issued number remains excluded.
+        assert ws["active_pr"] != 362
         assert ws["active_pr"] != XASSET0060_ACTIVE_PR
         assert ws["active_pr"] != XASSET0059_ACTIVE_PR
         assert ws["active_pr"] != XASSET0058_ACTIVE_PR

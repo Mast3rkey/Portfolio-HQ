@@ -1026,10 +1026,9 @@ class TestCatalogAndRegisterSynchronisation:
         # since merged, so the register's live self-reference lawfully advanced again. The anchor
         # this decision authorizes against is unchanged and is still `MERGE_SHA`, and its own merge
         # is still `SUCCESSOR_MERGE_SHA`; only the register's "where main is now" field moved.
-        # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
-        # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
-        # pin, so a silent revert to finished work still fails here.
-        assert workstream["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        # XASSET-0061 is immutable history; its former live value remains a
+        # negative pin while the current positive binding is asserted centrally.
+        assert workstream["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert workstream["last_verified_main_sha"] != XASSET0060_MAIN_SHA
@@ -1055,17 +1054,18 @@ class TestCatalogAndRegisterSynchronisation:
         # prior generation is retained as a NEGATIVE pin, so the field stays bound at
         # BOTH ends and a silent revert to finished work still fails.
         # ADVANCED BY XASSET-0059, with the shared fields above: the register's single
-        # shared verification date moved to this unit's own live preflight date. Every
-        # prior generation stays a NEGATIVE pin, so the field is bound at BOTH ends.
-        assert str(workstream["last_verified_date"]).startswith("2026-08-28")
+        # shared verification date once named this generation. It and the prior
+        # generation now remain exact negative pins.
+        assert not str(workstream["last_verified_date"]).startswith("2026-08-28")
+        assert not str(workstream["last_verified_date"]).startswith("2026-08-27")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-26")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-24")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-23")
         assert not str(workstream["last_verified_date"]).startswith("2026-08-22")
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
-        # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
-        # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0061_ACTIVE_PR
+        # `active_pr` once pointed at this correction unit. Its issued number is
+        # now immutable history and remains excluded.
+        assert workstream["active_pr"] != 362
         assert workstream["active_pr"] != XASSET0060_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0059_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0058_ACTIVE_PR

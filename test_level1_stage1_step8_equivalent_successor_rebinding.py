@@ -108,6 +108,9 @@ BRANCH_NAME = "claude/xasset-0049-rebinding-ll6hzf"
 #: advancing one without the other is visible rather than silently absorbed. XASSET-0048 §F.2
 #: makes the relationship an EQUALITY, which is asserted rather than assumed.
 THIS_UNIT_BASE_SHA = "f052efad38e3d57e3e5615799ac3bcbebe83ff5f"
+#: THIS unit's own merge commit (PR #349). Immutable, and the closing end of the only
+#: range this rebinding can speak for -- the far end must never be a moving ref.
+THIS_UNIT_MERGE_SHA = "a941455491cc5e4d3d868775fb6b4b88f0fe2ce3"
 
 # ── RE-ANCHORED BY XASSET-0060 ──────────────────────────────────────────────────────────────
 #
@@ -711,16 +714,17 @@ def _load_bearing_declared_at(commit: str) -> tuple[str, ...]:
 
 class TestNoOutcomeProducingByteChanged:
     def test_every_frozen_path_is_byte_identical_to_this_units_base(self):
-        """Compared against an IMMUTABLE commit -- this unit's own base -- so the comparison
-        neither depends on where ``HEAD`` points nor collapses to empty once this branch merges."""
-        if not _commit_exists(THIS_UNIT_BASE_SHA):
-            pytest.skip("this unit's base is not present in this checkout")
+        """RE-ANCHORED to this unit's own CLOSED base..merge range, both endpoints
+        immutable. The base already was; the far end was the live worktree, which turned
+        a claim about what THIS unit froze into a claim binding every later unit."""
+        if not (_commit_exists(THIS_UNIT_BASE_SHA) and _commit_exists(THIS_UNIT_MERGE_SHA)):
+            pytest.skip("this unit's own range is not present in this checkout")
         drifted = []
         for relative in FROZEN_AGAINST_BASE_RELPATHS:
             at_base = _blob_at(THIS_UNIT_BASE_SHA, relative)
             assert at_base is not None, f"{relative} does not exist at the base"
-            live = _git("hash-object", relative)
-            if live != at_base:
+            at_end = _blob_at(THIS_UNIT_MERGE_SHA, relative)
+            if at_end != at_base:
                 drifted.append(relative)
         assert drifted == [], drifted
         # Non-vacuity: the list really was walked and really resolved blobs.
@@ -1055,7 +1059,17 @@ class TestCatalogAndRegisterSynchronisation:
         ids = [d["decision_id"] for d in catalog["decisions"]]
         assert len(ids) == len(set(ids))
         assert DECISION_ID in ids
-        assert ids.index(DECISION_ID) == len(ids) - 1 or ids[-1] > DECISION_ID
+        # RE-ANCHORED again (PHQ-2026-07): the fallback ``ids[-1] > DECISION_ID`` assumed
+        # every later filing would sort lexicographically above this one. A lawful
+        # successor in another domain -- PHQ-2026-07, say -- does not, and that is not a
+        # defect in the successor. Pinned instead to the real append-only invariant,
+        # derived mechanically from this unit's own immutable merge: the row sits where
+        # this unit filed it, and the whole prefix up to it is unchanged. A reordering or
+        # a rewritten predecessor row still fails; a lawful later append does not.
+        at_merge = [d["decision_id"] for d in yaml.safe_load(
+            _git("show", f"{THIS_UNIT_MERGE_SHA}:{CATALOG_RELPATH}"))["decisions"]]
+        assert at_merge[-1] == DECISION_ID, at_merge[-1]
+        assert ids[:len(at_merge)] == at_merge
 
     def test_the_register_gate_exists_and_is_in_progress(self, ws0014):
         gate = next(g for g in ws0014["milestones"] if g["gate"] == REGISTER_GATE)
@@ -1547,11 +1561,14 @@ class TestNoProtectedByteWasTouched:
         ],
     )
     def test_protected_path_is_unchanged_against_the_base(self, relpath):
-        if not _commit_exists(THIS_UNIT_BASE_SHA):
-            pytest.skip("this unit's base is not present in this checkout")
+        """RE-ANCHORED to this unit's own CLOSED range. The far end was the live
+        worktree, which made a closed historical unit assert that no later, separately
+        authorized unit may ever touch a protected path -- authority it never had."""
+        if not (_commit_exists(THIS_UNIT_BASE_SHA) and _commit_exists(THIS_UNIT_MERGE_SHA)):
+            pytest.skip("this unit's own range is not present in this checkout")
         at_base = _blob_at(THIS_UNIT_BASE_SHA, relpath)
         assert at_base is not None, relpath
-        assert _git("hash-object", relpath) == at_base, relpath
+        assert _blob_at(THIS_UNIT_MERGE_SHA, relpath) == at_base, relpath
 
     def test_no_risk_lane_boundary_path_is_referenced(self):
         # The token appears only in this module's own DISCLAIMERS -- the header docstring and

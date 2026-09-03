@@ -22,9 +22,13 @@ The production authorization module is imported read-only; historical module sou
 from __future__ import annotations
 
 import ast
+import collections
+import datetime
+import textwrap
 import hashlib
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -53,6 +57,11 @@ FOLD_FORWARD_GATE = "xasset0060-post-merge-verification"
 # --------------------------------------------------------------------------------------------
 
 BOUND_MERGE_SHA = "413e033ac33741829168762ab24d73327c047d4b"
+#: THIS unit's own merge commit (PR #362). Immutable, and the closing end of the only
+#: range this filing can speak for. The changed-set checks below were open-ended --
+#: `git diff BOUND_MERGE_SHA` against the live worktree -- which meant the NEXT commit
+#: merged to `main`, of any kind by anyone, made them fail. Closed here on both sides.
+THIS_UNIT_MERGE_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
 BOUND_ACCEPTED_HEAD = "eac06700e9ca72c30e704899f6b761a7e07717f7"
 BOUND_MERGE_BASE = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 BOUND_MERGE_TREE = "998c28a3c7f349cd36796255854924fa7473dfae"
@@ -74,6 +83,18 @@ EXPECTED_LOAD_BEARING_COUNT = 25
 #: commit carried ``null`` in the register, the draft was opened, and the issued number was read
 #: back and bound. Mirrors the XASSET-0050 suite's own ``THIS_PULL_REQUEST`` pattern.
 THIS_PULL_REQUEST = 362
+
+#: The one shared live WS-0014 binding is intentionally separate from this
+#: historical filing's immutable identities above. Only this current-binding
+#: control changes when legitimate live GitHub state advances again.
+CURRENT_WS0014_BINDING = {
+    "active_branch": "claude/protected-capital-accounting",
+    "active_pr": 364,
+    "last_verified_main_sha": "3db918530b10ffc1423ba0b749b086e349a4901d",
+    "last_verified_date": "2026-09-02",
+}
+WS0014_REGISTER_FIELDS = frozenset(CURRENT_WS0014_BINDING)
+EXPECTED_RETAINED_REGISTER_NEGATIVES = 316
 
 #: The predecessor link-3 authorization, and the anchor that no longer describes the system.
 DEAD_DECISION = "XASSET-0050"
@@ -333,6 +354,1111 @@ WS0014 = _ws0014()
 # --------------------------------------------------------------------------------------------
 
 
+
+_ANCHOR_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
+
+
+#: A string value is an ANCHOR CANDIDATE only if it has one of these complete,
+#: domain-valid forms. Shape categorizes a registry endpoint; it never authorizes
+#: substitution. Every value remains exact unless its own assertion occurrence is
+#: explicitly registered below.
+#:
+#: Independent review reproduced why this distinction is load-bearing. The
+#: superseded normaliser abstracted EVERY string, so
+#:
+#:     assert "Merging it arms nothing" in section
+#:
+#: and
+#:
+#:     assert "" in section
+#:
+#: normalized identically -- a substantive Stage-1 safety assertion could be made
+#: vacuous with the inventory reporting no loss at all. These patterns are
+#: FAIL-CLOSED: a string that does not match one cannot be a registry endpoint.
+#: Categories also prevent cross-domain endpoint pairings: a decision id cannot
+#: pair with a date, nor a determination string with a merge SHA.
+_ANCHOR_CATEGORIES = (
+    # NUMBER FIRST, deliberately. A digits-only token is an IDENTIFIER -- a PR,
+    # run, job, review or comment number -- not a commit SHA. Independent review
+    # 5092359752 demonstrated the opposite ordering classifying the review id
+    # `4976985695` as a SHA, which made it interchangeable with a real 40-hex
+    # merge SHA and let a cross-domain weakening pass unseen.
+    ("NUMBER",        re.compile(r"^\d+$")),
+    ("SHA",           re.compile(r"^[0-9a-f]{7,40}$")),
+    # A COMPLETE date or timestamp, anchored at BOTH ends AND validated component
+    # by component. Two reviews shaped this. 5093063766 showed the prefix form
+    # treating operative prose as an anchor ("2026-08-27 Merging it arms nothing"
+    # classified as DATE). 5093500583 then showed that anchoring the shape is not
+    # enough either: only `text[:10]` was validated, so "2026-08-27T99:99:99Z"
+    # was still a DATE. Digit SHAPE is not a domain -- every component is now
+    # range-checked by `_is_valid_date_or_timestamp()`.
+    ("DATE",          re.compile(
+        r"^\d{4}-\d{2}-\d{2}"
+        r"(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$")),
+    ("DECISION",      re.compile(r"^[A-Z][A-Z0-9]{1,9}-\d{4}(-\d{2})?$")),
+    ("BRANCH",        re.compile(r"^claude/[A-Za-z0-9._\-/]+$")),
+    ("DECISION_FILE", re.compile(r"^governance/decisions/[A-Za-z0-9._\-]+\.md$")),
+)
+
+
+#: A complete date, or a complete timestamp, decomposed into its components so
+#: each one can be RANGE-CHECKED. The pattern alone constrains only digit count.
+_DATETIME_SHAPE = re.compile(
+    r"^(?P<date>\d{4}-\d{2}-\d{2})"
+    r"(?:[T ](?P<hh>\d{2}):(?P<mm>\d{2})(?::(?P<ss>\d{2}))?(?P<frac>\.\d+)?"
+    r"(?P<off>Z|[+-]\d{2}:?\d{2})?)?$")
+
+
+def _is_valid_date_or_timestamp(text: str) -> bool:
+    """Whether every supplied component is a real value in its own domain.
+
+    SHAPE IS NOT A DOMAIN. Independent review 5093500583 demonstrated the gap
+    directly: the previous check validated only ``text[:10]``, so
+    ``2026-08-27T99:99:99Z`` -- a well-shaped string whose hour, minute and
+    second are all impossible -- was accepted as a DATE anchor candidate. Each
+    component is now checked against its own range:
+
+    * the calendar date must be real (``2026-02-30`` is not);
+    * hour 0-23, minute 0-59, second 0-59;
+    * a UTC offset's own hour 0-23 and minute 0-59.
+
+    Anything else cannot be a registered endpoint and is compared VERBATIM.
+    """
+    m = _DATETIME_SHAPE.match(text)
+    if m is None:
+        return False
+    try:
+        datetime.date.fromisoformat(m.group("date"))
+    except ValueError:
+        return False
+    hh, mm, ss = m.group("hh"), m.group("mm"), m.group("ss")
+    if hh is not None:
+        if not (0 <= int(hh) <= 23 and 0 <= int(mm) <= 59):
+            return False
+        # A leap second is not representable here, and accepting 60 would let an
+        # impossible value through; 0-59 is the domain this corpus asserts on.
+        if ss is not None and not 0 <= int(ss) <= 59:
+            return False
+    off = m.group("off")
+    if off is not None and off != "Z":
+        digits = off[1:].replace(":", "")
+        if len(digits) != 4:
+            return False
+        if not (0 <= int(digits[:2]) <= 23 and 0 <= int(digits[2:]) <= 59):
+            return False
+    return True
+
+
+def _anchor_category(text: str) -> str | None:
+    """Which anchor category this exact string belongs to, or None.
+
+    FAIL-CLOSED. A string matching no category cannot be a registry endpoint and
+    is preserved verbatim. A matching category is candidate evidence only; file
+    and assertion identity still decide authorization. The empty string is never
+    an anchor -- it is the vacuous-``in`` bypass itself.
+    """
+    t = text.strip()
+    if not t:
+        return None
+    for name, pattern in _ANCHOR_CATEGORIES:
+        if not pattern.match(t):
+            continue
+        if name == "DATE" and not _is_valid_date_or_timestamp(t):
+            # A well-shaped string that is not a real date is not an anchor.
+            # Fail closed: it stays verbatim and cannot be a registry endpoint.
+            return None
+        return name
+    return None
+
+
+#: THE COMPLETE, ENUMERATED SET of lawful bare-literal re-anchors, identified by
+#: OCCURRENCE rather than by value.
+#:
+#: Independent review 5093500583 showed why the value pair alone is not an
+#: identity. Enumerating ``("2026-08-27", "2026-08-28", "DATE")`` authorized EVERY
+#: structurally matching occurrence of that pair, so one lawful WS-0014 transition
+#: still laundered an unrelated `freeze["cutoff"] == "2026-08-27"` assertion in the
+#: same delta. Narrower than the category-wide defect before it, but the same G5
+#: assurance class.
+#:
+#: An entry is therefore ``(relpath, pinned_fingerprint_sha256, predecessor,
+#: successor, category)``. The identity is the exact FILE plus the exact PINNED
+#: ASSERTION -- its exact AST fingerprint, digested -- so a second
+#: assertion in the same file using the same values has a different fingerprint,
+#: matches no entry, and stays verbatim. Each entry is consumed AT MOST ONCE.
+#:
+#: These six are DERIVED FROM THE CORPUS, not invented: running the inventory with
+#: literal substitution disabled entirely across every pinned predecessor suite
+#: reports exactly these six assertions, and nothing else. (Every other reported
+#: loss falls in a suite covered by ``PROTECTED_PREDICATES``, whose assertions this
+#: filing lawfully REWROTE under its own already-reviewed G4 correction and which
+#: the inventory therefore does not govern.) The five date sites and the one branch
+#: site are listed individually, never collapsed into value-pair licences.
+#:
+#: Two sites share a fingerprint digest because their assertions are genuinely
+#: identical in shape; they remain SEPARATE entries because their relpaths differ,
+#: and each is consumed only against its own file.
+BARE_LITERAL_REANCHORS = (
+    # WS-0014 last_verified_date, asserted via startswith(...)
+    ("test_level1_stage1_activation_authorization.py",
+     "9a8aa1ddce1eba7caf2e9087127624569232d881a4e93ddb6abd8126a37d4424",
+     "2026-08-27", "2026-08-28", "DATE"),
+    # WS-0014 last_verified_date, asserted via str(...) == ...
+    ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
+     "fb39f66109d21ec62b88c14deca754ea25217c404c60ed1a7637a99fa874dae3",
+     "2026-08-27", "2026-08-28", "DATE"),
+    # WS-0014 last_verified_date, asserted via startswith(...)
+    ("test_level1_stage1_post_rebinding_drift_authorization.py",
+     "9a8aa1ddce1eba7caf2e9087127624569232d881a4e93ddb6abd8126a37d4424",
+     "2026-08-27", "2026-08-28", "DATE"),
+    # WS-0014 active_branch, predecessor retained beside it as a negative pin
+    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+     "ec18917190cc524eca9548bad3155e74f6f085f4b780b0c95c020037c73a8ce9",
+     "claude/xasset-0057-rebinding-gqtg9o", "claude/xasset-0061-authorization-jux8p9", "BRANCH"),
+    # WS-0014 last_verified_date, asserted via str(...) == ...
+    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+     "fb39f66109d21ec62b88c14deca754ea25217c404c60ed1a7637a99fa874dae3",
+     "2026-08-27", "2026-08-28", "DATE"),
+    # WS-0014 last_verified_date, asserted via startswith(...)
+    ("test_level1_stage1_readiness_verification_authorization.py",
+     "9a8aa1ddce1eba7caf2e9087127624569232d881a4e93ddb6abd8126a37d4424",
+     "2026-08-27", "2026-08-28", "DATE"),
+)
+
+
+#: THE COMPLETE, ENUMERATED SET of lawful NAMED-anchor re-anchors, identified by
+#: assertion occurrence rather than by a shared name role or raw value.
+#:
+#: Review 5094619011 demonstrated that ``(role, category)`` is only a candidate
+#: relationship, never an occurrence identity. Globally normalising every name in
+#: that slot let one legitimate current-anchor move hide a distinct historical
+#: negative-pin rewrite. Globally normalising the values bound to those names also
+#: let the same move hide an unrelated raw-literal rewrite.
+#:
+#: An entry is ``(relpath, pinned_fingerprint_sha256, predecessor_name,
+#: predecessor_value, successor_name, successor_value, category)``. It is honoured
+#: only when each endpoint name has exactly one binding occurrence in its source,
+#: that unique occurrence is the exact registered literal declaration, the exact
+#: pinned assertion has the registered fingerprint, and replacing the predecessor
+#: NAME in that assertion produces an exact live assertion. Each entry is consumed
+#: at most once. Raw literal values are never substituted.
+#:
+#: These eleven entries are derived from the pinned corpus with all name and value
+#: normalisation disabled: eight MAIN_SHA sites and three ACTIVE_PR sites. No other
+#: unprotected predecessor assertion requires a named transition.
+NAMED_ANCHOR_REANCHORS = (
+    ("test_level1_stage1_activation_authorization.py",
+     "f6a3da01089237bfcb3a2c9f8f2a53e91004e350f004488fac0f14f9e3c08fc6",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_activation_authorization.py",
+     "754cc03b460b6177bab460349422c46f2d153b056601840d18add8c5ff428031",
+     "XASSET0060_ACTIVE_PR", 361, "XASSET0061_ACTIVE_PR", 362, "NUMBER"),
+    ("test_level1_stage1_post_correction_rebinding.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_correction_rebinding_authorization.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_rebinding_drift_authorization.py",
+     "f6a3da01089237bfcb3a2c9f8f2a53e91004e350f004488fac0f14f9e3c08fc6",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_post_rebinding_drift_authorization.py",
+     "754cc03b460b6177bab460349422c46f2d153b056601840d18add8c5ff428031",
+     "XASSET0060_ACTIVE_PR", 361, "XASSET0061_ACTIVE_PR", 362, "NUMBER"),
+    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+     "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_readiness_verification_authorization.py",
+     "f6a3da01089237bfcb3a2c9f8f2a53e91004e350f004488fac0f14f9e3c08fc6",
+     "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
+    ("test_level1_stage1_readiness_verification_authorization.py",
+     "754cc03b460b6177bab460349422c46f2d153b056601840d18add8c5ff428031",
+     "XASSET0060_ACTIVE_PR", 361, "XASSET0061_ACTIVE_PR", 362, "NUMBER"),
+)
+
+#: One-time conversion of predecessor suites from mutable-current positive pins
+#: into immutable-generation negative pins. Each row is the exact file and exact
+#: source fingerprint at XASSET-0061's accepted merge plus the exact live target
+#: fingerprint. Every target is a literal-bound negative predicate, so arbitrary
+#: runtime mutation of a Python anchor name cannot change what it excludes. This
+#: registry is finite:
+#: future WS-0014 advances update only CURRENT_WS0014_BINDING and the YAML,
+#: never these predecessor files or this occurrence set.
+HISTORICALIZED_REGISTER_ASSERTIONS = (
+    ("test_level1_stage1_activation_authorization.py",
+     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
+     "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
+     "84c953f1e1329d3a779e7225433360b57215065c2b8b639e6005958f4421ec5f"),
+    ("test_level1_stage1_activation_authorization.py",
+     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
+     "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
+     "8627f3633ba5e0e23f257576caaa6ee344764fa357f2458d8ec25a1dfdcd1065"),
+    ("test_level1_stage1_activation_authorization.py",
+     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
+     "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
+     "f421d15e18dbe74bcc65369d749bdeedeaf5af17c22e77efe38cc669cac33ba4"),
+    ("test_level1_stage1_post_correction_rebinding.py",
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
+     "bde8299273f2c91e4ef135e885bd4571a3ebdb2d593619fb887dd0d5b1d63272"),
+    ("test_level1_stage1_post_correction_rebinding_authorization.py",
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
+     "e7b85416321e7b0e0cccb6bc5cedc5a55c1d63dfbdbc56db659996148fce129f"),
+    ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
+     "05c591af3415b3338887fe851bfc8c66b16024edd5351050f2c5add01310ad6d"),
+    ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
+     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
+     "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444",
+     "285b44ebb9d7b73537ba77b9e5841ba300cfec3cb7574a943feb76c929eb26bf"),
+    ("test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
+     "87d30ea2e3a28647d0f065e6aa881ba4a065f6aea98e494e82415fc83193b57e"),
+    ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
+     "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
+     "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f",
+     "48a6bba439a6a406e35cb452fe2c33d15450902c5fbc7c2d601f1668e8658563"),
+    ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
+     "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
+     "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0",
+     "26d02e352ff7cd12adcdb3cdb2eadc6d2ef47a7fef40978740d8798032b55b20"),
+    ("test_level1_stage1_post_rebinding_drift_authorization.py",
+     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
+     "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
+     "d589bdc48f801c1b8ba5f7b4cf20d90223c1cb23e3f4041022feacf603a8727d"),
+    ("test_level1_stage1_post_rebinding_drift_authorization.py",
+     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
+     "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
+     "ce3d05c6a1f76beffb25eeb08b82e451a5f584bbfb1dd6ff8fd7699f3b102ce9"),
+    ("test_level1_stage1_post_rebinding_drift_authorization.py",
+     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
+     "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
+     "3ec45b6abd860df69bb9ceace97784025b8b3e6763b93ecc9ad863e9926a889a"),
+    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+     "f5ce46c934051b62f3df6ae4dfd1f6fa9a03f79838059f6a894976e2d0ed9362",
+     "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
+     "dad3cbf42114447e9f9651d504bf586054468db0e2f986a9090ba1ed22b44dea"),
+    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
+     "38b8a632ee8d167f3665afd0a7240cf37671330a59bca5bc23ee7fa5a35e40b9"),
+    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
+     "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444",
+     "d269a652c26f3905271e2d1248f70c72324910d8875bddcab0594eb5af2dea0f"),
+    ("test_level1_stage1_readiness_verification_authorization.py",
+     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
+     "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
+     "805d4c44feeb0d7ed8228f85e32c189d19c633b886ecbc648b3ff3be6973621f"),
+    ("test_level1_stage1_readiness_verification_authorization.py",
+     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
+     "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
+     "b65d4ac075c3d59b37d4b249462ae1204ddf97c90f92cd2de0171c680b7610c4"),
+    ("test_level1_stage1_readiness_verification_authorization.py",
+     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
+     "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
+     "e21ff7e3775d345f1dda24e67e83897c21f6001008979fc57613c7f68550a40f"),
+
+    # The five suites routed through PROTECTED_PREDICATES need the same exact
+    # occurrence protection for their newly historical register predicates.
+    ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
+     "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
+     "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f",
+     "aa0581c5cda261be23fa9690ff24aba5cc453671c8091eb54f84f1b84d19949f"),
+    ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
+     "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
+     "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0",
+     "e7a098cd29734e15a6f2247dded8871a593175331c00c35b9f7157eada9a6f81"),
+    ("test_level1_stage1_parser_contract_correction_authorization.py",
+     "e44d97a2654922db1d77ccdc014e490118777039e671de7a8907e79db560e9be",
+     "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
+     "ded4c636e9c0be04c6c29458054fa0733356d08306dcb77c2443b38e9fb4232e"),
+    ("test_level1_stage1_parser_contract_correction_authorization.py",
+     "e4f4231a90d6bab860535b4798918114f8eca81beea106326899fc99545d369f",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
+     "4f7218b9f38e2f1511c3fc50124c60cfdff5a7e3a0cc798fae124b9b86d7a59f"),
+    ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
+     "6531fc8ab57ca19e7edfbed9dee040bcc8fd95823173e7b8abbd6c2f1a117560",
+     "c864fa0567da6bb474892c2e2735277fbef880454c6b3b317e3af1f7f3e9909e",
+     "ff776f1ef75e58a13a4f505a175328eb0ddb388fa3b15648ea2aed850c71b50a"),
+    ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
+     "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
+     "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7",
+     "f0d6ac073df09193c290219c4434336071332083e4a219d0f93ae4842d555b2a"),
+    ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
+     "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
+     "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7",
+     "14838efef33edaf4660042944e915acba3b8155125e91c22891d0cf439708e8c"),
+    ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
+     "98832ed7c8ea617746dab05af3a976436b6b4f0564624162acf865402bdb3ce3",
+     "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
+     "efce25a49ef7845788166dbdb544947d3d2d7cab778f7108248674a21617bafa"),
+    ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
+     "c3d19fec7a3c6520ddb615e7dcda1ecc2dd793de8769009c57c05c00a2244fff",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
+     "40388b318cd890eb0f9bb59bbceccf1e10be9991ef8cd2b7483b5e8eae177843"),
+    ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
+     "c5a9a677842c286ee149fe058fe9f00a5d9062638b5f9b7a96a02ceb914fdeb8",
+     "800a2a0eb3d5b305b1415770aad86aa66b19d79d3dc01e95aa8bb5fba210c3ce",
+     "ba86d27791d4ca50e229a59678be7df5ca177646b4c569fc52b64ddbafa07e11"),
+    ("test_level1_stage1_verdict_boundary_governance.py",
+     "a7ff7d9401d1ca98525e7030552ded339e4e96d3fb84c9a4fe2dfc8949e8d79b",
+     "bdecd00f37afa0aec457cc30ac1a7f1df4a7b4a1bddf4a67545ed81b2973b11c",
+     "17375917b0c160ae9c647a14e1c790a551a161312692871b0924b2bebdb07f1a"),
+    ("test_level1_stage1_verdict_boundary_governance.py",
+     "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
+     "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
+     "d7b5988b5dad5b0524cc7e1fef83f2f7f3ce5a8b155b963cce2052ea1d38a5d3"),
+    ("test_level1_stage1_verdict_boundary_governance.py",
+     "7d5311f304ec46ba1ac6a8d1200f0e4942ca4c2c66ecc9dd5066272b84bcc5c8",
+     "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
+     "900622f68b30c6c6e1a897103930d86cde5e887a7c9374d529b8bd0327075447"),
+    ("test_level1_stage1_verdict_boundary_governance.py",
+     "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
+     "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
+     "a72428367e6ca30dac8c214e3994050bd68ac119464af146562dc0c4dbd30867"),
+)
+
+
+#: The instance-distinguishing token a constant name carries -- ``XASSET0061_``,
+#: ``OLD_``, ``B_``. Stripping it leaves the SEMANTIC ROLE: the slot the value
+#: occupies, independent of which decision instance owns it.
+_INSTANCE_PREFIX = re.compile(
+    r"^(?:[A-Z][A-Z0-9]*\d+|OLD|NEW|PREV|PREVIOUS|CURRENT|PRIOR|[AB])_")
+
+
+def _anchor_role(name: str) -> str:
+    """The semantic slot a constant name occupies.
+
+    ``XASSET0060_MAIN_SHA`` and ``XASSET0061_MAIN_SHA`` are the SAME role
+    (``MAIN_SHA``) in two decision instances -- that pairing is what makes a
+    re-anchor lawful. ``BOUND_MERGE_SHA`` is a different role entirely, so it is
+    never interchangeable with either, however similar its typography or its
+    category.
+    """
+    return _INSTANCE_PREFIX.sub("", name, count=1)
+
+
+def _anchor_name_bindings(source: str) -> dict:
+    """``name -> [binding, ...]`` for every name binding occurrence in ``source``.
+
+    A binding is ``(category, literal_value)`` only for a direct, anchor-shaped
+    literal assignment. Every other binding form is represented by ``None``. The
+    list retains multiplicity across every lexical scope: a nested assignment is
+    still a second occurrence and makes the name ambiguous for registry purposes.
+
+    Counting *bindings*, rather than only recognised anchor assignments, is the
+    fail-closed detail. Otherwise a non-literal or differently-shaped shadow could
+    be ignored while an unrelated decoy supplies the registry's approved value.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return {}
+
+    direct_literals = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            targets, value = node.targets, node.value
+        elif isinstance(node, (ast.AnnAssign, ast.NamedExpr)):
+            targets, value = (node.target,), node.value
+        else:
+            continue
+        if not isinstance(value, ast.Constant) or isinstance(value.value, bool):
+            continue
+        literal = value.value
+        if isinstance(literal, str):
+            category = _anchor_category(literal)
+        elif isinstance(literal, int):
+            category = "NUMBER"
+        else:
+            category = None
+        if category is None:
+            continue
+        for target in targets:
+            if isinstance(target, ast.Name):
+                direct_literals[id(target)] = (category, literal)
+
+    out = collections.defaultdict(list)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+            out[node.id].append(direct_literals.get(id(node)))
+        elif isinstance(node, ast.arg):
+            out[node.arg].append(None)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            out[node.name].append(None)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                out[alias.asname or alias.name.split(".", 1)[0]].append(None)
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            out[node.name].append(None)
+        elif isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name:
+            out[node.name].append(None)
+        elif isinstance(node, ast.MatchMapping) and node.rest:
+            out[node.rest].append(None)
+    return dict(out)
+
+
+def _module_anchor_constants(source: str) -> dict:
+    """``name -> (category, value)`` for unambiguous anchor declarations.
+
+    Category comes from the BOUND VALUE, never from typography:
+    ``STEP10_DETERMINATION = "STEP_10_NO_DRIFT"`` is not an anchor at all, while
+    ``BOUND_MERGE_SHA = "413e033a..."`` is a SHA. A name bound to anything
+    non-literal has no category and cannot be a registered endpoint.
+
+    Every lexical scope is scanned because several predecessor suites bind their
+    re-anchor constants inside the test function that uses them. A name is
+    returned only when it has EXACTLY ONE binding occurrence anywhere and that
+    occurrence is a direct anchor-shaped literal assignment. A second binding is
+    ambiguity even when it repeats the same value: uniqueness is occurrence
+    evidence, and an unrelated nested decoy must never certify a module binding.
+    """
+    return {
+        name: bindings[0]
+        for name, bindings in _anchor_name_bindings(source).items()
+        if (_ANCHOR_NAME.match(name)
+            and len(bindings) == 1
+            and bindings[0] is not None)
+    }
+
+
+def _module_anchor_categories(source: str) -> dict:
+    """``name -> category`` view of :func:`_module_anchor_constants`."""
+    return {n: cat for n, (cat, _v) in _module_anchor_constants(source).items()}
+
+
+def _anchor_value_category(value) -> str | None:
+    """The anchor category of an exact constant value, with bool excluded."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, str):
+        return _anchor_category(value)
+    if isinstance(value, int):
+        return "NUMBER"
+    return None
+
+
+def _is_lawful_anchor(text: str) -> bool:
+    """Whether this string has the SHAPE of a value a re-anchor may change.
+
+    Shape alone no longer authorizes anything -- the occurrence registries require
+    exact file, fingerprint and endpoint evidence. This predicate states only
+    which forms are anchor-shaped at all; empty strings and operative prose are
+    not among them.
+    """
+    return _anchor_category(text) is not None
+
+
+def _assertion_inventory(source: str) -> collections.Counter:
+    """The suite's assertions as exact semantic fingerprints.
+
+    A ``Counter``, so removing one of several identical assertions is still a loss.
+    ``assert True``/``assert 1`` are excluded: they are the shape a silent gutting
+    takes, and counting them would let a weakened file keep its total.
+
+    No name or literal is normalized here. Lawful moving anchors are handled only
+    by the occurrence registries in :func:`_lost_assertions`; keeping the general
+    inventory exact prevents a registry from becoming a global substitution map.
+    """
+    return collections.Counter(_assertion_fingerprints(source))
+
+
+def _assertion_fingerprints(source: str) -> list[str]:
+    """Exact AST fingerprints for every non-vacuous assertion in ``source``."""
+    out = []
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.Assert):
+            continue
+        test = node.test
+        if isinstance(test, ast.Constant) and bool(test.value) is True:
+            continue          # vacuous by construction
+        out.append(ast.dump(test))
+    return out
+
+
+def _stable_ast_data(node, registered_assertion=None):
+    """Version-stable AST data for the repository's Python 3.11/3.12 gate.
+
+    Python 3.12 added ``type_params`` to definition nodes.  Empty interpreter-
+    schema fields are not source semantics and must not change a registered
+    identity merely because CI uses another supported runtime.  Nonempty type
+    parameters *are* source semantics and remain part of the identity.
+    """
+    if node is registered_assertion:
+        return ("RegisteredAssert",)
+    if isinstance(node, ast.AST):
+        return (
+            type(node).__name__,
+            tuple(
+                (field, _stable_ast_data(value, registered_assertion))
+                for field, value in ast.iter_fields(node)
+                if field != "type_params" or value
+            ),
+        )
+    if isinstance(node, list):
+        return tuple(_stable_ast_data(item, registered_assertion) for item in node)
+    return node
+
+
+def _assertion_occurrences(source: str) -> list[tuple[str, str]]:
+    """Return each assertion fingerprint with its executable-site identity.
+
+    The identity keeps named lexical scopes, compound control-flow ancestry, the
+    exact containing-function skeleton, and an immutable AST envelope for the
+    complete historical test module.  Only comments and line numbers are ignored;
+    every executable or collection-affecting change is therefore load-bearing.
+    That deliberately strict boundary is appropriate for this finite, one-time
+    historicalization and prevents an unenumerated pytest hook, fixture, dynamic
+    collection write, or sibling definition from disabling a registered target.
+    Duplicate same-name definitions are also marked ambiguous explicitly.
+    Identical assertions in the same site retain an ordinal, preserving exact
+    multiplicity.
+    """
+    tree = ast.parse(source)
+    raw = []
+
+    parents = {}
+    edge_fields = {}
+    for parent in ast.walk(tree):
+        for field, value in ast.iter_fields(parent):
+            children = value if isinstance(value, list) else [value]
+            for child in children:
+                if isinstance(child, ast.AST):
+                    parents[child] = parent
+                    edge_fields[child] = field
+    named = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+    named_groups = collections.defaultdict(list)
+    for node in ast.walk(tree):
+        if not isinstance(node, named):
+            continue
+        owner = parents[node]
+        while not isinstance(owner, named + (ast.Module,)):
+            owner = parents[owner]
+        named_groups[(id(owner), type(node).__name__, node.name)].append(node)
+    ambiguous_named_nodes = {
+        id(node)
+        for nodes in named_groups.values() if len(nodes) > 1
+        for node in nodes
+    }
+
+    def collection_digest(node):
+        """Collection-relevant metadata without unrelated test definitions."""
+        parts = []
+        if isinstance(node, ast.ClassDef):
+            parts.append((
+                node.name,
+                [_stable_ast_data(item) for item in node.bases],
+                [_stable_ast_data(item) for item in node.keywords],
+                [_stable_ast_data(item) for item in node.decorator_list],
+            ))
+        for statement in node.body:
+            if isinstance(statement, named):
+                continue
+            stored = {
+                child.id for child in ast.walk(statement)
+                if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Store)
+            }
+            if stored & {"__test__", "pytestmark"}:
+                parts.append(_stable_ast_data(statement))
+        return hashlib.sha256(repr(parts).encode("utf-8")).hexdigest()
+
+    module_collection = hashlib.sha256(
+        repr(_stable_ast_data(tree)).encode("utf-8")).hexdigest()
+
+    def execution_skeleton(node, registered_assertion):
+        """Exact test structure with only this registered target made opaque."""
+        return _stable_ast_data(node, registered_assertion)
+
+    def compound_segment(node, field, registered_assertion):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            digest = hashlib.sha256(
+                repr(execution_skeleton(node, registered_assertion)).encode(
+                    "utf-8")).hexdigest()
+            ambiguity = ":AMBIGUOUS" if id(node) in ambiguous_named_nodes else ""
+            return f"{field}:{type(node).__name__}:{node.name}:{digest}{ambiguity}"
+        if isinstance(node, ast.ClassDef):
+            digest = collection_digest(node)
+            ambiguity = ":AMBIGUOUS" if id(node) in ambiguous_named_nodes else ""
+            return f"{field}:ClassDef:{node.name}:{digest}{ambiguity}"
+        compound = (
+            ast.If, ast.For, ast.AsyncFor, ast.While, ast.With, ast.AsyncWith,
+            ast.Try, ast.TryStar, ast.ExceptHandler, ast.Match,
+        )
+        if not isinstance(node, compound) and type(node).__name__ != "match_case":
+            return None
+        header = []
+        for name, value in ast.iter_fields(node):
+            if name in {"body", "orelse", "finalbody", "handlers", "cases"}:
+                continue
+            if isinstance(value, ast.AST):
+                value = _stable_ast_data(value)
+            elif isinstance(value, list):
+                value = [_stable_ast_data(item) if isinstance(item, ast.AST) else item
+                         for item in value]
+            header.append((name, value))
+        digest = hashlib.sha256(repr(header).encode("utf-8")).hexdigest()
+        return f"{field}:{type(node).__name__}:{digest}"
+
+    def collect_assertions(node):
+        if isinstance(node, ast.Assert):
+            test = node.test
+            if not (isinstance(test, ast.Constant) and bool(test.value) is True):
+                raw.append(node)
+            return
+        for _field, value in ast.iter_fields(node):
+            children = value if isinstance(value, list) else [value]
+            for child in children:
+                if not isinstance(child, ast.AST):
+                    continue
+                collect_assertions(child)
+
+    collect_assertions(tree)
+    seen = collections.Counter()
+    out = []
+    for assertion in raw:
+        fingerprint = ast.dump(assertion.test)
+        ancestors = []
+        current = assertion
+        while current in parents:
+            current = parents[current]
+            ancestors.append(current)
+        path = [f"Module:{module_collection}"]
+        for ancestor in reversed(ancestors):
+            if isinstance(ancestor, ast.Module):
+                continue
+            segment = compound_segment(
+                ancestor, edge_fields[ancestor], assertion)
+            if segment:
+                path.append(segment)
+        path = tuple(path)
+        key = (fingerprint, path)
+        ordinal = seen[key]
+        seen[key] += 1
+        identity = repr((path, _fingerprint_digest(fingerprint), ordinal))
+        out.append((fingerprint, hashlib.sha256(identity.encode("utf-8")).hexdigest()))
+    return out
+
+
+def _register_negative_inventory(source: str) -> collections.Counter:
+    """Exact negative assertions about WS-0014's four moving fields."""
+    out = collections.Counter()
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.Assert):
+            continue
+        strings = {
+            child.value for child in ast.walk(node.test)
+            if isinstance(child, ast.Constant) and isinstance(child.value, str)
+        }
+        if not strings.intersection(WS0014_REGISTER_FIELDS):
+            continue
+        negative = any(
+            isinstance(child, (ast.NotEq, ast.NotIn))
+            or (isinstance(child, ast.UnaryOp) and isinstance(child.op, ast.Not))
+            for child in ast.walk(node.test)
+        )
+        if negative:
+            out[ast.dump(node.test)] += 1
+    return out
+
+
+def _ws0014_binding_errors(workstream: dict) -> set[str]:
+    """Return every live self-reference field that is not the exact binding."""
+    actual = dict(workstream)
+    actual["last_verified_date"] = str(actual.get("last_verified_date"))
+    return {
+        field for field, expected in CURRENT_WS0014_BINDING.items()
+        if actual.get(field) != expected
+    }
+
+
+def _fingerprint_digest(fingerprint: str) -> str:
+    """The stable identity of one exact assertion shape."""
+    return hashlib.sha256(fingerprint.encode("utf-8")).hexdigest()
+
+
+def _registered_occurrences(relpath):
+    """The lawful bare-literal transitions for THIS FILE, each usable once.
+
+    Returns ``{pinned_fingerprint_digest: [(predecessor, successor, category), ...]}``.
+    With no relpath -- a synthetic comparison, or a caller that did not say which
+    file it is comparing -- NOTHING is registered. That is the fail-closed
+    default: an unidentified comparison authorizes no literal substitution at all.
+    """
+    out = {}
+    if not relpath:
+        return out
+    for rel, digest, old, new, cat in BARE_LITERAL_REANCHORS:
+        if rel == relpath:
+            out.setdefault(digest, []).append((old, new, cat))
+    return out
+
+
+def _historicalized_occurrences(relpath):
+    """Exact source occurrence -> exact literal target and executable site."""
+    if not relpath:
+        return {}
+    out = {}
+    for (rel, source_digest, target_digest,
+         target_site) in HISTORICALIZED_REGISTER_ASSERTIONS:
+        if rel == relpath:
+            out.setdefault(source_digest, []).append((target_digest, target_site))
+    return out
+
+
+def _historicalized_registration_losses(pinned_src: str, live_src: str, relpath):
+    """Missing registered sources or literal targets, including multiplicity."""
+    rows = [
+        (source, target, site)
+        for rel, source, target, site in HISTORICALIZED_REGISTER_ASSERTIONS
+        if rel == relpath
+    ]
+    if not rows:
+        return []
+    pinned = collections.Counter(
+        _fingerprint_digest(fp) for fp in _assertion_fingerprints(pinned_src))
+    live_fingerprints = _assertion_fingerprints(live_src)
+    live = collections.Counter(
+        (_fingerprint_digest(fp), site)
+        for fp, site in _assertion_occurrences(live_src))
+    live_digests = collections.Counter(
+        _fingerprint_digest(fp) for fp in live_fingerprints)
+    required_sources = collections.Counter(source for source, _target, _site in rows)
+    required_targets = collections.Counter(
+        (target, site) for _source, target, site in rows)
+    required_target_digests = collections.Counter(
+        target for _source, target, _site in rows)
+    losses = []
+    for digest, count in required_sources.items():
+        if pinned[digest] < count:
+            losses.append(f"missing registered source {digest}: {pinned[digest]} < {count}")
+        if live_digests[digest] > 0:
+            losses.append(
+                f"closed historical source {digest} restored in live file: "
+                f"{live_digests[digest]}")
+    for (digest, site), count in required_targets.items():
+        if live[(digest, site)] < count:
+            losses.append(
+                f"missing literal target {digest} at {site}: "
+                f"{live[(digest, site)]} < {count}")
+    for digest, count in required_target_digests.items():
+        if live_digests[digest] != count:
+            losses.append(
+                f"historical target {digest} has wrong file multiplicity: "
+                f"{live_digests[digest]} != {count}")
+    return losses
+
+
+def _registered_named_occurrences(relpath, pinned_src: str, live_src: str):
+    """The lawful named transitions for this exact file and exact delta.
+
+    A registry row is inert unless both endpoint declarations and their values
+    match exactly, the successor is genuinely new, the predecessor is retained,
+    and the two names have the same candidate role and category. Those checks
+    validate the row; only its file plus pinned-assertion digest authorizes use.
+    """
+    out = {}
+    if not relpath:
+        return out
+    pinned = _module_anchor_constants(pinned_src)
+    live = _module_anchor_constants(live_src)
+    for (rel, digest, old_name, old_value, new_name, new_value,
+         category) in NAMED_ANCHOR_REANCHORS:
+        if rel != relpath:
+            continue
+        if old_name == new_name or _anchor_role(old_name) != _anchor_role(new_name):
+            continue
+        if (_anchor_value_category(old_value) != category
+                or _anchor_value_category(new_value) != category):
+            continue
+        if pinned.get(old_name) != (category, old_value):
+            continue
+        if new_name in pinned:                 # the successor must be introduced
+            continue
+        if live.get(old_name) != (category, old_value):
+            continue                           # historical predecessor retained
+        if live.get(new_name) != (category, new_value):
+            continue
+        out.setdefault(digest, []).append(
+            (old_name, old_value, new_name, new_value, category))
+    return out
+
+
+def _rename_in_fingerprint(fingerprint: str, old_name: str, new_name: str) -> str:
+    """Rename exactly one identifier spelling inside an assertion fingerprint."""
+    old = f"Name(id={old_name!r}, ctx=Load())"
+    new = f"Name(id={new_name!r}, ctx=Load())"
+    return fingerprint.replace(old, new)
+
+
+def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
+    """Fingerprints asserted when pinned that are no longer asserted now.
+
+    FOUR STAGES, in this order:
+
+    1. **Verbatim.** An assertion still present unchanged is preserved. Nothing
+       about it is abstracted, so a negative pin that legitimately kept its own
+       literal matches its own twin and never reaches a later stage.
+    2. **Registered named-anchor OCCURRENCE.** A still-unmatched assertion is
+       looked up by ``(relpath, its own fingerprint digest)``. Its exact declared
+       predecessor name/value may become only the registered successor name/value.
+    3. **Registered literal OCCURRENCE.** A still-unmatched pinned assertion is
+       looked up by ``(relpath, its own fingerprint digest)``. Only if THIS EXACT
+       ASSERTION is registered may its predecessor literal be rewritten to the
+       registered successor -- and then the result must appear verbatim among the
+       live assertions. Each registration is consumed AT MOST ONCE.
+    4. **Registered historicalization.** Only a specifically registered current
+       positive occurrence may become one exact literal-bound negative target.
+       The live predicate never executes through a mutable Python name. This is a
+       finite, one-time conversion; it does not create a moving value map.
+
+    Stages 2 and 3 answer reviews 5094619011 and 5093500583 respectively. The
+    former global named-slot mechanism normalized every same-role name and every
+    raw literal equal to one of their values. One lawful move could therefore
+    hide a distinct negative-pin or literal rewrite. Named anchors now use the
+    same file/assertion identity and single-use rule as bare literals, while raw
+    literal values never enter a substitution map at all.
+
+    The former literal mechanism mapped registered VALUES through a substitution map,
+    which rewrote every assertion containing them: one lawful WS-0014 date
+    transition therefore laundered an unrelated ``freeze["cutoff"]`` assertion
+    using the same pair. A value is not an identity. An assertion is -- so the
+    unrelated occurrence now has a different fingerprint, matches no
+    registration, stays verbatim, and is reported.
+    """
+    pinned_fingerprints = _assertion_fingerprints(pinned_src)
+    live_fingerprints = collections.Counter(_assertion_fingerprints(live_src))
+    live_occurrences = collections.Counter(
+        (_fingerprint_digest(fp), site)
+        for fp, site in _assertion_occurrences(live_src))
+    named_registered = _registered_named_occurrences(relpath, pinned_src, live_src)
+    bare_registered = _registered_occurrences(relpath)
+    historical_remaining = _historicalized_occurrences(relpath)
+    historical_target_counts = collections.Counter(
+        target
+        for targets in historical_remaining.values()
+        for target, _site in targets
+    )
+    live_target_counts = collections.Counter()
+    for fingerprint, count in live_fingerprints.items():
+        live_target_counts[_fingerprint_digest(fingerprint)] += count
+    invalid_historical_targets = {
+        digest for digest, count in historical_target_counts.items()
+        if live_target_counts[digest] != count
+    }
+    # Each registration is spent once. Copying the lists makes that explicit and
+    # keeps the module-level registry immutable.
+    named_remaining = {d: list(v) for d, v in named_registered.items()}
+    bare_remaining = {d: list(v) for d, v in bare_registered.items()}
+
+    def consume_historical(candidate: str) -> bool:
+        digest = _fingerprint_digest(candidate)
+        targets = historical_remaining.get(digest) or []
+        # A historicalized positive is closed, not optional. Keeping the exact
+        # literal-bound negative while restoring the former positive would make
+        # both predicates part of the live suite and could let a runtime name
+        # rewrite choose which value the positive actually enforces.
+        if live_fingerprints.get(candidate, 0) > 0:
+            return False
+        for i, (target_digest, target_site) in enumerate(targets):
+            if target_digest in invalid_historical_targets:
+                continue
+            if live_occurrences[(target_digest, target_site)] <= 0:
+                continue
+            for live in live_fingerprints:
+                if (_fingerprint_digest(live) == target_digest
+                        and live_fingerprints[live] > 0):
+                    targets.pop(i)
+                    live_fingerprints[live] -= 1
+                    live_occurrences[(target_digest, target_site)] -= 1
+                    return True
+        return False
+
+    # STAGE 1 -- exact match, and it is deliberately FIRST. An assertion that is
+    # present unchanged is explained by itself, never by a re-anchor or a
+    # registration, so nothing downstream can be spent on it.
+    #
+    lost, deferred = [], []
+    for strict in pinned_fingerprints:
+        # A registered one-time historicalization closes the old positive
+        # endpoint. Its verbatim return is not preservation; only the exact
+        # literal-bound negative target is now lawful.
+        if _fingerprint_digest(strict) in historical_remaining:
+            if not consume_historical(strict):
+                deferred.append(strict)
+        elif live_fingerprints[strict] > 0:
+            live_fingerprints[strict] -= 1
+        else:
+            deferred.append(strict)
+
+    # STAGE 2 -- exact registered named occurrence. A role can validate endpoint
+    # compatibility, but it never supplies identity and never creates a map.
+    still = []
+    for strict in deferred:
+        entries = named_remaining.get(_fingerprint_digest(strict)) or []
+        matched = False
+        for i, (old_name, _old_value, new_name, _new_value, _cat) in enumerate(entries):
+            expected = _rename_in_fingerprint(strict, old_name, new_name)
+            if expected == strict:
+                continue
+            if consume_historical(expected):
+                entries.pop(i)
+                matched = True
+                break
+            # Once an occurrence has a registered literal-bound historical
+            # target, restoring its named positive form is a weakening, never a
+            # second lawful endpoint.
+            if (_fingerprint_digest(expected) not in historical_remaining
+                    and live_fingerprints.get(expected, 0) > 0):
+                live_fingerprints[expected] -= 1
+                entries.pop(i)
+                matched = True
+                break
+        if not matched:
+            still.append(strict)
+
+    # STAGE 3 -- exact registered bare-literal occurrence.
+    for strict in still:
+        entries = bare_remaining.get(_fingerprint_digest(strict)) or []
+        matched = False
+        for i, (old, new, cat) in enumerate(entries):
+            # The registry's own claim about these values must still hold, so a
+            # stale entry cannot outlive a change in what they are.
+            if _anchor_category(old) != cat or _anchor_category(new) != cat:
+                continue
+            expected = strict.replace(f"Constant(value={old!r})",
+                                      f"Constant(value={new!r})")
+            if expected == strict:
+                # Defensive only, and UNREACHABLE by construction: the digest is
+                # the fingerprint of this exact assertion, so an entry keyed on it
+                # necessarily carries `old`. Kept because the invariant is a
+                # property of the identity scheme, not of this loop, and a future
+                # change to the identity scheme would make it load-bearing again.
+                continue
+            if consume_historical(expected):
+                entries.pop(i)
+                matched = True
+                break
+            if (_fingerprint_digest(expected) not in historical_remaining
+                    and live_fingerprints.get(expected, 0) > 0):
+                live_fingerprints[expected] -= 1
+                entries.pop(i)             # CONSUMED -- one registration, one use
+                matched = True
+                break
+        if not matched and consume_historical(strict):
+            matched = True
+        if not matched:
+            lost.append(strict)
+    return sorted(lost)
+
+
+#: DIRECT PROTECTED PREDICATES (PHQ-2026-07, second correction).
+#:
+#: Independent review's prescription for this defect class offered two mechanisms:
+#: direct assertions for the required protected predicates, OR a semantic assertion
+#: inventory admitting only occurrence-registered anchor substitutions. Both are used
+#: here, and the
+#: split between them is not arbitrary -- it follows a real property of the corpus.
+#:
+#: The inventory answers "did this suite lose an assertion since its baseline?". That
+#: question is exactly right for a suite this filing did not re-anchor. It is the WRONG
+#: question for the seven suites whose catalog-position, catalog-cardinality and
+#: base-revision assertions this filing lawfully REWROTE under its own already-reviewed
+#: G4 correction: those assertions were replaced, not lost, and a diff against a
+#: pre-correction baseline cannot tell the two apart without reading intent.
+#:
+#: So for those seven, the invariant is stated positively instead: these named predicates
+#: must still be asserted. That is a semantic claim, not a count, hash or shape total. It
+#: is immune to a lawful re-anchor of some OTHER assertion, and it still catches the
+#: equal-shape predicate swap -- ``startswith`` and ``endswith`` are different attribute
+#: names, which the exact fingerprints deliberately preserve.
+PROTECTED_PREDICATES = {
+    "test_level1_stage1_formal_disposition_parser_correction.py": (
+        'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")',
+        'assert len(rows) == 1',
+        'assert "*" not in inner',
+        'assert inner.startswith(PREFIX)',
+        'assert "category.strip()" not in source',
+    ),
+    "test_level1_stage1_formal_disposition_parser_correction_authorization.py": (
+        'assert PREFIX.endswith(":")',
+        'assert len(CANON_LABEL) == 18',
+        'assert len(NONSPACE_POSITIONS) == 17',
+    ),
+    "test_level1_stage1_parser_contract_correction_authorization.py": (
+        r'assert decision.startswith("---\n")',
+        'assert "stripped.upper().startswith(FORMAL_DISPOSITION_PREFIX)" in body',
+        'assert line.startswith("**") and line.endswith("**")',
+    ),
+    "test_level1_stage1_post_merge_ci_recovery_reconciliation.py": (
+        'assert A.AUTHORIZING_DECISION not in A.PERMANENTLY_INEFFECTIVE_DECISIONS',
+        'assert A.AUTHORIZING_PULL_REQUEST not in A.PERMANENTLY_INEFFECTIVE_PULL_REQUESTS',
+        'assert A.EXECUTION_ATTEMPT_ID == "ENDPOINT-0001::STAGE_1::ATTEMPT_1"',
+    ),
+    "test_level1_stage1_post_parser_correction_operational_rebinding.py": (
+        'assert ROLE4_SHA256 not in source',
+        'assert "REVIEWED_BASE_SHA" not in loaded',
+        'assert A.AUTHORIZING_DECISION not in A.PERMANENTLY_INEFFECTIVE_DECISIONS',
+    ),
+    "test_level1_stage1_verdict_boundary_governance.py": (
+        'assert relpath not in _changed_paths()',
+        'assert not [c for c in changed if c.startswith("governance/audits/")]',
+        'assert not [c for c in changed if c.startswith("governance/evidence/")]',
+    ),
+    "test_portfolio_hq_dashboard_decisions.py": (
+        'assert "<iframe" not in html.lower()',
+        'assert "<script" not in html.lower()',
+        'assert "<form" not in html.lower()',
+    ),
+}
+
+
+def _unasserted_predicates(relpath: str, live_src: str) -> list[str]:
+    """Which of ``relpath``'s named protected predicates are no longer asserted.
+
+    Membership requires both the exact semantic fingerprint and the protected
+    source text. A different operator, attribute, call structure, name, or literal
+    does not count as the required predicate.
+    """
+    live = _assertion_inventory(live_src)
+    missing = []
+    for text in PROTECTED_PREDICATES[relpath]:
+        want = _assertion_inventory(textwrap.dedent(text))
+        assert want, f"a protected predicate must itself parse to an assertion: {text}"
+        # TWO independent conditions, because each closes the other's blind spot.
+        #
+        # The exact semantic form catches a structural weakening -- a different operator,
+        # attribute, call shape or arity -- including the equal-shape ``startswith`` /
+        # ``endswith`` swap independent review named.
+        #
+        # Verbatim presence catches what abstraction deliberately cannot: two protected
+        # predicates in one suite may have the SAME required structure when they differ only
+        # in a string anchor (``"category.strip()"`` and ``"category.strip("``), so
+        # gutting one still leaves the form present in the multiset. Requiring the
+        # predicate's own text closes that, and constrains nothing else in the file --
+        # it is not a whole-file hash, and a lawful message change lies outside it.
+        if not (want <= live) or text not in live_src:
+            missing.append(text)
+    return missing
+
+
 class TestTheFilingExistsAndIsWellFormed:
     def test_decision_file_exists_and_is_the_declared_name(self):
         assert DECISION.exists(), DECISION
@@ -392,8 +1518,30 @@ class TestTheFilingExistsAndIsWellFormed:
         assert gates[GATE]["pr"] in (None, THIS_PULL_REQUEST), gates[GATE]["pr"]
 
     def test_ws0014_self_reference_fields_point_at_the_current_binding(self):
-        assert WS0014["last_verified_main_sha"] == BOUND_MERGE_SHA
-        assert WS0014["active_pr"] in (None, THIS_PULL_REQUEST), WS0014["active_pr"]
+        assert WS0014["active_branch"] == CURRENT_WS0014_BINDING["active_branch"]
+        assert WS0014["active_pr"] == CURRENT_WS0014_BINDING["active_pr"]
+        assert (WS0014["last_verified_main_sha"]
+                == CURRENT_WS0014_BINDING["last_verified_main_sha"])
+        assert (str(WS0014["last_verified_date"])
+                == CURRENT_WS0014_BINDING["last_verified_date"])
+        assert _ws0014_binding_errors(WS0014) == set()
+        assert WS0014["active_pr"] != THIS_PULL_REQUEST
+        assert WS0014["last_verified_main_sha"] != BOUND_MERGE_SHA
+
+    @pytest.mark.parametrize(
+        "field,wrong_value",
+        (
+            ("active_branch", "claude/xasset-0061-authorization-jux8p9"),
+            ("active_pr", THIS_PULL_REQUEST),
+            ("last_verified_main_sha", BOUND_MERGE_SHA),
+            ("last_verified_date", "2026-08-28"),
+        ),
+    )
+    def test_each_wrong_live_binding_field_fails_closed(self, field, wrong_value):
+        """Each stale field is reported even when the other three are exact."""
+        mutant = dict(WS0014)
+        mutant[field] = wrong_value
+        assert _ws0014_binding_errors(mutant) == {field}
 
     def test_binding_the_pull_request_number_touched_no_other_workstream(self):
         """Reading back GitHub's issued number must not clobber a sibling workstream.
@@ -800,10 +1948,15 @@ class TestThisFilingMutatesNothingLoadBearing:
 
     @staticmethod
     def _changed_set() -> set[str]:
-        return (
-            set(_git("diff", "--name-only", BOUND_MERGE_SHA).split())
-            | set(_git("diff", "--name-only", "--cached", BOUND_MERGE_SHA).split())
-            | set(_git("ls-files", "--others", "--exclude-standard").split())
+        """THIS unit's own change set, measured over its own CLOSED immutable range.
+
+        Previously an OPEN-ENDED diff against the live worktree plus untracked files. That
+        made the set grow with every later commit on `main`, so the manifest assertion
+        below was guaranteed to fail on the next lawful merge of any kind -- and it did.
+        A closed range names what this unit actually changed, exactly and permanently.
+        """
+        return set(
+            _git("diff", "--name-only", BOUND_MERGE_SHA, THIS_UNIT_MERGE_SHA).split()
         )
 
     def test_the_changed_set_is_exactly_the_expected_manifest(self):
@@ -840,17 +1993,55 @@ class TestThisFilingMutatesNothingLoadBearing:
 
     @pytest.mark.parametrize("rel", sorted(PROTECTED_RELPATHS))
     def test_protected_path_is_byte_identical_to_the_bound_merge(self, rel):
-        """RESTORED, and widened from nine paths to all fourteen in ``PROTECTED_RELPATHS``."""
-        assert _git("rev-parse", f"{BOUND_MERGE_SHA}:{rel}") == _git("hash-object", rel), rel
+        """RESTORED, widened to all fourteen paths, then RE-ANCHORED to this unit's own
+        CLOSED range. The live ``hash-object`` end made a closed historical unit assert
+        that no later, separately authorized unit may ever touch a protected path --
+        authority this filing never had. Both endpoints are immutable now."""
+        assert _git("rev-parse", f"{BOUND_MERGE_SHA}:{rel}") == _git(
+            "rev-parse", f"{THIS_UNIT_MERGE_SHA}:{rel}"
+        ), rel
 
     def test_every_pinned_predecessor_suite_matches_its_exact_hash(self):
-        """The load-bearing check. A semantically weakened file cannot match its pin."""
-        mismatched = {
-            rel: _sha256(ROOT / rel)
-            for rel, expected in PINNED_TEST_HASHES.items()
-            if _sha256(ROOT / rel) != expected
-        }
-        assert not mismatched, mismatched
+        """The load-bearing check, RE-EXPRESSED as the semantic claim it exists to make.
+
+        This pinned each changed suite's WHOLE-FILE sha256 against the live worktree. The
+        goal is right -- a file whose required negative pin is replaced by ``assert True``
+        keeps its SHA strings and even RAISES its assert count, but cannot keep its hash.
+        The mechanism was too strong: it also forbids any LATER lawful edit to any of
+        those sixteen files, forever, including a strengthening. PHQ-2026-07's own
+        re-anchoring of these guards is exactly such an edit, and this pin fired on it.
+
+        RE-ANCHORED AGAIN (PHQ-2026-07). The first correction compared assertion
+        COUNTS. Independent review showed a count is blind to a same-count weakening:
+        replacing a specific negative check with a bare truthiness test loses the
+        property while the total is unchanged. What is enforced now is the exact
+        SEMANTIC INVENTORY plus occurrence-specific transition registries -- every
+        assertion this suite made when pinned must still
+        be made. Adding assertions is free, so a lawful later strengthening passes;
+        losing or hollowing one does not.
+        """
+        assert PINNED_TEST_HASHES, "the pinned set must not be empty"
+        assert set(PROTECTED_PREDICATES) <= set(PINNED_TEST_HASHES), (
+            "a protected-predicate entry names a file this filing does not pin")
+        weakened = {}
+        for rel in sorted(PINNED_TEST_HASHES):
+            live_path = ROOT / rel
+            assert live_path.exists(), rel
+            live_src = live_path.read_text(encoding="utf-8")
+            at_merge_src = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            if rel in PROTECTED_PREDICATES:
+                # This filing lawfully re-anchored this suite's catalog-position,
+                # cardinality or base-revision assertions under its own already-reviewed
+                # G4 correction. A diff against the pre-correction baseline reports those
+                # REPLACEMENTS as losses, so the invariant is stated positively instead.
+                missing = _unasserted_predicates(rel, live_src)
+            else:
+                missing = _lost_assertions(at_merge_src, live_src, rel)
+            missing.extend(
+                _historicalized_registration_losses(at_merge_src, live_src, rel))
+            if missing:
+                weakened[rel] = missing[:3]
+        assert not weakened, weakened
 
     def test_the_pinned_set_is_exactly_the_changed_tests_less_this_artifact(self):
         """No changed test may escape pinning, and no pin may name an unchanged file."""
@@ -881,9 +2072,17 @@ class TestThisFilingMutatesNothingLoadBearing:
             assert BOUND_MERGE_BASE in live, (
                 f"{rel} dropped XASSET-0060's value instead of retaining it as a pin"
             )
-            assert len(re.findall(r"^\s+assert ", live, re.M)) >= len(
-                re.findall(r"^\s+assert ", base, re.M)
-            ), f"{rel} lost assertions"
+            # Same semantic mechanism as above, not a textual count. The superseded
+            # regex counted lines beginning with ``assert``, which a same-count
+            # weakening slips straight past.
+            if rel in PROTECTED_PREDICATES:
+                missing = _unasserted_predicates(rel, live)
+            else:
+                missing = _lost_assertions(base, live, rel)
+            at_merge = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            missing.extend(
+                _historicalized_registration_losses(at_merge, live, rel))
+            assert not missing, f"{rel} no longer asserts: {missing[:3]}"
 
 
 class TestTheScopeGuardCatchesTheReviewedBypasses:
@@ -895,6 +2094,1892 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
     @staticmethod
     def _hash_text(text: str) -> str:
         return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    def test_a_same_count_weakening_of_the_wrong_file_check_is_caught(self):
+        """ADVERSARIAL (PHQ-2026-07). The exact bypass independent review demonstrated.
+
+        Against the real corpus, replacing
+
+            assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
+
+        with
+
+            assert entry["file"]
+
+        destroys the catalog-path identity property -- a row pointing at ANOTHER
+        decision's file then passes -- while the textual assert count stays 441 -> 441
+        and the non-vacuous AST count stays 441 -> 441. The superseded count-based
+        guard accepted it. The semantic inventory must reject it.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = ('assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                  'entry["file"]')
+        assert src.count(strong) == 1, "the pinned check moved; re-anchor this proof"
+        weakened = src.replace(strong, 'assert entry["file"]')
+
+        # The counts a weaker guard would have compared are IDENTICAL ...
+        import re as _re
+        assert (len(re.findall(r"^\s+assert ", src, re.M))
+                == len(re.findall(r"^\s+assert ", weakened, re.M)))
+        assert (len(re.findall(r"^\\s+assert ", src, re.M))
+                == len(re.findall(r"^\\s+assert ", weakened, re.M))), \
+            "the raw totals must be identical, or this proves nothing"
+        # ... and the semantic inventory still catches the loss.
+        assert _lost_assertions(src, weakened), "same-count weakening slipped through"
+
+    def test_an_equal_shape_predicate_swap_is_caught(self):
+        """REQUIRED PROBE (review 5085019004). The construction that defeated the
+        superseded count-and-shape guard.
+
+            Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
+                ->  Path(entry["file"]).name.endswith(".md")
+
+        Identical assertion count, identical AST SHAPE (a method call on an
+        attribute of a call), and the weaker form ACCEPTS current catalog data --
+        while losing the decision-ID/file binding completely: a row pointing at
+        another decision's ``.md`` file passes it. The semantic inventory must
+        reject this, because the method NAME is operative and is not abstracted.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = ('assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                  'entry["file"]')
+        assert src.count(strong) == 1, "the pinned check moved; re-anchor this proof"
+        weakened = src.replace(
+            strong, 'assert Path(entry["file"]).name.endswith(".md"), entry["file"]')
+
+        # Same raw count AND same coarse shape -- the superseded guard saw nothing.
+        assert (len(re.findall(r"^\s+assert ", src, re.M))
+                == len(re.findall(r"^\s+assert ", weakened, re.M)))
+        # ... and the weakened predicate genuinely accepts the wrong file.
+        assert Path("GOV-0001-governance-architecture-adopted.md").name.endswith(".md")
+        assert not Path(
+            "GOV-0001-governance-architecture-adopted.md").name.startswith("XASSET-0056-")
+        # The semantic inventory must catch it.
+        assert _lost_assertions(src, weakened), \
+            "equal-shape predicate swap slipped through"
+
+    def test_a_lawful_anchor_substitution_is_not_reported_as_a_loss(self):
+        """The complement, and the reason an exact fingerprint inventory was rejected.
+
+        A predecessor lawfully re-anchored ``== XASSET0060_MAIN_SHA`` to
+        ``== XASSET0061_MAIN_SHA`` and ADDED two assertions. An identity-based rule
+        calls that a loss; its two exact occurrence registrations permit only the
+        named current-anchor transitions, while the separate bare registry permits
+        only its exact date occurrence.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        assert base != live, "this proof needs a genuinely re-anchored predecessor"
+        assert not _lost_assertions(base, live, rel), \
+            "a lawful anchor substitution was reported as a weakening"
+        # ...and the same comparison with NO file identity authorizes nothing,
+        # because a literal re-anchor is registered per OCCURRENCE, not per value.
+        assert _lost_assertions(base, live), (
+            "an unidentified comparison still authorized a literal substitution")
+
+    def test_the_operative_parts_of_an_assertion_are_not_abstracted(self):
+        """Every name, value and operative expression is exact by default.
+
+        Rewritten again for review 5094619011. The general inventory performs no
+        normalization at all. Only an explicit file/assertion registry entry may
+        explain a moving anchor later in :func:`_lost_assertions`.
+        """
+        def one(expr):
+            return _assertion_inventory(f"def f():\n    assert {expr}\n")
+
+        # NOT abstracted WITHOUT a delta -- not even a perfectly anchor-shaped
+        # value. This is the corrected contract, stated first because it is the
+        # one the review required.
+        assert one('v == "413e033ac33741829168762ab24d73327c047d4b"') != \
+               one('v == "3db918530b10ffc1423ba0b749b086e349a4901d"')   # SHA
+        assert one('d == "2026-08-28"') != one('d == "2026-09-02"')      # date
+        assert one('i == "XASSET-0060"') != one('i == "XASSET-0061"')    # decision id
+        assert one('b == "claude/one"') != one('b == "claude/two"')      # branch
+
+        # A DIGITS-ONLY identifier is a NUMBER, never a SHA. Review 5092359752
+        # showed the opposite ordering classifying the review id 4976985695 as a
+        # SHA, which made it interchangeable with a real merge SHA.
+        assert _anchor_category("4976985695") == "NUMBER"
+        assert _anchor_category("637eaa30302f5a71f84ab1d215ecbd32c01399b5") == "SHA"
+        assert one('"4976985695" in d') != \
+               one('"637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d')
+
+        # NOT abstracted by typography, role, or category alone.
+        assert one("v == SHA_ALPHA") != one("v == SHA_BETA")
+        assert one('x.startswith(f"{DECISION_ID}-")') != one('x.startswith(f"{OTHER}-")')
+
+        # NOT abstracted -- operative expected TEXT is not an anchor.
+        assert one('"Merging it arms nothing" in section') != one('"" in section')
+        assert one('"Merging it arms nothing" in section') != \
+               one('"Merging it arms something" in section')
+        assert one('x.startswith("aaa")') != one('x.startswith("bbb")')
+
+        # NOT abstracted -- operative meaning
+        assert one('x.startswith("a")') != one('x.endswith("a")')
+        assert one("n >= 441") != one("n >= 440")
+        assert one("n >= 441") != one("n > 441")
+        assert one('x.startswith("a")') != one("x")
+
+        # An f-string is WALKED, not collapsed, so its prose parts stay operative.
+        assert one('m == f"expected {x} in the header"') != \
+               one('m == f"required {x} in the header"')
+
+    def test_a_semantic_string_weakening_on_an_unprotected_suite_is_caught(self):
+        """REQUIRED NEGATIVE CONTROL (PHQ-2026-07, third correction).
+
+        Independent review demonstrated this exact mutation on a suite that is
+        PINNED but deliberately NOT in ``PROTECTED_PREDICATES``:
+
+            assert "Merging it arms nothing" in section   ->   assert "" in section
+
+        The weakened form accepts any string whatsoever, including the empty one,
+        so a substantive Stage-1 safety assertion becomes vacuous. Under the
+        superseded normaliser both forms abstracted to the same thing and the
+        inventory reported no loss. The searched-for phrase is not a SHA, a date,
+        a decision id or a branch name, so it is not an anchor and is preserved.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        assert rel in PINNED_TEST_HASHES, "the probe's own target is no longer pinned"
+        assert rel not in PROTECTED_PREDICATES, (
+            "this probe exists to prove the GENERAL mechanism, so its target must "
+            "not be covered by the direct-protection list")
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert "Merging it arms nothing" in section'
+        assert strong in src, "the probe's own target has moved"
+        weak = src.replace(strong, 'assert "" in section')
+        assert _lost_assertions(src, weak), (
+            "the semantic-string weakening was NOT caught")
+
+    def test_the_empty_string_is_never_treated_as_an_anchor(self):
+        """The specific value that makes an ``in`` test vacuous."""
+        assert not _is_lawful_anchor("")
+        assert not _is_lawful_anchor("   ")
+
+    def test_only_contextually_lawful_anchor_shapes_are_candidates(self):
+        """Pin the endpoint classifier itself, both directions.
+
+        Fail-closed: an unrecognised string is PRESERVED. So the risk this test
+        guards is the opposite one -- a pattern quietly widening until prose
+        matches it again.
+        """
+        for lawful in ("413e033ac33741829168762ab24d73327c047d4b", "3db91853",
+                       "2026-09-02", "2026-09-02T13:17:24Z",
+                       "XASSET-0061", "PHQ-2026-07", "OPS-0014",
+                       "claude/protected-capital-accounting",
+                       "governance/decisions/XASSET-0061-something.md", "364"):
+            assert _is_lawful_anchor(lawful), lawful
+        for operative in ("Merging it arms nothing", "", "   ", "startswith",
+                          "UNAVAILABLE", "arms", "Stage 1", "nothing",
+                          "the catalog row must be unique", "assert True",
+                          "net_equity", "qqq_price", "hold_no_add"):
+            assert not _is_lawful_anchor(operative), operative
+
+    def test_every_required_property_of_the_guard_holds_together(self):
+        """One place stating all five retained properties, so none can drift alone."""
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")'
+        assert strong in src
+
+        # 1. startswith -> endswith is caught
+        assert _lost_assertions(
+            src, src.replace(strong, 'assert Path(entry["file"]).name.endswith(".md")'))
+        # 2. replacing a required assertion with assert True is caught
+        assert _lost_assertions(src, src.replace(strong, "assert True"))
+        # 3. deleting it outright is caught
+        assert _lost_assertions(
+            src, src.replace("        " + strong + ', entry["file"]\n', ""))
+        # 4. a genuine ADDITION is permitted
+        assert not _lost_assertions(
+            src, src.replace("        " + strong + ', entry["file"]\n',
+                             "        " + strong + ', entry["file"]\n'
+                             '        assert entry["id"], entry\n'))
+        # 5. a lawful, specifically recognised re-anchor is permitted
+        assert not _lost_assertions(src, src.replace("== 162", "== 163"))
+
+    def test_a_constant_name_substitution_across_roles_is_caught(self):
+        """REQUIRED NEGATIVE CONTROL (PHQ-2026-07, review 5091155438).
+
+        The exact mutation independent review demonstrated, on a suite that is
+        PINNED but deliberately not in ``PROTECTED_PREDICATES``:
+
+            assert STEP10_DETERMINATION in section
+            assert BOUND_MERGE_SHA in section
+
+        Both constants exist and both values are present in the section, so the
+        weakened suite still PASSES -- while the Step-10 determination
+        requirement is gone and the merge-SHA check it was replaced with is
+        already asserted elsewhere. Under the superseded rule both names
+        collapsed to one ``<ANCHOR_NAME>`` and the guard reported no loss.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        assert rel in PINNED_TEST_HASHES
+        assert rel not in PROTECTED_PREDICATES, (
+            "this probe proves the GENERAL mechanism, so its target must not be "
+            "covered by the direct-protection list")
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = "assert STEP10_DETERMINATION in section"
+        assert strong in src, "the probe's own target has moved"
+        # Both constants are real, and the substituted one is already asserted --
+        # which is exactly why the mutated suite still passes.
+        assert "STEP10_DETERMINATION = " in src and "BOUND_MERGE_SHA = " in src
+        mutated = src.replace(strong, "assert BOUND_MERGE_SHA in section")
+        at_merge = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        assert not _lost_assertions(at_merge, src, rel), "the live suite must be clean"
+        assert _lost_assertions(at_merge, mutated, rel), (
+            "the cross-role constant substitution was NOT caught")
+
+    def test_typography_alone_never_authorizes_a_substitution(self):
+        """A name's category comes from its BOUND VALUE, not its capitalization."""
+        cats = _module_anchor_categories(
+            'A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+            'A_DATE = "2026-09-02"\n'
+            'A_DECISION = "XASSET-0061"\n'
+            'A_BRANCH = "claude/x"\n'
+            'A_PR = 364\n'
+            'A_DETERMINATION = "STEP_10_NO_DRIFT"\n'
+            'A_PROSE = "Merging it arms nothing"\n'
+            'A_COMPUTED = some_call()\n')
+        assert cats == {"A_SHA": "SHA", "A_DATE": "DATE", "A_DECISION": "DECISION",
+                        "A_BRANCH": "BRANCH", "A_PR": "NUMBER"}, cats
+        # A determination string, prose, and anything non-literal have NO category
+        # and are therefore never interchangeable with anything.
+        for absent in ("A_DETERMINATION", "A_PROSE", "A_COMPUTED"):
+            assert absent not in cats
+
+    @pytest.mark.parametrize("old_name,new_name,label", [
+        ("A_DETERMINATION", "A_SHA", "determination -> SHA"),
+        ("A_PROSE", "A_BRANCH", "comment -> branch"),
+        ("A_DECISION", "A_DATE", "decision -> date"),
+        ("A_BRANCH", "A_PR", "branch -> number"),
+    ])
+    def test_every_cross_role_substitution_is_caught(self, old_name, new_name, label):
+        """Cross-category swaps are losses even when a re-anchor IS in play.
+
+        The delta below adds a new SHA constant, but no occurrence is registered.
+        Candidate-role or category evidence cannot authorize this assertion, and
+        cannot leak into any other category.
+        """
+        header = ('A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+                  'A_DATE = "2026-09-02"\n'
+                  'A_DECISION = "XASSET-0061"\n'
+                  'A_BRANCH = "claude/x"\n'
+                  'A_PR = 364\n'
+                  'A_DETERMINATION = "STEP_10_NO_DRIFT"\n'
+                  'A_PROSE = "Merging it arms nothing"\n')
+        pinned = header + f"def f():\n    assert {old_name} in section\n"
+        # A genuine re-anchor happening in the same delta.
+        live = (header + 'B_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"\n'
+                + f"def f():\n    assert {new_name} in section\n")
+        assert _lost_assertions(pinned, live), f"{label} was not caught"
+
+    def test_a_same_category_reanchor_requires_a_registered_occurrence(self):
+        """A plausible role/category pair is not authority on its own.
+
+        The synthetic delta has all the old global mechanism's candidate signals,
+        but no file/fingerprint registry row. It must therefore fail closed.
+        Positive controls for all eleven lawful corpus occurrences appear below.
+        """
+        pinned = ('OLD_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"\n'
+                  "def f():\n    assert ws['sha'] == OLD_SHA\n")
+        live = ('OLD_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"\n'
+                'NEW_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+                "def f():\n    assert ws['sha'] == NEW_SHA\n")
+        assert _lost_assertions(pinned, live), (
+            "a same-category pair was accepted without an occurrence registration")
+
+    def test_the_real_corpus_cross_domain_id_for_sha_swap_is_caught(self):
+        """REQUIRED NEGATIVE CONTROL (PHQ-2026-07, review 5092359752).
+
+        The exact real-corpus probe independent review demonstrated, on a suite
+        that is PINNED but deliberately not in ``PROTECTED_PREDICATES``:
+
+            assert "4976985695" in description
+            assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in description
+
+        The substituted value is an unrelated merge SHA ALREADY PRESENT in the
+        same description, so the mutated assertion evaluates true and the suite
+        still passes -- while the required independent-review-id check is gone.
+
+        Two separate defects let this through and both are pinned here:
+
+        * the SHA pattern preceded NUMBER and accepted digits-only strings, so
+          the review id ``4976985695`` was categorized as a SHA;
+        * every recognized literal was normalized unconditionally, so two values
+          the delta never re-anchored were interchangeable anyway.
+        """
+        rel = "test_level1_stage1_post_correction_rebinding_authorization.py"
+        assert rel in PINNED_TEST_HASHES
+        assert rel not in PROTECTED_PREDICATES, (
+            "this probe proves the GENERAL mechanism, so its target must not be "
+            "covered by the direct-protection list")
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert "4976985695" in description'
+        swapped = 'assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in description'
+        assert strong in src, "the probe's own target has moved"
+        # The mutated assertion PASSES: its value is already in the same text.
+        assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in src
+        # Category separation is the first half of the fix.
+        assert _anchor_category("4976985695") == "NUMBER"
+        assert _anchor_category("637eaa30302f5a71f84ab1d215ecbd32c01399b5") == "SHA"
+        mutated = src.replace(strong, swapped)
+        assert mutated != src
+        assert not _lost_assertions(src, src), "the live suite must be clean"
+        assert _lost_assertions(src, mutated), (
+            "the cross-domain id-for-SHA substitution was NOT caught")
+
+    def test_a_literal_already_present_is_never_an_authorized_substitution(self):
+        """The general property behind that probe, stated directly.
+
+        A delta may re-anchor onto a value it INTRODUCED. It may never reach for
+        a value that was already sitting in the file -- that introduces no
+        predecessor->successor evidence at all, and is the shape every reviewed
+        literal bypass has taken.
+        """
+        pinned = ('def f():\n'
+                  '    assert "4976985695" in d\n'
+                  '    assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d\n')
+        # The swap reuses a value already present; nothing new is introduced.
+        live = ('def f():\n'
+                '    assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d\n'
+                '    assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" in d\n')
+        assert _registered_occurrences(None) == {}, (
+            "a comparison without file identity unexpectedly had a literal registry")
+        assert _lost_assertions(pinned, live), "the reused-value swap was not caught"
+
+    def test_an_in_play_category_still_forbids_reusing_an_existing_value(self):
+        """A category is never "in play" at all: only an ENUMERATED PAIR is.
+
+        RE-ANCHORED AGAIN (PHQ-2026-07, review 5093500583). Written first against
+        a category-wide rule, then against a value-pair registry. Both are gone:
+        a literal substitution now requires a REGISTERED OCCURRENCE -- an exact
+        file plus an exact assertion fingerprint -- so literals no longer travel
+        through the value maps at all. The assertion below therefore moved off
+        `live_values` (which no longer carries literals for anyone, making it a
+        vacuous check) and onto the occurrence table, which is what actually
+        decides. Strictly stronger: it now proves the synthetic assertion is
+        registered NOWHERE, not merely that one map is empty.
+        """
+        old_v, kept_v, added_v = "a" * 40, "b" * 40, "c" * 40
+        for v in (old_v, kept_v, added_v):
+            assert _anchor_category(v) == "SHA", v
+        pinned = (f'def f():\n    assert "{old_v}" in d\n'
+                  f'    assert "{kept_v}" in d\n')
+        # A real constant IS introduced, AND the required `old_v` assertion is
+        # quietly replaced by a value already present.
+        live = (f'NEW_SHA = "{added_v}"\n'
+                f'def f():\n    assert "{kept_v}" in d\n'
+                f'    assert "{kept_v}" in d\n    assert NEW_SHA in d\n')
+        registered_values = {v for _r, _d, o, n, _c in BARE_LITERAL_REANCHORS
+                             for v in (o, n)}
+        assert added_v not in registered_values, "this probe needs an UNregistered value"
+        # No file identity, and no registered occurrence for these assertions
+        # under ANY file identity -- so no substitution is authorized.
+        assert _registered_occurrences(None) == {}
+        for rel in sorted(PINNED_TEST_HASHES):
+            for digest in _registered_occurrences(rel):
+                for st in _assertion_fingerprints(pinned):
+                    assert _fingerprint_digest(st) != digest, (
+                        "this probe's own assertions must be UNregistered")
+        assert _lost_assertions(pinned, live), (
+            "a reused pre-existing value was accepted inside an in-play category")
+
+    def _historical_rows_rebound_to(self, rel, live_source):
+        """Re-site real rows for a synthetic live module used by a unit probe."""
+        sites = collections.defaultdict(list)
+        for fingerprint, site in _assertion_occurrences(live_source):
+            sites[_fingerprint_digest(fingerprint)].append(site)
+        rebound = []
+        for row_rel, source, target, site in HISTORICALIZED_REGISTER_ASSERTIONS:
+            if row_rel == rel:
+                assert sites[target], (rel, target)
+                site = sites[target].pop(0)
+            rebound.append((row_rel, source, target, site))
+        return tuple(rebound)
+
+    def test_a_registered_occurrence_does_not_launder_the_same_pair_elsewhere(
+            self, monkeypatch):
+        """REQUIRED NEGATIVE CONTROL A (PHQ-2026-07, review 5093500583).
+
+        The defect this correction exists to close. A lawful, REGISTERED WS-0014
+        date transition happens in a file, and a SECOND, unrelated assertion in
+        the same file uses the very same predecessor/successor pair. Under the
+        superseded value-pair registry both were rewritten by one substitution
+        map, so the unrelated assertion vanished with `_lost_assertions()`
+        reporting nothing.
+
+        The registered occurrence still passes. The unrelated one is reported,
+        because a VALUE is not an identity -- an ASSERTION is, and this one is
+        registered nowhere.
+        """
+        rel = "test_level1_stage1_pr337_actor_evidence_correction_authorization.py"
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        assert not _lost_assertions(base, live, rel), "the live suite must be clean"
+        old, new = "2026-08-27", "2026-08-28"
+        # An unrelated assertion using the SAME pair, present in both versions and
+        # weakened only on the live side.
+        extra_pinned = f'\n\ndef _probe(freeze):\n    assert freeze["cutoff"] == "{old}"\n'
+        extra_live = f'\n\ndef _probe(freeze):\n    assert freeze["cutoff"] == "{new}"\n'
+        current = live + extra_live
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            self._historical_rows_rebound_to(rel, current))
+        lost = _lost_assertions(base + extra_pinned, current, rel)
+        assert lost, "an unrelated occurrence of a registered pair was laundered"
+        assert any("cutoff" in fp for fp in lost), (
+            "the reported loss must be the unrelated assertion itself")
+        # ...and exactly one loss: the registered occurrence still passes.
+        assert len(lost) == 1, lost
+
+    def test_the_review_construction_authorizes_nothing_unregistered(self):
+        """The review's literal reproduction, which registers NO occurrence.
+
+        Neither assertion here is a registered occurrence -- their fingerprints
+        appear in no entry -- so both are compared verbatim and both are
+        reported. Fail-closed, and the unrelated `cutoff` weakening is among
+        them, which is what the finding required.
+        """
+        old, new = "2026-08-27", "2026-08-28"
+        pinned = (f'def f(register, freeze):\n'
+                  f'    assert register["last_verified_date"] == "{old}"\n'
+                  f'    assert freeze["cutoff"] == "{old}"\n')
+        live = (f'def f(register, freeze):\n'
+                f'    assert register["last_verified_date"] == "{new}"\n'
+                f'    assert freeze["cutoff"] == "{new}"\n')
+        for relpath in (None,
+                        "test_level1_stage1_pr337_actor_evidence_correction_authorization.py"):
+            lost = _lost_assertions(pinned, live, relpath)
+            assert lost, f"nothing was reported for relpath={relpath!r}"
+            assert any("cutoff" in fp for fp in lost), (
+                f"the unrelated weakening was not reported for relpath={relpath!r}")
+
+    # The registered occurrence used by the two probes below is REAL: this exact
+    # assertion, at this exact relpath, is entry 0 of the registry, so neither
+    # probe can pass vacuously against a fingerprint the corpus does not contain.
+    _REG_REL = "test_level1_stage1_activation_authorization.py"
+    _REG_LINE = 'assert str(workstream["last_verified_date"]).startswith("{v}")'
+    _REG_HIST_LINE = 'assert not str(workstream["last_verified_date"]).startswith("{v}")'
+
+    def _synthetic_historical_row(self, rel, value, live_source=None):
+        positive = "def f():\n    " + self._REG_LINE.format(v=value) + "\n"
+        negative = "def f():\n    " + self._REG_HIST_LINE.format(v=value) + "\n"
+        target = _fingerprint_digest(_assertion_fingerprints(negative)[0])
+        site_source = live_source if live_source is not None else negative
+        target_site = next(
+            site for fingerprint, site in _assertion_occurrences(site_source)
+            if _fingerprint_digest(fingerprint) == target
+        )
+        return (
+            rel,
+            _fingerprint_digest(_assertion_fingerprints(positive)[0]),
+            target,
+            target_site,
+        )
+
+    def test_a_registered_occurrence_cannot_be_spent_by_reusing_a_present_value(
+            self, monkeypatch):
+        """RETAINED PROPERTY (carried forward from the superseded value-pair guard).
+
+        The superseded mechanism needed an explicit "the successor must be
+        INTRODUCED by the delta" condition, because a value-pair licence could
+        otherwise be spent by a live side that merely REACHED FOR a successor
+        already sitting in the pinned file -- the shape every reviewed literal
+        bypass has taken. Occurrence binding must not lose that property.
+
+        Here the successor is already asserted on the PINNED side at an unrelated
+        site. The registered occurrence still has to be genuinely realised at its
+        own fingerprint; the already-present value buys nothing, and the
+        unregistered site that moves is reported.
+        """
+        rel, digest, old, new, _cat = BARE_LITERAL_REANCHORS[0]
+        assert rel == self._REG_REL
+        reg_old = "    " + self._REG_LINE.format(v=old) + "\n"
+        reg_new = "    " + self._REG_HIST_LINE.format(v=new) + "\n"
+        # `new` is ALREADY present on the pinned side, at a DIFFERENT, unregistered site.
+        other_old = f'    assert freeze["cutoff"] == "{new}"\n'
+        other_moved = f'    assert freeze["cutoff"] == "2026-08-26"\n'
+        pinned = "def f():\n" + reg_old + other_old
+        live = "def f():\n" + reg_new + other_moved
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            (self._synthetic_historical_row(rel, new, live),))
+        lost = _lost_assertions(pinned, live, rel)
+        assert lost, "an unregistered site was laundered by a present successor value"
+        assert any("cutoff" in fp for fp in lost), (
+            "the reported loss must be the unregistered site, not the lawful one")
+        assert not any("last_verified_date" in fp for fp in lost), (
+            "the genuinely-realised registered occurrence must not be reported")
+
+    def test_the_verbatim_stage_prevents_a_false_loss_on_a_partial_reanchor(
+            self, monkeypatch):
+        """RETAINED PROPERTY. The verbatim-first stage is load-bearing PERMISSIVELY.
+
+        When a registered predecessor VALUE also appears at an unregistered site
+        that does NOT move, that site must match itself verbatim. Without the
+        verbatim stage it would compete for the registered occurrence's match and
+        be reported as a loss that never happened -- a false alarm, which erodes
+        the guard by training its readers to ignore it.
+        """
+        rel, _digest, old, new, _cat = BARE_LITERAL_REANCHORS[0]
+        reg_old = "    " + self._REG_LINE.format(v=old) + "\n"
+        reg_new = "    " + self._REG_HIST_LINE.format(v=new) + "\n"
+        unmoved = f'    assert freeze["cutoff"] == "{old}"\n'
+        pinned = "def f():\n" + reg_old + unmoved
+        live = "def f():\n" + reg_new + unmoved
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            (self._synthetic_historical_row(rel, new, live),))
+        assert not _lost_assertions(pinned, live, rel), (
+            "an unmoved occurrence of a registered predecessor was reported lost")
+        # ...and that unmoved site is still governed: moving it anywhere is reported.
+        bad = "def f():\n" + reg_new + '    assert freeze["cutoff"] == "2026-08-26"\n'
+        lost = _lost_assertions(pinned, bad, rel)
+        assert lost and any("cutoff" in fp for fp in lost), (
+            "the unregistered site became unguarded once the lawful one moved")
+
+    def test_one_live_assertion_cannot_satisfy_two_pinned_copies(self, monkeypatch):
+        """DIRECT GUARD TEST, found by this correction's own mutation proof.
+
+        Two mechanisms enforce single use and they are not redundant. Popping the
+        entry stops ONE registration being spent twice. Decrementing the live
+        counter stops one LIVE assertion answering for two pinned ones -- which is
+        reachable the moment a digest carries more than one registration.
+
+        The registry as committed carries no duplicate digest (pinned separately),
+        so the property is exercised here against a deliberately duplicated
+        registration. Without the live-side decrement a single live assertion
+        satisfies both pinned copies and a genuine loss disappears.
+        """
+        rel, digest, old, new, cat = BARE_LITERAL_REANCHORS[0]
+        monkeypatch.setattr(
+            sys.modules[__name__], "BARE_LITERAL_REANCHORS",
+            BARE_LITERAL_REANCHORS + ((rel, digest, old, new, cat),), raising=True)
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            (self._synthetic_historical_row(rel, new),))
+        line_old = "    " + self._REG_LINE.format(v=old) + "\n"
+        line_new = "    " + self._REG_HIST_LINE.format(v=new) + "\n"
+        # The registered assertion is made TWICE on the pinned side...
+        pinned = "def f():\n" + line_old + line_old
+        # ...and only ONCE on the live side. One of the two is genuinely gone.
+        live = "def f():\n" + line_new
+        lost = _lost_assertions(pinned, live, rel)
+        assert lost, "one live assertion answered for two pinned copies"
+        assert len(lost) == 1, ("exactly one of the two pinned copies is lost", lost)
+
+    def test_a_stale_registration_stops_firing_when_its_category_claim_breaks(
+            self, monkeypatch):
+        """DIRECT GUARD TEST, found by this correction's own mutation proof.
+
+        Each entry states the category both its values must really be. The
+        committed entries all satisfy that (pinned separately), which is exactly
+        why removing the RUNTIME check changed nothing observable until now: the
+        data invariant was proved, the guard that consumes it was not.
+
+        A registration whose category claim no longer holds is STALE. It must
+        stop firing rather than keep substituting on a claim the anchor rules no
+        longer support -- the fail-closed direction, and the reason a future
+        change to DATE or BRANCH recognition cannot silently widen this registry.
+        """
+        rel, digest, old, new, _cat = BARE_LITERAL_REANCHORS[0]
+        line_old = "    " + self._REG_LINE.format(v=old) + "\n"
+        line_new = "    " + self._REG_HIST_LINE.format(v=new) + "\n"
+        pinned, live = "def f():\n" + line_old, "def f():\n" + line_new
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            (self._synthetic_historical_row(rel, new),))
+        # Truthful registration: the lawful transition is explained.
+        assert not _lost_assertions(pinned, live, rel)
+        # Same occurrence, same values, but the entry now claims a category the
+        # values are not. Nothing else changes.
+        monkeypatch.setattr(
+            sys.modules[__name__], "BARE_LITERAL_REANCHORS",
+            ((rel, digest, old, new, "BRANCH"),), raising=True)
+        assert _anchor_category(old) != "BRANCH", "this probe needs a FALSE claim"
+        assert _lost_assertions(pinned, live, rel), (
+            "a registration kept firing on a category claim that no longer holds")
+
+    def test_both_date_layers_reject_trailing_text_independently(self):
+        """DIRECT GUARD TEST, found by this correction's own mutation proof.
+
+        Date recognition is deliberately two layers: the category pattern is
+        end-anchored, and ``_is_valid_date_or_timestamp()`` re-anchors and then
+        range-checks. Either layer alone rejects date-prefixed prose, which is
+        why removing one alone changed nothing observable -- defence in depth
+        working, but also each layer able to rot unnoticed behind the other.
+
+        Both are pinned here, individually, so neither can be quietly dropped.
+        """
+        prose = "2026-08-27 Merging it arms nothing"
+        # Layer 2, on its own terms.
+        assert not _is_valid_date_or_timestamp(prose), (
+            "the component validator accepted trailing text")
+        assert not _is_valid_date_or_timestamp("2026-08-27T12:30:00Z extra")
+        assert _is_valid_date_or_timestamp("2026-08-27")
+        # Layer 1, on its own terms.
+        date_pattern = dict(_ANCHOR_CATEGORIES)["DATE"]
+        assert not date_pattern.match(prose), (
+            "the DATE category pattern is no longer anchored at the end")
+        assert date_pattern.match("2026-08-27")
+        # ...and the composition, which is what callers actually see.
+        assert _anchor_category(prose) is None
+
+    def test_the_general_inventory_never_normalizes_names_or_values(self):
+        """Only a registry occurrence may explain a changed name or literal.
+
+        This directly pins the premise of the correction: the general assertion
+        inventory is exact. Adding a plausible successor declaration cannot make
+        either an unregistered named assertion or a raw-literal assertion equal.
+        """
+        old, new = "a1" * 20, "b2" * 20
+        pinned = (f'OLD_MAIN_SHA = "{old}"\n'
+                  'def f(current, history):\n'
+                  '    assert current == OLD_MAIN_SHA\n'
+                  f'    assert history["required"] == "{old}"\n')
+        live = (f'OLD_MAIN_SHA = "{old}"\n'
+                f'NEW_MAIN_SHA = "{new}"\n'
+                'def f(current, history):\n'
+                '    assert current == NEW_MAIN_SHA\n'
+                f'    assert history["required"] == "{new}"\n')
+        assert _assertion_inventory(pinned) != _assertion_inventory(live)
+        lost = _lost_assertions(pinned, live)
+        assert len(lost) == 2, lost
+
+    def test_date_prefixed_operative_prose_is_not_an_anchor(self):
+        """REQUIRED NEGATIVE CONTROL B (PHQ-2026-07, review 5093063766).
+
+        Retained verbatim from the previous correction and re-run against the
+        occurrence-bound mechanism. ``DATE`` once matched a PREFIX, so any
+        operative expectation that happened to begin with a date was treated as
+        an anchor and rewriting its meaning was invisible. A date is now the
+        whole string or it is not a date, and prose can never reach the registry.
+        """
+        p_text = "2026-08-27 Merging it arms nothing"
+        l_text = "2026-08-28 Merging it arms Stage 1"
+        assert _anchor_category(p_text) is None, "prose is not an anchor"
+        assert _anchor_category(l_text) is None, "prose is not an anchor"
+        pinned = f'def f():\n    assert "{p_text}" in section\n'
+        live = f'def f():\n    assert "{l_text}" in section\n'
+        # Reported with AND without a file identity: prose is unreachable either way.
+        for relpath in (None,
+                        "test_level1_stage1_readiness_verification_authorization.py"):
+            assert _lost_assertions(pinned, live, relpath), (
+                f"a date-prefixed operative expectation was rewritten unseen "
+                f"(relpath={relpath!r})")
+
+    @pytest.mark.parametrize("text,expected", [
+        # Complete, real, in-domain forms stay recognised.
+        ("2026-08-27", "DATE"),
+        ("2026-08-27T12:30:00Z", "DATE"),
+        ("2026-08-27 12:30", "DATE"),
+        ("2026-08-27T12:30:00+01:00", "DATE"),
+        ("2026-08-27T12:30:00-05:00", "DATE"),
+        ("2026-08-27T23:59:59.123Z", "DATE"),
+        ("2026-08-27T00:00:00+0000", "DATE"),
+        # Not a whole string, or not a real calendar date.
+        ("2026-08-27 Merging it arms nothing", None),
+        ("2026-08-27-extra", None),
+        ("2026-13-45", None),
+        ("2026-02-30", None),
+        ("2026-08-27 the register says otherwise", None),
+        # REQUIRED (review 5093500583): the clock and offset DOMAINS, not merely
+        # the leading ten characters. Each of these is well-SHAPED and was
+        # previously accepted as an anchor because only ``text[:10]`` was checked.
+        ("2026-08-27T99:99:99Z", None),
+        ("2026-08-27T24:00:00Z", None),
+        ("2026-08-27T23:60:00Z", None),
+        ("2026-08-27T23:59:60Z", None),
+        ("2026-08-27T12:30:00+24:00", None),
+        ("2026-08-27T12:30:00+00:60", None),
+        ("2026-08-27T12:30:00-99:99", None),
+        ("2026-08-27T99:00", None),
+        ("2026-08-27 25:00", None),
+        ("2026-08-27T12:30:00+1", None),
+    ])
+    def test_date_recognition_accepts_only_valid_dates_and_timestamps(self, text, expected):
+        """Named coverage for the DATE domain, superseding the prefix-only check.
+
+        Strictly stronger than the check it replaces: every case the previous
+        parametrisation asserted is retained unchanged, and the hour, minute,
+        second, fractional-second and UTC-offset domains -- none of which the
+        superseded ``text[:10]`` validation could reach -- are added.
+        """
+        assert _anchor_category(text) == expected, text
+
+    def test_the_named_registry_identifies_occurrences_not_roles_or_values(self):
+        """Eleven corpus transitions are individually file/fingerprint bound."""
+        assert len(NAMED_ANCHOR_REANCHORS) == 11
+        by_names = collections.Counter(
+            (old_name, new_name)
+            for _r, _d, old_name, _ov, new_name, _nv, _c
+            in NAMED_ANCHOR_REANCHORS)
+        assert by_names[("XASSET0060_MAIN_SHA", "XASSET0061_MAIN_SHA")] == 8
+        assert by_names[("XASSET0060_ACTIVE_PR", "XASSET0061_ACTIVE_PR")] == 3
+        seen = set()
+        for (rel, digest, old_name, old_value, new_name, new_value,
+             category) in NAMED_ANCHOR_REANCHORS:
+            assert rel in PINNED_TEST_HASHES, rel
+            assert re.fullmatch(r"[0-9a-f]{64}", digest), digest
+            assert _anchor_role(old_name) == _anchor_role(new_name)
+            assert _anchor_value_category(old_value) == category
+            assert _anchor_value_category(new_value) == category
+            assert old_name != new_name and old_value != new_value
+            assert (rel, digest) not in seen, f"{rel}/{digest[:12]} registered twice"
+            seen.add((rel, digest))
+
+    @pytest.mark.parametrize(
+        "rel,digest,old_name,old_value,new_name,new_value,category",
+        NAMED_ANCHOR_REANCHORS,
+        ids=[f"{r.split('_')[-2]}-{c}"
+             for r, _d, _on, _ov, _nn, _nv, c in NAMED_ANCHOR_REANCHORS])
+    def test_every_named_occurrence_is_real_and_lawful(
+            self, rel, digest, old_name, old_value, new_name, new_value, category):
+        """POSITIVE CONTROLS: every explicit lawful named occurrence."""
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        pinned_bindings = _anchor_name_bindings(base)
+        live_bindings = _anchor_name_bindings(live)
+        assert pinned_bindings.get(old_name) == [(category, old_value)]
+        assert new_name not in pinned_bindings
+        assert live_bindings.get(old_name) == [(category, old_value)]
+        assert live_bindings.get(new_name) == [(category, new_value)]
+        pinned_constants = _module_anchor_constants(base)
+        live_constants = _module_anchor_constants(live)
+        assert pinned_constants.get(old_name) == (category, old_value)
+        assert new_name not in pinned_constants
+        assert live_constants.get(old_name) == (category, old_value)
+        assert live_constants.get(new_name) == (category, new_value)
+        fingerprints = _assertion_fingerprints(base)
+        matched = [fp for fp in fingerprints if _fingerprint_digest(fp) == digest]
+        assert len(matched) == 1, (rel, digest, len(matched))
+        expected = _rename_in_fingerprint(matched[0], old_name, new_name)
+        assert expected != matched[0]
+        # A subset of these formerly-current positive assertions has now been
+        # converted, once, into an immutable negative pin.  Prove the exact
+        # registered two-step chain rather than requiring the obsolete positive
+        # endpoint to remain live forever.
+        historical = _historicalized_occurrences(rel)
+        targets = historical.get(_fingerprint_digest(expected)) or []
+        if targets:
+            candidates = [
+                fp for fp in _assertion_fingerprints(live)
+                if _fingerprint_digest(fp) in {target for target, _site in targets}
+            ]
+            assert len(candidates) == 1, (rel, digest, candidates)
+            expected = candidates[0]
+        assert expected in _assertion_fingerprints(live)
+        registered = _registered_named_occurrences(rel, base, live)
+        assert (old_name, old_value, new_name, new_value, category) in registered[digest]
+        assert not _lost_assertions(base, live, rel)
+
+    def test_scope_shadow_cannot_supply_a_registered_endpoint_value(
+            self, monkeypatch):
+        """REQUIRED NEGATIVE (corrective review 5095693529).
+
+        The assertion resolves the module-level successor to an UNAUTHORIZED
+        value. An unrelated nested assignment then repeats the same NAME with the
+        APPROVED registry value. The superseded flattened collector kept only the
+        last value and certified the rewrite even though the executable assertion
+        used the other declaration.
+
+        The production collector rejects the ambiguous name. The final block also
+        installs the old flattened behaviour as a non-equivalent mutant and proves
+        that it restores the exact escape, making the uniqueness condition
+        observably load-bearing rather than a documentary precaution.
+        """
+        old = "a1" * 20
+        approved = "b2" * 20
+        unauthorized = "c3" * 20
+        pinned = (f'OLD_MAIN_SHA = "{old}"\n'
+                  'def f(ws):\n'
+                  '    assert ws["last_verified_main_sha"] == OLD_MAIN_SHA\n')
+        live = (f'OLD_MAIN_SHA = "{old}"\n'
+                f'NEW_MAIN_SHA = "{unauthorized}"\n'
+                'def f(ws):\n'
+                '    assert ws["last_verified_main_sha"] == NEW_MAIN_SHA\n'
+                'def decoy():\n'
+                f'    NEW_MAIN_SHA = "{approved}"\n')
+
+        namespace = {}
+        exec(live, namespace)
+        namespace["f"]({"last_verified_main_sha": unauthorized})
+        with pytest.raises(AssertionError):
+            namespace["f"]({"last_verified_main_sha": approved})
+
+        fingerprint = _assertion_fingerprints(pinned)[0]
+        rel = "synthetic_scope_shadow.py"
+        entry = ((rel, _fingerprint_digest(fingerprint),
+                  "OLD_MAIN_SHA", old,
+                  "NEW_MAIN_SHA", approved, "SHA"),)
+        monkeypatch.setattr(
+            sys.modules[__name__], "NAMED_ANCHOR_REANCHORS", entry)
+
+        assert _anchor_name_bindings(live)["NEW_MAIN_SHA"] == [
+            ("SHA", unauthorized), ("SHA", approved)]
+        assert "NEW_MAIN_SHA" not in _module_anchor_constants(live)
+        assert not _registered_named_occurrences(rel, pinned, live)
+        lost = _lost_assertions(pinned, live, rel)
+        assert lost == [fingerprint]
+
+        def flattened_mutant(source):
+            return {
+                name: binding
+                for name, bindings in _anchor_name_bindings(source).items()
+                for binding in bindings
+                if _ANCHOR_NAME.match(name) and binding is not None
+            }
+
+        assert flattened_mutant(live)["NEW_MAIN_SHA"] == ("SHA", approved)
+        monkeypatch.setattr(
+            sys.modules[__name__], "_module_anchor_constants", flattened_mutant)
+        assert _registered_named_occurrences(rel, pinned, live)
+        assert not _lost_assertions(pinned, live, rel), (
+            "the flattened mutant no longer reproduces the reviewed escape")
+
+    def test_repeated_same_value_binding_is_still_ambiguous(self, monkeypatch):
+        """Uniqueness is occurrence evidence, not value agreement."""
+        old, new = "a1" * 20, "b2" * 20
+        pinned = (f'OLD_MAIN_SHA = "{old}"\n'
+                  'def f(ws):\n'
+                  '    assert ws["last_verified_main_sha"] == OLD_MAIN_SHA\n')
+        live = (f'OLD_MAIN_SHA = "{old}"\n'
+                f'NEW_MAIN_SHA = "{new}"\n'
+                'def f(ws):\n'
+                '    assert ws["last_verified_main_sha"] == NEW_MAIN_SHA\n'
+                'def decoy():\n'
+                f'    NEW_MAIN_SHA = "{new}"\n')
+        fingerprint = _assertion_fingerprints(pinned)[0]
+        rel = "synthetic_same_value_shadow.py"
+        monkeypatch.setattr(
+            sys.modules[__name__], "NAMED_ANCHOR_REANCHORS",
+            ((rel, _fingerprint_digest(fingerprint),
+              "OLD_MAIN_SHA", old, "NEW_MAIN_SHA", new, "SHA"),))
+        assert "NEW_MAIN_SHA" not in _module_anchor_constants(live)
+        assert _lost_assertions(pinned, live, rel) == [fingerprint]
+
+    def test_every_named_registration_is_exercised_by_the_corpus(self):
+        """Removing any named row makes its own pinned assertion a loss."""
+        saved = globals()["NAMED_ANCHOR_REANCHORS"]
+        try:
+            for entry in saved:
+                rel, digest = entry[:2]
+                base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+                live = (ROOT / rel).read_text(encoding="utf-8")
+                globals()["NAMED_ANCHOR_REANCHORS"] = tuple(
+                    candidate for candidate in saved if candidate != entry)
+                lost = _lost_assertions(base, live, rel)
+                assert any(_fingerprint_digest(fp) == digest for fp in lost), (
+                    f"the named {rel}/{digest[:12]} registration is never needed")
+        finally:
+            globals()["NAMED_ANCHOR_REANCHORS"] = saved
+
+    def test_a_named_registration_is_consumed_at_most_once(self, monkeypatch):
+        """One named registration cannot explain two identical pinned copies."""
+        entry = NAMED_ANCHOR_REANCHORS[0]
+        rel, _digest, old_name, _ov, new_name, _nv, _cat = entry
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        old_line = next(
+            line for line in base.splitlines()
+            if "assert" in line and old_name in line and "!=" not in line)
+        new_line = old_line.replace(old_name, new_name)
+        current = live + "\n" + new_line.strip() + "\n"
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            self._historical_rows_rebound_to(rel, current))
+        lost = _lost_assertions(
+            base + "\n" + old_line.strip() + "\n",
+            current, rel)
+        # The added successor positive is itself forbidden once this occurrence
+        # has been historicalized, so neither predecessor copy may be licensed.
+        assert len(lost) == 2, lost
+        assert all(old_name in fingerprint for fingerprint in lost)
+
+    def test_the_registry_identifies_transitions_by_occurrence_not_by_value(self):
+        """The registry's own shape is the guarantee, so it is pinned.
+
+        Each entry names a FILE and an exact PINNED ASSERTION fingerprint digest,
+        not merely a value pair. Six lawful corpus transitions are listed
+        individually -- five date sites and one branch site -- never collapsed
+        into value-pair licences.
+        """
+        assert BARE_LITERAL_REANCHORS, "the registry must not be empty"
+        assert len(BARE_LITERAL_REANCHORS) == 6, (
+            "the corpus has exactly six lawful bare-literal transitions")
+        by_pair = collections.Counter(
+            (old, new) for _r, _d, old, new, _c in BARE_LITERAL_REANCHORS)
+        # The proof that identity is not the value pair: one pair legitimately
+        # covers FIVE separate registered occurrences.
+        assert by_pair[("2026-08-27", "2026-08-28")] == 5
+        assert by_pair[("claude/xasset-0057-rebinding-gqtg9o",
+                        "claude/xasset-0061-authorization-jux8p9")] == 1
+        seen = set()
+        for rel, digest, old, new, cat in BARE_LITERAL_REANCHORS:
+            assert rel in PINNED_TEST_HASHES, rel
+            assert re.fullmatch(r"[0-9a-f]{64}", digest), digest
+            assert _anchor_category(old) == cat, (old, cat)
+            assert _anchor_category(new) == cat, (new, cat)
+            assert old != new
+            # OCCURRENCE UNIQUENESS: no (file, assertion) is registered twice, so
+            # one assertion can never carry two licences.
+            assert (rel, digest) not in seen, f"{rel}/{digest[:12]} registered twice"
+            seen.add((rel, digest))
+
+    def test_historicalization_registry_is_finite_exact_and_real(self):
+        """The one-time conversion is an occurrence list, not a value licence."""
+        assert len(HISTORICALIZED_REGISTER_ASSERTIONS) == 33
+        by_file = collections.defaultdict(list)
+        for (rel, source_digest, target_digest,
+             target_site) in HISTORICALIZED_REGISTER_ASSERTIONS:
+            by_file[rel].append((source_digest, target_digest, target_site))
+        protected_conversions = {
+            "test_level1_stage1_formal_disposition_parser_correction_authorization.py",
+            "test_level1_stage1_parser_contract_correction_authorization.py",
+            "test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
+            "test_level1_stage1_post_parser_correction_operational_rebinding.py",
+            "test_level1_stage1_verdict_boundary_governance.py",
+        }
+        assert set(by_file) & set(PROTECTED_PREDICATES) == protected_conversions
+        for rel, rows in by_file.items():
+            assert rel in PINNED_TEST_HASHES, rel
+            base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            live_src = (ROOT / rel).read_text(encoding="utf-8")
+            base_fingerprints = _assertion_fingerprints(base)
+            live_fingerprints = _assertion_fingerprints(live_src)
+            base_counts = collections.Counter(
+                _fingerprint_digest(fp) for fp in base_fingerprints)
+            live_counts = collections.Counter(
+                _fingerprint_digest(fp) for fp in live_fingerprints)
+            live_occurrences = collections.Counter(
+                (_fingerprint_digest(fp), site)
+                for fp, site in _assertion_occurrences(live_src))
+            required_sources = collections.Counter(
+                source for source, _target, _site in rows)
+            required_targets = collections.Counter(
+                (target, site) for _source, target, site in rows)
+            required_target_digests = collections.Counter(
+                target for _source, target, _site in rows)
+            for digest, count in required_sources.items():
+                assert re.fullmatch(r"[0-9a-f]{64}", digest), digest
+                assert base_counts[digest] == count, (
+                    rel, digest, base_counts[digest], count)
+                assert live_counts[digest] == 0, (
+                    rel, digest, "a closed historical positive returned")
+            for (target_digest, target_site), count in required_targets.items():
+                assert re.fullmatch(r"[0-9a-f]{64}", target_digest), target_digest
+                assert re.fullmatch(r"[0-9a-f]{64}", target_site), target_site
+                assert live_occurrences[(target_digest, target_site)] == count, (
+                    rel, target_digest, target_site,
+                    live_occurrences[(target_digest, target_site)], count)
+                matching = [
+                    fp for fp in live_fingerprints
+                    if _fingerprint_digest(fp) == target_digest
+                ]
+                assert all(
+                    "NotEq()" in fp or fp.startswith("UnaryOp(op=Not()")
+                    for fp in matching)
+                assert all("XASSET0061_" not in fp for fp in matching)
+                assert all("SUCCESSOR_" not in fp for fp in matching)
+            for target_digest, count in required_target_digests.items():
+                assert live_counts[target_digest] == count, (
+                    rel, target_digest, live_counts[target_digest], count)
+            assert not _historicalized_registration_losses(base, live_src, rel)
+
+    def test_site_identity_normalizes_an_empty_type_parameter_schema_field(self):
+        """Python 3.11 absence and Python 3.12's empty default are identical."""
+        tree = ast.parse("def check(value):\n    assert value\n")
+        function = next(
+            node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef))
+        expected = _stable_ast_data(tree)
+        if "type_params" not in function._fields:
+            function._fields = function._fields + ("type_params",)
+        function.type_params = []
+        assert _stable_ast_data(tree) == expected
+
+    def test_site_identity_preserves_nonempty_type_parameter_semantics(self):
+        """A nonempty field changes the envelope on every supported runtime."""
+        tree = ast.parse("def test_guard(value):\n    assert value != 1\n")
+        function = next(
+            node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef))
+        expected = _stable_ast_data(tree)
+        if "type_params" not in function._fields:
+            function._fields = function._fields + ("type_params",)
+        function.type_params = [ast.Name(id="T", ctx=ast.Load())]
+        assert _stable_ast_data(tree) != expected
+
+    @pytest.mark.skipif(
+        sys.version_info < (3, 12), reason="PEP 695 syntax requires Python 3.12")
+    def test_generic_historical_target_and_collection_hook_fail_closed(
+            self, monkeypatch):
+        """A generic rewrite cannot hide a registered test from collection."""
+        prelude = textwrap.dedent('''\
+            def pytest_collection_modifyitems(items):
+                items[:] = [
+                    item for item in items
+                    if not getattr(item.obj, "__type_params__", ())
+                ]
+
+        ''')
+        pinned = prelude + textwrap.dedent('''\
+            def test_guard(value):
+                assert value == 1
+        ''')
+        target = prelude + textwrap.dedent('''\
+            def test_guard(value):
+                assert value != 1
+        ''')
+        generic = prelude + textwrap.dedent('''\
+            def test_guard[T](value):
+                assert value != 1
+        ''')
+
+        source_fp = _assertion_occurrences(pinned)[0][0]
+        target_fp, target_site = _assertion_occurrences(target)[0]
+        generic_fp, generic_site = _assertion_occurrences(generic)[0]
+        assert generic_fp == target_fp
+        assert generic_site != target_site
+
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            (("synthetic_generic.py", _fingerprint_digest(source_fp),
+              _fingerprint_digest(target_fp), target_site),),
+        )
+        losses = _historicalized_registration_losses(
+            pinned, generic, "synthetic_generic.py")
+        assert any("missing literal target" in loss for loss in losses), losses
+
+        class Item:
+            def __init__(self, obj):
+                self.obj = obj
+
+        kept = {}
+        for label, source in (("plain", target), ("generic", generic)):
+            namespace = {}
+            exec(compile(source, f"<{label}>", "exec"), namespace)
+            items = [Item(namespace["test_guard"])]
+            namespace["pytest_collection_modifyitems"](items)
+            kept[label] = len(items)
+        assert kept == {"plain": 1, "generic": 0}
+
+    def test_every_historicalization_registration_is_load_bearing(self):
+        """Removing any row's target exposes that exact occurrence as lost."""
+        for index, (rel, _digest, target_digest, _target_site) in enumerate(
+                HISTORICALIZED_REGISTER_ASSERTIONS):
+            base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            tree = ast.parse(live)
+            node = next(
+                assertion for assertion in ast.walk(tree)
+                if isinstance(assertion, ast.Assert)
+                and _fingerprint_digest(ast.dump(assertion.test)) == target_digest
+            )
+            lines = live.splitlines(keepends=True)
+            del lines[node.lineno - 1:node.end_lineno]
+            losses = _historicalized_registration_losses(
+                base, "".join(lines), rel)
+            assert losses, (
+                f"historicalization row {index} for {rel} is never needed")
+
+    def test_removing_a_registered_protected_target_fails_closed(self):
+        """Direct control for review 3920157771: protected conversions load-bear."""
+        protected_rows = collections.defaultdict(list)
+        for rel, _source, target, _site in HISTORICALIZED_REGISTER_ASSERTIONS:
+            if rel in PROTECTED_PREDICATES:
+                protected_rows[rel].append(target)
+        assert len(protected_rows) == 5
+        for rel, targets in protected_rows.items():
+            base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            tree = ast.parse(live)
+            target = targets[0]
+            node = next(
+                assertion for assertion in ast.walk(tree)
+                if isinstance(assertion, ast.Assert)
+                and _fingerprint_digest(ast.dump(assertion.test)) == target
+            )
+            lines = live.splitlines(keepends=True)
+            del lines[node.lineno - 1:node.end_lineno]
+            weakened = "".join(lines)
+            losses = _historicalized_registration_losses(base, weakened, rel)
+            assert losses, f"removing a protected target escaped in {rel}"
+
+    def test_restoring_a_historical_positive_alongside_its_negative_fails_closed(
+            self):
+        """Direct control for review 3920270781: a closed positive stays closed."""
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        source_digest = next(
+            source for row_rel, source, _target, _site
+            in HISTORICALIZED_REGISTER_ASSERTIONS
+            if row_rel == rel
+        )
+        node = next(
+            assertion for assertion in ast.walk(ast.parse(base))
+            if isinstance(assertion, ast.Assert)
+            and _fingerprint_digest(ast.dump(assertion.test)) == source_digest
+        )
+        restored = ast.unparse(node)
+        attacked = (
+            live
+            + '\nglobals()["XASSET0061_MAIN_SHA"] = "c3" * 20\n'
+            + '\ndef restored_positive(workstream):\n'
+            + f"    {restored}\n"
+        )
+        lost = _lost_assertions(base, attacked, rel)
+        assert any(_fingerprint_digest(fp) == source_digest for fp in lost), lost
+
+    def test_a_protected_suite_rejects_a_restored_historical_positive(self):
+        """Direct protected-route control for review comment 3920390795."""
+        rel = "test_level1_stage1_formal_disposition_parser_correction_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        source_digest = next(
+            source for row_rel, source, _target, _site
+            in HISTORICALIZED_REGISTER_ASSERTIONS
+            if row_rel == rel
+        )
+        node = next(
+            assertion for assertion in ast.walk(ast.parse(base))
+            if isinstance(assertion, ast.Assert)
+            and _fingerprint_digest(ast.dump(assertion.test)) == source_digest
+        )
+        attacked = (
+            live
+            + "\nclass _G5UncollectedRestoredPositive:\n"
+            + "    def check(self, register):\n"
+            + f"        {ast.unparse(node)}\n"
+        )
+        assert _unasserted_predicates(rel, attacked) == []
+        losses = _historicalized_registration_losses(base, attacked, rel)
+        assert any("restored in live file" in loss for loss in losses), losses
+
+    @pytest.mark.parametrize(
+        "relocation",
+        ("helper", "class", "dead-control", "duplicate"),
+    )
+    def test_a_historical_target_cannot_move_to_an_unexecuted_decoy(
+            self, relocation):
+        """Exact executable-site controls for review 5097051210."""
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        source_digest, target_digest, target_site = next(
+            (source, target, site)
+            for row_rel, source, target, site
+            in HISTORICALIZED_REGISTER_ASSERTIONS
+            if row_rel == rel
+        )
+        node = next(
+            assertion for assertion in ast.walk(ast.parse(live))
+            if isinstance(assertion, ast.Assert)
+            and _fingerprint_digest(ast.dump(assertion.test)) == target_digest
+        )
+        target_source = ast.unparse(node)
+        if relocation == "duplicate":
+            attacked = live
+        else:
+            lines = live.splitlines(keepends=True)
+            replacement = " " * node.col_offset + "assert True\n"
+            lines[node.lineno - 1:node.end_lineno] = [replacement]
+            attacked = "".join(lines)
+        if relocation in {"helper", "duplicate"}:
+            attacked += (
+                "\ndef _g5_unexecuted_decoy(workstream):\n"
+                f"    {target_source}\n")
+        elif relocation == "class":
+            attacked += (
+                "\nclass _G5UncollectedDecoy:\n"
+                "    def check(self, workstream):\n"
+                f"        {target_source}\n")
+        else:
+            attacked += (
+                "\nif False:\n"
+                "    workstream = {}\n"
+                f"    {target_source}\n")
+
+        occurrence_losses = _historicalized_registration_losses(
+            base, attacked, rel)
+        assert occurrence_losses, relocation
+        lost = _lost_assertions(base, attacked, rel)
+        assert any(_fingerprint_digest(fp) == source_digest for fp in lost), (
+            relocation, lost, target_site)
+
+    @pytest.mark.parametrize(
+        "attack",
+        ("early-return", "skip-decorator", "duplicate-method",
+         "class-not-test", "module-skip"),
+    )
+    def test_a_historical_target_requires_its_complete_execution_envelope(
+            self, attack):
+        """A present target cannot survive an execution/collection bypass.
+
+        Direct controls for review 5097212245 and inline comment 3920533602.
+        The duplicate-method case is the exact lexical-overwrite construction:
+        the original method, including its registered target, is inserted first;
+        Python then overwrites it with the later weakened method before pytest
+        collection.  The other cases leave the target text untouched but make it
+        unreachable or uncollected.  All must change the immutable AST envelope.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        source_digest, target_digest, target_site = next(
+            (source, target, site)
+            for row_rel, source, target, site
+            in HISTORICALIZED_REGISTER_ASSERTIONS
+            if row_rel == rel
+        )
+        tree = ast.parse(live)
+        parents = {
+            child: parent
+            for parent in ast.walk(tree)
+            for child in ast.iter_child_nodes(parent)
+        }
+        target = next(
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Assert)
+            and _fingerprint_digest(ast.dump(node.test)) == target_digest
+        )
+        method = parents[target]
+        while not isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            method = parents[method]
+        test_class = parents[method]
+        while not isinstance(test_class, ast.ClassDef):
+            test_class = parents[test_class]
+
+        lines = live.splitlines(keepends=True)
+        if attack == "early-return":
+            lines.insert(target.lineno - 1, " " * target.col_offset + "return\n")
+        elif attack == "skip-decorator":
+            lines.insert(
+                method.lineno - 1,
+                " " * method.col_offset + "@pytest.mark.skip\n")
+        elif attack == "duplicate-method":
+            original_method = lines[method.lineno - 1:method.end_lineno]
+            lines[target.lineno - 1:target.end_lineno] = [
+                " " * target.col_offset + "assert True\n"]
+            lines[method.lineno - 1:method.lineno - 1] = original_method + ["\n"]
+        elif attack == "class-not-test":
+            first_statement = test_class.body[0]
+            lines.insert(
+                first_statement.lineno - 1,
+                " " * first_statement.col_offset + "__test__ = False\n")
+        else:
+            lines.extend(["\n", "pytestmark = pytest.mark.skip\n"])
+        attacked = "".join(lines)
+
+        occurrence_losses = _historicalized_registration_losses(
+            base, attacked, rel)
+        assert occurrence_losses, (attack, target_site)
+        lost = _lost_assertions(base, attacked, rel)
+        assert any(_fingerprint_digest(fp) == source_digest for fp in lost), (
+            attack, lost, target_site)
+
+    def test_one_historicalization_registration_cannot_cover_two_occurrences(
+            self, monkeypatch):
+        """One registered positive occurrence may become one negative occurrence."""
+        rel = "synthetic_historicalization.py"
+        positive = 'def f(ws):\n    assert ws["active_pr"] == 362\n'
+        negative = 'def f(ws):\n    assert ws["active_pr"] != 362\n'
+        fingerprint = _assertion_fingerprints(positive)[0]
+        target = _assertion_fingerprints(negative)[0]
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            ((rel, _fingerprint_digest(fingerprint),
+              _fingerprint_digest(target),
+              _assertion_occurrences(negative)[0][1]),))
+        lost = _lost_assertions(positive + positive, negative, rel)
+        assert len(lost) == 1, lost
+
+    def test_unregistered_historicalization_fails_closed(self):
+        positive = 'def f(ws):\n    assert ws["active_pr"] == 362\n'
+        negative = 'def f(ws):\n    assert ws["active_pr"] != 362\n'
+        assert _lost_assertions(positive, negative)
+        assert _lost_assertions(positive, negative, "unregistered.py")
+
+    @pytest.mark.parametrize(
+        "attack",
+        (
+            'globals()["HISTORICAL_SHA"] = "c3" * 20',
+            'namespace = globals()\nnamespace["HISTORICAL_SHA"] = "c3" * 20',
+            'import sys\nsetattr(sys.modules[__name__], "HISTORICAL_SHA", "c3" * 20)',
+            ('def rewrite(namespace):\n'
+             '    namespace["HISTORICAL_SHA"] = "c3" * 20\n'
+             'rewrite(globals())'),
+            'exec(\'HISTORICAL_SHA = "c3" * 20\')',
+        ),
+        ids=("globals", "globals-alias", "module-setattr", "helper", "exec"),
+    )
+    def test_dynamic_name_writes_cannot_change_a_literal_bound_negative(
+            self, attack):
+        """The review's entire runtime-rebinding class is irrelevant to a literal."""
+        import types
+
+        approved = "b2" * 20
+        source = (
+            f'HISTORICAL_SHA = "{approved}"\n'
+            'def check(ws):\n'
+            f'    assert ws["last_verified_main_sha"] != "{approved}"\n'
+            f'{attack}\n'
+        )
+        name = f"_g5_dynamic_attack_{abs(hash(attack))}"
+        module = types.ModuleType(name)
+        sys.modules[name] = module
+        try:
+            exec(source, module.__dict__)
+            assert module.HISTORICAL_SHA == "c3" * 20
+            module.check({"last_verified_main_sha": "c3" * 20})
+            with pytest.raises(AssertionError):
+                module.check({"last_verified_main_sha": approved})
+        finally:
+            sys.modules.pop(name, None)
+
+    def test_dynamic_write_plus_named_positive_cannot_reenter_the_registry(self):
+        """Exact review 5096789214: the former named endpoint is no longer accepted."""
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        literal = (
+            'assert workstream["last_verified_main_sha"] '
+            '!= "413e033ac33741829168762ab24d73327c047d4b"'
+        )
+        named = (
+            'assert workstream["last_verified_main_sha"] '
+            '== XASSET0061_MAIN_SHA'
+        )
+        assert live.count(literal) == 1
+        attacked = live.replace(literal, named, 1).replace(
+            'XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n',
+            'XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+            'globals()["XASSET0061_MAIN_SHA"] = "c3" * 20\n',
+            1,
+        )
+        assert _lost_assertions(base, attacked, rel), (
+            "a dynamically rebound named positive re-entered the registry")
+
+    def test_a_literal_bound_historical_value_cannot_be_substituted(self):
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        strong = (
+            'assert workstream["last_verified_main_sha"] '
+            '!= "413e033ac33741829168762ab24d73327c047d4b"'
+        )
+        assert live.count(strong) == 1
+        weakened = live.replace(
+            strong,
+            'assert workstream["last_verified_main_sha"] != "' + "c3" * 20 + '"',
+            1,
+        )
+        assert _lost_assertions(base, weakened, rel)
+
+    def test_every_preexisting_register_negative_pin_is_retained_exactly(self):
+        """Historical exclusions cannot finance the current live binding."""
+        baseline_total = 0
+        missing = {}
+        for rel in sorted(PINNED_TEST_HASHES):
+            baseline = _register_negative_inventory(
+                _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}"))
+            live = _register_negative_inventory(
+                (ROOT / rel).read_text(encoding="utf-8"))
+            baseline_total += baseline.total()
+            lost = baseline - live
+            if lost:
+                missing[rel] = lost
+        assert baseline_total == EXPECTED_RETAINED_REGISTER_NEGATIVES
+        assert not missing, f"historical WS-0014 negative pins lost: {missing}"
+
+    @pytest.mark.parametrize(
+        "rel,digest,old,new,cat", BARE_LITERAL_REANCHORS,
+        ids=[f"{r.split('_')[-2]}-{c}" for r, _d, _o, _n, c in BARE_LITERAL_REANCHORS])
+    def test_every_registered_occurrence_is_real_and_lawful(
+            self, rel, digest, old, new, cat):
+        """POSITIVE CONTROLS: each of the six lawful sites, via its OWN identity.
+
+        Narrowing the rule must not break the corpus it was derived from. Each
+        entry is checked against its own file's real pinned baseline: the
+        predecessor is really asserted there, the successor really replaces it,
+        and the registered digest really is that assertion's fingerprint.
+        """
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        assert base != live, "this proof needs a genuinely re-anchored predecessor"
+        assert old in base and new in live, "the entry's own endpoints have moved"
+        # The registered digest is a real pinned assertion of this file...
+        digests = {_fingerprint_digest(st)
+                   for st in _assertion_fingerprints(base)}
+        assert digest in digests, f"{rel}: registered digest matches no assertion"
+        # ...and the whole file is clean once that occurrence is honoured.
+        assert not _lost_assertions(base, live, rel), (
+            f"the lawful {old} -> {new} occurrence in {rel} was reported as a loss")
+
+    def test_a_registered_occurrence_is_consumed_at_most_once(self):
+        """One registration authorizes exactly one transition, never two.
+
+        Duplicating the registered assertion on both sides gives two identical
+        pinned occurrences and one registration. The first is spent; the second
+        has nothing left and is reported.
+        """
+        rel = "test_level1_stage1_readiness_verification_authorization.py"
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        assert not _lost_assertions(base, live, rel)
+        entry = [e for e in BARE_LITERAL_REANCHORS if e[0] == rel]
+        assert len(entry) == 1, "this probe assumes one registration for the file"
+        _r, digest, old, new, _c = entry[0]
+        # Find the exact registered assertion's source text and duplicate it.
+        src_line = next(l for l in base.splitlines() if old in l and "assert" in l)
+        live_line = src_line.replace(old, new)
+        lost = _lost_assertions(base + "\n" + src_line.strip() + "\n",
+                                live + "\n" + live_line.strip() + "\n", rel)
+        assert lost, "a single registration authorized two occurrences"
+
+    def test_two_registered_occurrences_sharing_values_cannot_cross(self):
+        """Same pair, two files: neither registration may cover the other's site.
+
+        Both entries below use the identical `2026-08-27 -> 2026-08-28` pair, so
+        under a value-keyed rule they were one licence. Keyed by occurrence they
+        are two, and each is confined to its own file.
+        """
+        pair = ("2026-08-27", "2026-08-28")
+        sites = [(r, d) for r, d, o, n, _c in BARE_LITERAL_REANCHORS
+                 if (o, n) == pair]
+        assert len(sites) >= 2, "this probe needs two sites sharing one pair"
+        (rel_a, dig_a), (rel_b, dig_b) = sites[0], sites[1]
+        assert rel_a != rel_b
+        # A registration is scoped to its own file: file A's entries never include
+        # file B's digest unless file B independently registered it.
+        a_digests = set(_registered_occurrences(rel_a))
+        b_digests = set(_registered_occurrences(rel_b))
+        for rel, digs in ((rel_a, a_digests), (rel_b, b_digests)):
+            for d in digs:
+                assert any(r == rel and dd == d
+                           for r, dd, _o, _n, _c in BARE_LITERAL_REANCHORS), (
+                    f"{rel} resolved a digest it never registered")
+        # And swapping the relpath does not carry a registration across files:
+        # file A's baseline compared under file B's identity is only clean if B
+        # independently registered that same assertion shape.
+        base_a = _git("show", f"{BOUND_MERGE_SHA}:{rel_a}")
+        live_a = (ROOT / rel_a).read_text(encoding="utf-8")
+        if dig_a not in b_digests:
+            assert _lost_assertions(base_a, live_a, rel_b), (
+                "a registration was honoured under another file's identity")
+
+    def test_an_unregistered_occurrence_of_a_registered_pair_stays_verbatim(self):
+        """The general property, stated directly on the mechanism.
+
+        A file's registrations are exactly its own entries. An assertion whose
+        fingerprint is not among them buys nothing, however familiar its values.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        registered = _registered_occurrences(rel)
+        assert registered, "this probe needs a file with a registration"
+        pinned = 'def f(freeze):\n    assert freeze["cutoff"] == "2026-08-27"\n'
+        live = 'def f(freeze):\n    assert freeze["cutoff"] == "2026-08-28"\n'
+        fp = _assertion_fingerprints(pinned)[0]
+        assert _fingerprint_digest(fp) not in registered, (
+            "this probe's own assertion must be UNregistered")
+        assert _lost_assertions(pinned, live, rel), (
+            "an unregistered occurrence was rewritten by a registered pair")
+
+    def test_no_registration_fires_without_a_file_identity(self):
+        """Fail closed: an unidentified comparison authorizes nothing."""
+        assert _registered_occurrences(None) == {}
+        assert _registered_occurrences("") == {}
+        assert _registered_occurrences("not_a_pinned_suite.py") == {}
+
+    def test_the_registry_is_complete_for_the_whole_pinned_corpus(self):
+        """Nothing outside ``PROTECTED_PREDICATES`` needs an unregistered literal.
+
+        This is how the registry was derived, kept executable so it cannot drift.
+        It runs through the SAME occurrence-specific mechanism the guard itself
+        uses -- it cannot validate itself through a permissive global-value path,
+        because no such path exists any more.
+        """
+        unexplained = []
+        for rel in sorted(PINNED_TEST_HASHES):
+            if rel in PROTECTED_PREDICATES:
+                continue
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            try:
+                base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+            except Exception:
+                continue
+            if base == live:
+                continue
+            if _lost_assertions(base, live, rel):
+                unexplained.append(rel)
+        assert not unexplained, (
+            "these suites lose an assertion the registry does not explain: "
+            f"{unexplained}")
+
+    def test_every_registration_is_exercised_by_the_corpus(self):
+        """No dead entry: each registration is actually needed by its own file.
+
+        A registry that outgrows its corpus is a licence nobody is checking, so
+        removing any single entry must make that file's comparison fail.
+        """
+        for rel, digest, old, new, cat in BARE_LITERAL_REANCHORS:
+            base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            reduced = tuple(e for e in BARE_LITERAL_REANCHORS
+                            if not (e[0] == rel and e[1] == digest))
+            saved = globals()["BARE_LITERAL_REANCHORS"]
+            try:
+                globals()["BARE_LITERAL_REANCHORS"] = reduced
+                assert _lost_assertions(base, live, rel), (
+                    f"the {rel} / {digest[:12]} registration is never needed")
+            finally:
+                globals()["BARE_LITERAL_REANCHORS"] = saved
+
+    def test_a_stale_registry_entry_cannot_outlive_its_category(
+            self, monkeypatch):
+        """DIRECT GUARD TEST for the category re-check.
+
+        DISCLOSED: with the live registry both entries are correctly categorised,
+        so removing this check changes no real result -- this correction's own
+        mutation proof showed that too. It guards a future registry whose entry
+        has gone stale: if a value stops being the category the entry claims, the
+        entry stops firing rather than substituting something it no longer
+        understands.
+        """
+        pinned = 'def f():\n    assert "Merging it arms nothing" in s\n'
+        live = 'def f():\n    assert "Merging it arms Stage 1" in s\n'
+        fingerprint = _assertion_fingerprints(pinned)[0]
+        rel = "synthetic_stale_registry.py"
+        # Prose is not an anchor of any category, so this otherwise exact entry
+        # must never fire.
+        stale = ((rel, _fingerprint_digest(fingerprint),
+                  "Merging it arms nothing", "Merging it arms Stage 1", "DATE"),)
+        monkeypatch.setattr(sys.modules[__name__], "BARE_LITERAL_REANCHORS", stale)
+        assert _lost_assertions(pinned, live, rel), (
+            "a stale registry entry laundered an operative-prose rewrite")
+
+    def test_a_registry_entry_whose_predecessor_is_absent_is_inert(self):
+        """DISCLOSED EQUIVALENCE, recorded rather than dropped.
+
+        The ``old_value not in p_lits`` guard is not observable: a placeholder
+        mapped onto a value that appears nowhere in the pinned source cannot
+        change any pinned fingerprint, and the only reachable effect of removing
+        it is an EXTRA reported loss -- the safe direction. This correction's
+        mutation proof demonstrated that, so the guard is documented as
+        defence-in-depth and its inertness is pinned here instead of being
+        claimed as a caught mutant.
+        """
+        pinned = 'def f():\n    assert a == "1999-01-01"\n'
+        live = 'def f():\n    assert a == "2026-08-28"\n'
+        # The registered predecessor is nowhere in `pinned`, so nothing is
+        # replaceable and the unrelated swap is a plain loss.
+        assert _lost_assertions(pinned, live)
+
+    def test_registered_current_anchor_does_not_launder_a_historical_negative_pin(
+            self, monkeypatch):
+        """REQUIRED NEGATIVE 1 (review 5094619011).
+
+        The first assertion is explicitly registered as the next lawful current
+        anchor. The distinct XASSET-0060 negative pin is not registered and must
+        be reported when it is rewritten to duplicate XASSET-0061.
+        """
+        a, b, c = "a1" * 20, "b2" * 20, "c3" * 20
+        pinned = (f'XASSET0060_MAIN_SHA = "{a}"\n'
+                  f'XASSET0061_MAIN_SHA = "{b}"\n'
+                  'def f(ws):\n'
+                  '    assert ws["last_verified_main_sha"] == XASSET0061_MAIN_SHA\n'
+                  '    assert ws["last_verified_main_sha"] != XASSET0060_MAIN_SHA\n')
+        live = (f'XASSET0060_MAIN_SHA = "{a}"\n'
+                f'XASSET0061_MAIN_SHA = "{b}"\n'
+                f'XASSET0062_MAIN_SHA = "{c}"\n'
+                'def f(ws):\n'
+                '    assert ws["last_verified_main_sha"] == XASSET0062_MAIN_SHA\n'
+                '    assert ws["last_verified_main_sha"] != XASSET0061_MAIN_SHA\n')
+        current = _assertion_fingerprints(pinned)[0]
+        rel = "synthetic_next_current_anchor.py"
+        entry = ((rel, _fingerprint_digest(current),
+                  "XASSET0061_MAIN_SHA", b,
+                  "XASSET0062_MAIN_SHA", c, "SHA"),)
+        monkeypatch.setattr(sys.modules[__name__], "NAMED_ANCHOR_REANCHORS", entry)
+        registered = _registered_named_occurrences(rel, pinned, live)
+        assert list(registered) == [_fingerprint_digest(current)]
+        lost = _lost_assertions(pinned, live, rel)
+        assert len(lost) == 1, lost
+        assert "NotEq()" in lost[0] and "XASSET0060_MAIN_SHA" in lost[0]
+
+    def test_a_named_reanchor_never_normalizes_the_same_raw_values(
+            self, monkeypatch):
+        """REQUIRED NEGATIVE 2 (review 5094619011).
+
+        A real registered MAIN_SHA occurrence remains lawful, while an unrelated
+        raw literal using the identical old/new pair is reported.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        old = "301e79334876a4bda6e7b89a6156b34e8d38a605"
+        new = "413e033ac33741829168762ab24d73327c047d4b"
+        pinned = base + f'\n\ndef _raw(history):\n    assert history["required"] == "{old}"\n'
+        current = live + f'\n\ndef _raw(history):\n    assert history["required"] == "{new}"\n'
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            self._historical_rows_rebound_to(rel, current))
+        lost = _lost_assertions(pinned, current, rel)
+        assert len(lost) == 1, lost
+        assert "required" in lost[0] and f"Constant(value={old!r})" in lost[0]
+
+    def test_a_named_registration_cannot_cover_a_second_same_role_occurrence(
+            self, monkeypatch):
+        """REQUIRED NEGATIVE 3 (review 5094619011).
+
+        The real current-anchor occurrence is registered. A second assertion
+        changed with the same names in parallel has a different fingerprint and
+        remains protected verbatim.
+        """
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        pinned = (base + '\n\ndef _other(history):\n'
+                  '    assert history["required"] == XASSET0060_MAIN_SHA\n')
+        current = (live + '\n\ndef _other(history):\n'
+                   '    assert history["required"] == XASSET0061_MAIN_SHA\n')
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            self._historical_rows_rebound_to(rel, current))
+        lost = _lost_assertions(pinned, current, rel)
+        assert len(lost) == 1, lost
+        assert "required" in lost[0] and "XASSET0060_MAIN_SHA" in lost[0]
+
+    def test_a_name_substitution_without_any_reanchor_is_always_caught(self):
+        """Fail closed: with nothing re-anchored, NO name is interchangeable."""
+        header = ('A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+                  'B_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"\n')
+        pinned = header + "def f():\n    assert x == A_SHA\n"
+        live = header + "def f():\n    assert x == B_SHA\n"
+        assert _lost_assertions(pinned, live), (
+            "a substitution was permitted in a delta that re-anchored nothing")
+
+    def test_all_required_g5_properties_hold_together(self):
+        """Every property the review required kept, stated in one place.
+
+        Listing them together is deliberate: each has been re-derived at least
+        once during this PR, and a single test makes it impossible for one to be
+        satisfied while another silently regresses.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")'
+        assert strong in src
+
+        act = "test_level1_stage1_activation_authorization.py"
+        act_src = (ROOT / act).read_text(encoding="utf-8")
+        prose = 'assert "Merging it arms nothing" in section'
+        det = "assert STEP10_DETERMINATION in section"
+
+        # 1. semantic prose weakening
+        assert _lost_assertions(act_src, act_src.replace(prose, 'assert "" in section'))
+        # 2. startswith -> endswith
+        assert _lost_assertions(
+            src, src.replace(strong, 'assert Path(entry["file"]).name.endswith(".md")'))
+        # 3. deletion
+        assert _lost_assertions(
+            src, src.replace("        " + strong + ', entry["file"]\n', ""))
+        # 4. assert True replacement
+        assert _lost_assertions(src, src.replace(strong, "assert True"))
+        # 5. cross-role uppercase-name substitution
+        assert _lost_assertions(
+            act_src, act_src.replace(det, "assert BOUND_MERGE_SHA in section"))
+        # 6. genuine addition permitted
+        assert not _lost_assertions(
+            src, src.replace("        " + strong + ', entry["file"]\n',
+                             "        " + strong + ', entry["file"]\n'
+                             '        assert entry["id"], entry\n'))
+        # 7. specifically lawful same-role re-anchor permitted -- under the file's
+        #    own identity, which is what a registered literal occurrence needs
+        base = _git("show", f"{BOUND_MERGE_SHA}:{act}")
+        assert base != act_src
+        assert not _lost_assertions(base, act_src, act)
+        #    ...and fail-closed without it: no file identity, no literal licence
+        assert _lost_assertions(base, act_src)
+        # 8. cross-domain review/run/job/comment ids never collapse into SHAs
+        for ident in ("4976985695", "5092359752", "100319912406", "33651659011"):
+            assert _anchor_category(ident) == "NUMBER", ident
+        assert _anchor_category("637eaa30302f5a71f84ab1d215ecbd32c01399b5") == "SHA"
+        rebind = "test_level1_stage1_post_correction_rebinding_authorization.py"
+        rb_src = (ROOT / rebind).read_text(encoding="utf-8")
+        assert _lost_assertions(
+            rb_src,
+            rb_src.replace('assert "4976985695" in description',
+                           'assert "637eaa30302f5a71f84ab1d215ecbd32c01399b5" '
+                           "in description")), \
+            "a review id was still interchangeable with a merge SHA"
+        # 9. ONE LAWFUL DATE RE-ANCHOR NEVER LAUNDERS AN UNRELATED DATE SWAP
+        assert _lost_assertions(
+            'def f():\n    assert r.startswith("2026-08-27")\n'
+            '    assert c == "2026-08-26"\n',
+            'def f():\n    assert r.startswith("2026-08-28")\n'
+            '    assert c == "2026-08-28"\n'), \
+            "a registered re-anchor laundered an unrelated same-category swap"
+        # 10. DATE means a COMPLETE, REAL date -- never date-prefixed prose
+        assert _anchor_category("2026-08-27 Merging it arms nothing") is None
+        assert _anchor_category("2026-02-30") is None
+        assert _anchor_category("2026-08-27") == "DATE"
+        assert _lost_assertions(
+            'def f():\n    assert "2026-08-27 Merging it arms nothing" in s\n',
+            'def f():\n    assert "2026-08-28 Merging it arms Stage 1" in s\n'), \
+            "date-prefixed operative prose was rewritten unseen"
+        # 11. an unregistered literal buys NOTHING, whatever else the delta adds
+        unregistered_pinned = (
+            'X = "1111111111111111111111111111111111111111"\n'
+            'def f():\n    assert a == "2222222222222222222222222222222222222222"\n')
+        unregistered_live = (
+            'X = "1111111111111111111111111111111111111111"\n'
+            'Y = "3333333333333333333333333333333333333333"\n'
+            'def f():\n    assert a == "3333333333333333333333333333333333333333"\n')
+        assert _lost_assertions(unregistered_pinned, unregistered_live), (
+            "an unregistered literal was granted a substitution licence")
+        # 12. A REGISTERED OCCURRENCE NEVER LAUNDERS THE SAME PAIR ELSEWHERE
+        p337 = "test_level1_stage1_pr337_actor_evidence_correction_authorization.py"
+        p337_base = _git("show", f"{BOUND_MERGE_SHA}:{p337}")
+        p337_live = (ROOT / p337).read_text(encoding="utf-8")
+        assert not _lost_assertions(p337_base, p337_live, p337)
+        assert _lost_assertions(
+            p337_base + '\n\ndef _p(f):\n    assert f["cutoff"] == "2026-08-27"\n',
+            p337_live + '\n\ndef _p(f):\n    assert f["cutoff"] == "2026-08-28"\n',
+            p337), "a registered occurrence laundered an unrelated same-pair swap"
+        # 13. EVERY datetime COMPONENT is range-checked, not merely shaped
+        for invalid in ("2026-08-27T99:99:99Z", "2026-08-27T24:00:00Z",
+                        "2026-08-27T23:60:00Z", "2026-08-27T23:59:60Z",
+                        "2026-08-27T12:30:00+24:00", "2026-08-27T12:30:00+00:60",
+                        "2026-02-30", "2026-13-45"):
+            assert _anchor_category(invalid) is None, invalid
+        for valid in ("2026-08-27", "2026-08-27T12:30:00Z", "2026-08-27 12:30",
+                      "2026-08-27T12:30:00+01:00", "2026-08-27T23:59:59.123Z"):
+            assert _anchor_category(valid) == "DATE", valid
+        # 14. an unrelated same-category constant cannot collide merely because
+        #     ANOTHER anchor of that category was added by the delta
+        header = ('A_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+                  'UNRELATED_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"\n')
+        pinned_x = header + "def f():\n    assert x == A_SHA\n"
+        live_x = (header + 'B_SHA = "637eaa30302f5a71f84ab1d215ecbd32c01399b5"\n'
+                  + "def f():\n    assert x == UNRELATED_SHA\n")
+        assert _lost_assertions(pinned_x, live_x), (
+            "an unrelated same-category constant collided with a re-anchored one")
+
+    def test_the_protected_catalog_predicate_is_asserted_directly(self):
+        """Belt and braces: the ONE named protected property, pinned by name.
+
+        The semantic inventory is the general mechanism. This specific predicate
+        is also asserted directly because it belongs to the protected-predicate
+        set rather than the occurrence-registered predecessor comparison.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        assert 'Path(entry["file"]).name.startswith(f"{DECISION_ID}-")' in src, (
+            "the catalog-path identity predicate was removed or weakened")
+        assert 'assert len(rows) == 1' in src, (
+            "the catalog-row uniqueness predicate was removed or weakened")
+
+    def test_a_protected_predicate_cannot_be_swapped_for_an_equal_shape_one(self):
+        """REQUIRED PROBE (PHQ-2026-07, second correction).
+
+        Independent review named this exact mutation and required it to be caught:
+
+            assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")
+            assert Path(entry["file"]).name.endswith(".md")
+
+        Both are one ``Assert`` holding one ``Call`` on one ``Attribute`` of one
+        ``Call`` on one ``Attribute`` of one ``Subscript``. Every aggregate the
+        superseded mechanism computed -- assertion count, non-vacuous count, AST node
+        totals -- is IDENTICAL across the pair, so each let it through. The named
+        predicate is checked here, and the attribute name is not abstracted, so the
+        swap is a loss.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = 'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-")'
+        assert strong in src, "the probe's own target has moved"
+        swapped = src.replace(strong, 'assert Path(entry["file"]).name.endswith(".md")')
+        assert _unasserted_predicates(rel, swapped), (
+            "the equal-shape predicate swap was NOT caught")
+        # And the superseded mechanism's blind spot is demonstrated, not merely asserted:
+        # the ASSERTION COUNT -- the quantity it compared -- is identical across the pair,
+        # so it reported no loss. (Raw node totals do differ here, because an f-string
+        # anchor expands to more nodes than a plain literal; that difference is incidental
+        # to the anchor, not to the predicate, which is exactly why a total is the wrong
+        # instrument.)
+        def _n(text):
+            return sum(1 for x in ast.walk(ast.parse(text)) if isinstance(x, ast.Assert))
+        assert _n(src) == _n(swapped)
+
+    def test_every_protected_predicate_is_currently_asserted(self):
+        """Positive control. The named set must describe the corpus as it stands.
+
+        Without this the protected set could silently name predicates that no longer
+        exist anywhere, and every check over it would pass vacuously.
+        """
+        assert PROTECTED_PREDICATES, "the protected set must not be empty"
+        for rel in sorted(PROTECTED_PREDICATES):
+            assert PROTECTED_PREDICATES[rel], f"{rel} names no protected predicate"
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            assert not _unasserted_predicates(rel, live), rel
+
+    def test_the_other_named_protected_predicates_are_each_enforced(self):
+        """Each named predicate must be individually load-bearing, not decorative.
+
+        Removing any ONE of them, in any protected suite, must be reported. This is
+        what stops the set from degrading into a list that only its first entry
+        actually defends.
+        """
+        for rel in sorted(PROTECTED_PREDICATES):
+            src = (ROOT / rel).read_text(encoding="utf-8")
+            for text in PROTECTED_PREDICATES[rel]:
+                assert text in src, f"{rel}: protected predicate not found verbatim: {text}"
+                gutted = src.replace(text, "assert True")
+                assert _unasserted_predicates(rel, gutted), (
+                    f"{rel}: gutting {text} was not caught")
+
+    def test_a_lawful_reanchor_of_an_unprotected_assertion_is_not_a_loss(self):
+        """The complement, and the reason this mechanism exists.
+
+        This filing's own already-reviewed G4 correction rewrote catalog-position and
+        cardinality assertions in these suites. Those are moving targets a lawful
+        successor MUST re-anchor. Re-anchoring one must not read as a weakening.
+        """
+        rel = "test_portfolio_hq_dashboard_decisions.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        assert "== 163" in src, "the cardinality anchor this test re-anchors has moved"
+        assert not _unasserted_predicates(rel, src.replace("== 163", "== 164")), (
+            "a lawful cardinality re-anchor was reported as a weakening")
+
+    def test_a_genuine_strengthening_is_not_reported_as_a_loss(self):
+        """The complement: the guard must not bind a lawful later improvement.
+
+        Adding an assertion, and improving an assertion's MESSAGE, are both free.
+        Without this the invariant would be whole-file immutability wearing a
+        different hat -- the exact defect the first correction was made to remove.
+        """
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = ('assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                  'entry["file"]')
+        stronger = src.replace(
+            strong, strong + '\n        assert entry["file"].endswith(".md"), entry["file"]')
+        assert not _lost_assertions(src, stronger), "a strengthening was called a loss"
+        remsg = src.replace(strong,
+                            'assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                            'f"bad catalog row: {entry}"')
+        assert not _lost_assertions(src, remsg), "a message change was called a loss"
+
+    def test_gutting_an_assertion_to_assert_true_is_still_caught(self):
+        """The original bypass class must remain closed under the new mechanism."""
+        rel = "test_level1_stage1_formal_disposition_parser_correction.py"
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        strong = ('assert Path(entry["file"]).name.startswith(f"{DECISION_ID}-"), '
+                  'entry["file"]')
+        assert _lost_assertions(src, src.replace(strong, "assert True"))
 
     def test_replacing_a_negative_pin_with_assert_true_is_caught(self):
         """The reviewer's construction, reproduced and required to FAIL.

@@ -1165,10 +1165,9 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0048: PR #347 has since merged at `bb95ed26`, so the register's
         # shared "where main is now" field lawfully advanced past THIS unit's own merge. Bound
         # at BOTH ends: equal to the successor value, unequal to this unit's own.
-        # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
-        # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
-        # pin, so a silent revert to finished work still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        # XASSET-0061 is immutable history; its former live value remains a
+        # negative pin while the current positive binding is asserted centrally.
+        assert ws0014["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert ws0014["last_verified_main_sha"] != XASSET0060_MAIN_SHA

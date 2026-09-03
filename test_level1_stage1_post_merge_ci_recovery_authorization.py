@@ -1319,10 +1319,9 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0047, identically: PR #346 has since merged at `0b76c09f`,
         # so the shared fields advance once more to the recovery unit that is now live. Every
         # superseded value is retained below as a negative pin, so nothing is relaxed.
-        # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
-        # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
-        # pin, so a silent revert to finished work still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        # XASSET-0061 is immutable history; its former live value remains a
+        # negative pin while the current positive binding is asserted centrally.
+        assert ws0014["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert ws0014["last_verified_main_sha"] != XASSET0060_MAIN_SHA
@@ -1343,10 +1342,10 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0051, with the shared fields above. Bound at BOTH ends.
         # ADVANCED BY XASSET-0053, with the shared fields above: PR #353 merged and the
         # register's shared live self-reference moved onto this successor unit. Every
-        # prior generation is retained as a NEGATIVE pin, so the field stays bound at
-        # BOTH ends and a silent revert to finished work still fails.
-        # ADVANCED BY XASSET-0059; the predecessor value joins the NEGATIVE pins below.
-        assert str(ws0014["last_verified_date"]) == "2026-08-28"
+        # XASSET-0061 and its predecessor are retained as exact negative pins;
+        # the current positive date is asserted centrally.
+        assert str(ws0014["last_verified_date"]) != "2026-08-28"
+        assert str(ws0014["last_verified_date"]) != "2026-08-27"
         assert str(ws0014["last_verified_date"]) != "2026-08-26"
         # ADVANCED BY XASSET-0057; the predecessor date is retained as a NEGATIVE pin.
         assert str(ws0014["last_verified_date"]) != "2026-08-25"

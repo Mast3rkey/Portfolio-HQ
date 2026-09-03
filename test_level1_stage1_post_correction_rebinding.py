@@ -1326,13 +1326,22 @@ class TestNothingDownstreamIsAuthorized:
 
 class TestNoProtectedByteWasTouched:
     @pytest.mark.parametrize("relpath", PORTFOLIO_RELPATHS)
-    def test_portfolio_path_is_unchanged_from_the_pr_base_to_head(self, relpath):
+    def test_portfolio_path_is_unchanged_across_this_units_own_range(self, relpath):
+        """RE-ANCHORED to THIS unit's own CLOSED range (PR #344, merged at f5dedce1).
+
+        The ``HEAD`` endpoint was correct while this unit was the live one. Once merged
+        and closed it stopped measuring THIS rebinding and began asserting that no later,
+        separately authorized unit may ever touch a portfolio path -- authority this
+        filing never had and never claimed. Both endpoints are immutable now.
+        """
         assert (ROOT / relpath).exists(), f"{relpath} must still exist"
-        changed = _paths_changed_between(PR_BASE_SHA, "HEAD", (relpath,))
+        changed = _paths_changed_between(PR_BASE_SHA, XASSET0045_MAIN_SHA, (relpath,))
         assert changed == [], (
-            f"{relpath} changed between the PR base and HEAD; a Level-1 rebinding must never "
-            "touch portfolio or allocator bytes"
+            f"{relpath} changed inside this rebinding's own range; a Level-1 rebinding "
+            "must never touch portfolio or allocator bytes"
         )
+        # NEGATIVE PIN: the range is genuinely non-empty, so this is not vacuous.
+        assert _git("diff", "--name-only", PR_BASE_SHA, XASSET0045_MAIN_SHA).strip()
 
     @pytest.mark.parametrize("relpath", PORTFOLIO_RELPATHS)
     def test_portfolio_path_is_unchanged_against_head(self, relpath):
@@ -1439,10 +1448,9 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["status"] == "proposed"
         assert ws0014["priority"] == "secondary"
         assert ws0014["last_verified_main_sha"] != PR_BASE_SHA
-        # ADVANCED BY XASSET-0049. This is WS-0014's SINGLE SHARED live self-reference and moves
-        # with every unit; each generation's own value is retained as a NEGATIVE pin so a silent
-        # revert to any finished unit's state still fails here.
-        assert ws0014["last_verified_main_sha"] == XASSET0061_MAIN_SHA
+        # XASSET-0061 is immutable history; its former live value remains a
+        # negative pin while the current positive binding is asserted centrally.
+        assert ws0014["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert ws0014["last_verified_main_sha"] != XASSET0060_MAIN_SHA

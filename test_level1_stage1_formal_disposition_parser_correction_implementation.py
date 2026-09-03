@@ -1993,7 +1993,19 @@ class TestThisUnitsScopeIsExactlyWhatWasAuthorized:
 
     @pytest.mark.parametrize("relpath", PROTECTED_RELPATHS)
     def test_the_protected_path_is_byte_identical_to_the_base(self, relpath):
-        assert _blob_at("HEAD", relpath) == _blob_at(AUTHORIZATION_MERGE_SHA, relpath), relpath
+        """RE-ANCHORED to this unit's own CLOSED IMMUTABLE range.
+
+        Previously measured live ``HEAD`` against this unit's base, which asserted
+        that no LATER, separately authorized unit may ever touch a protected path.
+        This unit can only speak for its own delta, and its sibling test directly
+        below already measures that same range for the boundary question -- so both
+        now agree on what "this unit" means, and neither decays as `main` advances.
+        """
+        assert _blob_at(IMPLEMENTATION_MERGE_SHA, relpath) == _blob_at(
+            AUTHORIZATION_MERGE_SHA, relpath
+        ), relpath
+        # NEGATIVE PIN: the range is genuinely non-empty, so this is not vacuous.
+        assert _changed_paths(AUTHORIZATION_MERGE_SHA, IMPLEMENTATION_MERGE_SHA)
 
     def test_the_production_module_is_the_ONLY_protected_path_this_unit_changes(self):
         """Measured over this unit's OWN range, against the boundary AS IT STOOD at its merge.

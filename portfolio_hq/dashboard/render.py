@@ -596,8 +596,9 @@ def _allocation_disclosure(model: DashboardModel) -> str:
         <div class="n-detail">This read-only presentation layer deliberately
           does not run the allocator or build a second one. It never produces
           executable orders. To get a current, advisory-only recommendation,
-          run <code>python allocate.py --review</code> (or <code>--cash X</code>)
-          in a networked session after reconciling holdings.</div></div>
+          run <code>python allocate.py --review</code> in a networked session
+          after reconciling holdings and syncing the current total cash balance
+          with <code>python allocate.py update-cash &lt;total_balance&gt;</code>.</div></div>
       </div>
       <ul>{reasons}</ul>
     </details>"""

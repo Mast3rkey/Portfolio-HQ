@@ -142,6 +142,9 @@ LINK4_DETERMINATION = "STEP_10_NO_DRIFT"
 #: The exact `main` at which the link-4 determination was recorded. This filing's base, and the
 #: FIRST parent the future unit's acting merge must have (§G.1).
 LINK4_OBSERVATION_HEAD = "8def8bd096b4edecbf10fc20870a6d03b6cb56fe"
+#: THIS unit's own merge commit (PR #353). Immutable, and the closing end of the only
+#: range this filing can speak for -- see TestNoProtectedPathIsTouched.
+THIS_MERGE_SHA = "cc1d1b62b8b48c7123b73e05e7ea04af89c89cd6"
 
 #: XASSET-0051's own lifecycle closure, and the accepted head it closed at.
 XASSET0051_CLOSURE_COMMENT = "5386974704"
@@ -535,6 +538,18 @@ def _bullets_under(raw: str, governing: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------------------------
+
+
+
+def _catalog_index_at_this_units_merge() -> int:
+    """This decision's own position in the catalog as THIS unit left it.
+
+    Derived mechanically from an immutable commit rather than copied as a literal, so
+    it cannot drift and needs no maintenance when a later filing appends.
+    """
+    rows = yaml.safe_load(
+        _git("show", f"{THIS_MERGE_SHA}:governance/decisions.yaml"))["decisions"]
+    return [r["decision_id"] for r in rows].index(DECISION_ID)
 
 
 class TestTheFilingExistsAndIsWellFormed:
@@ -1022,10 +1037,18 @@ class TestNoProtectedPathIsTouched:
 
     @pytest.mark.parametrize("relpath", PORTFOLIO_RELPATHS)
     def test_each_portfolio_path_is_byte_identical_to_the_bound_merge(self, relpath):
-        assert (
-            hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
-            == _blob_sha256_at(relpath)
-        ), relpath
+        """RE-ANCHORED to IMMUTABLE endpoints only.
+
+        The live worktree read was correct while this unit was the live one. Once merged
+        and closed it stopped measuring THIS unit and began asserting that no later,
+        separately authorized unit may ever touch a portfolio path -- authority this
+        filing never had. Asserted instead across all three immutable points this unit
+        actually spans: the bound merge it was anchored to, its own base, and its own
+        merge. A path this unit touched still fails; a later lawful change does not.
+        """
+        bound = _blob_sha256_at(relpath, BOUND_MERGE_SHA)
+        assert _blob_sha256_at(relpath, LINK4_OBSERVATION_HEAD) == bound, relpath
+        assert _blob_sha256_at(relpath, THIS_MERGE_SHA) == bound, relpath
 
     def test_the_protected_comparison_is_not_vacuous(self):
         """A positive control: a commit pair across which a protected path GENUINELY changed.
@@ -2162,9 +2185,61 @@ class TestCatalogSynchronisation:
         assert len(ids) == len(set(ids))
         assert ids.count(DECISION_ID) == 1
         idx = ids.index(DECISION_ID)
+        # RE-ANCHORED again: the successor's IDENTIFIER PREFIX is not this filing's to
+        # constrain. A later governance decision in another domain (PHQ-2026-07, say)
+        # is a lawful successor, and asserting "XASSET-" here would forbid it. What is
+        # preserved is the real invariant -- append-only: this decision's own row is
+        # unique, its position is the one it was filed at, and the entire prefix up to
+        # and including it is unchanged. A reordering or a rewritten predecessor row
+        # still fails; a lawful later append in any domain does not.
+        assert idx == _catalog_index_at_this_units_merge(), idx
+        # RE-ANCHORED AGAIN (PHQ-2026-07). The superseded form additionally required
+        #     int(later.split("-")[1]) > int(DECISION_ID.split("-")[1])
+        # which compares the SEQUENCE NUMBERS OF DIFFERENT DECISION DOMAINS as if they
+        # shared a counter. They do not. A lawful later ``OPS-0018`` appended after
+        # ``XASSET-0051`` fails it (18 > 51 is False) even though the whole historical
+        # prefix is untouched, and ``PHQ-2026-07`` only passes it by the accident that
+        # 2026 happens to be large. That is the same moving target this guard was
+        # re-anchored to remove, one level down: a later lawful filing in another
+        # domain would re-break CI for no reason.
+        #
+        # Append-only is a claim about STRUCTURE, not about identifier arithmetic, and
+        # the two assertions that remain state it completely: this row is unique, it
+        # sits exactly where this unit filed it (checked above against the immutable
+        # merge), and nothing after it duplicates anything at or before it. A
+        # reordering or a rewritten predecessor still fails; a lawful later append in
+        # ANY domain, with ANY sequence number, does not.
         for later in ids[idx + 1:]:
-            assert later.startswith("XASSET-"), later
-            assert int(later.split("-")[1]) > int(DECISION_ID.split("-")[1]), later
+            assert later not in ids[: idx + 1], later
+
+    def test_a_lawful_lower_numbered_cross_domain_successor_is_not_a_violation(self):
+        """ADVERSARIAL (PHQ-2026-07). The exact construction independent review named.
+
+        The superseded guard also required ``int(later.split("-")[1]) >
+        int(DECISION_ID.split("-")[1])``. Decision domains do not share a counter, so a
+        lawful later ``OPS-0018`` appended after this filing failed that comparison --
+        18 is not greater than 52 -- while the historical prefix was completely
+        untouched. This reproduces that append and requires it to be ACCEPTED, and
+        keeps the real violations rejected so the repair did not simply delete a guard.
+        """
+        def append_only_holds(ids):
+            """The corrected invariant, transcribed exactly from the guard above."""
+            assert ids.count(DECISION_ID) == 1
+            idx = ids.index(DECISION_ID)
+            for later in ids[idx + 1:]:
+                assert later not in ids[: idx + 1], later
+
+        prefix = ["GOV-0001", "OPS-0001", DECISION_ID]
+        # Lawful later appends, in any domain, with any sequence number.
+        for tail in (["OPS-0018"], ["OPS-0001x"], ["PHQ-2026-07"],
+                     ["OPS-0018", "PHQ-2026-07"], []):
+            append_only_holds(prefix + tail)
+
+        # Genuine violations must still fail.
+        with pytest.raises(AssertionError):
+            append_only_holds(prefix + [DECISION_ID])          # duplicate of this row
+        with pytest.raises(AssertionError):
+            append_only_holds(prefix + ["GOV-0001"])           # predecessor reappears after
 
     def test_the_catalog_entry_points_at_the_real_file(self, catalog):
         entry = next(d for d in catalog if d["decision_id"] == DECISION_ID)
