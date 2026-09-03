@@ -899,7 +899,8 @@ def _stable_ast_data(node, registered_assertion=None):
 
     Python 3.12 added ``type_params`` to definition nodes.  Empty interpreter-
     schema fields are not source semantics and must not change a registered
-    identity merely because CI uses another supported runtime.
+    identity merely because CI uses another supported runtime.  Nonempty type
+    parameters *are* source semantics and remain part of the identity.
     """
     if node is registered_assertion:
         return ("RegisteredAssert",)
@@ -909,7 +910,7 @@ def _stable_ast_data(node, registered_assertion=None):
             tuple(
                 (field, _stable_ast_data(value, registered_assertion))
                 for field, value in ast.iter_fields(node)
-                if field != "type_params"
+                if field != "type_params" or value
             ),
         )
     if isinstance(node, list):
@@ -3088,14 +3089,81 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
                     rel, target_digest, live_counts[target_digest], count)
             assert not _historicalized_registration_losses(base, live_src, rel)
 
-    def test_site_identity_ignores_runtime_only_type_parameter_fields(self):
-        """Python 3.11 and 3.12 serialize the same source identically."""
+    def test_site_identity_normalizes_an_empty_type_parameter_schema_field(self):
+        """Python 3.11 absence and Python 3.12's empty default are identical."""
         tree = ast.parse("def check(value):\n    assert value\n")
         function = next(
             node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef))
         expected = _stable_ast_data(tree)
-        function.type_params = [ast.Name(id="RuntimeOnlyT", ctx=ast.Load())]
+        if "type_params" not in function._fields:
+            function._fields = function._fields + ("type_params",)
+        function.type_params = []
         assert _stable_ast_data(tree) == expected
+
+    def test_site_identity_preserves_nonempty_type_parameter_semantics(self):
+        """A nonempty field changes the envelope on every supported runtime."""
+        tree = ast.parse("def test_guard(value):\n    assert value != 1\n")
+        function = next(
+            node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef))
+        expected = _stable_ast_data(tree)
+        if "type_params" not in function._fields:
+            function._fields = function._fields + ("type_params",)
+        function.type_params = [ast.Name(id="T", ctx=ast.Load())]
+        assert _stable_ast_data(tree) != expected
+
+    @pytest.mark.skipif(
+        sys.version_info < (3, 12), reason="PEP 695 syntax requires Python 3.12")
+    def test_generic_historical_target_and_collection_hook_fail_closed(
+            self, monkeypatch):
+        """A generic rewrite cannot hide a registered test from collection."""
+        prelude = textwrap.dedent('''\
+            def pytest_collection_modifyitems(items):
+                items[:] = [
+                    item for item in items
+                    if not getattr(item.obj, "__type_params__", ())
+                ]
+
+        ''')
+        pinned = prelude + textwrap.dedent('''\
+            def test_guard(value):
+                assert value == 1
+        ''')
+        target = prelude + textwrap.dedent('''\
+            def test_guard(value):
+                assert value != 1
+        ''')
+        generic = prelude + textwrap.dedent('''\
+            def test_guard[T](value):
+                assert value != 1
+        ''')
+
+        source_fp = _assertion_occurrences(pinned)[0][0]
+        target_fp, target_site = _assertion_occurrences(target)[0]
+        generic_fp, generic_site = _assertion_occurrences(generic)[0]
+        assert generic_fp == target_fp
+        assert generic_site != target_site
+
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            (("synthetic_generic.py", _fingerprint_digest(source_fp),
+              _fingerprint_digest(target_fp), target_site),),
+        )
+        losses = _historicalized_registration_losses(
+            pinned, generic, "synthetic_generic.py")
+        assert any("missing literal target" in loss for loss in losses), losses
+
+        class Item:
+            def __init__(self, obj):
+                self.obj = obj
+
+        kept = {}
+        for label, source in (("plain", target), ("generic", generic)):
+            namespace = {}
+            exec(compile(source, f"<{label}>", "exec"), namespace)
+            items = [Item(namespace["test_guard"])]
+            namespace["pytest_collection_modifyitems"](items)
+            kept[label] = len(items)
+        assert kept == {"plain": 1, "generic": 0}
 
     def test_every_historicalization_registration_is_load_bearing(self):
         """Removing any row's target exposes that exact occurrence as lost."""
