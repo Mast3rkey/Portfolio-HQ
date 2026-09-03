@@ -1,6 +1,6 @@
 # ICE — Intercontinental Exchange, Inc.
 
-Last updated: 2026-08-05 -- record created through AI-assisted research and
+Last updated: 2026-09-03 -- record created through AI-assisted research and
 drafting under `governance/decisions/PI-0038-ws0005-gated-six-company-
 intelligence-completion.md` (status: Proposed at authoring time -- not yet
 independently reviewed or principal-accepted). First Company Intelligence
@@ -12,6 +12,14 @@ efficiency only. The six companies share no genuine economic mechanism
 and this record makes no such claim.
 
 ## Source-access disclosure
+
+**2026-09-03 update:** direct primary-source access is now available. ICE's
+official Q2 results release and MarketAxess transaction release were opened
+and read directly. They resolve the prior conflicts over Q2 net-revenue growth
+(5%), GAAP versus adjusted operating income, June cash/debt, deal value,
+financing structure, leverage targets, and announced synergies. The August
+paragraph below is retained as historical provenance for the original draft,
+not as the current evidence posture.
 
 This Claude Code session's own `WebFetch` was tested and confirmed
 **completely blocked (HTTP 403) on every domain attempted this session**,
@@ -208,8 +216,9 @@ costs.
 5. **Mortgage Technology competitive/cyclical exposure** -- actively
    competitive vendor landscape and sensitivity to still-below-normalized
    U.S. mortgage-origination volumes per company commentary.
-6. **This session's own source-access weakness** (see disclosure above) --
-   no primary document was directly verified.
+6. **Valuation and transaction execution** -- primary source access is now
+   resolved, but permanent financing costs, regulatory clearance, and realized
+   synergy/deleveraging outcomes remain unknown.
 
 ## Relationship to the gate
 
@@ -228,6 +237,15 @@ modeled" characterization rather than contradicting it. This record does
 not resolve when the gate's `next_gate` condition will be satisfied --
 that depends on deal-close progress and financing/integration detail not
 yet available.
+
+**2026-09-03 disposition:** the official package and transaction terms have now
+been read directly, closing the source-recovery portion of the gate. The gate
+is retained because the transaction has not closed, permanent financing costs
+and regulatory clearance remain unknown, and the 3.4x-to-3.0x deleveraging and
+$100M synergy paths remain issuer forecasts. At $161.28 and 22.78x trailing
+earnings (14:47 UTC market snapshot), ICE also screened 33.1% above the high
+end of the repository's stale, assumption-driven illustrative range. That is
+a caution screen, not a new fair-value estimate.
 
 ## Investment thesis (descriptive, no recommendation)
 
@@ -253,14 +271,11 @@ condition, or termination.
 
 ## Uncertainty and open items (explicit, not smoothed over)
 
-1. No primary source was directly opened this session -- every fact
-   above is WebSearch-snippet-derived.
-2. Several figures are internally inconsistent across snippets and
-   unreconciled: Q2 2026 revenue growth (5% vs. 6.2%), GAAP vs. adjusted
-   Q2 operating income ($1.391B vs. $1.6B), Black Knight synergy target
-   ($230M vs. "$275M+"), market cap (~$77B vs. ~$88B), deal value framing
-   ($5.7B EV vs. $6.0B equity value).
-3. Q3 2026 earnings date -- not confirmed.
+1. Permanent MarketAxess financing costs and the mix of bonds, term loan,
+   and commercial paper are not yet known.
+2. The $100M synergy target, first-year adjusted-EPS accretion, and
+   18-to-24-month deleveraging path are issuer forecasts, not outcomes.
+3. ICE directly scheduled Q3 2026 earnings for 2026-10-29.
 4. Current S&P/Fitch credit rating and any 2026 rating action -- not
    found (only a stale Moody's A3 affirmation dated 2024-08-12 located).
 5. MarketAxess shareholder-vote date and HSR filing/clearance status --
@@ -294,12 +309,13 @@ constitute approval.
 
 ## Sources
 
-See `ICE.yaml`'s `sources:` block for the complete, structured source
-list. In summary: ICE's own Q2 2026 and FY2025 results releases and the
-MarketAxess merger-agreement announcement, all identified via WebSearch
-snippets and not directly opened this session; secondary/aggregator
-sources (financial-data aggregators, HousingWire, competitive-landscape
-trade coverage, an mlex.com-relayed analyst commentary) used for
-segment-mix, competitive, and capital-allocation context, explicitly
-labeled secondary throughout and never conflated with a primary-source
-fact.
+See `ICE.yaml`'s `sources:` block for the complete, structured source list.
+The original August research used search snippets and secondary material;
+the September refresh directly opened ICE's Q2 and MarketAxess transaction
+releases. Secondary sources remain labeled as such and are not conflated with
+issuer-reported facts.
+
+The 2026-09-03 refresh adds direct links to ICE's official Q2 results and
+MarketAxess transaction releases and a timestamped market-price screen. The
+bounded evidence memo is
+`research/gated_company_intelligence/ICE_WM_PRIMARY_SOURCE_RECOVERY_20260903.md`.

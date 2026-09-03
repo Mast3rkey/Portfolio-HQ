@@ -1,6 +1,6 @@
 # WM — Waste Management, Inc.
 
-Last updated: 2026-08-05 -- record created through AI-assisted research and
+Last updated: 2026-09-03 -- record created through AI-assisted research and
 drafting under `governance/decisions/PI-0038-ws0005-gated-six-company-
 intelligence-completion.md` (status: Proposed at authoring time -- not yet
 independently reviewed or principal-accepted). First Company Intelligence
@@ -12,6 +12,13 @@ efficiency only. The six companies share no genuine economic mechanism
 and this record makes no such claim.
 
 ## Source-access disclosure
+
+**2026-09-03 update:** direct primary-source access is now available. WM's
+official Q2 results release and filed Q2 Form 10-Q (accession
+0001104659-26-088016) were opened and read directly. They resolve the earlier
+Q2 package, net-income, guidance, cash, and debt uncertainty. The August
+paragraph below is retained as historical provenance for the original draft,
+not as the current evidence posture.
 
 This session's `WebFetch` was tested and confirmed **completely
 non-functional**, returning HTTP 403 on every domain attempted --
@@ -210,12 +217,13 @@ function as de facto regional monopolies.
    independently quantified this session; a disclosed gap.
 7. **Fuel/labor cost inflation** -- not separately quantified this
    session; a disclosed gap.
-8. **This session's own weak source access** -- no primary document
-   directly opened; several figures internally inconsistent across
-   sources (see disclosure above).
+8. **Valuation evidence** -- primary source access is now resolved, but the
+   current multiple is demanding and no governed discount-rate valuation is
+   available.
 
 ## Relationship to the gate
 
+**August 2026 assessment (retained as historical provenance):**
 `gates.yaml`'s stated rationale: "The role and moat remain attractive,
 but current Q2 detail and purchase valuation were not sufficiently
 verified for initiation." `next_gate`: "Retrieve and model the complete
@@ -240,6 +248,14 @@ secondary sources say, offered for the gate's own future re-review, and
 this record does not resolve when the gate's `next_gate` condition will
 be satisfied.
 
+**2026-09-03 disposition:** the complete Q2 package is now primary-source
+verified. The gate is retained because the purchase-valuation test still does
+not pass robustly: WM traded at $219.37 and 31.75x trailing earnings at 14:47
+UTC, 36.4% above the high end of the repository's stale, assumption-driven
+illustrative range. The comparison is a caution screen, not a precise fair
+value. A discount-rate DCF remains an explicit abstention because a governed,
+reproducible beta/equity-risk-premium/capital-structure set was not established.
+
 ## Investment thesis (descriptive, no recommendation)
 
 **Concise statement:** WM's collection/landfill/transfer core is a
@@ -250,11 +266,10 @@ characterized (by management, unverified) as resolved; the gate's
 purchase-valuation concern remains genuinely contested across sources
 even after this research.
 
-**Conditions that would support initiation**: primary-source verification
-of Q2 2026 results; a reconciled, single-source valuation read (rather
-than the contradictory P/E-vs-GF-Value signals found); resolution of the
-Stericycle synergy-target inconsistency; a WM-specific PFAS-exposure
-figure, if one exists.
+**Conditions that would support initiation**: a reproducible valuation with
+an adequate margin across sensitivity cases; continued Healthcare Solutions
+integration evidence; resolution of the Stericycle synergy-target
+inconsistency; and a WM-specific PFAS-exposure figure, if one exists.
 
 **Conditions that would argue for continued caution**: a further
 Healthcare Solutions integration setback contradicting management's
@@ -264,8 +279,9 @@ guidance trim.
 
 ## Uncertainty and open items (explicit, not smoothed over)
 
-1. No primary source was directly opened this session.
-2. Net income for Q2 2026 cited as both $785M and $786M across sources.
+1. Q2 results and the filed 10-Q have now been directly opened; transcript-only
+   management characterizations remain issuer claims.
+2. The filed release resolves Q2 net income attributable to WM at $785M.
 3. Debt-to-EBITDA figures found were dated to different quarters (a
    3.16x figure explicitly labeled "for the quarter ended March 2026,"
    i.e., Q1 not Q2) and a separate, undated debt-to-equity figure (2.29)
@@ -277,9 +293,7 @@ guidance trim.
    gap, not a clean-record finding).
 7. Waste Connections (WCN), a third major public competitor, was not
    researched this session.
-8. Exact 8-K/10-Q accession numbers for Q2 2026 were not confirmed
-   (only inferred from search snippets, one of which appeared to
-   actually reference the Q1 2026 filing).
+8. The Q2 10-Q accession is confirmed as 0001104659-26-088016.
 9. FY2025 revenue could not be reconciled to a single, complete,
    non-overlapping segment/line-of-business breakdown -- see Business
    summary, corrected 2026-08-05 following independent review.
@@ -307,11 +321,12 @@ constitute approval.
 
 ## Sources
 
-See `WM.yaml`'s `sources:` block for the complete, structured source
-list. In summary: WM's own Q1/Q2 2026 earnings releases and FY2025
-results, and the Stericycle acquisition/integration history, all
-identified via WebSearch snippets and not directly opened this session;
-secondary/aggregator and trade-press sources (Waste Dive, Waste360,
-PFAS/EPA-rulemaking coverage, valuation-model snapshots) used for
-integration, regulatory, and valuation context, explicitly labeled
-secondary throughout and never conflated with a primary-source fact.
+See `WM.yaml`'s `sources:` block for the complete, structured source list.
+The original August research used search snippets and secondary material;
+the September refresh directly opened WM's Q2 release and filed 10-Q.
+Secondary sources remain labeled as such and are not conflated with filed or
+issuer-reported facts.
+
+The 2026-09-03 refresh adds direct links to WM's official Q2 results and filed
+10-Q and a timestamped market-price screen. The bounded evidence memo is
+`research/gated_company_intelligence/ICE_WM_PRIMARY_SOURCE_RECOVERY_20260903.md`.
