@@ -29,7 +29,7 @@ risks:
     status: monitoring
   - risk: "Valuation remains demanding after primary-source recovery: at 2026-09-03 14:47 UTC the market snapshot was $219.37 per share and 31.75x trailing earnings. That price was 36.4% above the high end of the repository's prior assumption-driven illustrative range. Because the old range is stale and not peer-derived, the comparison is a caution screen rather than a precise fair-value conclusion; a governed discount-rate valuation remains abstained rather than fabricated."
     severity: low
-    identified: "2026-08-05"
+    identified: "2026-09-03"
     status: monitoring
 catalysts:
   - catalyst: "Q3 2026 earnings release, expected around 2026-10-27 before market open."
@@ -39,7 +39,7 @@ catalysts:
     expected: "2026-12-31"
     status: pending
   - catalyst: "This record's own next scheduled review checkpoint, at which Q3 2026 results, further Stericycle synergy-target reconciliation, and any WM-specific PFAS litigation development will next be actively re-checked."
-    expected: "2026-11-05"
+    expected: "2026-12-02"
     status: pending
 conviction:
   rating: Medium

@@ -33,17 +33,17 @@ risks:
     status: monitoring
   - risk: "Valuation and transaction-execution risk remain after primary-source recovery: at 2026-09-03 14:47 UTC the market snapshot was $161.28 per share and 22.78x trailing earnings. That price was 33.1% above the high end of the repository's prior assumption-driven illustrative range, but the old range is stale and corroborative-only, so the comparison is a caution screen rather than a fair-value conclusion. A governed discount-rate valuation remains abstained rather than fabricated."
     severity: low
-    identified: "2026-08-05"
+    identified: "2026-09-03"
     status: monitoring
 catalysts:
   - catalyst: "MarketAxess shareholder vote and HSR/antitrust clearance for the announced acquisition, leading to expected deal close in H1 2027 -- the specific transaction this repository's gate names as requiring review of \"financing/integration assumptions before initiation.\""
     expected: "2027-06-30"
     status: pending
-  - catalyst: "Q3 2026 earnings release (exact date not confirmed this session; ICE has historically reported in late October), which should show early post-announcement detail on MarketAxess integration planning and updated leverage trajectory."
-    expected: "2026-10-31"
+  - catalyst: "Q3 2026 earnings release, scheduled by ICE for 2026-10-29, which should show early post-announcement detail on MarketAxess integration planning and updated leverage trajectory."
+    expected: "2026-10-29"
     status: pending
   - catalyst: "This record's own next scheduled review checkpoint, at which the MarketAxess deal's regulatory-approval progress, any credit-rating-agency action, and reconciliation of this session's several unresolved figure inconsistencies will next be actively re-checked."
-    expected: "2026-11-05"
+    expected: "2026-12-02"
     status: pending
 conviction:
   rating: Medium
