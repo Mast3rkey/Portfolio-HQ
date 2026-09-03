@@ -602,138 +602,138 @@ HISTORICALIZED_REGISTER_ASSERTIONS = (
     ("test_level1_stage1_activation_authorization.py",
      "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
      "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
-     "934aa3bcf7a26a055eaed277a95528623b18135dba84730f12367e55b1662a31"),
+     "951bd5c95f1c62634e7b0290987af805c6c6ba69c2eff3ecc0171ed9c98dc74a"),
     ("test_level1_stage1_activation_authorization.py",
      "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
      "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
-     "df79f46f5c84d117fefee73f80a034f8a5e47dfbcb120a2da2fac41b4063090e"),
+     "bcdec43dbc784da8815015c6f7c87c0a6def289cb4ea73339041f4c5916a5a02"),
     ("test_level1_stage1_activation_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
-     "3ca21d31690151090b80e4dbf69b8efacdb6f93b7f1f7d63fbf01906c1db4c16"),
+     "add260f0a355078566b357d2589c418508ee84ced67e665d589fea4fe21278fe"),
     ("test_level1_stage1_post_correction_rebinding.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "8b4fd531663c351b3f783e518d4d9ce42dcb738e035f14ae0ad4a9d613c408ec"),
+     "a758a65796d7948c086686e7fe9c682662aebce6b8fa5c1b2ce2ccc284565665"),
     ("test_level1_stage1_post_correction_rebinding_authorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "0460469618372415bfaae784205f6eadb2c2b9abd198211c33dba16320ba222c"),
+     "dc1dc3b8cd9e9dbd742af00c165861b5a0b3b7a42df320dff948ca7cd0cfa88b"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "176a2ab5d5366c453a330f7ce8f71618ead678105851bb612cac0ddf69df8543"),
+     "9d124a59df9071d01e647bee79bbd413fdac7799941d9df9f0a18ea8d088b99b"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
      "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
      "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444",
-     "b00bb0a7fb127692bb391538496244f70632cbdedd9a1d3708a119ff14a4f3b3"),
+     "1ead9ddbb3b7127be14fd92cb60a36cde9dd99f6a0aca344c340200a7614608d"),
     ("test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "0c7665b5eea122fbc8d2327edc744dab04704000843cd0ea3e3d3ad3aa891849"),
+     "8bb85297957a32bf3b9ffdfc3e4d72a7390f05eb0f5e87ace2b0cc9fe67b271e"),
     ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
      "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
      "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f",
-     "0ed45fd09bca4cfc6504666cddfbd6b4498bcc7717d507f6526179ed56ace36f"),
+     "9924a922970d08d72eb1d3d21bc7fd855b45db405f71105af7bcf28c0ea59bd0"),
     ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
      "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
      "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0",
-     "05c59b5371d1629d45cde8c410fe216f917b1f0a399718c459356e939a6bda93"),
+     "70e62f18117c2c3e4c777c524687666348b919b8f14d67bec413db919394549b"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
      "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
-     "39bffd075e1731290f285b53506da757068eb832e9d40f3f49d8ebc1f25ed15c"),
+     "f274366f2dccd14b05ff90b2c10eaaec9d3ca89f0945a9e861b1c0f7fdeadf6f"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
      "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
-     "0a1d992a990bc773fa8fa9f97617504d37c31e5411b7404daff207abf42415cd"),
+     "6b9602a0d27ca91f56c7cb8f80bd4339cd5a663ae25c8b5211117c8ec6fff4a2"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
-     "98b89d399a15c2cfbcca4d0e1c3e0fec22fb1853c90d858cc2fede68d225de75"),
+     "74b98b3cd22bcedb2103e5ccc4db884eaade9912fd68bad472e0ae00756c8271"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "f5ce46c934051b62f3df6ae4dfd1f6fa9a03f79838059f6a894976e2d0ed9362",
      "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
-     "30d116441f9b9d2df4a02d038a457ae7a3a0b400ee9f6bf18891bb69c256b639"),
+     "3c8970cbdf5fdc3a44026fcd019db0d88c7fce926b42651a2bf378b62fe031c1"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "66c406808283e946e74d4384e644a919725ac6910943138ce18b146ffc3ffdcb"),
+     "aec24e07512564135fdbd13e548cec78feb556c97dc35309a98715f461f44550"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
      "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444",
-     "3e8e87b7f34284f2556017646d34e8ecacaf69f3437d01c919b533b7a43cc331"),
+     "13188f23bce510d4778982c1909ee556b67af173b22706d8c9b3d3b1aa84e690"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
      "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
-     "761b067b5c31f11824e5a9f7a9f3f050bba23de8d3851da67ea6112602fda1bd"),
+     "17ec44f3a425a701087dd4f38c8eb41d0e840afcf85f4d156153ff829f552b4d"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
      "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
-     "eee4e18867f2b9545f48c2c25a3506cb76ba9b016a64303e31667a594c24c1ab"),
+     "33d0cd2f52cfdf3a07b6618336a6a1bcccbecebb65800dd573e40fb78232e78f"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
-     "2c6325fb3457446deef262d94d6cd9688e5b7303259a812b88eb7098e140dd89"),
+     "01946a9cdf4d8b0dd92b09be4e8c1acdd28e3166111b7c55f458142334d16bbd"),
 
     # The five suites routed through PROTECTED_PREDICATES need the same exact
     # occurrence protection for their newly historical register predicates.
     ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
      "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
      "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f",
-     "2f55c0538145c621bbb8931af226e309bce7494f4a57512056d5faa38566ee46"),
+     "bbc1207f9ecec6924c6dffb6534aee2663363ce6ba5b984e47c7fe04c67b12eb"),
     ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
      "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
      "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0",
-     "1bd9e0d07731d0845a0147cff6daf1a8b1f95c2f07c1febf863d0f762b93dfd0"),
+     "c992220f641567616ca59480015533847234238f7cf6e6cb3f718a6e2bf6bd82"),
     ("test_level1_stage1_parser_contract_correction_authorization.py",
      "e44d97a2654922db1d77ccdc014e490118777039e671de7a8907e79db560e9be",
      "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
-     "96bc9e17a86c72bfafd2cd634e088dacb5c2fb91daa30db070ed7ab3bfec404a"),
+     "7ed2533fd5b3c035b6fdd64865d05211f6df16c69cf4fbe68928b15df3ef8d33"),
     ("test_level1_stage1_parser_contract_correction_authorization.py",
      "e4f4231a90d6bab860535b4798918114f8eca81beea106326899fc99545d369f",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "c05ad847954380fa08d6ba85a96aea136f883ca78b408140278281159bfebb0b"),
+     "c16a765ef01950917fb6ee6b43a891489b8faaa965deed681a58f4df098253fc"),
     ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
      "6531fc8ab57ca19e7edfbed9dee040bcc8fd95823173e7b8abbd6c2f1a117560",
      "c864fa0567da6bb474892c2e2735277fbef880454c6b3b317e3af1f7f3e9909e",
-     "70fb6732cb993416b400416a5e9a266e9c09a952ad49a3f0806936bc80d25025"),
+     "257f4a4d32a560e68867c299dd7080daa10d358f69cc6a7f82e17240a92cd390"),
     ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
      "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
      "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7",
-     "dc32b4d3040741b302583c5d3d51e775399acddd134283ef3993ae2abf887cd8"),
+     "3e5032ed998bcaa573aee95d140e52ebd8535b513d22093029c49da24368fc8d"),
     ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
      "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
      "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7",
-     "23d82cba2c76792456088b135c4b2303599b9596db1f0945c1325f3fdeb35f04"),
+     "e999a83bd77a313929312dda4aecaa4e7e7755e836294f4324eb6187f2d61240"),
     ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
      "98832ed7c8ea617746dab05af3a976436b6b4f0564624162acf865402bdb3ce3",
      "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
-     "87afe27f603f459127ed32a01bb7d37e4f708e31d7e2ee9b85b98bf9b949cc52"),
+     "cdb6e10de0b01221423cfa9f530712ee8bc54de613030b152b56f8c36d35b13c"),
     ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
      "c3d19fec7a3c6520ddb615e7dcda1ecc2dd793de8769009c57c05c00a2244fff",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "3684e36bbfdbb25826dde0c72057ddec456ccd84e8e4642a30d1a6d097eaa83e"),
+     "5abc98030d7824f0aef1568bd78f778cd3135d70e33470cf62deb4ad57e948f4"),
     ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
      "c5a9a677842c286ee149fe058fe9f00a5d9062638b5f9b7a96a02ceb914fdeb8",
      "800a2a0eb3d5b305b1415770aad86aa66b19d79d3dc01e95aa8bb5fba210c3ce",
-     "379a1d398ff0677fca048067fe71eccf0f473382200323c66975faa3acd45dac"),
+     "a05e32d1800d9da14ffdac09c615fedbf576ecae27408ee57cb8bf1a47ce97bc"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "a7ff7d9401d1ca98525e7030552ded339e4e96d3fb84c9a4fe2dfc8949e8d79b",
      "bdecd00f37afa0aec457cc30ac1a7f1df4a7b4a1bddf4a67545ed81b2973b11c",
-     "ff50d3052b03ffdcd663171e743d62b6b36352207511b1abc211ebddb36aecad"),
+     "eea0ecc40745d4467be3f571a068aeb062a24b7056bd474a5fecde22e67e8a07"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
      "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
-     "2a4c9a2ac91a31fdb4c4bc1d86a5cb689660588a22bd2440c07c9ab7862360c9"),
+     "f0ecbca50d76f8181a10b81aef9297f2e325ab77f6c48c2a4bef866e644907a6"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "7d5311f304ec46ba1ac6a8d1200f0e4942ca4c2c66ecc9dd5066272b84bcc5c8",
      "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
-     "62bc10ffa253ea1a2aac0c231aeff73490789be7d7e3f81ca6d9f561e6137a98"),
+     "81837f0471a6eb22c43b8cf55c0cc6d0aafa50340be4dde30a1dead35e9998b0"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
      "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
-     "5c68dac82a07a41eba103e27411133d6904555d41e8a31231de5d5243c7734d4"),
+     "ff23a1e7932b9e9928e565e79ca41f565b6abe2a47e5e7f0829525aeb1e99cee"),
 )
 
 
@@ -898,14 +898,15 @@ def _assertion_occurrences(source: str) -> list[tuple[str, str]]:
     """Return each assertion fingerprint with its executable-site identity.
 
     The identity keeps named lexical scopes, compound control-flow ancestry, the
-    complete AST of the containing function, and the pytest-collection metadata
-    of its class/module.  It deliberately ignores comments, line numbers, and
-    unrelated functions, but makes every executable sibling and decorator in the
-    containing test load-bearing.  Duplicate same-name definitions in one
-    lexical namespace are marked ambiguous, so an overwritten decoy can never
-    inherit the registered site's identity.  Class/module ``__test__`` and
-    ``pytestmark`` controls are load-bearing too.  Identical assertions in the
-    same site retain an ordinal, preserving exact multiplicity.
+    exact containing-function skeleton, and an immutable AST envelope for the
+    complete historical test module.  Only comments and line numbers are ignored;
+    every executable or collection-affecting change is therefore load-bearing.
+    That deliberately strict boundary is appropriate for this finite, one-time
+    historicalization and prevents an unenumerated pytest hook, fixture, dynamic
+    collection write, or sibling definition from disabling a registered target.
+    Duplicate same-name definitions are also marked ambiguous explicitly.
+    Identical assertions in the same site retain an ordinal, preserving exact
+    multiplicity.
     """
     tree = ast.parse(source)
     raw = []
@@ -956,7 +957,8 @@ def _assertion_occurrences(source: str) -> list[tuple[str, str]]:
                 parts.append(ast.dump(statement))
         return hashlib.sha256(repr(parts).encode("utf-8")).hexdigest()
 
-    module_collection = collection_digest(tree)
+    module_collection = hashlib.sha256(
+        ast.dump(tree).encode("utf-8")).hexdigest()
 
     def execution_skeleton(node, registered_assertion):
         """Exact test structure with only this registered target made opaque."""
@@ -2473,7 +2475,21 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert _lost_assertions(pinned, live), (
             "a reused pre-existing value was accepted inside an in-play category")
 
-    def test_a_registered_occurrence_does_not_launder_the_same_pair_elsewhere(self):
+    def _historical_rows_rebound_to(self, rel, live_source):
+        """Re-site real rows for a synthetic live module used by a unit probe."""
+        sites = collections.defaultdict(list)
+        for fingerprint, site in _assertion_occurrences(live_source):
+            sites[_fingerprint_digest(fingerprint)].append(site)
+        rebound = []
+        for row_rel, source, target, site in HISTORICALIZED_REGISTER_ASSERTIONS:
+            if row_rel == rel:
+                assert sites[target], (rel, target)
+                site = sites[target].pop(0)
+            rebound.append((row_rel, source, target, site))
+        return tuple(rebound)
+
+    def test_a_registered_occurrence_does_not_launder_the_same_pair_elsewhere(
+            self, monkeypatch):
         """REQUIRED NEGATIVE CONTROL A (PHQ-2026-07, review 5093500583).
 
         The defect this correction exists to close. A lawful, REGISTERED WS-0014
@@ -2496,7 +2512,11 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         # weakened only on the live side.
         extra_pinned = f'\n\ndef _probe(freeze):\n    assert freeze["cutoff"] == "{old}"\n'
         extra_live = f'\n\ndef _probe(freeze):\n    assert freeze["cutoff"] == "{new}"\n'
-        lost = _lost_assertions(base + extra_pinned, live + extra_live, rel)
+        current = live + extra_live
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            self._historical_rows_rebound_to(rel, current))
+        lost = _lost_assertions(base + extra_pinned, current, rel)
         assert lost, "an unrelated occurrence of a registered pair was laundered"
         assert any("cutoff" in fp for fp in lost), (
             "the reported loss must be the unrelated assertion itself")
@@ -2945,7 +2965,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         finally:
             globals()["NAMED_ANCHOR_REANCHORS"] = saved
 
-    def test_a_named_registration_is_consumed_at_most_once(self):
+    def test_a_named_registration_is_consumed_at_most_once(self, monkeypatch):
         """One named registration cannot explain two identical pinned copies."""
         entry = NAMED_ANCHOR_REANCHORS[0]
         rel, _digest, old_name, _ov, new_name, _nv, _cat = entry
@@ -2955,9 +2975,13 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
             line for line in base.splitlines()
             if "assert" in line and old_name in line and "!=" not in line)
         new_line = old_line.replace(old_name, new_name)
+        current = live + "\n" + new_line.strip() + "\n"
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            self._historical_rows_rebound_to(rel, current))
         lost = _lost_assertions(
             base + "\n" + old_line.strip() + "\n",
-            live + "\n" + new_line.strip() + "\n", rel)
+            current, rel)
         # The added successor positive is itself forbidden once this occurrence
         # has been historicalized, so neither predecessor copy may be licensed.
         assert len(lost) == 2, lost
@@ -3597,7 +3621,8 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert len(lost) == 1, lost
         assert "NotEq()" in lost[0] and "XASSET0060_MAIN_SHA" in lost[0]
 
-    def test_a_named_reanchor_never_normalizes_the_same_raw_values(self):
+    def test_a_named_reanchor_never_normalizes_the_same_raw_values(
+            self, monkeypatch):
         """REQUIRED NEGATIVE 2 (review 5094619011).
 
         A real registered MAIN_SHA occurrence remains lawful, while an unrelated
@@ -3610,11 +3635,15 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         new = "413e033ac33741829168762ab24d73327c047d4b"
         pinned = base + f'\n\ndef _raw(history):\n    assert history["required"] == "{old}"\n'
         current = live + f'\n\ndef _raw(history):\n    assert history["required"] == "{new}"\n'
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            self._historical_rows_rebound_to(rel, current))
         lost = _lost_assertions(pinned, current, rel)
         assert len(lost) == 1, lost
         assert "required" in lost[0] and f"Constant(value={old!r})" in lost[0]
 
-    def test_a_named_registration_cannot_cover_a_second_same_role_occurrence(self):
+    def test_a_named_registration_cannot_cover_a_second_same_role_occurrence(
+            self, monkeypatch):
         """REQUIRED NEGATIVE 3 (review 5094619011).
 
         The real current-anchor occurrence is registered. A second assertion
@@ -3628,6 +3657,9 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
                   '    assert history["required"] == XASSET0060_MAIN_SHA\n')
         current = (live + '\n\ndef _other(history):\n'
                    '    assert history["required"] == XASSET0061_MAIN_SHA\n')
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            self._historical_rows_rebound_to(rel, current))
         lost = _lost_assertions(pinned, current, rel)
         assert len(lost) == 1, lost
         assert "required" in lost[0] and "XASSET0060_MAIN_SHA" in lost[0]
