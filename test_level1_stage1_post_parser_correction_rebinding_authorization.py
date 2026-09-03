@@ -2503,10 +2503,12 @@ class TestTheRegisterIsSynchronized:
     # ADVANCED BY XASSET-0060; XASSET-0059's values are retained below as NEGATIVE pins.
     XASSET0060_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
     #: ADVANCED BY XASSET-0061; the predecessor is retained above as a negative pin.
-    SUCCESSOR_BRANCH = "claude/xasset-0061-authorization-jux8p9"
+    XASSET0061_BRANCH = "claude/xasset-0061-authorization-jux8p9"
+    SUCCESSOR_BRANCH = "claude/protected-capital-accounting"
     XASSET0060_MAIN_SHA_PIN = "301e79334876a4bda6e7b89a6156b34e8d38a605"
     #: ADVANCED BY XASSET-0061; the predecessor is retained above as a NEGATIVE pin.
-    SUCCESSOR_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
+    XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
+    SUCCESSOR_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
     XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
     XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
     XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
@@ -2514,7 +2516,9 @@ class TestTheRegisterIsSynchronized:
 
     def test_the_shared_live_fields_name_this_unit(self, register):
         assert register["active_branch"] == self.SUCCESSOR_BRANCH
+        assert register["active_branch"] != self.XASSET0061_BRANCH
         assert register["last_verified_main_sha"] == self.SUCCESSOR_MAIN_SHA
+        assert register["last_verified_main_sha"] != self.XASSET0061_MAIN_SHA
         assert register["last_verified_main_sha"] != self.XASSET0060_MAIN_SHA_PIN
         assert register["active_branch"] != BRANCH
         assert register["active_branch"] != self.XASSET0059_BRANCH

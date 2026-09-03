@@ -20061,10 +20061,10 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/xasset-0061-authorization-jux8p9
-    active_pr: 362
-    last_verified_main_sha: 413e033ac33741829168762ab24d73327c047d4b
-    last_verified_date: 2026-08-28
+    active_branch: claude/protected-capital-accounting
+    active_pr: 364
+    last_verified_main_sha: 3db918530b10ffc1423ba0b749b086e349a4901d
+    last_verified_date: 2026-09-03
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively
