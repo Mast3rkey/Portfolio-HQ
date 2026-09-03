@@ -19361,8 +19361,10 @@ workstreams:
       "sole active lane / sole mutation lane" statement dated 2026-08-16 below is
       STALE and is retained only as history. Verified against live GitHub state at
       main b3a647aa064260dc293fad2fa1b21d7222c9109a (CI run 33780621218,
-      completed/success): ZERO open pull requests, so NO mutation lane is currently
-      held by any unit, and WS-0014 holds no active branch or PR. PR #364
+      completed/success): ZERO open pull requests at that head, so NO mutation lane
+      was held by any unit; this register-sync unit then took the single OPS-0014
+      SS-D mutation lane, and WS-0014's shared active_branch/active_pr advanced
+      onto it accordingly. PR #364
       (PHQ-2026-07, protected-capital accounting and full-book reconciliation) is
       MERGED — merged_by Mast3rkey at 2026-09-03T04:30:36Z, head
       40b9f09b8fade3e323596838be6b5aeda2a2e599 confirmed an ancestor of main, merge
