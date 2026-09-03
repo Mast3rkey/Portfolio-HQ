@@ -1,6 +1,6 @@
 # SPGI–MSCI normalized comparison and gate disposition
 
-As of: 2026-09-03 15:59 UTC
+As of: 2026-09-03 16:08 UTC
 
 Scope: SPGI and MSCI comparison evidence only
 
@@ -27,14 +27,14 @@ separate requirement for one clean SPGI post-spin quarter?
 The adjusted-profitability row is not directly comparable because operating
 margin and EBITDA margin use different denominators.
 
-## Same-time market facts
+## Same-minute market facts
 
 | Metric | SPGI | MSCI |
 |---|---:|---:|
-| Price | $447.21 | $573.57 |
-| Market capitalization | $132.15B | $41.81B |
+| Price | $447.11 | $573.70 |
+| Market capitalization | $132.12B | $41.82B |
 | Trailing EPS | $16.43 | $18.28 |
-| Trailing P/E | 27.22x | 31.38x |
+| Trailing P/E | 27.21x | 31.38x |
 
 ## Derived calculations
 
@@ -42,7 +42,7 @@ margin and EBITDA margin use different denominators.
   continuing-company multiple because SPGI's trailing denominator may still
   include pre-separation Mobility while its price is ex-Mobility.
 - SPGI forward adjusted P/E using issuer-guidance midpoint:
-  $447.21 / $17.625 = 25.37x. MSCI supplied no adjusted-EPS guide in the cited
+  $447.11 / $17.625 = 25.37x. MSCI supplied no adjusted-EPS guide in the cited
   release, so no forward peer multiple is claimed.
 - SPGI provisional continuing-company debt:
   $15.170B - $1.981B Mobility-note carrying value = $13.189B.
@@ -89,7 +89,8 @@ sleeve assignment in this evidence-only unit.
   https://www.sec.gov/Archives/edgar/data/1408198/000140819826000044/exhibit991earningsrelease-.htm
 - MSCI Q2 2026 Form 10-Q:
   https://www.sec.gov/Archives/edgar/data/1408198/000140819826000046/msci-20260630.htm
-- Market-price snapshot: configured market-data feed, timestamp above.
+- Market-price snapshot: configured market-data feed, same-minute timestamps
+  of 16:08:05 UTC for SPGI and 16:08:47 UTC for MSCI.
 
 ## Governance boundary
 

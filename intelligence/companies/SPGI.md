@@ -10,9 +10,9 @@ change the gate, target, holding, margin policy, or any execution state.
 S&P Global's continuing businesses remain high-quality, scaled information and
 market-infrastructure franchises. The Mobility separation is now directly
 verified, and the prior valuation-data conflict has been replaced with a
-same-time market snapshot. The comparison is mixed: SPGI has a lower trailing
-P/E and a lighter provisional net-debt burden than MSCI, but also lower
-reported/pro-forma growth and margin on the closest available measures.
+same-minute market snapshot. The comparison is mixed: SPGI has a lower trailing
+P/E and a lower provisional net-debt-to-market-cap screen than MSCI, but also
+lower reported/pro-forma growth and margin on the closest available measures.
 
 The existing gate remains correct. Its comparison requirement is only partially
 resolved, and its other conjunctive requirement — one clean post-spin quarter —
@@ -62,16 +62,16 @@ quarter even though the issuer supplied Article 11 pro-forma information.
 
 ## Normalized SPGI-versus-MSCI comparison
 
-Market data are a same-time screen from the configured feed at approximately
-15:59 UTC on September 3, 2026. Reported financial metrics are from each
+Market data are a same-minute screen from the configured feed at approximately
+16:08 UTC on September 3, 2026. Reported financial metrics are from each
 issuer's Q2 2026 SEC-filed materials.
 
 | Metric | SPGI | MSCI | Comparability note |
 |---|---:|---:|---|
-| Share price | $447.21 | $573.57 | Same-time market snapshot |
-| Market capitalization | $132.15B | $41.81B | Same feed and timestamp |
+| Share price | $447.11 | $573.70 | Same-minute market snapshot |
+| Market capitalization | $132.12B | $41.82B | Same feed and minute |
 | Trailing EPS | $16.43 | $18.28 | Feed-defined trailing basis |
-| Trailing P/E | 27.22x | 31.38x | Same feed; 13.3% lower, but SPGI's denominator may still include Mobility |
+| Trailing P/E | 27.21x | 31.38x | Same feed; 13.3% lower, but SPGI's denominator may still include Mobility |
 | Q2 revenue growth | 11.0% pro forma | 12.2% reported/organic | SPGI excludes Mobility |
 | Q2 operating margin | 47.8% pro forma | 56.2% reported | Closest available comparison |
 | Adjusted profitability | 54.3% operating margin | 62.1% EBITDA margin | Directional only; unlike metrics |
@@ -171,4 +171,4 @@ instructions.
   https://www.sec.gov/Archives/edgar/data/1408198/000140819826000044/exhibit991earningsrelease-.htm
 - [MSCI-P02] MSCI Q2 2026 Form 10-Q, filed July 28, 2026:
   https://www.sec.gov/Archives/edgar/data/1408198/000140819826000046/msci-20260630.htm
-- Market data: configured feed, approximately 2026-09-03 15:59 UTC.
+- Market data: configured feed, approximately 2026-09-03 16:08 UTC.
