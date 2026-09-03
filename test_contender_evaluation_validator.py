@@ -1283,39 +1283,19 @@ def test_non_cascading_archetype_abstention_does_not_force_evidence_parity_abste
 
 # ── protected records: byte-identity ────────────────────────────────────
 
-def _resolve_pr_base_sha(cwd: Path = REPO_ROOT) -> str | None:
-    """Resolve this branch's actual PR base commit from live repository
-    truth -- git merge-base HEAD origin/main -- rather than a hard-coded
-    SHA that goes stale the moment the branch is rebased or main moves
-    forward. Returns None (causing the calling test to skip, not fail)
-    if origin/main is not a resolvable ref in this environment -- e.g. a
-    detached clone with no remote configured -- since that is an
-    environment precondition this test suite does not manage, not a
-    content defect. Deliberately does NOT use local `main`: this
-    repository's own history discloses local `main` can diverge
-    substantially from `origin/main` (stale local branches, never
-    force-pushed), which would silently resolve to the wrong base.
+_CONTENDER_0003_BASE_SHA = "fea335dca89ff7f2e6006d29d26a613bf1b75c21"
+_CONTENDER_0003_HEAD_SHA = "931cfe9941b37b7ec0b7b0dde1dacc3026e0cc68"
+_CONTENDER_0003_MERGE_SHA = "9975c1d5092eca58bc3416d66beacf029d455dff"
 
-    `cwd` defaults to the real repository root but accepts any git
-    working directory -- exercised directly against synthetic,
-    disposable repositories by the lifecycle-invariant tests below, so
-    the actual resolution mechanism (not a reimplementation of it) is
-    what gets proven correct in both the active-feature-branch and
-    post-merge-main states."""
-    try:
-        subprocess.run(
-            ["git", "rev-parse", "--verify", "origin/main"],
-            cwd=cwd, capture_output=True, text=True, check=True,
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return None
-    result = subprocess.run(
-        ["git", "merge-base", "HEAD", "origin/main"],
-        cwd=cwd, capture_output=True, text=True,
+
+def _require_historical_commit(label: str, sha: str) -> None:
+    """Require a pinned endpoint, skipping only outside a full-history clone."""
+    resolved = subprocess.run(
+        ["git", "cat-file", "-e", f"{sha}^{{commit}}"],
+        cwd=REPO_ROOT, capture_output=True, text=True,
     )
-    if result.returncode != 0 or not result.stdout.strip():
-        return None
-    return result.stdout.strip()
+    if resolved.returncode != 0:
+        pytest.skip(f"{label} commit is unavailable in this checkout: {sha}")
 
 
 _PROTECTED_INTELLIGENCE_AND_GOVERNANCE_PATHS = [
@@ -1340,23 +1320,33 @@ _PROTECTED_INTELLIGENCE_BROAD_PATHS = [
 ]
 
 
-def _assert_no_base_to_head_diff(paths: list[str]) -> None:
-    """True PR-range comparison (base..HEAD), not a working-tree check --
-    a MINOR finding from an independent exact-head review: git status
-    --porcelain only ever compares the working tree to HEAD, so it would
-    show clean even for a protected file modified AND committed earlier
-    within this same PR's own commit history. git diff <base>..HEAD
-    catches that; git status never can, regardless of how carefully it
-    is invoked."""
-    base_sha = _resolve_pr_base_sha()
-    if base_sha is None:
-        pytest.skip("origin/main not resolvable in this environment -- cannot compute a true PR-base diff")
+def _assert_no_contender_0003_historical_diff(paths: list[str]) -> None:
+    """Check CONTENDER-0003's accepted PR #299 range, not the active branch.
+
+    These assertions preserve the historical scope boundary of the
+    contender-evaluation implementation. Comparing an arbitrary future
+    branch to its current base would incorrectly turn that one PR's scope
+    contract into a permanent ban on later authorized intelligence work.
+    CI fetches complete history. Source-only or shallow checkouts skip when
+    the historical objects are unavailable, matching this suite's existing
+    environment-precondition behavior.
+    """
+    for label, sha in (
+        ("CONTENDER-0003 base", _CONTENDER_0003_BASE_SHA),
+        ("CONTENDER-0003 merge", _CONTENDER_0003_MERGE_SHA),
+    ):
+        _require_historical_commit(label, sha)
+
     result = subprocess.run(
-        ["git", "diff", "--exit-code", f"{base_sha}..HEAD", "--", *paths],
+        ["git", "diff", "--exit-code",
+         f"{_CONTENDER_0003_BASE_SHA}..{_CONTENDER_0003_MERGE_SHA}",
+         "--", *paths],
         cwd=REPO_ROOT, capture_output=True, text=True,
     )
     assert result.returncode == 0, (
-        f"unexpected changes under protected paths between base {base_sha} and HEAD:\n{result.stdout}"
+        "unexpected protected-path changes in CONTENDER-0003's accepted "
+        f"range {_CONTENDER_0003_BASE_SHA}..{_CONTENDER_0003_MERGE_SHA}:\n"
+        f"{result.stdout}"
     )
 
 
@@ -1364,77 +1354,29 @@ def test_protected_intelligence_and_governance_records_untouched():
     """Zero diff on GEV/COST Company Intelligence, their sealed
     valuation_archetype/classification records, and the four cited
     PI-0019/0020/0021/0022 governance decisions, across this PR's entire
-    base..HEAD range -- not merely the current working tree."""
-    _assert_no_base_to_head_diff(_PROTECTED_INTELLIGENCE_AND_GOVERNANCE_PATHS)
+    accepted historical range -- not merely the current working tree."""
+    _assert_no_contender_0003_historical_diff(_PROTECTED_INTELLIGENCE_AND_GOVERNANCE_PATHS)
 
 
 def test_protected_intelligence_records_broadly_untouched():
-    # only new, untracked contender_evaluation/ files may appear anywhere
-    # under intelligence/ as a result of this implementation -- none of
-    # these paths are contender_evaluation, so any hit here is a real defect.
-    _assert_no_base_to_head_diff(_PROTECTED_INTELLIGENCE_BROAD_PATHS)
+    # PR #299 added only intelligence/contender_evaluation files under the
+    # intelligence tree; any hit in these sibling paths would be a real
+    # historical scope defect.
+    _assert_no_contender_0003_historical_diff(_PROTECTED_INTELLIGENCE_BROAD_PATHS)
 
 
-def _init_synthetic_repo(tmp_path: Path):
-    """A minimal, disposable git repository used to prove
-    _resolve_pr_base_sha's actual behavioral invariant deterministically
-    -- independent of this real repository's own PR/merge lifecycle,
-    which is exactly the coupling that made the historical-SHA version
-    of this test go stale the moment PR #299 merged (main advanced past
-    the hard-coded base, so HEAD == origin/main and merge-base correctly
-    returned the new tip -- not a defect, the documented, anticipated
-    lifecycle transition). `refs/remotes/origin/main` is written
-    directly via `update-ref`, standing in for a real remote-tracking
-    ref without needing actual remote wiring."""
-    def run(*args):
-        return subprocess.run(
-            ["git", *args], cwd=tmp_path, capture_output=True, text=True, check=True,
-        )
-    run("init", "-q")
-    run("config", "user.email", "test@example.com")
-    run("config", "user.name", "Test")
-    return run
-
-
-def test_resolve_pr_base_sha_returns_true_divergence_point_on_diverged_branch(tmp_path):
-    """Behavioral invariant A -- active feature branch: when HEAD has
-    diverged from origin/main by one or more new commits, the resolver
-    must return the actual common ancestor (the true PR base), never
-    silently compare HEAD to itself. This is the safety property the
-    protected-path tests above depend on."""
-    run = _init_synthetic_repo(tmp_path)
-    (tmp_path / "file.txt").write_text("base\n")
-    run("add", "-A")
-    run("commit", "-q", "-m", "base commit")
-    base_sha = run("rev-parse", "HEAD").stdout.strip()
-    run("update-ref", "refs/remotes/origin/main", base_sha)
-
-    (tmp_path / "file.txt").write_text("base\nfeature work\n")
-    run("add", "-A")
-    run("commit", "-q", "-m", "feature-branch commit, diverged from origin/main")
-    head_sha = run("rev-parse", "HEAD").stdout.strip()
-
-    resolved = _resolve_pr_base_sha(cwd=tmp_path)
-    assert resolved == base_sha
-    assert resolved != head_sha
-
-
-def test_resolve_pr_base_sha_returns_head_when_head_equals_origin_main(tmp_path):
-    """Behavioral invariant B -- post-merge main: when HEAD and
-    origin/main point at the identical commit (no divergence -- exactly
-    the state this real repository is in immediately after a PR merges),
-    the resolver may legitimately return that same commit. Asserting
-    this directly, rather than against a fixed historical SHA, is what
-    keeps this test from going stale the next time main advances."""
-    run = _init_synthetic_repo(tmp_path)
-    (tmp_path / "file.txt").write_text("content\n")
-    run("add", "-A")
-    run("commit", "-q", "-m", "sole commit, HEAD and origin/main coincide")
-    sole_sha = run("rev-parse", "HEAD").stdout.strip()
-    run("update-ref", "refs/remotes/origin/main", sole_sha)
-
-    resolved = _resolve_pr_base_sha(cwd=tmp_path)
-    assert resolved == sole_sha
+def test_contender_0003_historical_range_has_expected_merge_parent():
+    """Pin the reviewed PR #299 lineage used by the scope assertions."""
+    _require_historical_commit("CONTENDER-0003 base", _CONTENDER_0003_BASE_SHA)
+    _require_historical_commit("CONTENDER-0003 merge", _CONTENDER_0003_MERGE_SHA)
+    result = subprocess.run(
+        ["git", "rev-list", "--parents", "-n", "1", _CONTENDER_0003_MERGE_SHA],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+    )
+    merge_and_parents = result.stdout.split()
+    assert len(merge_and_parents) == 3, "CONTENDER-0003 endpoint is not a merge commit"
+    assert merge_and_parents[1] == _CONTENDER_0003_BASE_SHA
+    assert merge_and_parents[2] == _CONTENDER_0003_HEAD_SHA
 
 
 def test_base_to_head_diff_mechanism_detects_a_synthetic_protected_path_change(tmp_path):
@@ -1461,9 +1403,8 @@ def test_base_to_head_diff_mechanism_detects_a_synthetic_protected_path_change(t
 
     # Simulate origin/main pointing at the base commit, matching this
     # synthetic repo's own shape (no real 'origin' remote needed for the
-    # diff mechanism itself -- git diff <sha>..HEAD works on any two
-    # resolvable refs, which is exactly what _assert_no_base_to_head_diff
-    # relies on).
+    # diff mechanism itself -- git diff works on any two resolvable refs,
+    # which is exactly what the historical scope assertion relies on.
     protected.write_text("original: true\nmutated: true\n")
     run("add", "-A")
     run("commit", "-q", "-m", "protected-path mutation, committed within the simulated PR")

@@ -27,9 +27,9 @@ risks:
     severity: low
     identified: "2026-08-05"
     status: monitoring
-  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed completely blocked (HTTP 403) on every domain attempted, including sec.gov, investors.wm.com, and a control domain (example.com) used to confirm this was a systemic tool failure rather than a domain-specific block. No primary document (10-K, 10-Q, 8-K, or WM's own press release/call transcript) was directly opened this session. Every fact in this record traces to WebSearch-returned snippets/summaries, and several figures were internally inconsistent across sources (net income $785M vs $786M for Q2 2026; two different debt-to-EBITDA figures for different quarters; Republic Services' landfill count cited as both 190 and 209) -- flagged in WM.md rather than silently resolved."
+  - risk: "Valuation remains demanding after primary-source recovery: at 2026-09-03 14:47 UTC the market snapshot was $219.37 per share and 31.75x trailing earnings. That price was 36.4% above the high end of the repository's prior assumption-driven illustrative range. Because the old range is stale and not peer-derived, the comparison is a caution screen rather than a precise fair-value conclusion; a governed discount-rate valuation remains abstained rather than fabricated."
     severity: low
-    identified: "2026-08-05"
+    identified: "2026-09-03"
     status: monitoring
 catalysts:
   - catalyst: "Q3 2026 earnings release, expected around 2026-10-27 before market open."
@@ -39,15 +39,15 @@ catalysts:
     expected: "2026-12-31"
     status: pending
   - catalyst: "This record's own next scheduled review checkpoint, at which Q3 2026 results, further Stericycle synergy-target reconciliation, and any WM-specific PFAS litigation development will next be actively re-checked."
-    expected: "2026-11-05"
+    expected: "2026-12-02"
     status: pending
 conviction:
   rating: Medium
-  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). WM's core waste-collection/landfill/transfer business carries a genuinely strong, evidenced moat (landfill-permitting scarcity, the largest North American disposal network) and a long, disciplined capital-return record (23 consecutive years of dividend increases). The Stericycle acquisition added real diversification (Healthcare Solutions) but showed documented 2025 integration friction that management now characterizes as substantially resolved -- a self-reported claim this record cannot independently verify. Held at Medium rather than higher because: this session's own source access was weak (no primary document directly opened, several figures internally inconsistent across secondary sources); the gate's own stated concern (Q2 2026 detail and purchase valuation not yet sufficiently verified) is only partially resolved by this research -- Q2 2026 headline figures were obtainable via WebSearch but not verified against a primary filing, and this session found materially divergent purchase-valuation framings across sources (some describing WM as expensive relative to historical/peer multiples, others describing it as undervalued per a proprietary model) that were not reconciled; and PFAS/landfill-environmental-liability exposure, a real industry-wide risk given WM's scale, could not be quantified with a WM-specific figure this session. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from WM's existing gated/cash-pending-clearance status or its 0.75% canonical target -- it was reasoned solely from the disclosed operating and financial picture described above."
+  rationale: "Medium conviction is retained after directly reading WM's Q2 2026 release and filed 10-Q. The collection, landfill, transfer, recycling, renewable-energy, and healthcare portfolio produced $6.684B of quarterly revenue, $2.067B of adjusted operating EBITDA, and $1.104B of free cash flow; EBITDA and free-cash-flow guidance were maintained despite a lower revenue range. The offset is valuation and leverage: the 2026-09-03 market snapshot was 31.75x trailing earnings, while filed June debt totaled $23.356B before cash. Stericycle integration benefits remain partly management claims, and WM-specific PFAS exposure is not quantified. This rating excludes allocation, trading, and margin judgments and supports retaining the gate until valuation evidence is robust enough to justify initiation."
 review:
   cadence_days: 90
-  last_reviewed: "2026-08-05"
-  next_due: "2026-11-05"
+  last_reviewed: "2026-09-03"
+  next_due: "2026-12-02"
   log:
     - date: "2026-08-05"
       note: >
@@ -67,6 +67,14 @@ review:
         throughout this record and in WM.md's Source-access disclosure rather
         than smoothed over. Several figures were internally inconsistent
         across sources and are flagged, not silently resolved.
+    - date: "2026-09-03"
+      note: >
+        Directly read WM's official Q2 2026 results release and filed Q2 Form
+        10-Q. Reconciled revenue, earnings, EBITDA, free cash flow, guidance,
+        cash, and debt. Added a timestamped market valuation screen and
+        retained Medium conviction and the existing gate: the missing-package
+        gap is fixed, but the current valuation and governed discount-rate
+        evidence do not support gate clearance.
 sources:
   - note: "Waste Management, Inc. Q2 2026 earnings release/call (reported/discussed 2026-07-27 through 2026-07-29), covering revenue, adjusted EBITDA, free cash flow, segment detail, and revised FY2026 guidance. Identified via WebSearch snippets citing the release and call commentary; not directly fetched/opened this session (WebFetch blocked)."
     url: null
@@ -86,3 +94,9 @@ sources:
   - note: "Added 2026-08-05 following independent review: targeted re-check of WM's FY2025 revenue-mix reconciliation, which found the original six-line breakdown summed to only ~90% of the stated $25.2B total. Additional Bullfincher-sourced figures found via WebSearch (Transfer ~$2.63B, Recycling Processing and Sales ~$1.26B for FY2025) do not cleanly close the gap when added to the original six lines -- combined, they overshoot the stated total by ~$1.4B, consistent with two non-additive classification views rather than one complete breakdown. Not directly verified against the 10-K (WebFetch blocked on sec.gov on a fresh attempt); this record's revenue-mix figures remain partial and directionally indicative only."
     url: null
     date: "2026-08-05"
+  - note: "Directly read WM's official Q2 2026 results release; primary source for revenue, operating income, adjusted operating EBITDA, EPS, free cash flow, segment detail, and 2026 guidance."
+    url: "https://investors.wm.com/news-releases/news-release-details/wm-announces-second-quarter-2026-earnings"
+    date: "2026-07-28"
+  - note: "Directly read WM's Q2 2026 Form 10-Q, accession 0001104659-26-088016; primary source for filed financial statements, cash, debt, and risk disclosures."
+    url: "https://investors.wm.com/node/31041/html"
+    date: "2026-07-29"

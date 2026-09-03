@@ -19,7 +19,7 @@ risks:
     severity: low
     identified: "2026-08-05"
     status: monitoring
-  - risk: "Existing pre-deal leverage was already substantial: total debt approximately $19.8 billion as of 2026-06-30 against approximately $1.1 billion cash (single secondary-source figure, not independently verified against the 10-Q itself). No current 2026 credit-rating-agency action following the MarketAxess announcement was found this session -- a rating-agency response (Moody's/S&P/Fitch) to the leverage increase is directly relevant to the gate's own stated leverage concern and was not locatable this session."
+  - risk: "Existing pre-deal leverage is substantial: ICE's directly read Q2 2026 issuer release reports $19.846 billion of outstanding debt and $1.067 billion of unrestricted cash at 2026-06-30. The announced MarketAxess transaction adds newly issued debt and is expected by ICE to begin at 3.4x gross leverage. Permanent financing costs, regulatory clearance, and the realized deleveraging path remain unobserved; no current rating-agency action was established in this refresh."
     severity: moderate
     identified: "2026-08-05"
     status: monitoring
@@ -31,27 +31,27 @@ risks:
     severity: low
     identified: "2026-08-05"
     status: monitoring
-  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked (HTTP 403) on every domain attempted, including sec.gov, ir.theice.com, businesswire.com, reuters.com, cnbc.com, stocktitan.net, and a Wikipedia control page -- no primary document (10-K, 10-Q, 8-K, or ICE's own press release) was directly opened this session. Every fact in this record traces to WebSearch-returned snippets/summaries of secondary or aggregator sources, one layer removed from the underlying primary text, and several figures were internally inconsistent across snippets and are flagged as unreconciled in ICE.md (Q2 2026 revenue growth rate, Black Knight synergy target, market-cap figures, deal-value framing)."
+  - risk: "Valuation and transaction-execution risk remain after primary-source recovery: at 2026-09-03 14:47 UTC the market snapshot was $161.28 per share and 22.78x trailing earnings. That price was 33.1% above the high end of the repository's prior assumption-driven illustrative range, but the old range is stale and corroborative-only, so the comparison is a caution screen rather than a fair-value conclusion. A governed discount-rate valuation remains abstained rather than fabricated."
     severity: low
-    identified: "2026-08-05"
+    identified: "2026-09-03"
     status: monitoring
 catalysts:
   - catalyst: "MarketAxess shareholder vote and HSR/antitrust clearance for the announced acquisition, leading to expected deal close in H1 2027 -- the specific transaction this repository's gate names as requiring review of \"financing/integration assumptions before initiation.\""
     expected: "2027-06-30"
     status: pending
-  - catalyst: "Q3 2026 earnings release (exact date not confirmed this session; ICE has historically reported in late October), which should show early post-announcement detail on MarketAxess integration planning and updated leverage trajectory."
-    expected: "2026-10-31"
+  - catalyst: "Q3 2026 earnings release, scheduled by ICE for 2026-10-29, which should show early post-announcement detail on MarketAxess integration planning and updated leverage trajectory."
+    expected: "2026-10-29"
     status: pending
   - catalyst: "This record's own next scheduled review checkpoint, at which the MarketAxess deal's regulatory-approval progress, any credit-rating-agency action, and reconciliation of this session's several unresolved figure inconsistencies will next be actively re-checked."
-    expected: "2026-11-05"
+    expected: "2026-12-02"
     status: pending
 conviction:
   rating: Medium
-  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). ICE's core exchange, clearing, and data businesses show sustained, record-level financial performance (FY2025 net revenue $9.9B, +7%; Q2 2026 described in company materials as the best second-quarter in company history) with genuine structural moats (clearing-agency/exchange licensure, growing subscription-like data annuity). Held at Medium rather than higher because the newly announced, all-debt-financed MarketAxess acquisition (~$6.0B equity value, ~3.4x pro forma gross leverage) is layered on top of a still-integrating prior large acquisition (Black Knight/Mortgage Technology) with inconsistently reported synergy realization, and this record's own source access this session was unusually weak (WebFetch blocked on every domain tried, no primary document directly opened) -- meaning several material figures (existing debt load, post-deal leverage trajectory, credit-rating response) could not be independently corroborated and are flagged for direct verification in a future session with working primary-source access. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from ICE's existing gated/cash-pending-clearance status or its 1.25% canonical target -- it was reasoned solely from the disclosed operating and financial picture described above, which independently supports the same \"strong core business, unresolved leverage/integration case\" conclusion the gate itself already recorded."
+  rationale: "Medium conviction is retained after direct primary-source recovery. ICE's exchange, clearing, data, and mortgage-technology businesses produced $2.666B of Q2 2026 net revenue, $1.391B of GAAP operating income, and growth in every segment, while the regulated network remains structurally difficult to replicate. The offset is the announced all-debt MarketAxess acquisition: ICE expects 3.4x starting gross leverage, targets <=3.0x within 18-24 months, and forecasts $100M of annual run-rate synergies within three years. Those are forward-looking outcomes layered onto the Black Knight integration, not realized evidence. The current 22.78x trailing P/E also does not create an obvious valuation margin. This rating excludes allocation, trading, and margin judgments and supports the existing strong-core-business, unresolved-transaction-execution conclusion."
 review:
   cadence_days: 90
-  last_reviewed: "2026-08-05"
-  next_due: "2026-11-05"
+  last_reviewed: "2026-09-03"
+  next_due: "2026-12-02"
   log:
     - date: "2026-08-05"
       note: >
@@ -72,6 +72,15 @@ review:
         this record and in ICE.md's Source-access disclosure rather than
         smoothed over. Several figures were internally inconsistent across
         snippets and are flagged, not silently resolved.
+    - date: "2026-09-03"
+      note: >
+        Directly read ICE's official Q2 2026 results and MarketAxess transaction
+        releases. Reconciled Q2 net revenue, margins, segment results, cash,
+        debt, purchase price, debt-financing structure, leverage target, and
+        announced synergy timetable. Added a timestamped market valuation
+        screen and retained Medium conviction and the existing gate: primary
+        access is fixed, but financing cost, regulatory clearance, integration
+        delivery, and a governed discount-rate valuation remain unresolved.
 sources:
   - note: "Intercontinental Exchange, Inc. Q2 2026 earnings release/results (reported 2026-07-30), covering net revenue, segment detail, GAAP/adjusted EPS, and full-year guidance. Identified via WebSearch snippets citing ICE's own release; not directly fetched/opened this session (WebFetch blocked)."
     url: null
@@ -88,3 +97,9 @@ sources:
   - note: "Added 2026-08-05 following independent review: FTC antitrust settlement and mandated divestiture in ICE's 2023 acquisition of Black Knight, Inc. -- Empower and Optimal Blue businesses divested to Constellation Software Inc. (Optimal Blue specifically for $700M, per one source $200M cash plus a $500M promissory note), completed deal value reduced to ~$11.9B from an originally proposed ~$13.1B, FTC final consent order approved 2023-11-03. Identified via WebSearch snippets citing FTC.gov press releases, the FTC's own final-order PDF, the Federal Register notice, and HousingWire coverage -- well-corroborated across multiple independent primary-regulatory-source URLs, but none was directly opened this session (WebFetch confirmed blocked on ftc.gov on a fresh attempt); this remains WebSearch-synthesis-derived, not a direct primary-source read."
     url: null
     date: "2023-11-03"
+  - note: "Directly read ICE's official Q2 2026 results release; primary source for net revenue, EPS, margins, segment results, cash, debt, capital returns, and Q3 reporting date."
+    url: "https://ir.theice.com/press/news-details/2026/Intercontinental-Exchange-Reports-Second-Quarter-2026/default.aspx"
+    date: "2026-07-30"
+  - note: "Directly read ICE's official MarketAxess transaction release; primary source for price, enterprise value, all-debt financing, 3.4x initial gross leverage, <=3.0x target, synergy claim, and expected close."
+    url: "https://ir.theice.com/press/news-details/2026/Intercontinental-Exchange-to-Acquire-MarketAxess-Creating-a-Premier-Fixed-Income-Marketplace/default.aspx"
+    date: "2026-07-30"
