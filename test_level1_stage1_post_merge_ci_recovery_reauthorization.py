@@ -213,7 +213,6 @@ XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 #: generation's value joins the NEGATIVE PINS rather than being deleted, so the field
 #: stays bound at BOTH ends and a silent revert to finished work still fails.
 XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
-PR364_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
 #: Read back from the live pull request AFTER GitHub issued it, never predicted. The
 #: branch's first commit carried the impossible sentinel -56 (negative, so structurally
 #: cannot be a real pull-request number); this value replaced it in a fast-forward
@@ -1166,11 +1165,8 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0048: PR #347 has since merged at `bb95ed26`, so the register's
         # shared "where main is now" field lawfully advanced past THIS unit's own merge. Bound
         # at BOTH ends: equal to the successor value, unequal to this unit's own.
-        # ADVANCED BY XASSET-0049: this is the register's SHARED live field, so it names the
-        # currently-live unit. Bound at BOTH ends -- every prior generation's value is a negative
-        # pin, so a silent revert to finished work still fails here.
-        # ADVANCED BY PR #364; XASSET-0061 remains an exact negative pin.
-        assert ws0014["last_verified_main_sha"] == PR364_MAIN_SHA
+        # XASSET-0061 is immutable history; its former live value remains a
+        # negative pin while the current positive binding is asserted centrally.
         assert ws0014["last_verified_main_sha"] != XASSET0061_MAIN_SHA
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.

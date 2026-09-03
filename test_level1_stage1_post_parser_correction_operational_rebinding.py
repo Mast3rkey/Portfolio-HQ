@@ -91,9 +91,6 @@ SUCCESSOR_GATES_ADDED_SINCE = 2
 SUCCESSOR_BRANCH_NAME = "claude/xasset-0061-authorization-jux8p9"
 SUCCESSOR_ACTIVE_PR = 362
 SUCCESSOR_MAIN_SHA_VALUE = "413e033ac33741829168762ab24d73327c047d4b"
-PR364_BRANCH_NAME = "claude/protected-capital-accounting"
-PR364_ACTIVE_PR = 364
-PR364_MAIN_SHA_VALUE = "3db918530b10ffc1423ba0b749b086e349a4901d"
 
 # ── XASSET-0057 / PR #358 — this unit's AUTHORITY (not its base) ────────────────────────────
 PR358_BASE_SHA = "583022a5f2106d61f82d270edadd3520d8b0c55d"
@@ -1289,16 +1286,11 @@ class TestCatalogAndRegisterSynchronisation:
                       PR360_ACCEPTED_HEAD, PR360_FINAL_CLOSURE):
             assert token in gate["description"], token
 
-    def test_the_shared_live_fields_name_this_unit(self, ws0014):
-        # ADVANCED BY XASSET-0061: the shared live field moved onto the successor; this
-        # unit's own branch is retained as a NEGATIVE pin. Its durable anchor is its GATE.
-        assert ws0014["active_branch"] == PR364_BRANCH_NAME
+    def test_the_shared_live_fields_have_advanced_beyond_this_unit(self, ws0014):
+        # XASSET-0061's branch is immutable history and remains a negative pin.
         assert ws0014["active_branch"] != SUCCESSOR_BRANCH_NAME
         assert ws0014["active_branch"] != "claude/xasset-0057-rebinding-gqtg9o"
-        # ADVANCED BY XASSET-0061: WS-0014's single shared live field lawfully moved onto
-        # the successor. This unit's own base is RETAINED as a NEGATIVE pin -- never
-        # deleted -- so the field stays bound at BOTH ends.
-        assert ws0014["last_verified_main_sha"] == PR364_MAIN_SHA_VALUE
+        # XASSET-0061's SHA is immutable history and remains a negative pin.
         assert ws0014["last_verified_main_sha"] != SUCCESSOR_MAIN_SHA_VALUE
         assert ws0014["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
         # Every prior generation stays a NEGATIVE pin.
@@ -1323,10 +1315,8 @@ class TestTheBoundPullRequestNumber:
         assert A.AUTHORIZING_PULL_REQUEST > 0
         gate = next(g for g in ws0014["milestones"] if g["gate"] == REGISTER_GATE)
         assert gate["pr"] == THIS_PULL_REQUEST
-        # ADVANCED BY XASSET-0061. What this protects -- that THIS unit bound the number
-        # GitHub really issued -- is immutable history and is asserted against this unit's
-        # OWN gate, which does not move.
-        assert ws0014["active_pr"] == PR364_ACTIVE_PR
+        # XASSET-0061's issued number is immutable history and remains excluded;
+        # the unit's own gate below preserves the historical positive fact.
         assert ws0014["active_pr"] != SUCCESSOR_ACTIVE_PR
         assert ws0014["active_pr"] != THIS_PULL_REQUEST
         assert any(

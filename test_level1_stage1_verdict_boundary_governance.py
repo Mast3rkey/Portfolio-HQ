@@ -109,8 +109,6 @@ XASSET0060_MAIN_SHA = "301e79334876a4bda6e7b89a6156b34e8d38a605"
 #: generation's value joins the NEGATIVE PINS rather than being deleted, so the field
 #: stays bound at BOTH ends and a silent revert to finished work still fails.
 XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
-PR364_BRANCH = "claude/protected-capital-accounting"
-PR364_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
 #: ADVANCED BY XASSET-0061. WS-0014's single shared live field lawfully moved onto
 #: the successor. XASSET-0060's own value is RETAINED above and becomes a NEGATIVE
 #: pin, so the chain stays bound at BOTH ends rather than only the newest.
@@ -891,9 +889,7 @@ class TestCatalogAndRegisterSynchronisation:
         assert merged_ws["last_verified_main_sha"] == BASE_SHA
         assert merged_ws["active_branch"] != "claude/xasset-0054-parser-contract-correction-h3nq7p"
         live = _ws0014()
-        assert live["active_branch"] == PR364_BRANCH
         assert live["active_branch"] != XASSET0061_BRANCH
-        assert live["last_verified_main_sha"] == PR364_MAIN_SHA
         assert live["last_verified_main_sha"] != SUCCESSOR_MAIN_SHA
         assert live["last_verified_main_sha"] != XASSET0061_MAIN_SHA
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
@@ -1075,9 +1071,8 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             assert f'XASSET0060_MAIN_SHA = "{XASSET0060_MAIN_SHA}"' in live, name
             assert "!= XASSET0060_MAIN_SHA" in live, name
             assert f'XASSET0061_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
+            # XASSET-0061 is historical and must remain an exact negative pin.
             assert "!= XASSET0061_MAIN_SHA" in live, name
-            assert f'PR364_MAIN_SHA = "{PR364_MAIN_SHA}"' in live, name
-            assert "== PR364_MAIN_SHA" in live, name
             # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
             # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
             # itself in the third person -- so the constant is asserted exactly where it is
@@ -1116,8 +1111,7 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
         assert before["active_branch"] != at_merge["active_branch"]
         assert before["last_verified_main_sha"] == SUPERSEDED_GENERATION_SHA
         assert at_merge["last_verified_main_sha"] == BASE_SHA
-        # NEGATIVE PIN: the live field has since moved on to the named successor.
-        assert live["last_verified_main_sha"] == PR364_MAIN_SHA
+        # NEGATIVE PIN: the live field has since moved beyond this successor.
         assert live["last_verified_main_sha"] != SUCCESSOR_MAIN_SHA
 
     def test_the_register_gate_discloses_the_re_anchoring_honestly(self):

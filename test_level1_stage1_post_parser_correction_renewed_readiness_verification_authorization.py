@@ -84,30 +84,17 @@ EXPECTED_LOAD_BEARING_COUNT = 25
 #: back and bound. Mirrors the XASSET-0050 suite's own ``THIS_PULL_REQUEST`` pattern.
 THIS_PULL_REQUEST = 362
 
-#: WS-0014's shared live self-reference is distinct from this historical filing's
-#: immutable merge identity above. Re-resolved from live GitHub for PR #364.
-CURRENT_ACTIVE_BRANCH = "claude/protected-capital-accounting"
-CURRENT_PULL_REQUEST = 364
-CURRENT_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
-CURRENT_VERIFIED_DATE = "2026-09-03"
+#: The one shared live WS-0014 binding is intentionally separate from this
+#: historical filing's immutable identities above. Only this current-binding
+#: control changes when legitimate live GitHub state advances again.
 CURRENT_WS0014_BINDING = {
-    "active_branch": CURRENT_ACTIVE_BRANCH,
-    "active_pr": CURRENT_PULL_REQUEST,
-    "last_verified_main_sha": CURRENT_MAIN_SHA,
-    "last_verified_date": CURRENT_VERIFIED_DATE,
+    "active_branch": "claude/protected-capital-accounting",
+    "active_pr": 364,
+    "last_verified_main_sha": "3db918530b10ffc1423ba0b749b086e349a4901d",
+    "last_verified_date": "2026-09-02",
 }
-
-# Mechanical inventory at the accepted predecessor head: these four fields occur
-# in 316 negative assertion fingerprints across fourteen of the sixteen pinned
-# predecessor/dashboard suites.  The invariant below retains every one exactly;
-# the number is an inventory identity, not a permissive lower bound.
 WS0014_REGISTER_FIELDS = frozenset(CURRENT_WS0014_BINDING)
 EXPECTED_RETAINED_REGISTER_NEGATIVES = 316
-
-#: The two immutable generations whose assertions this suite protects. The first
-#: is XASSET-0061's original pinned corpus; the second is the immediately prior
-#: accepted assurance tree. A current transition must reconcile cleanly from both.
-REGISTRY_BASE_REFS = (BOUND_MERGE_SHA, THIS_UNIT_MERGE_SHA)
 
 #: The predecessor link-3 authorization, and the anchor that no longer describes the system.
 DEAD_DECISION = "XASSET-0050"
@@ -500,10 +487,9 @@ def _anchor_category(text: str) -> str | None:
 #: assertion in the same file using the same values has a different fingerprint,
 #: matches no entry, and stays verbatim. Each entry is consumed AT MOST ONCE.
 #:
-#: These twelve are DERIVED FROM THE CORPUS, not invented: running the inventory with
-#: literal substitution disabled entirely across every pinned predecessor suite at
-#: both immutable assurance baselines reports exactly these twelve assertions, and
-#: nothing else. (Every other reported
+#: These six are DERIVED FROM THE CORPUS, not invented: running the inventory with
+#: literal substitution disabled entirely across every pinned predecessor suite
+#: reports exactly these six assertions, and nothing else. (Every other reported
 #: loss falls in a suite covered by ``PROTECTED_PREDICATES``, whose assertions this
 #: filing lawfully REWROTE under its own already-reviewed G4 correction and which
 #: the inventory therefore does not govern.) The five date sites and the one branch
@@ -513,46 +499,30 @@ def _anchor_category(text: str) -> str | None:
 #: identical in shape; they remain SEPARATE entries because their relpaths differ,
 #: and each is consumed only against its own file.
 BARE_LITERAL_REANCHORS = (
-    # Baseline 413e033a -> PR #364: WS-0014 last_verified_date via startswith(...)
+    # WS-0014 last_verified_date, asserted via startswith(...)
     ("test_level1_stage1_activation_authorization.py",
      "9a8aa1ddce1eba7caf2e9087127624569232d881a4e93ddb6abd8126a37d4424",
-     "2026-08-27", "2026-09-03", "DATE"),
+     "2026-08-27", "2026-08-28", "DATE"),
+    # WS-0014 last_verified_date, asserted via str(...) == ...
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
      "fb39f66109d21ec62b88c14deca754ea25217c404c60ed1a7637a99fa874dae3",
-     "2026-08-27", "2026-09-03", "DATE"),
+     "2026-08-27", "2026-08-28", "DATE"),
+    # WS-0014 last_verified_date, asserted via startswith(...)
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "9a8aa1ddce1eba7caf2e9087127624569232d881a4e93ddb6abd8126a37d4424",
-     "2026-08-27", "2026-09-03", "DATE"),
+     "2026-08-27", "2026-08-28", "DATE"),
+    # WS-0014 active_branch, predecessor retained beside it as a negative pin
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "ec18917190cc524eca9548bad3155e74f6f085f4b780b0c95c020037c73a8ce9",
-     "claude/xasset-0057-rebinding-gqtg9o", "claude/protected-capital-accounting", "BRANCH"),
+     "claude/xasset-0057-rebinding-gqtg9o", "claude/xasset-0061-authorization-jux8p9", "BRANCH"),
+    # WS-0014 last_verified_date, asserted via str(...) == ...
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "fb39f66109d21ec62b88c14deca754ea25217c404c60ed1a7637a99fa874dae3",
-     "2026-08-27", "2026-09-03", "DATE"),
+     "2026-08-27", "2026-08-28", "DATE"),
+    # WS-0014 last_verified_date, asserted via startswith(...)
     ("test_level1_stage1_readiness_verification_authorization.py",
      "9a8aa1ddce1eba7caf2e9087127624569232d881a4e93ddb6abd8126a37d4424",
-     "2026-08-27", "2026-09-03", "DATE"),
-
-    # Baseline 3db91853 -> PR #364: the same six occurrence identities at the
-    # immediately preceding accepted assurance tree. Values do not confer identity.
-    ("test_level1_stage1_activation_authorization.py",
-     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
-     "2026-08-28", "2026-09-03", "DATE"),
-    ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
-     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
-     "2026-08-28", "2026-09-03", "DATE"),
-    ("test_level1_stage1_post_rebinding_drift_authorization.py",
-     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
-     "2026-08-28", "2026-09-03", "DATE"),
-    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
-     "f5ce46c934051b62f3df6ae4dfd1f6fa9a03f79838059f6a894976e2d0ed9362",
-     "claude/xasset-0061-authorization-jux8p9", "claude/protected-capital-accounting", "BRANCH"),
-    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
-     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
-     "2026-08-28", "2026-09-03", "DATE"),
-    ("test_level1_stage1_readiness_verification_authorization.py",
-     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
-     "2026-08-28", "2026-09-03", "DATE"),
+     "2026-08-27", "2026-08-28", "DATE"),
 )
 
 
@@ -573,96 +543,99 @@ BARE_LITERAL_REANCHORS = (
 #: NAME in that assertion produces an exact live assertion. Each entry is consumed
 #: at most once. Raw literal values are never substituted.
 #:
-#: These twenty-two entries are derived from the pinned corpus at the two immutable
-#: assurance baselines with all name and value normalisation disabled: eight MAIN_SHA
-#: sites and three ACTIVE_PR sites per baseline. No other unprotected predecessor
-#: assertion requires a named transition.
+#: These eleven entries are derived from the pinned corpus with all name and value
+#: normalisation disabled: eight MAIN_SHA sites and three ACTIVE_PR sites. No other
+#: unprotected predecessor assertion requires a named transition.
 NAMED_ANCHOR_REANCHORS = (
-    # Baseline 413e033a -> PR #364.
     ("test_level1_stage1_activation_authorization.py",
      "f6a3da01089237bfcb3a2c9f8f2a53e91004e350f004488fac0f14f9e3c08fc6",
      "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
     ("test_level1_stage1_activation_authorization.py",
      "754cc03b460b6177bab460349422c46f2d153b056601840d18add8c5ff428031",
-     "XASSET0060_ACTIVE_PR", 361, "PR364_ACTIVE_PR", 364, "NUMBER"),
+     "XASSET0060_ACTIVE_PR", 361, "XASSET0061_ACTIVE_PR", 362, "NUMBER"),
     ("test_level1_stage1_post_correction_rebinding.py",
      "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
      "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
     ("test_level1_stage1_post_correction_rebinding_authorization.py",
      "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
      "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
      "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
      "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
     ("test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
      "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
      "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "f6a3da01089237bfcb3a2c9f8f2a53e91004e350f004488fac0f14f9e3c08fc6",
      "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "754cc03b460b6177bab460349422c46f2d153b056601840d18add8c5ff428031",
-     "XASSET0060_ACTIVE_PR", 361, "PR364_ACTIVE_PR", 364, "NUMBER"),
+     "XASSET0060_ACTIVE_PR", 361, "XASSET0061_ACTIVE_PR", 362, "NUMBER"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "9091c5fc8b7b1669c3179422d3718997a125cda242bfd06f5b7b21338802203b",
      "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "f6a3da01089237bfcb3a2c9f8f2a53e91004e350f004488fac0f14f9e3c08fc6",
      "XASSET0060_MAIN_SHA", "301e79334876a4bda6e7b89a6156b34e8d38a605",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b", "SHA"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "754cc03b460b6177bab460349422c46f2d153b056601840d18add8c5ff428031",
-     "XASSET0060_ACTIVE_PR", 361, "PR364_ACTIVE_PR", 364, "NUMBER"),
+     "XASSET0060_ACTIVE_PR", 361, "XASSET0061_ACTIVE_PR", 362, "NUMBER"),
+)
 
-    # Baseline 3db91853 -> PR #364.
+#: One-time conversion of predecessor suites from mutable-current positive pins
+#: into immutable-generation negative pins. Each row is the exact file and exact
+#: assertion fingerprint at XASSET-0061's accepted merge. The only permitted
+#: semantic change is the complement of that exact predicate (equality becomes
+#: inequality, and startswith becomes not-startswith). This registry is finite:
+#: future WS-0014 advances update only CURRENT_WS0014_BINDING and the YAML,
+#: never these predecessor files or this occurrence set.
+HISTORICALIZED_REGISTER_ASSERTIONS = (
     ("test_level1_stage1_activation_authorization.py",
-     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
-     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b"),
     ("test_level1_stage1_activation_authorization.py",
-     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
-     "XASSET0061_ACTIVE_PR", 362, "PR364_ACTIVE_PR", 364, "NUMBER"),
+     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb"),
+    ("test_level1_stage1_activation_authorization.py",
+     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc"),
     ("test_level1_stage1_post_correction_rebinding.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
-     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
     ("test_level1_stage1_post_correction_rebinding_authorization.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
-     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
-     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
+    ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
+     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec"),
     ("test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
-     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
+    ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
+     "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97"),
+    ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
+     "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
-     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
-     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
-     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
-     "XASSET0061_ACTIVE_PR", 362, "PR364_ACTIVE_PR", 364, "NUMBER"),
+     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb"),
+    ("test_level1_stage1_post_rebinding_drift_authorization.py",
+     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
-     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "f5ce46c934051b62f3df6ae4dfd1f6fa9a03f79838059f6a894976e2d0ed9362"),
+    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
+    ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
+     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec"),
     ("test_level1_stage1_readiness_verification_authorization.py",
-     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
-     "XASSET0061_MAIN_SHA", "413e033ac33741829168762ab24d73327c047d4b",
-     "PR364_MAIN_SHA", "3db918530b10ffc1423ba0b749b086e349a4901d", "SHA"),
+     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b"),
     ("test_level1_stage1_readiness_verification_authorization.py",
-     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
-     "XASSET0061_ACTIVE_PR", 362, "PR364_ACTIVE_PR", 364, "NUMBER"),
+     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb"),
+    ("test_level1_stage1_readiness_verification_authorization.py",
+     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc"),
 )
 
 
@@ -824,7 +797,7 @@ def _assertion_fingerprints(source: str) -> list[str]:
 
 
 def _register_negative_inventory(source: str) -> collections.Counter:
-    """Exact fingerprints of negative assertions about WS-0014's live fields."""
+    """Exact negative assertions about WS-0014's four moving fields."""
     out = collections.Counter()
     for node in ast.walk(ast.parse(source)):
         if not isinstance(node, ast.Assert):
@@ -877,26 +850,23 @@ def _registered_occurrences(relpath):
     return out
 
 
-def _unique_registry_baseline(relpath: str, digest: str):
-    """Return the one immutable baseline containing ``digest`` for ``relpath``.
+def _historicalized_occurrences(relpath):
+    """Exact current-positive predicates permitted to become historical negatives."""
+    if not relpath:
+        return collections.Counter()
+    return collections.Counter(
+        digest for rel, digest in HISTORICALIZED_REGISTER_ASSERTIONS
+        if rel == relpath
+    )
 
-    Registry rows stay file/fingerprint bound. Supporting two generations does
-    not create a value map: a row must still resolve to exactly one assertion in
-    exactly one named immutable baseline, or the positive control fails closed.
-    """
-    matches = []
-    for ref in REGISTRY_BASE_REFS:
-        source = _git("show", f"{ref}:{relpath}")
-        fingerprints = [
-            fp for fp in _assertion_fingerprints(source)
-            if _fingerprint_digest(fp) == digest
-        ]
-        if fingerprints:
-            matches.append((ref, source, fingerprints))
-    assert len(matches) == 1, (relpath, digest, [(r, len(f)) for r, _s, f in matches])
-    ref, source, fingerprints = matches[0]
-    assert len(fingerprints) == 1, (relpath, digest, ref, len(fingerprints))
-    return ref, source, fingerprints[0]
+
+def _historicalized_fingerprint(fingerprint: str):
+    """Return the sole lawful complement of a registered positive predicate."""
+    if fingerprint.count("ops=[Eq()]") == 1:
+        return fingerprint.replace("ops=[Eq()]", "ops=[NotEq()]", 1)
+    if fingerprint.startswith("Call(") and "attr='startswith'" in fingerprint:
+        return f"UnaryOp(op=Not(), operand={fingerprint})"
+    return None
 
 
 def _registered_named_occurrences(relpath, pinned_src: str, live_src: str):
@@ -944,7 +914,7 @@ def _rename_in_fingerprint(fingerprint: str, old_name: str, new_name: str) -> st
 def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
     """Fingerprints asserted when pinned that are no longer asserted now.
 
-    THREE STAGES, in this order:
+    FOUR STAGES, in this order:
 
     1. **Verbatim.** An assertion still present unchanged is preserved. Nothing
        about it is abstracted, so a negative pin that legitimately kept its own
@@ -957,6 +927,9 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
        ASSERTION is registered may its predecessor literal be rewritten to the
        registered successor -- and then the result must appear verbatim among the
        live assertions. Each registration is consumed AT MOST ONCE.
+    4. **Registered historicalization.** Only a specifically registered current
+       positive occurrence may become its exact negative complement. This is a
+       finite, one-time conversion; it does not create a moving value map.
 
     Stages 2 and 3 answer reviews 5094619011 and 5093500583 respectively. The
     former global named-slot mechanism normalized every same-role name and every
@@ -976,10 +949,22 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
     live_fingerprints = collections.Counter(_assertion_fingerprints(live_src))
     named_registered = _registered_named_occurrences(relpath, pinned_src, live_src)
     bare_registered = _registered_occurrences(relpath)
+    historical_remaining = _historicalized_occurrences(relpath)
     # Each registration is spent once. Copying the lists makes that explicit and
     # keeps the module-level registry immutable.
     named_remaining = {d: list(v) for d, v in named_registered.items()}
     bare_remaining = {d: list(v) for d, v in bare_registered.items()}
+
+    def consume_historical(candidate: str) -> bool:
+        digest = _fingerprint_digest(candidate)
+        if historical_remaining[digest] <= 0:
+            return False
+        expected = _historicalized_fingerprint(candidate)
+        if expected is None or live_fingerprints.get(expected, 0) <= 0:
+            return False
+        historical_remaining[digest] -= 1
+        live_fingerprints[expected] -= 1
+        return True
 
     # STAGE 1 -- exact match, and it is deliberately FIRST. An assertion that is
     # present unchanged is explained by itself, never by a re-anchor or a
@@ -1004,6 +989,10 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
                 continue
             if live_fingerprints.get(expected, 0) > 0:
                 live_fingerprints[expected] -= 1
+                entries.pop(i)
+                matched = True
+                break
+            if consume_historical(expected):
                 entries.pop(i)
                 matched = True
                 break
@@ -1033,6 +1022,12 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
                 entries.pop(i)             # CONSUMED -- one registration, one use
                 matched = True
                 break
+            if consume_historical(expected):
+                entries.pop(i)
+                matched = True
+                break
+        if not matched and consume_historical(strict):
+            matched = True
         if not matched:
             lost.append(strict)
     return sorted(lost)
@@ -1187,10 +1182,12 @@ class TestTheFilingExistsAndIsWellFormed:
         assert gates[GATE]["pr"] in (None, THIS_PULL_REQUEST), gates[GATE]["pr"]
 
     def test_ws0014_self_reference_fields_point_at_the_current_binding(self):
-        assert WS0014["active_branch"] == CURRENT_ACTIVE_BRANCH
-        assert WS0014["active_pr"] == CURRENT_PULL_REQUEST
-        assert WS0014["last_verified_main_sha"] == CURRENT_MAIN_SHA
-        assert str(WS0014["last_verified_date"]) == CURRENT_VERIFIED_DATE
+        assert WS0014["active_branch"] == CURRENT_WS0014_BINDING["active_branch"]
+        assert WS0014["active_pr"] == CURRENT_WS0014_BINDING["active_pr"]
+        assert (WS0014["last_verified_main_sha"]
+                == CURRENT_WS0014_BINDING["last_verified_main_sha"])
+        assert (str(WS0014["last_verified_date"])
+                == CURRENT_WS0014_BINDING["last_verified_date"])
         assert _ws0014_binding_errors(WS0014) == set()
         assert WS0014["active_pr"] != THIS_PULL_REQUEST
         assert WS0014["last_verified_main_sha"] != BOUND_MERGE_SHA
@@ -1205,7 +1202,7 @@ class TestTheFilingExistsAndIsWellFormed:
         ),
     )
     def test_each_wrong_live_binding_field_fails_closed(self, field, wrong_value):
-        """Wrong branch, PR, base or date is reported even when the other three are exact."""
+        """Each stale field is reported even when the other three are exact."""
         mutant = dict(WS0014)
         mutant[field] = wrong_value
         assert _ws0014_binding_errors(mutant) == {field}
@@ -2424,16 +2421,14 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert _anchor_category(text) == expected, text
 
     def test_the_named_registry_identifies_occurrences_not_roles_or_values(self):
-        """Twenty-two two-baseline transitions are individually occurrence-bound."""
-        assert len(NAMED_ANCHOR_REANCHORS) == 22
+        """Eleven corpus transitions are individually file/fingerprint bound."""
+        assert len(NAMED_ANCHOR_REANCHORS) == 11
         by_names = collections.Counter(
             (old_name, new_name)
             for _r, _d, old_name, _ov, new_name, _nv, _c
             in NAMED_ANCHOR_REANCHORS)
-        assert by_names[("XASSET0060_MAIN_SHA", "PR364_MAIN_SHA")] == 8
-        assert by_names[("XASSET0060_ACTIVE_PR", "PR364_ACTIVE_PR")] == 3
-        assert by_names[("XASSET0061_MAIN_SHA", "PR364_MAIN_SHA")] == 8
-        assert by_names[("XASSET0061_ACTIVE_PR", "PR364_ACTIVE_PR")] == 3
+        assert by_names[("XASSET0060_MAIN_SHA", "XASSET0061_MAIN_SHA")] == 8
+        assert by_names[("XASSET0060_ACTIVE_PR", "XASSET0061_ACTIVE_PR")] == 3
         seen = set()
         for (rel, digest, old_name, old_value, new_name, new_value,
              category) in NAMED_ANCHOR_REANCHORS:
@@ -2454,7 +2449,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
     def test_every_named_occurrence_is_real_and_lawful(
             self, rel, digest, old_name, old_value, new_name, new_value, category):
         """POSITIVE CONTROLS: every explicit lawful named occurrence."""
-        _base_ref, base, matched_fingerprint = _unique_registry_baseline(rel, digest)
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
         live = (ROOT / rel).read_text(encoding="utf-8")
         pinned_bindings = _anchor_name_bindings(base)
         live_bindings = _anchor_name_bindings(live)
@@ -2468,8 +2463,19 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         assert new_name not in pinned_constants
         assert live_constants.get(old_name) == (category, old_value)
         assert live_constants.get(new_name) == (category, new_value)
-        expected = _rename_in_fingerprint(matched_fingerprint, old_name, new_name)
-        assert expected != matched_fingerprint
+        fingerprints = _assertion_fingerprints(base)
+        matched = [fp for fp in fingerprints if _fingerprint_digest(fp) == digest]
+        assert len(matched) == 1, (rel, digest, len(matched))
+        expected = _rename_in_fingerprint(matched[0], old_name, new_name)
+        assert expected != matched[0]
+        # A subset of these formerly-current positive assertions has now been
+        # converted, once, into an immutable negative pin.  Prove the exact
+        # registered two-step chain rather than requiring the obsolete positive
+        # endpoint to remain live forever.
+        historical = _historicalized_occurrences(rel)
+        if historical[_fingerprint_digest(expected)]:
+            expected = _historicalized_fingerprint(expected)
+            assert expected is not None
         assert expected in _assertion_fingerprints(live)
         registered = _registered_named_occurrences(rel, base, live)
         assert (old_name, old_value, new_name, new_value, category) in registered[digest]
@@ -2566,7 +2572,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         try:
             for entry in saved:
                 rel, digest = entry[:2]
-                _base_ref, base, _fingerprint = _unique_registry_baseline(rel, digest)
+                base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
                 live = (ROOT / rel).read_text(encoding="utf-8")
                 globals()["NAMED_ANCHOR_REANCHORS"] = tuple(
                     candidate for candidate in saved if candidate != entry)
@@ -2579,8 +2585,8 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
     def test_a_named_registration_is_consumed_at_most_once(self):
         """One named registration cannot explain two identical pinned copies."""
         entry = NAMED_ANCHOR_REANCHORS[0]
-        rel, digest, old_name, _ov, new_name, _nv, _cat = entry
-        _base_ref, base, _fingerprint = _unique_registry_baseline(rel, digest)
+        rel, _digest, old_name, _ov, new_name, _nv, _cat = entry
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
         live = (ROOT / rel).read_text(encoding="utf-8")
         old_line = next(
             line for line in base.splitlines()
@@ -2596,23 +2602,20 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         """The registry's own shape is the guarantee, so it is pinned.
 
         Each entry names a FILE and an exact PINNED ASSERTION fingerprint digest,
-        not merely a value pair. Twelve lawful corpus transitions are listed
-        individually -- six per immutable baseline -- never collapsed into
-        value-pair licences.
+        not merely a value pair. Six lawful corpus transitions are listed
+        individually -- five date sites and one branch site -- never collapsed
+        into value-pair licences.
         """
         assert BARE_LITERAL_REANCHORS, "the registry must not be empty"
-        assert len(BARE_LITERAL_REANCHORS) == 12, (
-            "the two-baseline corpus has exactly twelve bare-literal transitions")
+        assert len(BARE_LITERAL_REANCHORS) == 6, (
+            "the corpus has exactly six lawful bare-literal transitions")
         by_pair = collections.Counter(
             (old, new) for _r, _d, old, new, _c in BARE_LITERAL_REANCHORS)
         # The proof that identity is not the value pair: one pair legitimately
         # covers FIVE separate registered occurrences.
-        assert by_pair[("2026-08-27", "2026-09-03")] == 5
-        assert by_pair[("2026-08-28", "2026-09-03")] == 5
+        assert by_pair[("2026-08-27", "2026-08-28")] == 5
         assert by_pair[("claude/xasset-0057-rebinding-gqtg9o",
-                        "claude/protected-capital-accounting")] == 1
-        assert by_pair[("claude/xasset-0061-authorization-jux8p9",
-                        "claude/protected-capital-accounting")] == 1
+                        "claude/xasset-0061-authorization-jux8p9")] == 1
         seen = set()
         for rel, digest, old, new, cat in BARE_LITERAL_REANCHORS:
             assert rel in PINNED_TEST_HASHES, rel
@@ -2625,19 +2628,89 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
             assert (rel, digest) not in seen, f"{rel}/{digest[:12]} registered twice"
             seen.add((rel, digest))
 
+    def test_historicalization_registry_is_finite_exact_and_real(self):
+        """The one-time conversion is an occurrence list, not a value licence."""
+        assert len(HISTORICALIZED_REGISTER_ASSERTIONS) == 19
+        assert len(set(HISTORICALIZED_REGISTER_ASSERTIONS)) == 19
+        for rel, digest in HISTORICALIZED_REGISTER_ASSERTIONS:
+            assert rel in PINNED_TEST_HASHES, rel
+            assert re.fullmatch(r"[0-9a-f]{64}", digest), digest
+            base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+            candidates = [
+                fp for fp in _assertion_fingerprints(base)
+                if _fingerprint_digest(fp) == digest
+            ]
+            assert len(candidates) == 1, (rel, digest, len(candidates))
+            expected = _historicalized_fingerprint(candidates[0])
+            assert expected is not None, (rel, digest)
+            live = collections.Counter(_assertion_fingerprints(
+                (ROOT / rel).read_text(encoding="utf-8")))
+            assert live[expected] == 1, (rel, digest)
+
+    def test_every_historicalization_registration_is_load_bearing(self):
+        """Removing any row exposes that exact historical predicate as lost."""
+        saved = HISTORICALIZED_REGISTER_ASSERTIONS
+        try:
+            for entry in saved:
+                rel, digest = entry
+                globals()["HISTORICALIZED_REGISTER_ASSERTIONS"] = tuple(
+                    candidate for candidate in saved if candidate != entry)
+                base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+                live = (ROOT / rel).read_text(encoding="utf-8")
+                lost = _lost_assertions(base, live, rel)
+                assert any(_fingerprint_digest(fp) == digest for fp in lost), (
+                    f"the {rel}/{digest[:12]} historicalization is never needed")
+        finally:
+            globals()["HISTORICALIZED_REGISTER_ASSERTIONS"] = saved
+
+    def test_one_historicalization_registration_cannot_cover_two_occurrences(
+            self, monkeypatch):
+        """One registered positive occurrence may become one negative occurrence."""
+        rel = "synthetic_historicalization.py"
+        positive = 'def f(ws):\n    assert ws["active_pr"] == 362\n'
+        negative = 'def f(ws):\n    assert ws["active_pr"] != 362\n'
+        fingerprint = _assertion_fingerprints(positive)[0]
+        monkeypatch.setattr(
+            sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
+            ((rel, _fingerprint_digest(fingerprint)),))
+        lost = _lost_assertions(positive + positive, negative, rel)
+        assert len(lost) == 1, lost
+
+    def test_unregistered_historicalization_fails_closed(self):
+        positive = 'def f(ws):\n    assert ws["active_pr"] == 362\n'
+        negative = 'def f(ws):\n    assert ws["active_pr"] != 362\n'
+        assert _lost_assertions(positive, negative)
+        assert _lost_assertions(positive, negative, "unregistered.py")
+
+    def test_every_preexisting_register_negative_pin_is_retained_exactly(self):
+        """Historical exclusions cannot finance the current live binding."""
+        baseline_total = 0
+        missing = {}
+        for rel in sorted(PINNED_TEST_HASHES):
+            baseline = _register_negative_inventory(
+                _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}"))
+            live = _register_negative_inventory(
+                (ROOT / rel).read_text(encoding="utf-8"))
+            baseline_total += baseline.total()
+            lost = baseline - live
+            if lost:
+                missing[rel] = lost
+        assert baseline_total == EXPECTED_RETAINED_REGISTER_NEGATIVES
+        assert not missing, f"historical WS-0014 negative pins lost: {missing}"
+
     @pytest.mark.parametrize(
         "rel,digest,old,new,cat", BARE_LITERAL_REANCHORS,
         ids=[f"{r.split('_')[-2]}-{c}" for r, _d, _o, _n, c in BARE_LITERAL_REANCHORS])
     def test_every_registered_occurrence_is_real_and_lawful(
             self, rel, digest, old, new, cat):
-        """POSITIVE CONTROLS: each of the twelve lawful rows, via its OWN identity.
+        """POSITIVE CONTROLS: each of the six lawful sites, via its OWN identity.
 
         Narrowing the rule must not break the corpus it was derived from. Each
         entry is checked against its own file's real pinned baseline: the
         predecessor is really asserted there, the successor really replaces it,
         and the registered digest really is that assertion's fingerprint.
         """
-        _base_ref, base, _fingerprint = _unique_registry_baseline(rel, digest)
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
         live = (ROOT / rel).read_text(encoding="utf-8")
         assert base != live, "this proof needs a genuinely re-anchored predecessor"
         assert old in base and new in live, "the entry's own endpoints have moved"
@@ -2657,12 +2730,12 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         has nothing left and is reported.
         """
         rel = "test_level1_stage1_readiness_verification_authorization.py"
-        entry = next(e for e in BARE_LITERAL_REANCHORS
-                     if e[0] == rel and e[2] == "2026-08-27")
-        _r, digest, old, new, _c = entry
-        _base_ref, base, _fingerprint = _unique_registry_baseline(rel, digest)
+        base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
         live = (ROOT / rel).read_text(encoding="utf-8")
         assert not _lost_assertions(base, live, rel)
+        entry = [e for e in BARE_LITERAL_REANCHORS if e[0] == rel]
+        assert len(entry) == 1, "this probe assumes one registration for the file"
+        _r, digest, old, new, _c = entry[0]
         # Find the exact registered assertion's source text and duplicate it.
         src_line = next(l for l in base.splitlines() if old in l and "assert" in l)
         live_line = src_line.replace(old, new)
@@ -2673,11 +2746,11 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
     def test_two_registered_occurrences_sharing_values_cannot_cross(self):
         """Same pair, two files: neither registration may cover the other's site.
 
-        Both entries below use the identical `2026-08-27 -> 2026-09-03` pair, so
+        Both entries below use the identical `2026-08-27 -> 2026-08-28` pair, so
         under a value-keyed rule they were one licence. Keyed by occurrence they
         are two, and each is confined to its own file.
         """
-        pair = ("2026-08-27", "2026-09-03")
+        pair = ("2026-08-27", "2026-08-28")
         sites = [(r, d) for r, d, o, n, _c in BARE_LITERAL_REANCHORS
                  if (o, n) == pair]
         assert len(sites) >= 2, "this probe needs two sites sharing one pair"
@@ -2695,7 +2768,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         # And swapping the relpath does not carry a registration across files:
         # file A's baseline compared under file B's identity is only clean if B
         # independently registered that same assertion shape.
-        _base_ref, base_a, _fingerprint = _unique_registry_baseline(rel_a, dig_a)
+        base_a = _git("show", f"{BOUND_MERGE_SHA}:{rel_a}")
         live_a = (ROOT / rel_a).read_text(encoding="utf-8")
         if dig_a not in b_digests:
             assert _lost_assertions(base_a, live_a, rel_b), (
@@ -2733,43 +2806,21 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         because no such path exists any more.
         """
         unexplained = []
-        for base_ref in REGISTRY_BASE_REFS:
-            for rel in sorted(PINNED_TEST_HASHES):
-                if rel in PROTECTED_PREDICATES:
-                    continue
-                live = (ROOT / rel).read_text(encoding="utf-8")
-                try:
-                    base = _git("show", f"{base_ref}:{rel}")
-                except Exception:
-                    continue
-                if base == live:
-                    continue
-                if _lost_assertions(base, live, rel):
-                    unexplained.append((base_ref, rel))
+        for rel in sorted(PINNED_TEST_HASHES):
+            if rel in PROTECTED_PREDICATES:
+                continue
+            live = (ROOT / rel).read_text(encoding="utf-8")
+            try:
+                base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
+            except Exception:
+                continue
+            if base == live:
+                continue
+            if _lost_assertions(base, live, rel):
+                unexplained.append(rel)
         assert not unexplained, (
             "these suites lose an assertion the registry does not explain: "
             f"{unexplained}")
-
-    def test_every_preexisting_register_negative_pin_is_retained_exactly(self):
-        """Historical exclusions cannot be spent to finance the current re-anchor.
-
-        The accepted predecessor contains 316 negative assertion occurrences
-        about WS-0014's four live fields.  Multiplicity and exact AST shape are
-        both protected: removing, renaming, or relaxing even one is a loss.
-        """
-        baseline_total = 0
-        missing = {}
-        for rel in sorted(PINNED_TEST_HASHES):
-            baseline = _register_negative_inventory(
-                _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}"))
-            live = _register_negative_inventory(
-                (ROOT / rel).read_text(encoding="utf-8"))
-            baseline_total += baseline.total()
-            lost = baseline - live
-            if lost:
-                missing[rel] = lost
-        assert baseline_total == EXPECTED_RETAINED_REGISTER_NEGATIVES
-        assert not missing, f"historical WS-0014 negative pins lost: {missing}"
 
     def test_every_registration_is_exercised_by_the_corpus(self):
         """No dead entry: each registration is actually needed by its own file.
@@ -2778,7 +2829,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         removing any single entry must make that file's comparison fail.
         """
         for rel, digest, old, new, cat in BARE_LITERAL_REANCHORS:
-            _base_ref, base, _fingerprint = _unique_registry_baseline(rel, digest)
+            base = _git("show", f"{BOUND_MERGE_SHA}:{rel}")
             live = (ROOT / rel).read_text(encoding="utf-8")
             reduced = tuple(e for e in BARE_LITERAL_REANCHORS
                             if not (e[0] == rel and e[1] == digest))

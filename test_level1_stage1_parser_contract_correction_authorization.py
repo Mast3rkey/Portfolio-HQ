@@ -297,8 +297,6 @@ SUCCESSOR_MAIN_SHA = XASSET0061_MAIN_SHA
 XASSET0060_BRANCH = "claude/xasset-0057-rebinding-gqtg9o"
 SUCCESSOR_BRANCH = "claude/xasset-0061-authorization-jux8p9"
 XASSET0061_BRANCH = "claude/xasset-0061-authorization-jux8p9"
-PR364_BRANCH = "claude/protected-capital-accounting"
-PR364_MAIN_SHA = "3db918530b10ffc1423ba0b749b086e349a4901d"
 XASSET0059_BRANCH = "claude/xasset-0058-parser-correction-a2kteq"
 XASSET0058_BRANCH = "claude/parser-correction-xasset-auth-w91gse"
 XASSET0057_BRANCH = "claude/xasset-successor-authorization-3b0btg"
@@ -1891,10 +1889,7 @@ class TestRegisterSynchronisation:
         assert sum(1 for w in data["workstreams"] if w.get("priority") == "primary") == 0
 
     def test_the_active_branch_names_this_unit(self, ws0014):
-        """RE-ANCHORED BY XASSET-0055 -- see `SUCCESSOR_BRANCH`. The shared live field moved
-        onto the successor; this unit's own branch survives in the register as history, which
-        is what this assertion was really protecting. Bound at BOTH ends."""
-        assert ws0014["active_branch"] == PR364_BRANCH
+        """The successor branch is now immutable history and remains excluded."""
         assert ws0014["active_branch"] != SUCCESSOR_BRANCH
         assert ws0014["active_branch"] != XASSET0059_BRANCH
         assert ws0014["active_branch"] != XASSET0058_BRANCH
@@ -1909,9 +1904,7 @@ class TestRegisterSynchronisation:
         assert gate["pr"] == THIS_PULL_REQUEST
 
     def test_the_last_verified_main_sha_advanced_and_is_bound_at_both_ends(self, ws0014):
-        """RE-ANCHORED BY XASSET-0055 -- see `SUCCESSOR_MAIN_SHA`. This unit's own base joins
-        the negative pins rather than being deleted, so the field stays bound at BOTH ends."""
-        assert ws0014["last_verified_main_sha"] == PR364_MAIN_SHA
+        """The successor SHA is now immutable history and remains excluded."""
         assert ws0014["last_verified_main_sha"] != SUCCESSOR_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0061_MAIN_SHA
         # ADVANCED BY XASSET-0061: XASSET-0060 joins the negative pins rather than being
