@@ -138,6 +138,94 @@ def _append(path: Path, fields: tuple[str, ...], row: Mapping[str, object]) -> N
         writer.writerow({field: row.get(field, "") for field in fields})
 
 
+def _validate_text_cells(row: Mapping[str, object]) -> None:
+    _clean_text(row.get("source"), field="source", required=True)
+    _clean_text(row.get("note"), field="note")
+
+
+def _validated_cashflow_rows(path: Path) -> list[dict[str, str]]:
+    rows = _read_rows(path, CASHFLOW_FIELDS)
+    previous_at = None
+    for row in rows:
+        at = _timestamp(row["occurred_at"], field="existing occurred_at")
+        if previous_at is not None and at <= previous_at:
+            raise MeasurementError("cash-flow timestamps must be strictly increasing")
+        direction = _clean_text(row["direction"], field="direction", required=True).lower()
+        if direction not in {"deposit", "withdrawal"}:
+            raise MeasurementError("direction must be deposit or withdrawal")
+        amount = _number(row["amount"], field="amount", minimum=0.01)
+        before = _number(row["book_before"], field="book_before", minimum=0.0)
+        after = _number(row["book_after"], field="book_after", minimum=0.0)
+        expected = before + amount if direction == "deposit" else before - amount
+        if not math.isclose(after, expected, abs_tol=0.01, rel_tol=0.0):
+            raise MeasurementError("existing cashflow bracketing values do not reconcile")
+        _validate_text_cells(row)
+        previous_at = at
+    return rows
+
+
+def _validated_margin_rows(path: Path) -> list[dict[str, str]]:
+    rows = _read_rows(path, MARGIN_FIELDS)
+    previous_at = None
+    previous_debt = None
+    for row in rows:
+        at = _timestamp(row["observed_at"], field="existing observed_at")
+        if previous_at is not None and at <= previous_at:
+            raise MeasurementError("margin observation timestamps must be strictly increasing")
+        event_type = _clean_text(
+            row["event_type"], field="event_type", required=True
+        ).lower()
+        if event_type not in {"initial_sync", "draw", "paydown", "resync"}:
+            raise MeasurementError("margin event_type is invalid")
+        amount = _number(row["amount"], field="amount", minimum=0.0)
+        debt = _number(row["resulting_debt"], field="resulting_debt", minimum=0.0)
+        _number(
+            row["resulting_buffer_pct"], field="resulting_buffer_pct",
+            minimum=0.0, maximum=100.0,
+        )
+        if previous_debt is not None:
+            delta = debt - previous_debt
+            if math.isclose(delta, 0.0, abs_tol=0.005, rel_tol=0.0):
+                expected_type, expected_amount = "resync", 0.0
+            elif delta > 0:
+                expected_type, expected_amount = "draw", delta
+            else:
+                expected_type, expected_amount = "paydown", -delta
+            if event_type != expected_type or not math.isclose(
+                    amount, expected_amount, abs_tol=0.01, rel_tol=0.0):
+                raise MeasurementError("margin event does not reconcile with prior debt")
+        elif event_type == "initial_sync" and not math.isclose(
+                amount, 0.0, abs_tol=0.005, rel_tol=0.0):
+            raise MeasurementError("initial margin sync amount must be zero")
+        _validate_text_cells(row)
+        previous_at, previous_debt = at, debt
+    return rows
+
+
+def _validated_interest_rows(path: Path) -> list[dict[str, str]]:
+    rows = _read_rows(path, INTEREST_FIELDS)
+    previous_at = None
+    for row in rows:
+        at = _timestamp(row["charged_at"], field="existing charged_at")
+        if previous_at is not None and at <= previous_at:
+            raise MeasurementError("interest charge timestamps must be strictly increasing")
+        _number(row["amount_charged"], field="amount_charged", minimum=0.01)
+        try:
+            start = date.fromisoformat(_clean_text(
+                row["statement_period_start"], field="statement_period_start", required=True
+            ))
+            end = date.fromisoformat(_clean_text(
+                row["statement_period_end"], field="statement_period_end", required=True
+            ))
+        except ValueError as exc:
+            raise MeasurementError("statement periods must be ISO-8601 dates") from exc
+        if end < start:
+            raise MeasurementError("statement_period_end must not precede start")
+        _validate_text_cells(row)
+        previous_at = at
+    return rows
+
+
 def record_cashflow(path: Path, *, direction: str, amount,
                     book_before, book_after, source: str = "broker_statement",
                     note: str = "", occurred_at: str | datetime | None = None) -> dict:
@@ -163,7 +251,7 @@ def record_cashflow(path: Path, *, direction: str, amount,
         "source": _clean_text(source, field="source", required=True),
         "note": _clean_text(note, field="note"),
     }
-    rows = _read_rows(path, CASHFLOW_FIELDS)
+    rows = _validated_cashflow_rows(path)
     if rows and _timestamp(row["occurred_at"], field="occurred_at") <= _timestamp(
             rows[-1]["occurred_at"], field="existing occurred_at"):
         raise MeasurementError("cash-flow timestamps must be strictly increasing")
@@ -200,7 +288,15 @@ def record_margin_sync(path: Path, *, resulting_debt, resulting_buffer_pct,
         "source": _clean_text(source, field="source", required=True),
         "note": _clean_text(note, field="note"),
     }
-    rows = _read_rows(path, MARGIN_FIELDS)
+    rows = _validated_margin_rows(path)
+    if rows and prior_debt is None:
+        raise MeasurementError("prior margin debt is required when the ledger has history")
+    if rows and prior_debt is not None:
+        durable_debt = _number(
+            rows[-1]["resulting_debt"], field="existing resulting_debt", minimum=0.0
+        )
+        if not math.isclose(prior, durable_debt, abs_tol=0.01, rel_tol=0.0):
+            raise MeasurementError("prior margin debt does not match the durable ledger")
     if rows and _timestamp(row["observed_at"], field="observed_at") <= _timestamp(
             rows[-1]["observed_at"], field="existing observed_at"):
         raise MeasurementError("margin observation timestamps must be strictly increasing")
@@ -233,7 +329,7 @@ def record_interest(path: Path, *, amount_charged, statement_period_start: str,
         "source": _clean_text(source, field="source", required=True),
         "note": _clean_text(note, field="note"),
     }
-    rows = _read_rows(path, INTEREST_FIELDS)
+    rows = _validated_interest_rows(path)
     if rows and _timestamp(row["charged_at"], field="charged_at") <= _timestamp(
             rows[-1]["charged_at"], field="existing charged_at"):
         raise MeasurementError("interest charge timestamps must be strictly increasing")
@@ -323,4 +419,4 @@ def exact_twr(performance_rows: Iterable[Mapping[str, object]],
 
 
 def read_cashflows(path: Path) -> list[dict[str, str]]:
-    return _read_rows(path, CASHFLOW_FIELDS)
+    return _validated_cashflow_rows(path)

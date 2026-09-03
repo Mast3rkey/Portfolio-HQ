@@ -86,6 +86,22 @@ def test_existing_malformed_rows_block_reads_and_appends(tmp_path, bad_row):
     assert path.read_bytes() == original
 
 
+def test_existing_semantically_invalid_cashflow_blocks_append(tmp_path):
+    path = tmp_path / "cashflow.csv"
+    path.write_text(
+        "occurred_at,direction,amount,book_before,book_after,source,note\n"
+        "2026-09-03T13:00:00Z,deposit,10,100,109,statement,bad identity\n",
+        encoding="utf-8",
+    )
+    original = path.read_bytes()
+    with pytest.raises(MeasurementError, match="do not reconcile"):
+        record_cashflow(
+            path, direction="deposit", amount=1, book_before=109,
+            book_after=110, occurred_at=T2,
+        )
+    assert path.read_bytes() == original
+
+
 @pytest.mark.parametrize("bad", [float("nan"), float("inf"), -1, True])
 def test_measurement_numbers_fail_closed(tmp_path, bad):
     path = tmp_path / "cashflow.csv"
@@ -169,6 +185,45 @@ def test_margin_events_infer_draw_paydown_and_resync(tmp_path):
     assert [row["amount"] for row in rows] == ["0.00", "25.00", "50.00", "0.00"]
 
 
+def test_existing_semantically_invalid_margin_row_blocks_append(tmp_path):
+    path = tmp_path / "margin.csv"
+    path.write_text(
+        "observed_at,event_type,amount,resulting_debt,resulting_buffer_pct,source,note\n"
+        "2026-09-03T12:00:00Z,initial_sync,0,100,60,display,\n"
+        "2026-09-03T13:00:00Z,paydown,25,125,55,display,bad direction\n",
+        encoding="utf-8",
+    )
+    original = path.read_bytes()
+    with pytest.raises(MeasurementError, match="does not reconcile"):
+        record_margin_sync(
+            path, prior_debt=125, resulting_debt=100,
+            resulting_buffer_pct=60, observed_at=T2,
+        )
+    assert path.read_bytes() == original
+
+
+def test_margin_append_requires_state_to_match_durable_debt(tmp_path):
+    path = tmp_path / "margin.csv"
+    record_margin_sync(
+        path, prior_debt=None, resulting_debt=100,
+        resulting_buffer_pct=60, observed_at=T0,
+    )
+    original = path.read_bytes()
+    with pytest.raises(MeasurementError, match="does not match"):
+        record_margin_sync(
+            path, prior_debt=90, resulting_debt=80,
+            resulting_buffer_pct=65, observed_at=T1,
+        )
+    assert path.read_bytes() == original
+
+    with pytest.raises(MeasurementError, match="prior margin debt is required"):
+        record_margin_sync(
+            path, prior_debt=None, resulting_debt=80,
+            resulting_buffer_pct=65, observed_at=T1,
+        )
+    assert path.read_bytes() == original
+
+
 def test_interest_accepts_actual_charge_and_valid_period(tmp_path):
     path = tmp_path / "interest.csv"
     record_interest(
@@ -190,6 +245,22 @@ def test_interest_rejects_reversed_period(tmp_path):
             statement_period_end="2026-08-31",
             charged_at=T2,
         )
+
+
+def test_existing_semantically_invalid_interest_row_blocks_append(tmp_path):
+    path = tmp_path / "interest.csv"
+    path.write_text(
+        "charged_at,amount_charged,statement_period_start,statement_period_end,source,note\n"
+        "2026-09-03T12:00:00Z,not-a-number,2026-08-01,2026-08-31,statement,\n",
+        encoding="utf-8",
+    )
+    original = path.read_bytes()
+    with pytest.raises(MeasurementError, match="amount_charged must be numeric"):
+        record_interest(
+            path, amount_charged=1, statement_period_start="2026-09-01",
+            statement_period_end="2026-09-30", charged_at=T2,
+        )
+    assert path.read_bytes() == original
 
 
 def test_update_margin_preserves_state_and_adds_audit_event(tmp_path, monkeypatch):
