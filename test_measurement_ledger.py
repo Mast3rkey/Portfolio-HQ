@@ -199,4 +199,3 @@ def test_render_performance_labels_exact_twr_unavailable_for_legacy_log(
     out = allocate.render_performance()
     assert "Exact cash-flow-adjusted TWR: **unavailable**" in out
     assert "at least two timestamped whole-book snapshots" in out
-
