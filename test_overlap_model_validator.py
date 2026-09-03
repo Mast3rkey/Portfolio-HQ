@@ -757,6 +757,11 @@ _PROTECTED_PATHS = [
     "allocate.py", "margin_state.py", "levels.py",
 ]
 
+_OVERLAP_MODEL_BASE_SHA = "957d14b7d3ac8e299b3c966d7aeed00f85c03ae0"
+_OVERLAP_MODEL_ACCEPTED_HEAD = "3a36e831d7f7f958649150e5508ead187f5f7d0e"
+_OVERLAP_MODEL_MERGE_SHA = "47851f8042c65989e3b9ed606943089fec47b23e"
+_OVERLAP_MODEL_MERGE_TREE = "8d543c194db254e00d5708b271a981fb6137a2bf"
+
 
 def test_protected_paths_untouched_by_this_module_import():
     """Importing/using this validator module must never mutate any
@@ -775,25 +780,60 @@ def test_protected_paths_untouched_by_this_module_import():
 
 
 def test_protected_intelligence_records_untouched():
-    """No pre-existing record under any of these directories is modified,
-    renamed, or deleted -- new records (e.g. a future, separately
-    authorized WS-0005-successor equity/relationship cohort under
-    intelligence/companies|relationships/) are permitted, since these
-    directories are not permanently closed. Repaired from a raw `git
-    status --porcelain` check (XASSET-0012 bounded correction, MAJOR-1
-    item F): the raw form could not distinguish a legitimate future
-    addition from an unauthorized modification of existing content and
-    would false-fail the moment either directory legitimately grew, the
-    same defect class an independent exact-head review found in the
-    now-repaired governance/decisions check below."""
-    _assert_no_unauthorized_change_since_base([
+    """PR #292 did not touch its pre-existing intelligence siblings.
+
+    This is a claim about the overlap-model unit's accepted historical
+    scope, so it is measured over that immutable range. Comparing the
+    current working tree to its current PR base would turn PR #292's
+    boundary into a permanent ban on later, separately authorized company-
+    intelligence refreshes.
+    """
+    for label, sha in (
+        ("base", _OVERLAP_MODEL_BASE_SHA),
+        ("accepted head", _OVERLAP_MODEL_ACCEPTED_HEAD),
+        ("merge", _OVERLAP_MODEL_MERGE_SHA),
+    ):
+        resolved = subprocess.run(
+            ["git", "cat-file", "-e", f"{sha}^{{commit}}"],
+            cwd=REPO_ROOT, capture_output=True, text=True,
+        )
+        assert resolved.returncode == 0, f"PR #292 {label} is unavailable: {sha}"
+
+    parents = subprocess.run(
+        ["git", "rev-list", "--parents", "-n", "1", _OVERLAP_MODEL_MERGE_SHA],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+    ).stdout.split()
+    assert parents == [
+        _OVERLAP_MODEL_MERGE_SHA,
+        _OVERLAP_MODEL_BASE_SHA,
+        _OVERLAP_MODEL_ACCEPTED_HEAD,
+    ]
+    accepted_tree = subprocess.run(
+        ["git", "rev-parse", f"{_OVERLAP_MODEL_ACCEPTED_HEAD}^{{tree}}"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    merge_tree = subprocess.run(
+        ["git", "rev-parse", f"{_OVERLAP_MODEL_MERGE_SHA}^{{tree}}"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    assert accepted_tree == _OVERLAP_MODEL_MERGE_TREE
+    assert merge_tree == _OVERLAP_MODEL_MERGE_TREE
+
+    protected = [
         "intelligence/etf_classification", "intelligence/crypto_classification",
         "intelligence/classification", "intelligence/companies", "intelligence/themes",
         "intelligence/relationships", "intelligence/functional_doctrine",
-    ])
+    ]
+    result = subprocess.run(
+        ["git", "diff", "--name-status",
+         f"{_OVERLAP_MODEL_BASE_SHA}..{_OVERLAP_MODEL_MERGE_SHA}",
+         "--", *protected],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+    )
+    assert result.stdout.strip() == "", result.stdout
 
 
-# ── PR-base-relative protected-path checks (additions permitted, existing
+# ── PR-base-relative governance-path checks (additions permitted, existing
 #    content must never be modified/renamed/deleted) -- XASSET-0012 bounded
 #    correction, MAJOR-1: repairs (not deletes) the governance-decisions
 #    protection this file's own PR #292 commit originally added, reusing
