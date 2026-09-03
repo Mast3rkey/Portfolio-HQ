@@ -602,138 +602,138 @@ HISTORICALIZED_REGISTER_ASSERTIONS = (
     ("test_level1_stage1_activation_authorization.py",
      "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
      "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
-     "48b54482563e707461d39a8958c25da0fab681f266c6bb987a6ce95351827c92"),
+     "934aa3bcf7a26a055eaed277a95528623b18135dba84730f12367e55b1662a31"),
     ("test_level1_stage1_activation_authorization.py",
      "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
      "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
-     "9d2676b60270774e85c4bf2512914a2223367a7e3a178aa7e418399853aa2a6a"),
+     "df79f46f5c84d117fefee73f80a034f8a5e47dfbcb120a2da2fac41b4063090e"),
     ("test_level1_stage1_activation_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
-     "8e8e8f9c8e534b30a55ccc93041b7405d36e6e4db544f5a084a13808603d3c53"),
+     "3ca21d31690151090b80e4dbf69b8efacdb6f93b7f1f7d63fbf01906c1db4c16"),
     ("test_level1_stage1_post_correction_rebinding.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "2bb152d6c448e70b6fbf0d8a2bea20916730b7d5ab880c62499bd55ca444456d"),
+     "8b4fd531663c351b3f783e518d4d9ce42dcb738e035f14ae0ad4a9d613c408ec"),
     ("test_level1_stage1_post_correction_rebinding_authorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "5d53799b7630b2463e330d2cd9dec16d4bcb7053ead1a57ebe277b841d30f429"),
+     "0460469618372415bfaae784205f6eadb2c2b9abd198211c33dba16320ba222c"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "d141383e922e038bc253751d021bde7a5e1a2dcab65cadd4fa550ef40445d1e0"),
+     "176a2ab5d5366c453a330f7ce8f71618ead678105851bb612cac0ddf69df8543"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
      "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
      "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444",
-     "c4e5549e30e39379d91a0b0bf16f0af93100f796465cb3113b5e45318086660a"),
+     "b00bb0a7fb127692bb391538496244f70632cbdedd9a1d3708a119ff14a4f3b3"),
     ("test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "25559cf74f2310f8a61916cf31d39dc6885dcf23ee0a1cb31d3216a7be443f95"),
+     "0c7665b5eea122fbc8d2327edc744dab04704000843cd0ea3e3d3ad3aa891849"),
     ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
      "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
      "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f",
-     "7ca2c49052283866dffa4c2d31ad80b0d5abcd1fb68488cafdbcacd26231ab1b"),
+     "0ed45fd09bca4cfc6504666cddfbd6b4498bcc7717d507f6526179ed56ace36f"),
     ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
      "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
      "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0",
-     "f4ff14ad1d84fd097ae88b11da73a43327f8906caabd3e081482f6a0686ff4e5"),
+     "05c59b5371d1629d45cde8c410fe216f917b1f0a399718c459356e939a6bda93"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
      "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
-     "6b600b19282c6dd3da06a7aa60bb37b9e4978e33608e6226a5ecfeedc0353bae"),
+     "39bffd075e1731290f285b53506da757068eb832e9d40f3f49d8ebc1f25ed15c"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
      "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
-     "8c7bef1e77889171d3199a1038e79f8fd367cdeb4c0a64a3e5e74861a1dc5658"),
+     "0a1d992a990bc773fa8fa9f97617504d37c31e5411b7404daff207abf42415cd"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
-     "9676841ad4cc2ebfb7974fa119f613bd21b62fc84930be87ace413542acfc36b"),
+     "98b89d399a15c2cfbcca4d0e1c3e0fec22fb1853c90d858cc2fede68d225de75"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "f5ce46c934051b62f3df6ae4dfd1f6fa9a03f79838059f6a894976e2d0ed9362",
      "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
-     "f0933ddf824a0d1bb8f0d185550e765a6810c1e0ac9d974a001e768534cd5d1f"),
+     "30d116441f9b9d2df4a02d038a457ae7a3a0b400ee9f6bf18891bb69c256b639"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "fddb23994010e9dc3228199856aa715090d3755ab681b9f3d4fa82b68d640aa9"),
+     "66c406808283e946e74d4384e644a919725ac6910943138ce18b146ffc3ffdcb"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
      "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
      "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444",
-     "c5c0a3d69ef57a3cca7d49561860688624da3c52d8c532672d096f1a0d82d174"),
+     "3e8e87b7f34284f2556017646d34e8ecacaf69f3437d01c919b533b7a43cc331"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
      "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd",
-     "830a47cb5b1f00684bd6e95c45d2c4b0b21ee7e40f563b301256d2492c3e8f9a"),
+     "761b067b5c31f11824e5a9f7a9f3f050bba23de8d3851da67ea6112602fda1bd"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
      "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4",
-     "07f9dbec94e6c3a3f4859c42f8d327cdf5e5f0358f616cb0331146f6c8a2b83f"),
+     "eee4e18867f2b9545f48c2c25a3506cb76ba9b016a64303e31667a594c24c1ab"),
     ("test_level1_stage1_readiness_verification_authorization.py",
      "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
      "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29",
-     "307cda57a9a33ce7628a1b618e05435106275c957536496fa51762154ca064c4"),
+     "2c6325fb3457446deef262d94d6cd9688e5b7303259a812b88eb7098e140dd89"),
 
     # The five suites routed through PROTECTED_PREDICATES need the same exact
     # occurrence protection for their newly historical register predicates.
     ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
      "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
      "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f",
-     "cafe5ee23a78156a34fe2a879f6e9c23595de421ccd09cd09c7b7e5083f69ac0"),
+     "2f55c0538145c621bbb8931af226e309bce7494f4a57512056d5faa38566ee46"),
     ("test_level1_stage1_formal_disposition_parser_correction_authorization.py",
      "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
      "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0",
-     "95885ab8f224c1ac0a2bd002bb195528711898e88dfd3f8882319e0f84f8ba62"),
+     "1bd9e0d07731d0845a0147cff6daf1a8b1f95c2f07c1febf863d0f762b93dfd0"),
     ("test_level1_stage1_parser_contract_correction_authorization.py",
      "e44d97a2654922db1d77ccdc014e490118777039e671de7a8907e79db560e9be",
      "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
-     "6bd87c98cd09bfbbfbb8db91c2fc77468362e727d15a9b546019567f84410a9a"),
+     "96bc9e17a86c72bfafd2cd634e088dacb5c2fb91daa30db070ed7ab3bfec404a"),
     ("test_level1_stage1_parser_contract_correction_authorization.py",
      "e4f4231a90d6bab860535b4798918114f8eca81beea106326899fc99545d369f",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "11e846e1c453d180fca7fb0ba92be2291d1aa7b9266a39f1c5eb2c4afa2a8025"),
+     "c05ad847954380fa08d6ba85a96aea136f883ca78b408140278281159bfebb0b"),
     ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
      "6531fc8ab57ca19e7edfbed9dee040bcc8fd95823173e7b8abbd6c2f1a117560",
      "c864fa0567da6bb474892c2e2735277fbef880454c6b3b317e3af1f7f3e9909e",
-     "3eba9ab17458bdfc9c91bf835a179e088ad2838f9e4e2bc08f46c05df6cdaa9b"),
+     "70fb6732cb993416b400416a5e9a266e9c09a952ad49a3f0806936bc80d25025"),
     ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
      "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
      "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7",
-     "c766568eb709a7e97acb722c27a69ff433a381fc6581b96ce86b22d514266574"),
+     "dc32b4d3040741b302583c5d3d51e775399acddd134283ef3993ae2abf887cd8"),
     ("test_level1_stage1_post_merge_ci_recovery_reconciliation.py",
      "abf86d25e136723d2376c98dcec9f39644ccb4d6b15c8fed014f22c71bbb3084",
      "7dad9b98303769ae9c6e0dce0ab891e597b131bd4018f2e73f8bf30d7ac5a2f7",
-     "5279a466fa2724b6dc17cf488488989df982ce95f2c26f696fef8c54d9f8e2fa"),
+     "23d82cba2c76792456088b135c4b2303599b9596db1f0945c1325f3fdeb35f04"),
     ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
      "98832ed7c8ea617746dab05af3a976436b6b4f0564624162acf865402bdb3ce3",
      "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0",
-     "53a0b63471083a0f1d38d0de8ded079b944f2aa5b449c1182ee96c10482bbfc5"),
+     "87afe27f603f459127ed32a01bb7d37e4f708e31d7e2ee9b85b98bf9b949cc52"),
     ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
      "c3d19fec7a3c6520ddb615e7dcda1ecc2dd793de8769009c57c05c00a2244fff",
      "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2",
-     "5c9ac260d8f4f22c700ac40118256eb274e9d3f632de73a57dc6af296ebcbaa1"),
+     "3684e36bbfdbb25826dde0c72057ddec456ccd84e8e4642a30d1a6d097eaa83e"),
     ("test_level1_stage1_post_parser_correction_operational_rebinding.py",
      "c5a9a677842c286ee149fe058fe9f00a5d9062638b5f9b7a96a02ceb914fdeb8",
      "800a2a0eb3d5b305b1415770aad86aa66b19d79d3dc01e95aa8bb5fba210c3ce",
-     "3fbe233eaa88be9806dc8fbe9d2feef3d6ddc830fe1b2db09671266445ec5f46"),
+     "379a1d398ff0677fca048067fe71eccf0f473382200323c66975faa3acd45dac"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "a7ff7d9401d1ca98525e7030552ded339e4e96d3fb84c9a4fe2dfc8949e8d79b",
      "bdecd00f37afa0aec457cc30ac1a7f1df4a7b4a1bddf4a67545ed81b2973b11c",
-     "f28e7fc63a6ea0c16e2bd4dd3a04314a5e397fd32b075e462c5976afff92993a"),
+     "ff50d3052b03ffdcd663171e743d62b6b36352207511b1abc211ebddb36aecad"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
      "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
-     "84500cef73f74f841d7b14b852d5e35765b8a736e5a8bc706cf679954eb2d0d3"),
+     "2a4c9a2ac91a31fdb4c4bc1d86a5cb689660588a22bd2440c07c9ab7862360c9"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "7d5311f304ec46ba1ac6a8d1200f0e4942ca4c2c66ecc9dd5066272b84bcc5c8",
      "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
-     "0bfbd124e7cb7a8335cf6a1f60ef6716944aa38d0c71718ef5ea0aadb9b809fd"),
+     "62bc10ffa253ea1a2aac0c231aeff73490789be7d7e3f81ca6d9f561e6137a98"),
     ("test_level1_stage1_verdict_boundary_governance.py",
      "00b5457cef4520b209327edb7a92a86bd9143b1eb619764c0f409a0f05ff3368",
      "d082f7c9b01f2ed796461100dd3d1114ae907b0be733b0d1cc946826ee77aa43",
-     "c6d1e1b0041eb46e8e4e31eff2aa2f23f08ae606e56f0a6effd7fa01dcb03263"),
+     "5c68dac82a07a41eba103e27411133d6904555d41e8a31231de5d5243c7734d4"),
 )
 
 
@@ -910,11 +910,15 @@ def _assertion_occurrences(source: str) -> list[tuple[str, str]]:
     tree = ast.parse(source)
     raw = []
 
-    parents = {
-        child: parent
-        for parent in ast.walk(tree)
-        for child in ast.iter_child_nodes(parent)
-    }
+    parents = {}
+    edge_fields = {}
+    for parent in ast.walk(tree):
+        for field, value in ast.iter_fields(parent):
+            children = value if isinstance(value, list) else [value]
+            for child in children:
+                if isinstance(child, ast.AST):
+                    parents[child] = parent
+                    edge_fields[child] = field
     named = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
     named_groups = collections.defaultdict(list)
     for node in ast.walk(tree):
@@ -954,24 +958,26 @@ def _assertion_occurrences(source: str) -> list[tuple[str, str]]:
 
     module_collection = collection_digest(tree)
 
-    def execution_skeleton(node):
-        """AST structure with assertion predicates treated as opaque leaves."""
-        if isinstance(node, ast.Assert):
-            return ("Assert",)
+    def execution_skeleton(node, registered_assertion):
+        """Exact test structure with only this registered target made opaque."""
+        if node is registered_assertion:
+            return ("RegisteredAssert",)
         if isinstance(node, ast.AST):
             return (
                 type(node).__name__,
-                tuple((field, execution_skeleton(value))
+                tuple((field, execution_skeleton(value, registered_assertion))
                       for field, value in ast.iter_fields(node)),
             )
         if isinstance(node, list):
-            return tuple(execution_skeleton(item) for item in node)
+            return tuple(execution_skeleton(item, registered_assertion)
+                         for item in node)
         return node
 
-    def compound_segment(node, field):
+    def compound_segment(node, field, registered_assertion):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             digest = hashlib.sha256(
-                repr(execution_skeleton(node)).encode("utf-8")).hexdigest()
+                repr(execution_skeleton(node, registered_assertion)).encode(
+                    "utf-8")).hexdigest()
             ambiguity = ":AMBIGUOUS" if id(node) in ambiguous_named_nodes else ""
             return f"{field}:{type(node).__name__}:{node.name}:{digest}{ambiguity}"
         if isinstance(node, ast.ClassDef):
@@ -997,24 +1003,38 @@ def _assertion_occurrences(source: str) -> list[tuple[str, str]]:
         digest = hashlib.sha256(repr(header).encode("utf-8")).hexdigest()
         return f"{field}:{type(node).__name__}:{digest}"
 
-    def visit(node, path):
+    def collect_assertions(node):
         if isinstance(node, ast.Assert):
             test = node.test
             if not (isinstance(test, ast.Constant) and bool(test.value) is True):
-                raw.append((ast.dump(test), path))
+                raw.append(node)
             return
-        for field, value in ast.iter_fields(node):
+        for _field, value in ast.iter_fields(node):
             children = value if isinstance(value, list) else [value]
             for child in children:
                 if not isinstance(child, ast.AST):
                     continue
-                segment = compound_segment(child, field)
-                visit(child, path + ((segment,) if segment else ()))
+                collect_assertions(child)
 
-    visit(tree, (f"Module:{module_collection}",))
+    collect_assertions(tree)
     seen = collections.Counter()
     out = []
-    for fingerprint, path in raw:
+    for assertion in raw:
+        fingerprint = ast.dump(assertion.test)
+        ancestors = []
+        current = assertion
+        while current in parents:
+            current = parents[current]
+            ancestors.append(current)
+        path = [f"Module:{module_collection}"]
+        for ancestor in reversed(ancestors):
+            if isinstance(ancestor, ast.Module):
+                continue
+            segment = compound_segment(
+                ancestor, edge_fields[ancestor], assertion)
+            if segment:
+                path.append(segment)
+        path = tuple(path)
         key = (fingerprint, path)
         ordinal = seen[key]
         seen[key] += 1
