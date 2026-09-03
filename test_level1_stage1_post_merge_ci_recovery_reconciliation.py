@@ -1864,7 +1864,7 @@ class TestCatalogAndRegisterSynchronisation:
         # onto its own base and its own number. Bound at BOTH ends, with every prior generation's
         # value retained as a negative pin. XASSET-0061 is now historical; the
         # one current positive binding is asserted centrally.
-        assert ws["last_verified_main_sha"] != XASSET0061_MAIN_SHA
+        assert ws["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert ws["last_verified_main_sha"] != XASSET0060_MAIN_SHA
@@ -1882,7 +1882,7 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws["last_verified_main_sha"] != PR346_MERGE_SHA
         assert ws["last_verified_main_sha"] != PR346_BASE_SHA
         assert ws["last_verified_main_sha"] != PR345_BASE_SHA
-        assert ws["active_pr"] != XASSET0061_ACTIVE_PR
+        assert ws["active_pr"] != 362
         assert ws["active_pr"] != XASSET0060_ACTIVE_PR
         assert ws["active_pr"] != XASSET0059_ACTIVE_PR
         assert ws["active_pr"] != XASSET0058_ACTIVE_PR
@@ -2270,7 +2270,7 @@ class TestTheBoundPullRequestNumber:
         assert gate["pr"] == THIS_PULL_REQUEST
         # ADVANCED BY XASSET-0049: the register's shared active_pr now names the LIVE unit, and
         # XASSET-0061 is historical, so its issued number remains excluded.
-        assert ws["active_pr"] != XASSET0061_ACTIVE_PR
+        assert ws["active_pr"] != 362
         assert ws["active_pr"] != XASSET0060_ACTIVE_PR
         assert ws["active_pr"] != XASSET0059_ACTIVE_PR
         assert ws["active_pr"] != XASSET0058_ACTIVE_PR

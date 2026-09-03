@@ -749,9 +749,7 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0059; the predecessor value joins the NEGATIVE pins below.
         # XASSET-0061 and its predecessors are immutable branch history and
         # remain exact negative pins.
-        assert ws0014["active_branch"] != (
-            "claude/xasset-0061-authorization-jux8p9"
-        )
+        assert ws0014["active_branch"] != "claude/xasset-0061-authorization-jux8p9"
         assert ws0014["active_branch"] != (
             "claude/xasset-0057-rebinding-gqtg9o"
         )
@@ -774,7 +772,7 @@ class TestCatalogAndRegisterSynchronisation:
         # XASSET-0061 and XASSET-0060 are immutable SHA history and remain exact
         # negative pins.
         XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"
-        assert ws0014["last_verified_main_sha"] != XASSET0061_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         assert ws0014["last_verified_main_sha"] != XASSET0060_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != XASSET0059_MAIN_SHA
         assert ws0014["last_verified_main_sha"] != (

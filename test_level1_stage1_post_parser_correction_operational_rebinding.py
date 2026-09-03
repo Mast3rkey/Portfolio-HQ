@@ -1288,10 +1288,10 @@ class TestCatalogAndRegisterSynchronisation:
 
     def test_the_shared_live_fields_have_advanced_beyond_this_unit(self, ws0014):
         # XASSET-0061's branch is immutable history and remains a negative pin.
-        assert ws0014["active_branch"] != SUCCESSOR_BRANCH_NAME
+        assert ws0014["active_branch"] != "claude/xasset-0061-authorization-jux8p9"
         assert ws0014["active_branch"] != "claude/xasset-0057-rebinding-gqtg9o"
         # XASSET-0061's SHA is immutable history and remains a negative pin.
-        assert ws0014["last_verified_main_sha"] != SUCCESSOR_MAIN_SHA_VALUE
+        assert ws0014["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         assert ws0014["last_verified_main_sha"] != THIS_UNIT_BASE_SHA
         # Every prior generation stays a NEGATIVE pin.
         assert ws0014["last_verified_main_sha"] != PR359_MERGE_SHA
@@ -1317,7 +1317,7 @@ class TestTheBoundPullRequestNumber:
         assert gate["pr"] == THIS_PULL_REQUEST
         # XASSET-0061's issued number is immutable history and remains excluded;
         # the unit's own gate below preserves the historical positive fact.
-        assert ws0014["active_pr"] != SUCCESSOR_ACTIVE_PR
+        assert ws0014["active_pr"] != 362
         assert ws0014["active_pr"] != THIS_PULL_REQUEST
         assert any(
             g.get("pr") == THIS_PULL_REQUEST for g in ws0014["milestones"]

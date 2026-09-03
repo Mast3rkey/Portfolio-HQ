@@ -1893,8 +1893,8 @@ class TestTheRegisterIsSynchronized:
     XASSET0059_MAIN_SHA = "34c45900ce23742d04d80cf12471c34aabe9682d"
 
     def test_the_shared_live_fields_have_advanced_beyond_this_unit(self, register):
-        assert register["active_branch"] != self.SUCCESSOR_BRANCH
-        assert register["last_verified_main_sha"] != self.SUCCESSOR_MAIN_SHA
+        assert register["active_branch"] != "claude/xasset-0061-authorization-jux8p9"
+        assert register["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         assert register["last_verified_main_sha"] != self.XASSET0060_MAIN_SHA_PIN
         assert register["active_branch"] != self.XASSET0059_BRANCH
         assert register["last_verified_main_sha"] != self.XASSET0059_MAIN_SHA
@@ -2295,7 +2295,7 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             assert "!= XASSET0060_MAIN_SHA" in live, name
             assert f'XASSET0061_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
             # XASSET-0061 is historical and must remain an exact negative pin.
-            assert "!= XASSET0061_MAIN_SHA" in live, name
+            assert '!= "413e033ac33741829168762ab24d73327c047d4b"' in live, name
             assert f'XASSET0057_MAIN_SHA = "{SUPERSEDED_GENERATION_SHA}"' in live, name
             assert "!= XASSET0057_MAIN_SHA" in live, name
 
@@ -2313,7 +2313,7 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
                 "SUCCESSOR_MAIN_SHA = XASSET0060_MAIN_SHA" in live
             ), name
             assert f'SUCCESSOR_BRANCH = "{SUCCESSOR_BRANCH_NAME}"' in live, name
-            assert "!= XASSET0061_MAIN_SHA" in live, name
+            assert '!= "413e033ac33741829168762ab24d73327c047d4b"' in live, name
             assert f'XASSET0059_BRANCH = "{XASSET0059_BRANCH_NAME}"' in live, name
             assert f'XASSET0058_BRANCH = "{BRANCH}"' in live, name
             assert f'XASSET0057_BRANCH = "{SUPERSEDED_GENERATION_BRANCH}"' in live, name

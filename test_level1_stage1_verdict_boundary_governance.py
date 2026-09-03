@@ -889,9 +889,9 @@ class TestCatalogAndRegisterSynchronisation:
         assert merged_ws["last_verified_main_sha"] == BASE_SHA
         assert merged_ws["active_branch"] != "claude/xasset-0054-parser-contract-correction-h3nq7p"
         live = _ws0014()
-        assert live["active_branch"] != XASSET0061_BRANCH
-        assert live["last_verified_main_sha"] != SUCCESSOR_MAIN_SHA
-        assert live["last_verified_main_sha"] != XASSET0061_MAIN_SHA
+        assert live["active_branch"] != "claude/xasset-0061-authorization-jux8p9"
+        assert live["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
+        assert live["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert live["last_verified_main_sha"] != XASSET0060_MAIN_SHA
@@ -1072,7 +1072,7 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
             assert "!= XASSET0060_MAIN_SHA" in live, name
             assert f'XASSET0061_MAIN_SHA = "{SUCCESSOR_MAIN_SHA}"' in live, name
             # XASSET-0061 is historical and must remain an exact negative pin.
-            assert "!= XASSET0061_MAIN_SHA" in live, name
+            assert '!= "413e033ac33741829168762ab24d73327c047d4b"' in live, name
             # Every earlier generation stays pinned too. XASSET-0053's OWN suite names its own
             # base `BASE_SHA` rather than `XASSET0053_MAIN_SHA` -- a suite does not refer to
             # itself in the third person -- so the constant is asserted exactly where it is
@@ -1112,7 +1112,7 @@ class TestThePredecessorSuitesWereReAnchoredNotWeakened:
         assert before["last_verified_main_sha"] == SUPERSEDED_GENERATION_SHA
         assert at_merge["last_verified_main_sha"] == BASE_SHA
         # NEGATIVE PIN: the live field has since moved beyond this successor.
-        assert live["last_verified_main_sha"] != SUCCESSOR_MAIN_SHA
+        assert live["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
 
     def test_the_register_gate_discloses_the_re_anchoring_honestly(self):
         """The register must record the same discipline the suite enforces. If it ever admits a

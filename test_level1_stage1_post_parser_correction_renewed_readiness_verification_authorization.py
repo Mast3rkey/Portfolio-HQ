@@ -592,50 +592,70 @@ NAMED_ANCHOR_REANCHORS = (
 
 #: One-time conversion of predecessor suites from mutable-current positive pins
 #: into immutable-generation negative pins. Each row is the exact file and exact
-#: assertion fingerprint at XASSET-0061's accepted merge. The only permitted
-#: semantic change is the complement of that exact predicate (equality becomes
-#: inequality, and startswith becomes not-startswith). This registry is finite:
+#: source fingerprint at XASSET-0061's accepted merge plus the exact live target
+#: fingerprint. Every target is a literal-bound negative predicate, so arbitrary
+#: runtime mutation of a Python anchor name cannot change what it excludes. This
+#: registry is finite:
 #: future WS-0014 advances update only CURRENT_WS0014_BINDING and the YAML,
 #: never these predecessor files or this occurrence set.
 HISTORICALIZED_REGISTER_ASSERTIONS = (
     ("test_level1_stage1_activation_authorization.py",
-     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b"),
+     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
+     "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd"),
     ("test_level1_stage1_activation_authorization.py",
-     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb"),
+     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
+     "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4"),
     ("test_level1_stage1_activation_authorization.py",
-     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc"),
+     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
+     "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29"),
     ("test_level1_stage1_post_correction_rebinding.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2"),
     ("test_level1_stage1_post_correction_rebinding_authorization.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2"),
     ("test_level1_stage1_post_merge_ci_recovery_authorization.py",
-     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec"),
+     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
+     "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444"),
     ("test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2"),
     ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
-     "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97"),
+     "19a8f8c58b491b2e2b76c7190f0461ad9ac338418c58abda445523bb8a448c97",
+     "064ccbfdbaa39b8f4a2771aad0709e6d2317a72b4536e16bb4e37332b950182f"),
     ("test_level1_stage1_post_parser_correction_rebinding_authorization.py",
-     "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde"),
+     "ac5229c6d8ba43b0522d8cc62b65a831226189257198ad0264245c82ca72afde",
+     "5d06702073811275dc9e070e5c4bad7fc8c5963181830d71140b446e577270d0"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
-     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b"),
+     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
+     "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
-     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb"),
+     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
+     "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4"),
     ("test_level1_stage1_post_rebinding_drift_authorization.py",
-     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc"),
+     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
+     "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
-     "f5ce46c934051b62f3df6ae4dfd1f6fa9a03f79838059f6a894976e2d0ed9362"),
+     "f5ce46c934051b62f3df6ae4dfd1f6fa9a03f79838059f6a894976e2d0ed9362",
+     "58ee1e0dadbb15ed0b670eccf7a3e24abd04a3896ee86152e6a97642412cb4d0"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
-     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1"),
+     "dbafa124103b3c171ddc6560dfc24715ddc88bfca7a533838ebe2d275c672df1",
+     "8b868fa9f788c9074bc6a2ed0052e7cc4e01422158b3d871ba3b4c1424e23ba2"),
     ("test_level1_stage1_pr337_actor_evidence_correction_authorization.py",
-     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec"),
+     "d5bb6540e5d94bcbf801b781c9cbf540f9ef73f1f313f4854fe200c9079579ec",
+     "b7ec8413608ef8d1fab1560954eae1031e5a3d220cf0d108e3e760493b928444"),
     ("test_level1_stage1_readiness_verification_authorization.py",
-     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b"),
+     "2ccd878bd135b5e668d581e98c9e97efe386cc17ccfc1825775106f42f3def0b",
+     "708f32b54d0372e5da3505592aa656bb35f1e3d0af2122d03ced1fc2f07282dd"),
     ("test_level1_stage1_readiness_verification_authorization.py",
-     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb"),
+     "d1b184ce6e0b62da91fb06850d4b3c022ba6c8c48da74d995492b5fc269ae9fb",
+     "48e9d6da92c7bc43cb956ed424c7675f46b59115d0ece9bc89bef71abbe7acb4"),
     ("test_level1_stage1_readiness_verification_authorization.py",
-     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc"),
+     "2cef5c73b2b89234dc504e858fec797e0b96ec6c0fb8367520761dc124ad5afc",
+     "21c05d602a20acdb4be2289de17b3c2d50a0fdedd377ac3ac79582b97a28af29"),
 )
 
 
@@ -851,22 +871,14 @@ def _registered_occurrences(relpath):
 
 
 def _historicalized_occurrences(relpath):
-    """Exact current-positive predicates permitted to become historical negatives."""
+    """Exact source occurrence -> exact literal-bound historical targets."""
     if not relpath:
-        return collections.Counter()
-    return collections.Counter(
-        digest for rel, digest in HISTORICALIZED_REGISTER_ASSERTIONS
-        if rel == relpath
-    )
-
-
-def _historicalized_fingerprint(fingerprint: str):
-    """Return the sole lawful complement of a registered positive predicate."""
-    if fingerprint.count("ops=[Eq()]") == 1:
-        return fingerprint.replace("ops=[Eq()]", "ops=[NotEq()]", 1)
-    if fingerprint.startswith("Call(") and "attr='startswith'" in fingerprint:
-        return f"UnaryOp(op=Not(), operand={fingerprint})"
-    return None
+        return {}
+    out = {}
+    for rel, source_digest, target_digest in HISTORICALIZED_REGISTER_ASSERTIONS:
+        if rel == relpath:
+            out.setdefault(source_digest, []).append(target_digest)
+    return out
 
 
 def _registered_named_occurrences(relpath, pinned_src: str, live_src: str):
@@ -928,7 +940,8 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
        registered successor -- and then the result must appear verbatim among the
        live assertions. Each registration is consumed AT MOST ONCE.
     4. **Registered historicalization.** Only a specifically registered current
-       positive occurrence may become its exact negative complement. This is a
+       positive occurrence may become one exact literal-bound negative target.
+       The live predicate never executes through a mutable Python name. This is a
        finite, one-time conversion; it does not create a moving value map.
 
     Stages 2 and 3 answer reviews 5094619011 and 5093500583 respectively. The
@@ -957,14 +970,15 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
 
     def consume_historical(candidate: str) -> bool:
         digest = _fingerprint_digest(candidate)
-        if historical_remaining[digest] <= 0:
-            return False
-        expected = _historicalized_fingerprint(candidate)
-        if expected is None or live_fingerprints.get(expected, 0) <= 0:
-            return False
-        historical_remaining[digest] -= 1
-        live_fingerprints[expected] -= 1
-        return True
+        targets = historical_remaining.get(digest) or []
+        for i, target_digest in enumerate(targets):
+            for live in live_fingerprints:
+                if (_fingerprint_digest(live) == target_digest
+                        and live_fingerprints[live] > 0):
+                    targets.pop(i)
+                    live_fingerprints[live] -= 1
+                    return True
+        return False
 
     # STAGE 1 -- exact match, and it is deliberately FIRST. An assertion that is
     # present unchanged is explained by itself, never by a re-anchor or a
@@ -972,7 +986,13 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
     #
     lost, deferred = [], []
     for strict in pinned_fingerprints:
-        if live_fingerprints[strict] > 0:
+        # A registered one-time historicalization closes the old positive
+        # endpoint. Its verbatim return is not preservation; only the exact
+        # literal-bound negative target is now lawful.
+        if _fingerprint_digest(strict) in historical_remaining:
+            if not consume_historical(strict):
+                deferred.append(strict)
+        elif live_fingerprints[strict] > 0:
             live_fingerprints[strict] -= 1
         else:
             deferred.append(strict)
@@ -987,12 +1007,16 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
             expected = _rename_in_fingerprint(strict, old_name, new_name)
             if expected == strict:
                 continue
-            if live_fingerprints.get(expected, 0) > 0:
-                live_fingerprints[expected] -= 1
+            if consume_historical(expected):
                 entries.pop(i)
                 matched = True
                 break
-            if consume_historical(expected):
+            # Once an occurrence has a registered literal-bound historical
+            # target, restoring its named positive form is a weakening, never a
+            # second lawful endpoint.
+            if (_fingerprint_digest(expected) not in historical_remaining
+                    and live_fingerprints.get(expected, 0) > 0):
+                live_fingerprints[expected] -= 1
                 entries.pop(i)
                 matched = True
                 break
@@ -1017,13 +1041,14 @@ def _lost_assertions(pinned_src: str, live_src: str, relpath=None) -> list[str]:
                 # property of the identity scheme, not of this loop, and a future
                 # change to the identity scheme would make it load-bearing again.
                 continue
-            if live_fingerprints.get(expected, 0) > 0:
-                live_fingerprints[expected] -= 1
-                entries.pop(i)             # CONSUMED -- one registration, one use
-                matched = True
-                break
             if consume_historical(expected):
                 entries.pop(i)
+                matched = True
+                break
+            if (_fingerprint_digest(expected) not in historical_remaining
+                    and live_fingerprints.get(expected, 0) > 0):
+                live_fingerprints[expected] -= 1
+                entries.pop(i)             # CONSUMED -- one registration, one use
                 matched = True
                 break
         if not matched and consume_historical(strict):
@@ -2203,6 +2228,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
     # probe can pass vacuously against a fingerprint the corpus does not contain.
     _REG_REL = "test_level1_stage1_activation_authorization.py"
     _REG_LINE = 'assert str(workstream["last_verified_date"]).startswith("{v}")'
+    _REG_HIST_LINE = 'assert not str(workstream["last_verified_date"]).startswith("{v}")'
 
     def test_a_registered_occurrence_cannot_be_spent_by_reusing_a_present_value(self):
         """RETAINED PROPERTY (carried forward from the superseded value-pair guard).
@@ -2221,7 +2247,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         rel, digest, old, new, _cat = BARE_LITERAL_REANCHORS[0]
         assert rel == self._REG_REL
         reg_old = "    " + self._REG_LINE.format(v=old) + "\n"
-        reg_new = "    " + self._REG_LINE.format(v=new) + "\n"
+        reg_new = "    " + self._REG_HIST_LINE.format(v=new) + "\n"
         # `new` is ALREADY present on the pinned side, at a DIFFERENT, unregistered site.
         other_old = f'    assert freeze["cutoff"] == "{new}"\n'
         other_moved = f'    assert freeze["cutoff"] == "2026-08-26"\n'
@@ -2245,7 +2271,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         """
         rel, _digest, old, new, _cat = BARE_LITERAL_REANCHORS[0]
         reg_old = "    " + self._REG_LINE.format(v=old) + "\n"
-        reg_new = "    " + self._REG_LINE.format(v=new) + "\n"
+        reg_new = "    " + self._REG_HIST_LINE.format(v=new) + "\n"
         unmoved = f'    assert freeze["cutoff"] == "{old}"\n'
         pinned = "def f():\n" + reg_old + unmoved
         live = "def f():\n" + reg_new + unmoved
@@ -2275,7 +2301,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
             sys.modules[__name__], "BARE_LITERAL_REANCHORS",
             BARE_LITERAL_REANCHORS + ((rel, digest, old, new, cat),), raising=True)
         line_old = "    " + self._REG_LINE.format(v=old) + "\n"
-        line_new = "    " + self._REG_LINE.format(v=new) + "\n"
+        line_new = "    " + self._REG_HIST_LINE.format(v=new) + "\n"
         # The registered assertion is made TWICE on the pinned side...
         pinned = "def f():\n" + line_old + line_old
         # ...and only ONCE on the live side. One of the two is genuinely gone.
@@ -2300,7 +2326,7 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         """
         rel, digest, old, new, _cat = BARE_LITERAL_REANCHORS[0]
         line_old = "    " + self._REG_LINE.format(v=old) + "\n"
-        line_new = "    " + self._REG_LINE.format(v=new) + "\n"
+        line_new = "    " + self._REG_HIST_LINE.format(v=new) + "\n"
         pinned, live = "def f():\n" + line_old, "def f():\n" + line_new
         # Truthful registration: the lawful transition is explained.
         assert not _lost_assertions(pinned, live, rel)
@@ -2473,9 +2499,14 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         # registered two-step chain rather than requiring the obsolete positive
         # endpoint to remain live forever.
         historical = _historicalized_occurrences(rel)
-        if historical[_fingerprint_digest(expected)]:
-            expected = _historicalized_fingerprint(expected)
-            assert expected is not None
+        targets = historical.get(_fingerprint_digest(expected)) or []
+        if targets:
+            candidates = [
+                fp for fp in _assertion_fingerprints(live)
+                if _fingerprint_digest(fp) in targets
+            ]
+            assert len(candidates) == 1, (rel, digest, candidates)
+            expected = candidates[0]
         assert expected in _assertion_fingerprints(live)
         registered = _registered_named_occurrences(rel, base, live)
         assert (old_name, old_value, new_name, new_value, category) in registered[digest]
@@ -2632,27 +2663,32 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         """The one-time conversion is an occurrence list, not a value licence."""
         assert len(HISTORICALIZED_REGISTER_ASSERTIONS) == 19
         assert len(set(HISTORICALIZED_REGISTER_ASSERTIONS)) == 19
-        for rel, digest in HISTORICALIZED_REGISTER_ASSERTIONS:
+        for rel, digest, target_digest in HISTORICALIZED_REGISTER_ASSERTIONS:
             assert rel in PINNED_TEST_HASHES, rel
             assert re.fullmatch(r"[0-9a-f]{64}", digest), digest
+            assert re.fullmatch(r"[0-9a-f]{64}", target_digest), target_digest
             base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
             candidates = [
                 fp for fp in _assertion_fingerprints(base)
                 if _fingerprint_digest(fp) == digest
             ]
             assert len(candidates) == 1, (rel, digest, len(candidates))
-            expected = _historicalized_fingerprint(candidates[0])
-            assert expected is not None, (rel, digest)
-            live = collections.Counter(_assertion_fingerprints(
-                (ROOT / rel).read_text(encoding="utf-8")))
-            assert live[expected] == 1, (rel, digest)
+            live = [
+                fp for fp in _assertion_fingerprints(
+                    (ROOT / rel).read_text(encoding="utf-8"))
+                if _fingerprint_digest(fp) == target_digest
+            ]
+            assert len(live) == 1, (rel, target_digest, len(live))
+            assert "NotEq()" in live[0] or live[0].startswith("UnaryOp(op=Not()")
+            assert "XASSET0061_" not in live[0]
+            assert "SUCCESSOR_" not in live[0]
 
     def test_every_historicalization_registration_is_load_bearing(self):
         """Removing any row exposes that exact historical predicate as lost."""
         saved = HISTORICALIZED_REGISTER_ASSERTIONS
         try:
             for entry in saved:
-                rel, digest = entry
+                rel, digest, _target_digest = entry
                 globals()["HISTORICALIZED_REGISTER_ASSERTIONS"] = tuple(
                     candidate for candidate in saved if candidate != entry)
                 base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
@@ -2670,9 +2706,11 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         positive = 'def f(ws):\n    assert ws["active_pr"] == 362\n'
         negative = 'def f(ws):\n    assert ws["active_pr"] != 362\n'
         fingerprint = _assertion_fingerprints(positive)[0]
+        target = _assertion_fingerprints(negative)[0]
         monkeypatch.setattr(
             sys.modules[__name__], "HISTORICALIZED_REGISTER_ASSERTIONS",
-            ((rel, _fingerprint_digest(fingerprint)),))
+            ((rel, _fingerprint_digest(fingerprint),
+              _fingerprint_digest(target)),))
         lost = _lost_assertions(positive + positive, negative, rel)
         assert len(lost) == 1, lost
 
@@ -2681,6 +2719,82 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         negative = 'def f(ws):\n    assert ws["active_pr"] != 362\n'
         assert _lost_assertions(positive, negative)
         assert _lost_assertions(positive, negative, "unregistered.py")
+
+    @pytest.mark.parametrize(
+        "attack",
+        (
+            'globals()["HISTORICAL_SHA"] = "c3" * 20',
+            'namespace = globals()\nnamespace["HISTORICAL_SHA"] = "c3" * 20',
+            'import sys\nsetattr(sys.modules[__name__], "HISTORICAL_SHA", "c3" * 20)',
+            ('def rewrite(namespace):\n'
+             '    namespace["HISTORICAL_SHA"] = "c3" * 20\n'
+             'rewrite(globals())'),
+            'exec(\'HISTORICAL_SHA = "c3" * 20\')',
+        ),
+        ids=("globals", "globals-alias", "module-setattr", "helper", "exec"),
+    )
+    def test_dynamic_name_writes_cannot_change_a_literal_bound_negative(
+            self, attack):
+        """The review's entire runtime-rebinding class is irrelevant to a literal."""
+        import types
+
+        approved = "b2" * 20
+        source = (
+            f'HISTORICAL_SHA = "{approved}"\n'
+            'def check(ws):\n'
+            f'    assert ws["last_verified_main_sha"] != "{approved}"\n'
+            f'{attack}\n'
+        )
+        name = f"_g5_dynamic_attack_{abs(hash(attack))}"
+        module = types.ModuleType(name)
+        sys.modules[name] = module
+        try:
+            exec(source, module.__dict__)
+            assert module.HISTORICAL_SHA == "c3" * 20
+            module.check({"last_verified_main_sha": "c3" * 20})
+            with pytest.raises(AssertionError):
+                module.check({"last_verified_main_sha": approved})
+        finally:
+            sys.modules.pop(name, None)
+
+    def test_dynamic_write_plus_named_positive_cannot_reenter_the_registry(self):
+        """Exact review 5096789214: the former named endpoint is no longer accepted."""
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        literal = (
+            'assert workstream["last_verified_main_sha"] '
+            '!= "413e033ac33741829168762ab24d73327c047d4b"'
+        )
+        named = (
+            'assert workstream["last_verified_main_sha"] '
+            '== XASSET0061_MAIN_SHA'
+        )
+        assert live.count(literal) == 1
+        attacked = live.replace(literal, named, 1).replace(
+            'XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n',
+            'XASSET0061_MAIN_SHA = "413e033ac33741829168762ab24d73327c047d4b"\n'
+            'globals()["XASSET0061_MAIN_SHA"] = "c3" * 20\n',
+            1,
+        )
+        assert _lost_assertions(base, attacked, rel), (
+            "a dynamically rebound named positive re-entered the registry")
+
+    def test_a_literal_bound_historical_value_cannot_be_substituted(self):
+        rel = "test_level1_stage1_activation_authorization.py"
+        base = _git("show", f"{THIS_UNIT_MERGE_SHA}:{rel}")
+        live = (ROOT / rel).read_text(encoding="utf-8")
+        strong = (
+            'assert workstream["last_verified_main_sha"] '
+            '!= "413e033ac33741829168762ab24d73327c047d4b"'
+        )
+        assert live.count(strong) == 1
+        weakened = live.replace(
+            strong,
+            'assert workstream["last_verified_main_sha"] != "' + "c3" * 20 + '"',
+            1,
+        )
+        assert _lost_assertions(base, weakened, rel)
 
     def test_every_preexisting_register_negative_pin_is_retained_exactly(self):
         """Historical exclusions cannot finance the current live binding."""

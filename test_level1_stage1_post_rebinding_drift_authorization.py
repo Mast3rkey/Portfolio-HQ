@@ -1147,7 +1147,7 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0041 for the same reason: PR #340 merged at `f212cce5`.
         # XASSET-0061 is immutable history; its former live value remains a
         # negative pin while the current positive binding is asserted centrally.
-        assert workstream["last_verified_main_sha"] != XASSET0061_MAIN_SHA
+        assert workstream["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert workstream["last_verified_main_sha"] != XASSET0060_MAIN_SHA
@@ -1182,7 +1182,7 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` once pointed at this correction unit. Its issued number is
         # now immutable history and remains excluded.
-        assert workstream["active_pr"] != XASSET0061_ACTIVE_PR
+        assert workstream["active_pr"] != 362
         assert workstream["active_pr"] != XASSET0060_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0059_ACTIVE_PR
         assert workstream["active_pr"] != XASSET0058_ACTIVE_PR

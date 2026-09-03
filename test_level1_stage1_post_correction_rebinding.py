@@ -1450,7 +1450,7 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["last_verified_main_sha"] != PR_BASE_SHA
         # XASSET-0061 is immutable history; its former live value remains a
         # negative pin while the current positive binding is asserted centrally.
-        assert ws0014["last_verified_main_sha"] != XASSET0061_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != "413e033ac33741829168762ab24d73327c047d4b"
         # XASSET-0061 advanced the shared live field; XASSET-0060's value is now a
         # NEGATIVE PIN, so a silent revert to that finished generation still fails.
         assert ws0014["last_verified_main_sha"] != XASSET0060_MAIN_SHA
