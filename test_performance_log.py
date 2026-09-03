@@ -400,7 +400,14 @@ def test_writer_to_reader_integration_never_raises(bad, tmp_path, monkeypatch,
     second[0] = later
     second[rows[0].index("qqq_price")] = "432.25"
     second[rows[0].index("voo_price")] = "398.10"
-    _write_rows(perf_log, [rows[1], second])
+    # Preserve the REAL writer's native schema.  _write_rows intentionally
+    # emits the legacy nine-column schema for legacy-reader tests; routing this
+    # new ten-column row through it shifts book into qqq_price and tests a
+    # fabricated column mapping rather than writer-to-reader integration.
+    with perf_log.open("w", newline="") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow(rows[0])
+        writer.writerows([rows[1], second])
 
     out = allocate.render_performance()
 
