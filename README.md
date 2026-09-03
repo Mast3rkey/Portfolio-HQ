@@ -29,6 +29,7 @@ margin_state.py        leverage-cap/buffer-floor math, concentration risk scorin
 
 targets.yaml          tier structure, weights, caps, gates, margin doctrine (config truth)
 holdings.yaml          position state: shares, crypto_shares, cash, margin (rewritten by update-* commands)
+level1_policy_summary.py  read-only whole-portfolio sleeve view of accepted targets
 CLAUDE.md               doctrine: Decisions Log, Open Items, Guardrails, workflow
 decision_log.yaml       historical decision record, PI-000N / MARGIN-000N series (pre-dates the
                         governance/decisions/ layer below; new decisions are not appended here)
@@ -63,6 +64,22 @@ targets, no predictive research baked into the tool itself — see `CLAUDE.md`'s
 Guardrails for what's explicitly out of scope and why (several backtests this
 system ran on itself showed that added "smart" layers subtract return, not
 add it).
+
+### Accepted Level-1 policy snapshot
+
+`level1_policy_summary.py` turns the canonical per-instrument destinations in
+`targets.yaml` into an exact whole-book sleeve view. It does not invent a new
+allocation, read holdings or market data, call a broker, or change policy.
+
+```bash
+python level1_policy_summary.py          # human-readable sleeve summary
+python level1_policy_summary.py --json   # machine-readable, exact-decimal strings
+```
+
+The report keeps direct equities and broad-market funds separate, also shows
+their combined share, distinguishes GLD from broad-market funds, and preserves
+cash/reserve plus any unallocated remainder so the result always reconciles to
+exactly 100%.
 
 ## Company & Theme Intelligence (advisory-only)
 
