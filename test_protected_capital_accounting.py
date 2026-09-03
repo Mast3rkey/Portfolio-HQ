@@ -1178,7 +1178,8 @@ class TestTheCliMigrationIsComplete:
         # Subcommands only -- flags are checked separately by argparse itself.
         prescribed = re.findall(r"python allocate\.py (?!--)([a-z][a-z-]+)", readme)
         known = {"update-cash", "update-shares", "update-crypto-shares",
-                 "update-holdings", "update-margin", "log-performance"}
+                 "update-holdings", "update-margin", "log-performance",
+                 "log-cashflow", "log-interest"}
         assert prescribed, "the README must actually prescribe commands"
         assert "update-cash" in prescribed
         for cmd in set(prescribed):
@@ -1486,6 +1487,11 @@ class TestWriteBoundariesValidateBeforeTheyWrite:
              "margin": {"debt": 0.0, "buffer_pct": 60.0, "synced_at": "2026-09-01"}},
             sort_keys=False))
         monkeypatch.setattr(A, "HOLDINGS_FILE", f)
+        # update_margin now requires canonical state and its append-only audit
+        # history to agree.  Isolate both sides of that durable pair; otherwise
+        # this fixture combines temporary holdings with the repository ledger
+        # and correctly triggers the production divergence refusal.
+        monkeypatch.setattr(A, "MARGIN_LOG_FILE", tmp_path / "margin_log.csv")
         return f
 
     @pytest.mark.parametrize("bad", BAD_CASH)
