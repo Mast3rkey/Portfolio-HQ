@@ -18368,8 +18368,24 @@ workstreams:
           INPUT cash value, is superseded by post-plan preservation tests. Stage 1
           remains UNARMED and NOT EXECUTABLE; the lane is absent; ATTEMPT_1 intact,
           unclaimed and unconsumed; XASSET-0061 remains Proposed; no .env,
-          credential, live allocation, order or trade. Draft, open, unmerged;
-          awaiting an independent FULL exact-head review.
+          credential, live allocation, order or trade.
+          MERGE STATE, corrected 2026-09-03: the sentence previously ending this
+          description -- "Draft, open, unmerged; awaiting an independent FULL
+          exact-head review" -- described this unit while it was in flight and is
+          now FALSE. PR #364 is MERGED: merged_by Mast3rkey at
+          2026-09-03T04:30:36Z, head 40b9f09b8fade3e323596838be6b5aeda2a2e599
+          independently confirmed an ancestor of main, merge commit
+          fa8584d5376dfa08feaaab2ef4499efb47eecb32. This gate's status is
+          therefore complete.
+          REVIEW STATE AS FOUND, recorded honestly and NOT claimed as satisfied:
+          PR #364 carries 28 GitHub reviews, every one of them state COMMENTED --
+          there is NO review in state APPROVED. Its final review 5097752569 IS
+          anchored to the exact merged head 40b9f09b, submitted 2026-09-03T04:30:06Z,
+          thirty seconds before the merge. NO retained artifact for this unit exists
+          under governance/audits/, whose most recent addition by commit date is
+          2026-08-14; a commit-message and PR-body citation was the only record.
+          This note records what is there. It does not assert that an OPS-0009
+          review obligation was met, and it does not retroactively satisfy one.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
