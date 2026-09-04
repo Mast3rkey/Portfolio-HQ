@@ -88,10 +88,10 @@ THIS_PULL_REQUEST = 362
 #: historical filing's immutable identities above. Only this current-binding
 #: control changes when legitimate live GitHub state advances again.
 CURRENT_WS0014_BINDING = {
-    "active_branch": "claude/protected-capital-accounting",
-    "active_pr": 364,
-    "last_verified_main_sha": "3db918530b10ffc1423ba0b749b086e349a4901d",
-    "last_verified_date": "2026-09-02",
+    "active_branch": "claude/phq-allocator-restore-2a2zxw",
+    "active_pr": 369,
+    "last_verified_main_sha": "b3a647aa064260dc293fad2fa1b21d7222c9109a",
+    "last_verified_date": "2026-09-03",
 }
 WS0014_REGISTER_FIELDS = frozenset(CURRENT_WS0014_BINDING)
 EXPECTED_RETAINED_REGISTER_NEGATIVES = 316
