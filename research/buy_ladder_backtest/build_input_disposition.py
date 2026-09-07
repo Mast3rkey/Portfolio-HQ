@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -23,10 +24,17 @@ RAW = DATA / "raw"
 RECEIPTS = DATA / "receipts"
 RECEIPT_INVENTORY = DATA / "acquisition_receipt_inventory.json"
 YAHOO = OUT / "yahoo_action_crosscheck.json"
+YAHOO_RAW = OUT / "yahoo_raw"
+YAHOO_RECEIPTS = OUT / "yahoo_raw_receipts.json"
 AMENDMENT = ROOT / "research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md"
+PRICE_ANOMALIES = OUT / "price_anomaly_overrides.json"
 
 EXPECTED_ACTIONS_SHA256 = "a75341f1279665423722074fbc3c89eed2a0c4708e8aefcd658220c3e7bc83b2"
-EXPECTED_YAHOO_SHA256 = "3a2a7b7604a43bd97a485065b0e59af11e8fd65c3c487a012c0c1ad0f6496544"
+EXPECTED_YAHOO_SHA256 = "0c154aa9e88d495f23b4d08e82e079b8054524bed5e3921cbaf1bf56f199deb4"
+EXPECTED_YAHOO_RECEIPTS_SHA256 = "d69c0841fec6416a751a4ff02bac56900ade81f2278d548a5c3b0724f02bfabf"
+EXPECTED_YAHOO_RAW_AGGREGATE_SHA256 = "7f046a416b28b1fbf3392fe5ab449e0ae850f0937690429c7d3cab8d72a6ca78"
+EXPECTED_AMENDMENT_SHA256 = "6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f"
+EXPECTED_PRICE_ANOMALIES_SHA256 = "17220ead32f7e85c30034b529b886a4b95bb1853b8692644265b4eb453aebd53"
 EXPECTED_RECEIPT_INVENTORY_SHA256 = "260095460e120a1ab222d48846f45fd1b246a634c04d900d966db64662d31a95"
 EXPECTED_RAW_AGGREGATE_SHA256 = "76b9a429d15280b9b16624e66cc80129d2a7359cb12bcc948ed126ad2c19bfb7"
 EXPECTED_RECEIPT_AGGREGATE_SHA256 = "abf6f603d71f388288a4c3e691e810f683f36fbec2c5d696ef9448551a677ce7"
@@ -134,6 +142,57 @@ def finite_number(value: object) -> float | None:
     return number if math.isfinite(number) else None
 
 
+def ohlc_problem(row: dict[str, object]) -> str | None:
+    """Return why a row is unusable, including extreme yet enveloped bad ticks."""
+    values = {key: finite_number(row.get(key)) for key in ("open", "high", "low", "close")}
+    if any(value is None or value <= 0 for value in values.values()):
+        return "non-positive or non-finite OHLC"
+    open_, high, low, close = (values[key] for key in ("open", "high", "low", "close"))
+    if low > min(open_, close) or high < max(open_, close) or low > high:
+        return "OHLC envelope violation"
+    if high / low > 2.0:
+        return "implausible greater-than-100-percent intraday range"
+    if high / max(open_, close) > 1.5 or min(open_, close) / low > 1.5:
+        return "implausible one-sided greater-than-50-percent intraday excursion"
+    return None
+
+
+def apply_price_anomalies(
+    ticker: str,
+    rows: list[dict[str, object]],
+    anomaly_rows: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    """Apply only exact, independently corroborated corrections to invalid rows."""
+    corrections = {
+        (str(item.get("ticker")), str(item.get("date")), str(item.get("field"))): item
+        for item in anomaly_rows
+    }
+    require(len(corrections) == len(anomaly_rows), "price anomaly identities are not unique")
+    applied: set[tuple[str, str, str]] = set()
+    corrected: list[dict[str, object]] = []
+    for source_row in rows:
+        row = dict(source_row)
+        problem = ohlc_problem(row)
+        if problem is not None:
+            candidates = [key for key in corrections if key[:2] == (ticker, str(row.get("date")))]
+            require(len(candidates) == 1, f"unresolved {ticker} OHLC anomaly on {row.get('date')}: {problem}")
+            key = candidates[0]
+            correction = corrections[key]
+            field = key[2]
+            require(row.get(field) == correction.get("observed_value"), f"{ticker} anomaly observed value drift")
+            evidence = correction.get("evidence")
+            require(isinstance(evidence, list) and len(evidence) >= 2, f"{ticker} anomaly lacks independent corroboration")
+            accepted = correction.get("accepted_value")
+            require(all(item.get(field) == accepted for item in evidence), f"{ticker} anomaly sources disagree")
+            row[field] = accepted
+            require(ohlc_problem(row) is None, f"{ticker} anomaly correction remains invalid")
+            applied.add(key)
+        corrected.append(row)
+    expected = {key for key in corrections if key[0] == ticker}
+    require(applied == expected, f"unused or missing {ticker} price anomaly correction")
+    return corrected
+
+
 def verify_receipt(
     receipt_path: Path,
     *,
@@ -207,10 +266,125 @@ def reconstruct_actions(inventory: dict[str, dict[str, object]]) -> tuple[dict[s
     return document, provenance
 
 
+def reconstruct_yahoo_crosscheck() -> tuple[dict[str, object], list[dict[str, object]]]:
+    """Reproduce the Yahoo completeness snapshot from retained responses."""
+    require(
+        sha(YAHOO_RECEIPTS) == EXPECTED_YAHOO_RECEIPTS_SHA256,
+        "Yahoo receipt manifest hash drift",
+    )
+    raw_aggregate, raw_count = aggregate(
+        ROOT, (path for path in YAHOO_RAW.rglob("*") if path.is_file())
+    )
+    require(
+        (raw_count, raw_aggregate) == (len(ROSTER), EXPECTED_YAHOO_RAW_AGGREGATE_SHA256),
+        "Yahoo raw-evidence aggregate drift",
+    )
+    receipt_payload = json.loads(YAHOO_RECEIPTS.read_text(encoding="utf-8"))
+    records = receipt_payload.get("records")
+    require(isinstance(records, list), "Yahoo receipt records malformed")
+    inventory = {
+        str(record.get("symbol")): record
+        for record in records
+        if isinstance(record, dict) and isinstance(record.get("symbol"), str)
+    }
+    require(
+        len(inventory) == len(records) == len(ROSTER) and set(inventory) == set(ROSTER),
+        "Yahoo receipt roster, count, or uniqueness drift",
+    )
+
+    transformed: dict[str, object] = {}
+    provenance: list[dict[str, object]] = []
+    for symbol in sorted(ROSTER):
+        receipt = inventory[symbol]
+        raw_relative = receipt.get("raw_path")
+        require(isinstance(raw_relative, str) and raw_relative, f"Yahoo raw path missing: {symbol}")
+        raw_path = ROOT / raw_relative
+        require(raw_path.is_file(), f"Yahoo raw response missing: {symbol}")
+        require(receipt.get("response_status") == 200, f"Yahoo response unsuccessful: {symbol}")
+        require(sha(raw_path) == receipt.get("raw_sha256"), f"Yahoo raw hash drift: {symbol}")
+        require(raw_path.stat().st_size == receipt.get("raw_byte_count"), f"Yahoo raw size drift: {symbol}")
+        expected_url = (
+            "https://query1.finance.yahoo.com/v8/finance/chart/"
+            f"{symbol}?period1=1622505600&period2=1785542400&interval=1mo&"
+            "events=div%2Csplits%2CcapitalGains&includeAdjustedClose=true"
+        )
+        require(receipt.get("request_url") == expected_url, f"Yahoo request drift: {symbol}")
+
+        response = json.loads(raw_path.read_text(encoding="utf-8"))
+        chart = response.get("chart")
+        require(isinstance(chart, dict) and chart.get("error") is None, f"Yahoo response malformed: {symbol}")
+        results = chart.get("result")
+        require(isinstance(results, list) and len(results) == 1, f"Yahoo result count drift: {symbol}")
+        result = results[0]
+        require(isinstance(result, dict), f"Yahoo result malformed: {symbol}")
+        meta = result.get("meta")
+        require(isinstance(meta, dict) and meta.get("symbol") == symbol, f"Yahoo symbol drift: {symbol}")
+        events: list[dict[str, object]] = []
+        event_groups = result.get("events") or {}
+        require(isinstance(event_groups, dict), f"Yahoo events malformed: {symbol}")
+        for provider_type, provider_events in event_groups.items():
+            require(provider_type in {"dividends", "splits"}, f"Yahoo event type drift: {symbol}")
+            require(isinstance(provider_events, dict), f"Yahoo event group malformed: {symbol}")
+            for event in provider_events.values():
+                require(isinstance(event, dict), f"Yahoo event malformed: {symbol}")
+                timestamp = finite_number(event.get("date"))
+                require(timestamp is not None, f"Yahoo event date malformed: {symbol}")
+                ex_date = datetime.fromtimestamp(timestamp, timezone.utc).date().isoformat()
+                if not STUDY_START <= ex_date <= STUDY_END:
+                    continue
+                if provider_type == "dividends":
+                    rate = finite_number(event.get("amount"))
+                    require(rate is not None and rate > 0, f"Yahoo dividend amount malformed: {symbol}")
+                    events.append({"action_type": "cash_dividend", "ex_date": ex_date, "rate": rate})
+                else:
+                    numerator = finite_number(event.get("numerator"))
+                    denominator = finite_number(event.get("denominator"))
+                    split_ratio = event.get("splitRatio")
+                    require(
+                        numerator is not None and numerator > 0
+                        and denominator is not None and denominator > 0
+                        and isinstance(split_ratio, str) and split_ratio,
+                        f"Yahoo split malformed: {symbol}",
+                    )
+                    events.append({
+                        "action_type": "split", "denominator": denominator,
+                        "ex_date": ex_date, "numerator": numerator,
+                        "splitRatio": split_ratio,
+                    })
+        events.sort(key=lambda item: (str(item["ex_date"]), str(item["action_type"])))
+        transformed[symbol] = {
+            "events": events,
+            "meta": {"currency": meta.get("currency"), "exchangeName": meta.get("exchangeName")},
+        }
+        provenance.append({
+            "symbol": symbol,
+            "raw_path": raw_relative,
+            "raw_sha256": receipt["raw_sha256"],
+            "raw_byte_count": receipt["raw_byte_count"],
+            "captured_at_utc": receipt.get("captured_at_utc"),
+        })
+
+    document: dict[str, object] = {
+        "capture_date_utc": "2026-09-07",
+        "data": transformed,
+        "purpose": "result-blind secondary event-completeness cross-check; never canonical rate evidence",
+        "request_template": (
+            "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?period1=1622505600&"
+            "period2=1785542400&interval=1mo&events=div%2Csplits%2CcapitalGains&includeAdjustedClose=true"
+        ),
+        "schema_version": "1.0",
+        "symbols": sorted(ROSTER),
+        "transform": "retain symbol meta and event type/ex-date/rate-or-ratio only; sort by ex-date",
+    }
+    require(encoded(document) == YAHOO.read_bytes(), "Yahoo transform does not reconstruct from frozen raw evidence")
+    return document, provenance
+
+
 def reconstruct_price(
     ticker: str,
     action_rows: list[dict[str, object]],
     inventory: dict[str, dict[str, object]],
+    anomaly_rows: list[dict[str, object]],
 ) -> tuple[dict[str, object], dict[str, str]]:
     receipt_path = RECEIPTS / f"stock_{ticker}_alpaca.page-0000.final.json"
     raw_path = verify_receipt(
@@ -232,7 +406,7 @@ def reconstruct_price(
         "volume": finite_number(bar.get("v")),
     } for bar in bars]
     rows.sort(key=lambda item: item["date"])
-    document: dict[str, object] = {
+    source_document: dict[str, object] = {
         "schema_version": "1.0",
         "instrument": ticker,
         "provider": "ALPACA_MARKET_DATA",
@@ -241,7 +415,9 @@ def reconstruct_price(
         "events": [row for row in action_rows if row.get("symbol") == ticker],
     }
     transformed = ALPACA / f"{ticker}.json"
-    require(encoded(document) == transformed.read_bytes(), f"{ticker} transform does not reconstruct from frozen raw evidence")
+    require(encoded(source_document) == transformed.read_bytes(), f"{ticker} transform does not reconstruct from frozen raw evidence")
+    document = dict(source_document)
+    document["rows"] = apply_price_anomalies(ticker, rows, anomaly_rows)
     return document, {
         "raw_path": raw_path.relative_to(ROOT).as_posix(),
         "raw_sha256": sha(raw_path),
@@ -287,6 +463,8 @@ def etn_dividend_terms(provider_rate: float, provider_amount_basis: str) -> dict
 def main() -> None:
     require(sha(ACTIONS) == EXPECTED_ACTIONS_SHA256, "upstream action transform hash drift")
     require(sha(YAHOO) == EXPECTED_YAHOO_SHA256, "Yahoo cross-check hash drift")
+    require(sha(AMENDMENT) == EXPECTED_AMENDMENT_SHA256, "foreign-dividend amendment hash drift")
+    require(sha(PRICE_ANOMALIES) == EXPECTED_PRICE_ANOMALIES_SHA256, "price anomaly evidence hash drift")
     require(
         sha(RECEIPT_INVENTORY) == EXPECTED_RECEIPT_INVENTORY_SHA256,
         "acquisition receipt inventory hash drift",
@@ -316,14 +494,18 @@ def main() -> None:
         "acquisition receipt inventory count or uniqueness drift",
     )
     reconstructed_actions, action_raw_provenance = reconstruct_actions(receipt_inventory)
+    yahoo, yahoo_raw_provenance = reconstruct_yahoo_crosscheck()
     action_rows = reconstructed_actions["rows"]
     require(isinstance(action_rows, list), "reconstructed action rows malformed")
+    anomaly_payload = json.loads(PRICE_ANOMALIES.read_text(encoding="utf-8"))
+    anomaly_rows = anomaly_payload.get("corrections")
+    require(isinstance(anomaly_rows, list) and anomaly_rows, "price anomaly corrections malformed")
 
     price_files = []
     for ticker in ROSTER:
         path = ALPACA / f"{ticker}.json"
         require(sha(path) == EXPECTED_OHLC_SHA256[ticker], f"{ticker} transformed OHLC hash drift")
-        payload, provenance = reconstruct_price(ticker, action_rows, receipt_inventory)
+        payload, provenance = reconstruct_price(ticker, action_rows, receipt_inventory, anomaly_rows)
         rows = payload["rows"]
         price_files.append({
             "ticker": ticker,
@@ -447,10 +629,15 @@ def main() -> None:
     action_path = OUT / "corporate_actions.json"
     dump(action_path, action_payload)
 
-    yahoo = json.loads(YAHOO.read_text())
     require(set(yahoo["symbols"]) == set(ROSTER), "Yahoo cross-check roster drift")
     crosscheck = {
         "snapshot_path": str(YAHOO.relative_to(ROOT)), "snapshot_sha256": sha(YAHOO),
+        "receipt_manifest_path": str(YAHOO_RECEIPTS.relative_to(ROOT)),
+        "receipt_manifest_sha256": EXPECTED_YAHOO_RECEIPTS_SHA256,
+        "raw_file_count": len(yahoo_raw_provenance),
+        "raw_aggregate_sha256": EXPECTED_YAHOO_RAW_AGGREGATE_SHA256,
+        "reconstructed_from_raw": True,
+        "raw_provenance": yahoo_raw_provenance,
         "scope": "secondary completeness cross-check only; not a canonical rate source",
         "result": "22 symbols have identical type/ex-date signatures; three require primary-source disposition",
         "exceptions": [
@@ -471,9 +658,15 @@ def main() -> None:
         ),
         "tax_amendment": {
             "path": str(AMENDMENT.relative_to(ROOT)),
-            "sha256": sha(AMENDMENT),
+            "sha256": EXPECTED_AMENDMENT_SHA256,
         },
-        "price_selection_rule": "uniform retained Alpaca SIP split-adjusted non-total-return OHLC; selected before any ladder result",
+        "price_selection_rule": "retained Alpaca SIP split-adjusted non-total-return OHLC plus two pinned bad-tick corrections (NVDA and SPY); selected before any ladder result",
+        "price_anomaly_corrections": {
+            "path": str(PRICE_ANOMALIES.relative_to(ROOT)),
+            "sha256": EXPECTED_PRICE_ANOMALIES_SHA256,
+            "count": len(anomaly_rows),
+            "application": "AFTER_EXACT_RAW_TRANSFORM_RECONSTRUCTION_BEFORE_ANY_LADDER_CALCULATION",
+        },
         "price_files": price_files,
         "corporate_actions": {"path": str(action_path.relative_to(ROOT)), "sha256": sha(action_path), "event_count": len(events)},
         "upstream_action_registry": {

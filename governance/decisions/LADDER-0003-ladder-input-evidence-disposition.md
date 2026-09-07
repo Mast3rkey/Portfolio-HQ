@@ -32,6 +32,12 @@ Accept the input disposition and action ledger under these exact conditions:
    be admitted only from the 2021-06-01 study start, after its 2020-04-03 identity
    floor, and predecessor stitching remains prohibited. The builder must reconstruct
    every selected transform exactly from its raw terminal page and acquisition receipt.
+   The retained SPY row for 2026-02-02 contains an impossible decimal-place low of
+   69.005, and the retained NVDA split-date row for 2024-06-10 contains a malformed
+   195.95 high. Apply the exact, separately pinned 689.42 and 123.10 corrections
+   only after raw-byte reconstruction and before any ladder calculation. Two
+   independent retrievals corroborate each corrected OHLC tuple.
+   All other unexplained or implausible OHLC rows are fatal.
 2. Use `corporate_actions.json`, which contains 381 unique in-window ex-date events.
    It preserves later payment dates as receivables, adds COST on 2026-07-24 using
    the issuer's exact amount/record date plus Nasdaq's T+1 regular-distribution
@@ -42,8 +48,10 @@ Accept the input disposition and action ledger under these exact conditions:
    Series D preferred. The quarantined row remains preserved with its source ID.
 4. Treat the Yahoo snapshot only as a result-blind date/type completeness
    cross-check. It cannot override issuer facts or supply a canonical dividend rate.
-   The comparison found 22 identical symbol signatures and three exceptions, all
-   explicitly dispositioned above.
+   Reconstruct the snapshot byte-for-byte from the 25 retained Yahoo responses and
+   their pinned receipt manifest; any response, request, roster, count, or transform
+   drift is fatal. The comparison found 22 identical symbol signatures and three
+   exceptions, all explicitly dispositioned above.
 5. Apply the separately pinned foreign-dividend amendment. It reconstructs gross
    entitlement when the retained provider rate is source-net, separates facts from
    assumptions, and models the foreign-tax credit without double-counting source
@@ -61,7 +69,9 @@ Accept the input disposition and action ledger under these exact conditions:
    820-row action transform from 28 terminal raw pages and receipts, then reconstruct
    all 25 selected price transforms from 25 terminal raw pages and receipts. Exact
    canonical byte identity with each retained transform is required. These checks
-   must remain active under optimized Python.
+   must remain active under optimized Python. The foreign-dividend amendment and
+   price-anomaly evidence hashes are also builder preconditions; the builder may
+   not bless their current bytes dynamically.
 
 SOL is outside the ladder roster. Its earlier robustness history remains
 `EVIDENCE_LIMITED_NOT_DECISION_GRADE`; no pre-2021-06-17 SOLUSD history may be
@@ -74,10 +84,13 @@ already exposed.
 | Artifact | SHA-256 |
 |---|---|
 | `research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md` | `6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f` |
-| `research/buy_ladder_backtest/build_input_disposition.py` | `0d6f2311d0e3cbc01f16d729ca8ca0e68f769c855364559218590ea077e90cdd` |
-| `research/buy_ladder_backtest/inputs/input_disposition.json` | `bc59b76c63387b8f8049128a8fcb16b0cfff776f4930dd6f20c8b9a2ee9dba96` |
+| `research/buy_ladder_backtest/inputs/price_anomaly_overrides.json` | `17220ead32f7e85c30034b529b886a4b95bb1853b8692644265b4eb453aebd53` |
+| `research/buy_ladder_backtest/build_input_disposition.py` | `8e4b8ebf2c6adaeabf9670d60305ebd2af848caa530b60714bff771205fcab98` |
+| `research/buy_ladder_backtest/inputs/input_disposition.json` | `57e57bfa445082b9bff707ead8daa53966cb41d2efa761455f66128447ce81db` |
 | `research/buy_ladder_backtest/inputs/corporate_actions.json` | `79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1` |
-| `research/buy_ladder_backtest/inputs/yahoo_action_crosscheck.json` | `3a2a7b7604a43bd97a485065b0e59af11e8fd65c3c487a012c0c1ad0f6496544` |
+| `research/buy_ladder_backtest/inputs/yahoo_action_crosscheck.json` | `0c154aa9e88d495f23b4d08e82e079b8054524bed5e3921cbaf1bf56f199deb4` |
+| `research/buy_ladder_backtest/inputs/yahoo_raw_receipts.json` | `d69c0841fec6416a751a4ff02bac56900ade81f2278d548a5c3b0724f02bfabf` |
+| Yahoo raw response aggregate (25 files) | `7f046a416b28b1fbf3392fe5ab449e0ae850f0937690429c7d3cab8d72a6ca78` |
 
 The disposition also pins each of the 25 OHLC hashes, the retained upstream action
 registry, the acquisition inventory, every selected raw page and receipt, and the

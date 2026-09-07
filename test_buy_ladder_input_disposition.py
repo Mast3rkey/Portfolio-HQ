@@ -19,16 +19,21 @@ INPUTS = STUDY / "inputs"
 DISPOSITION = INPUTS / "input_disposition.json"
 ACTIONS = INPUTS / "corporate_actions.json"
 YAHOO = INPUTS / "yahoo_action_crosscheck.json"
+YAHOO_RAW = INPUTS / "yahoo_raw"
+YAHOO_RECEIPTS = INPUTS / "yahoo_raw_receipts.json"
 AMENDMENT = STUDY / "PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md"
+PRICE_ANOMALIES = INPUTS / "price_anomaly_overrides.json"
 BUILDER = STUDY / "build_input_disposition.py"
 DECISION = ROOT / "governance/decisions/LADDER-0003-ladder-input-evidence-disposition.md"
 
 PINS = {
     AMENDMENT: "6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f",
-    BUILDER: "0d6f2311d0e3cbc01f16d729ca8ca0e68f769c855364559218590ea077e90cdd",
-    DISPOSITION: "bc59b76c63387b8f8049128a8fcb16b0cfff776f4930dd6f20c8b9a2ee9dba96",
+    PRICE_ANOMALIES: "17220ead32f7e85c30034b529b886a4b95bb1853b8692644265b4eb453aebd53",
+    BUILDER: "8e4b8ebf2c6adaeabf9670d60305ebd2af848caa530b60714bff771205fcab98",
+    DISPOSITION: "57e57bfa445082b9bff707ead8daa53966cb41d2efa761455f66128447ce81db",
     ACTIONS: "79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1",
-    YAHOO: "3a2a7b7604a43bd97a485065b0e59af11e8fd65c3c487a012c0c1ad0f6496544",
+    YAHOO: "0c154aa9e88d495f23b4d08e82e079b8054524bed5e3921cbaf1bf56f199deb4",
+    YAHOO_RECEIPTS: "d69c0841fec6416a751a4ff02bac56900ade81f2278d548a5c3b0724f02bfabf",
 }
 ROSTER = (
     "NVDA TSM ASML AVGO KLAC MSFT GOOGL AMZN META PANW LLY ISRG TMO V COST "
@@ -95,6 +100,70 @@ def test_price_roster_paths_and_hashes_fail_closed() -> None:
     assert by_ticker["RTX"]["identity_floor"] == "2020-04-03"
 
 
+def test_bad_ticks_are_corrected_before_ladder_use() -> None:
+    module = _load_builder()
+    anomaly_rows = _json(PRICE_ANOMALIES)["corrections"]
+    raw_spy = _json(ROOT / "research/level1_sleeve_robustness/data/transformed/candidates/alpaca/SPY.json")
+    source = next(row for row in raw_spy["rows"] if row["date"] == "2026-02-02")
+    assert source["low"] == 69.005
+    corrected = module.apply_price_anomalies("SPY", raw_spy["rows"], anomaly_rows)
+    row = next(item for item in corrected if item["date"] == "2026-02-02")
+    assert row == {
+        "date": "2026-02-02", "open": 689.58, "high": 696.93,
+        "low": 689.42, "close": 695.41, "volume": 79286521.0,
+    }
+    evidence = next(row for row in anomaly_rows if row["ticker"] == "SPY")["evidence"]
+    assert len(evidence) == 2
+    assert {item["low"] for item in evidence} == {689.42}
+    raw_nvda = _json(ROOT / "research/level1_sleeve_robustness/data/transformed/candidates/alpaca/NVDA.json")
+    source = next(row for row in raw_nvda["rows"] if row["date"] == "2024-06-10")
+    assert source["high"] == 195.95
+    corrected = module.apply_price_anomalies("NVDA", raw_nvda["rows"], anomaly_rows)
+    row = next(item for item in corrected if item["date"] == "2024-06-10")
+    assert row == {
+        "date": "2024-06-10", "open": 120.37, "high": 123.10,
+        "low": 117.01, "close": 121.79, "volume": 314162666.0,
+    }
+    nvda_evidence = next(row for row in anomaly_rows if row["ticker"] == "NVDA")["evidence"]
+    assert len(nvda_evidence) == 2
+    assert {item["high"] for item in nvda_evidence} == {123.10}
+    disposition = _json(DISPOSITION)
+    assert disposition["price_anomaly_corrections"]["sha256"] == PINS[PRICE_ANOMALIES]
+
+
+def test_builder_fails_closed_when_amendment_or_anomaly_evidence_drifts(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    source = BUILDER.read_text(encoding="utf-8")
+    assert "sha(AMENDMENT) == EXPECTED_AMENDMENT_SHA256" in source
+    assert "sha(PRICE_ANOMALIES) == EXPECTED_PRICE_ANOMALIES_SHA256" in source
+    assert _sha(AMENDMENT) == PINS[AMENDMENT]
+    assert _sha(PRICE_ANOMALIES) == PINS[PRICE_ANOMALIES]
+
+    module = _load_builder()
+    drifted_amendment = tmp_path / AMENDMENT.name
+    drifted_amendment.write_bytes(AMENDMENT.read_bytes() + b"\nUNREVIEWED\n")
+    monkeypatch.setattr(module, "AMENDMENT", drifted_amendment)
+    try:
+        module.main()
+    except module.InputIntegrityError as exc:
+        assert str(exc) == "foreign-dividend amendment hash drift"
+    else:
+        raise AssertionError("builder accepted a drifted foreign-dividend amendment")
+
+    module = _load_builder()
+    drifted_anomalies = tmp_path / PRICE_ANOMALIES.name
+    drifted_anomalies.write_bytes(PRICE_ANOMALIES.read_bytes() + b" ")
+    monkeypatch.setattr(module, "PRICE_ANOMALIES", drifted_anomalies)
+    try:
+        module.main()
+    except module.InputIntegrityError as exc:
+        assert str(exc) == "price anomaly evidence hash drift"
+    else:
+        raise AssertionError("builder accepted drifted price-anomaly evidence")
+
+
 def test_selected_transforms_reconstruct_from_pinned_raw_bytes_and_receipts() -> None:
     disposition = _json(DISPOSITION)
     frozen = disposition["frozen_source_evidence"]
@@ -126,6 +195,26 @@ def test_selected_transforms_reconstruct_from_pinned_raw_bytes_and_receipts() ->
     # Re-run the actual reconstruction gate; it compares the reconstructed
     # canonical bytes with every retained transformed file before emitting.
     _load_builder().main()
+
+
+def test_yahoo_crosscheck_reconstructs_from_exact_raw_responses_and_receipts() -> None:
+    disposition = _json(DISPOSITION)
+    crosscheck = disposition["action_crosscheck"]
+    raw_files = [path for path in YAHOO_RAW.rglob("*") if path.is_file()]
+    assert _sha(YAHOO_RECEIPTS) == crosscheck["receipt_manifest_sha256"] == PINS[YAHOO_RECEIPTS]
+    assert _aggregate(ROOT, raw_files) == (
+        crosscheck["raw_aggregate_sha256"], crosscheck["raw_file_count"]
+    ) == ("7f046a416b28b1fbf3392fe5ab449e0ae850f0937690429c7d3cab8d72a6ca78", 25)
+    assert crosscheck["reconstructed_from_raw"] is True
+    assert len(crosscheck["raw_provenance"]) == 25
+    assert {row["symbol"] for row in crosscheck["raw_provenance"]} == set(ROSTER)
+    for row in crosscheck["raw_provenance"]:
+        path = ROOT / row["raw_path"]
+        assert _sha(path) == row["raw_sha256"]
+        assert path.stat().st_size == row["raw_byte_count"]
+    document, provenance = _load_builder().reconstruct_yahoo_crosscheck()
+    assert document == _json(YAHOO)
+    assert len(provenance) == 25
 
 
 def test_builder_checks_survive_optimized_python() -> None:
