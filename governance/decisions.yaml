@@ -1201,3 +1201,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, NUM-0001, LADDER-0001, PHQ-2026-02, PHQ-2026-07]
     supporting_artifact: research/buy_ladder_backtest/PROTOCOL_V2.md
     file: governance/decisions/LADDER-0002-canonical-buy-ladder-execution-amendment.md
+  - decision_id: RISK-0005
+    date: 2026-09-07
+    status: Accepted
+    category: research_evidence_disposition
+    related_decisions: [GOV-0001, GOV-0002, OPS-0009, OPS-0014, NUM-0001, RISK-0001, RISK-0002, RISK-0003, RISK-0004, LADDER-0001, LADDER-0002]
+    supporting_artifact: research/whole_portfolio_robustness/evidence_disposition.json
+    file: governance/decisions/RISK-0005-whole-portfolio-evidence-disposition.md
