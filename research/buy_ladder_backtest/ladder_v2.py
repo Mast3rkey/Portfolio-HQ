@@ -269,6 +269,16 @@ def segment(ticker: str) -> str:
     return SEGMENT.get(ticker, "equity")
 
 
+def first_eligible_decision_dates(
+    prices: Mapping[str, list[dict[str, Any]]], cfg: Mapping[str, Any],
+) -> dict[str, str]:
+    simulation_start = cfg["window"]["simulation_start"].isoformat()
+    return {
+        ticker: max(simulation_start, rows[209]["date"])
+        for ticker, rows in prices.items() if len(rows) >= 210
+    }
+
+
 def cell_key(arm: str, bps: int, scope: str = "whole") -> tuple[str, int, str]:
     return arm, bps, scope
 
@@ -835,7 +845,7 @@ def simulate(cfg: Mapping[str, Any], prices: Mapping[str, list[dict[str, Any]]],
     caps = targets_doc["caps"]["clusters"]
     look = yaml.safe_load((ROOT / "issuer_lookthrough.yaml").read_text())
     by_day = {ticker: {row["date"]: (i, row) for i, row in enumerate(rows)} for ticker, rows in prices.items()}
-    first_eligible = {ticker: rows[209]["date"] for ticker, rows in prices.items() if len(rows) >= 210}
+    first_eligible = first_eligible_decision_dates(prices, cfg)
     accounts = {cell_key(arm, bps, scope): Account() for arm in ARMS for bps in cfg["friction_bps"] for scope in SCOPES}
     whole_keys = [cell_key(arm, bps) for arm in ARMS for bps in cfg["friction_bps"]]
     shadow = Account()
@@ -1291,7 +1301,7 @@ def validate() -> dict[str, Any]:
     receipt.update({
         "validation_scope": "INPUT_RECONSTRUCTION_AND_NON_HOLDOUT_INVARIANTS_ONLY",
         "reconstruction": reconstruction, "validated_tickers": list(EXPECTED),
-        "first_eligible_decision_dates": {ticker: rows[209]["date"] for ticker, rows in prices.items() if len(rows) >= 210},
+        "first_eligible_decision_dates": first_eligible_decision_dates(prices, cfg),
         "session_count": len(sessions), "action_count": sum(map(len, actions.values())),
         "holdout_metrics": None, "disposition": None,
     })
