@@ -23,6 +23,33 @@ def test_six_instrument_weight_sets_are_exact_and_reconciled():
     assert variants["GOLD_PLUS_2"]["GLD"] == Decimal("6.00")
     assert variants["DIVERSIFIED_BALANCE"]["CASH"] == Decimal("15.50")
 
+    direct = {
+        row["ticker"] for row in targets["destination"]
+        if row["asset_class"] == "equity" and row["ticker"] in variants["BASELINE"]
+    }
+    crypto = {
+        row["ticker"] for row in targets["destination"]
+        if row["asset_class"] == "crypto" and row["ticker"] in variants["BASELINE"]
+    }
+    members = {
+        "eligible_direct_equity": direct,
+        "broad_market_funds": engine.BROAD,
+        "gold": engine.GOLD,
+        "crypto": crypto,
+        "cash_and_protected_capital": {"CASH"},
+    }
+    definitions = {row["id"]: row for row in prereg["variants"]["definitions"]}
+    for variant_id, weights in variants.items():
+        exact_sleeves = {
+            sleeve: sum((weights[ticker] for ticker in tickers), Decimal("0"))
+            for sleeve, tickers in members.items()
+        }
+        expected = {
+            sleeve: Decimal(value)
+            for sleeve, value in definitions[variant_id]["expected_sleeves_pct"].items()
+        }
+        assert exact_sleeves == expected
+
 
 def test_gated_capital_is_cash_and_never_an_active_security():
     prereg = engine._yaml(engine.PREREG_PATH)

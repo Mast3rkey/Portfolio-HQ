@@ -13,7 +13,7 @@ import json
 import math
 from dataclasses import dataclass
 from datetime import date, timedelta
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_EVEN
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -35,6 +35,7 @@ CANDIDATE_ROOT = ROOT / "research/level1_sleeve_robustness/data/transformed/cand
 BROAD = frozenset({"SPY", "VEA", "VWO"})
 GOLD = frozenset({"GLD"})
 CASH_LIKE = frozenset({"CASH", "RESERVE"})
+WEIGHT_QUANTUM = Decimal("0.000000000001")
 
 
 class DataGateError(RuntimeError):
@@ -136,24 +137,27 @@ def derive_instrument_weights(
             target_total = sum((weights[item] for item in target_members), Decimal("0"))
             if source_total < amount or source_total <= 0 or target_total <= 0:
                 raise DataGateError(f"{definition['id']}: invalid pro-rata transfer")
-            source_moved = Decimal("0")
             for item in source_members[:-1]:
                 moved = amount * weights[item] / source_total
-                weights[item] -= moved
-                source_moved += moved
-            weights[source_members[-1]] -= amount - source_moved
-            target_moved = Decimal("0")
+                weights[item] = (weights[item] - moved).quantize(
+                    WEIGHT_QUANTUM, rounding=ROUND_HALF_EVEN
+                )
+            # Set the final member from the exact post-transfer sleeve total,
+            # rather than subtracting a rounded pro-rata remainder.  This
+            # preserves both the registered sleeve weight and the 100% total.
+            weights[source_members[-1]] = (
+                source_total - amount
+                - sum((weights[item] for item in source_members[:-1]), Decimal("0"))
+            )
             for item in target_members[:-1]:
                 moved = amount * weights[item] / target_total
-                weights[item] += moved
-                target_moved += moved
-            weights[target_members[-1]] += amount - target_moved
-            # Decimal division of pro-rata weights can leave a sub-ulp residue;
-            # assign only that arithmetic residue to the final destination.
-            residue = Decimal("100") - sum(weights.values(), Decimal("0"))
-            if abs(residue) > Decimal("1e-20"):
-                raise DataGateError(f"{definition['id']}: transfer failed exact reconciliation")
-            weights[source_members[-1]] += residue
+                weights[item] = (weights[item] + moved).quantize(
+                    WEIGHT_QUANTUM, rounding=ROUND_HALF_EVEN
+                )
+            weights[target_members[-1]] = (
+                target_total + amount
+                - sum((weights[item] for item in target_members[:-1]), Decimal("0"))
+            )
         if sum(weights.values(), Decimal("0")) != Decimal("100"):
             raise DataGateError(f"{definition['id']}: instrument weights do not total 100%")
         variants[str(definition["id"])] = weights
