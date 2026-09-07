@@ -59,7 +59,7 @@ identifiable and decision-useful by:
 
 `research/buy_ladder_backtest/PROTOCOL_V2.md`
 
-SHA-256: `55087b83d02dbdd0b0ca972b3f957794a3895b24a28b6d0ef30da89793ba1328`
+SHA-256: `c182372fcf282d790852047ae93b4a7297ee923651f6be83daeae03711ed7e21`
 
 The protocol was finalized and hashed before this decision record was written. Any
 byte change requires another reviewed amendment. No registered execution may begin

@@ -197,7 +197,7 @@ prohibited.
   ex-date close and before final close NAV is recorded, so it first earns cash
   interest in the next close-to-close interval. Because the
   retained action rows do not consistently carry payable dates, this ex-date credit
-  is an explicit timing approximation and must be disclosed. The decision cell
+  is an explicit timing approximation and must be disclosed. Every friction cell
   debits tax at the same time using the preregistered taxable-middle approximation:
   80% qualified at 15% and 20% ordinary at 24%, an effective 16.8% rate. Split
   events must reconcile to the chosen split-adjusted OHLC series and must not be

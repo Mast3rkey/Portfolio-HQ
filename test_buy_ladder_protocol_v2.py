@@ -14,7 +14,7 @@ DECISION = (
     ROOT
     / "governance/decisions/LADDER-0002-canonical-buy-ladder-execution-amendment.md"
 )
-PROTOCOL_SHA256 = "55087b83d02dbdd0b0ca972b3f957794a3895b24a28b6d0ef30da89793ba1328"
+PROTOCOL_SHA256 = "c182372fcf282d790852047ae93b4a7297ee923651f6be83daeae03711ed7e21"
 CONFIG_HASHES = {
     "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
     "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
