@@ -29,6 +29,11 @@ For each foreign cash dividend, the accepted action row must carry:
 - `rate_evidence`, which separates exact issuer facts from a stated withholding
   assumption or inference.
 
+When a provider reports a source-net amount, the row must additionally retain
+`provider_reported_rate_usd` and `provider_amount_basis`. Provider reporting basis is
+provenance only and must not silently determine the modeled account's withholding
+status.
+
 Negative withholding, a source-net amount above gross, missing evidence labels, or
 an untraceable gross-rate derivation is fatal.
 
@@ -52,14 +57,36 @@ limitations, or tax advice. Domestic dividends retain V2's original calculation:
 source withholding is zero, residual U.S. tax is 16.8% of gross, and the net
 receivable is 83.2% of gross.
 
+### Eaton convention
+
+Eaton states that Irish DWT is 25% unless an exemption applies, and that a U.S. tax
+resident holding through a broker should be exempt when the broker has the required
+documentation. The study has no account-specific documentation and may not infer a
+dated status change from the retained provider's switch between gross and apparent
+source-net quotes. It therefore uses one result-blind convention for the entire ETN
+window:
+
+- normalize every provider quote back to gross while retaining its original amount
+  and gross/net basis as provenance;
+- use the documented U.S.-broker exemption as the baseline research assumption,
+  with zero Irish source withholding for every ETN dividend; and
+- run a mandatory no-exemption sensitivity with 25% Irish DWT for every ETN
+  dividend, independent of the provider quote format.
+
+Equivalent gross and source-net provider representations of one ETN entitlement
+must produce the same gross amount and the same baseline and sensitivity cash flows.
+If the no-exemption case changes the winner or an adoption gate, the disposition is
+`INSUFFICIENT_EVIDENCE` until final account/broker facts are supplied.
+
 ## Required outputs and sensitivities
 
 Each arm and window must report gross dividends, source withholding, tentative U.S.
 tax, foreign-tax credit, residual U.S. tax, total dividend tax, net dividend
 receivables, and settlements separately. The engine must also report a conservative
-foreign-tax-credit sensitivity that sets the credit to zero. This sensitivity is
-non-voting unless it causes the apparent winner to fail a V2 adoption gate, in which
-case the disposition is `INSUFFICIENT_EVIDENCE`.
+foreign-tax-credit sensitivity that sets the credit to zero, plus the ETN
+no-exemption sensitivity above. These sensitivities are non-voting unless either
+changes the apparent winner or causes it to fail a V2 adoption gate, in which case
+the disposition is `INSUFFICIENT_EVIDENCE`.
 
 All payable-date, ex-date, split-basis, receivable, end-of-window, and price-only
 diagnostic rules remain exactly as stated in V2. This amendment authorizes no target

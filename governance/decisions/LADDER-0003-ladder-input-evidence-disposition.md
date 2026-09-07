@@ -33,9 +33,10 @@ Accept the input disposition and action ledger under these exact conditions:
    floor, and predecessor stitching remains prohibited. The builder must reconstruct
    every selected transform exactly from its raw terminal page and acquisition receipt.
 2. Use `corporate_actions.json`, which contains 381 unique in-window ex-date events.
-   It preserves later payment dates as receivables, adds the issuer-confirmed COST
-   2026-07-23 and ASML 2026-07-28 dividends, resolves ETN's 2025-11 discrepancy to
-   2025-11-06, and records the evidence basis for every dividend rate.
+   It preserves later payment dates as receivables, adds COST on 2026-07-24 using
+   the issuer's exact amount/record date plus Nasdaq's T+1 regular-distribution
+   ex-date rule, adds the issuer-confirmed ASML 2026-07-28 dividend, resolves ETN's
+   2025-11 discrepancy to 2025-11-06, and records the evidence basis for every rate.
 3. Exclude the retained event labeled ASML on 2024-12-02 with CUSIP G3730V147. FTAI
    issuer evidence and a filed security-ID mapping identify it as FTAI Aviation
    Series D preferred. The quarantined row remains preserved with its source ID.
@@ -46,7 +47,10 @@ Accept the input disposition and action ledger under these exact conditions:
 5. Apply the separately pinned foreign-dividend amendment. It reconstructs gross
    entitlement when the retained provider rate is source-net, separates facts from
    assumptions, and models the foreign-tax credit without double-counting source
-   withholding. A no-credit sensitivity is mandatory and can force
+   withholding. ETN provider gross/net quote changes remain provenance only: the
+   baseline consistently assumes the documented U.S.-broker Irish-DWT exemption,
+   while a mandatory 25% no-exemption sensitivity applies to the full ETN window.
+   The no-credit and ETN no-exemption sensitivities can force
    `INSUFFICIENT_EVIDENCE`.
 6. Select actions by ex-date entitlement within 2021-06-01 through 2026-07-31 from
    evidence known as of 2026-09-07. A provider process date after the price window
@@ -69,10 +73,10 @@ already exposed.
 
 | Artifact | SHA-256 |
 |---|---|
-| `research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md` | `c6e44d91aaa022f7159cd40f4df0c3cfc2b8fabfbed50044b83299f229647e81` |
-| `research/buy_ladder_backtest/build_input_disposition.py` | `f3996075c763c3b81b8a9e56ac248540b3e6aa5c9f0b806855247f9851d9c746` |
-| `research/buy_ladder_backtest/inputs/input_disposition.json` | `bf8280a4d99c1584b307c606bbe32a6cc53d7b224e307164acf04b5100443e21` |
-| `research/buy_ladder_backtest/inputs/corporate_actions.json` | `4cd066e9ef72041941ab59a283bc5b2aa61351979f47356c27a9ec4c06c9b828` |
+| `research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md` | `6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f` |
+| `research/buy_ladder_backtest/build_input_disposition.py` | `0d6f2311d0e3cbc01f16d729ca8ca0e68f769c855364559218590ea077e90cdd` |
+| `research/buy_ladder_backtest/inputs/input_disposition.json` | `bc59b76c63387b8f8049128a8fcb16b0cfff776f4930dd6f20c8b9a2ee9dba96` |
+| `research/buy_ladder_backtest/inputs/corporate_actions.json` | `79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1` |
 | `research/buy_ladder_backtest/inputs/yahoo_action_crosscheck.json` | `3a2a7b7604a43bd97a485065b0e59af11e8fd65c3c487a012c0c1ad0f6496544` |
 
 The disposition also pins each of the 25 OHLC hashes, the retained upstream action

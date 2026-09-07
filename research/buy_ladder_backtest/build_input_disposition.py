@@ -261,6 +261,29 @@ def is_in_entitlement_window(event: dict[str, object]) -> bool:
     return STUDY_START <= ex_date <= STUDY_END
 
 
+def etn_dividend_terms(provider_rate: float, provider_amount_basis: str) -> dict[str, object]:
+    """Normalize ETN quotes, then apply one study-wide withholding convention."""
+    require(provider_rate > 0, "ETN provider rate must be positive")
+    require(
+        provider_amount_basis in {"GROSS", "SOURCE_NET_AT_25_PERCENT"},
+        "unsupported ETN provider amount basis",
+    )
+    gross = provider_rate if provider_amount_basis == "GROSS" else provider_rate / 0.75
+    return {
+        "provider_reported_rate_usd": round(provider_rate, 9),
+        "provider_amount_basis": provider_amount_basis,
+        "gross_rate_usd": round(gross, 9),
+        "source_net_rate_usd": round(gross, 9),
+        "source_withholding_usd": 0.0,
+        "withholding_convention": "US_BROKER_DOCUMENTED_EXEMPTION_RESEARCH_ASSUMPTION",
+        "withholding_sensitivity": {
+            "case": "NO_EXEMPTION_25_PERCENT_IRISH_DWT",
+            "source_net_rate_usd": round(gross * 0.75, 9),
+            "source_withholding_usd": round(gross * 0.25, 9),
+        },
+    }
+
+
 def main() -> None:
     require(sha(ACTIONS) == EXPECTED_ACTIONS_SHA256, "upstream action transform hash drift")
     require(sha(YAHOO) == EXPECTED_YAHOO_SHA256, "Yahoo cross-check hash drift")
@@ -345,10 +368,21 @@ def main() -> None:
                 gross = paid / 0.85
                 event["gross_rate_derivation"] = "source_net_rate / 0.85 Dutch statutory withholding assumption"
                 event["rate_evidence"] = "PROVIDER_SOURCE_NET_PLUS_WITHHOLDING_ASSUMPTION"
-            elif event["symbol"] == "ETN" and event["ex_date"] >= "2023-05-05":
-                gross = paid / 0.75
-                event["gross_rate_derivation"] = "source_net_rate / 0.75 observed Irish withholding basis"
-                event["rate_evidence"] = "PROVIDER_SOURCE_NET_PLUS_OBSERVED_WITHHOLDING_INFERENCE"
+            elif event["symbol"] == "ETN":
+                provider_basis = (
+                    "SOURCE_NET_AT_25_PERCENT" if event["ex_date"] >= "2023-05-05" else "GROSS"
+                )
+                terms = etn_dividend_terms(paid, provider_basis)
+                gross = float(terms["gross_rate_usd"])
+                event.update(terms)
+                event["gross_rate_derivation"] = (
+                    "provider gross quote" if provider_basis == "GROSS"
+                    else "provider source-net quote / 0.75 observed reporting basis"
+                )
+                event["rate_evidence"] = "PROVIDER_BASIS_NORMALIZED_PLUS_CONSTANT_MODEL_CONVENTION"
+                event["source_lineage"].append(
+                    "https://www.eaton.com/us/en-us/company/investor-relations/Irish-Dividend-Withholding-Tax.html"
+                )
                 if event["ex_date"] == "2025-11-06":
                     event["source_lineage"].append(
                         "https://www.eaton.com/us/en-us/company/news-insights/news-releases/2025/"
@@ -356,12 +390,13 @@ def main() -> None:
                     )
             else:
                 event["rate_evidence"] = "RETAINED_PROVIDER_RATE_TREATED_AS_GROSS"
-            event.update({
-                "gross_rate_usd": round(gross, 9),
-                "source_net_rate_usd": round(paid, 9),
-                "source_withholding_usd": round(gross - paid, 9),
-                "same_day_split_basis": "NOT_APPLICABLE",
-            })
+            if event["symbol"] != "ETN":
+                event.update({
+                    "gross_rate_usd": round(gross, 9),
+                    "source_net_rate_usd": round(paid, 9),
+                    "source_withholding_usd": round(gross - paid, 9),
+                })
+            event["same_day_split_basis"] = "NOT_APPLICABLE"
         else:
             event["same_day_dividend_basis"] = "NOT_APPLICABLE"
         events.append(event)
@@ -371,11 +406,16 @@ def main() -> None:
     events.extend([
         {
             "action_type": "cash_dividend", "symbol": "COST", "cusip": "22160K105",
-            "ex_date": "2026-07-23", "record_date": "2026-07-24", "payable_date": "2026-08-07",
+            "ex_date": "2026-07-24", "record_date": "2026-07-24", "payable_date": "2026-08-07",
             "gross_rate_usd": 1.47, "source_net_rate_usd": 1.47, "source_withholding_usd": 0.0,
-            "same_day_split_basis": "NOT_APPLICABLE", "id": "ladder-0003-cost-2026-07-23",
-            "rate_evidence": "ISSUER_EXACT_GROSS",
-            "source_lineage": ["https://investor.costco.com/stock-info/dividend-history/default.aspx"],
+            "same_day_split_basis": "NOT_APPLICABLE", "id": "ladder-0003-cost-2026-07-24",
+            "rate_evidence": "ISSUER_EXACT_GROSS_PLUS_NASDAQ_T1_EX_DATE_INFERENCE",
+            "ex_date_evidence": "RULE_BASED_INFERENCE_RECORD_DATE_EQUALS_REGULAR_EX_DATE_UNDER_NASDAQ_T1",
+            "source_lineage": [
+                "https://investor.costco.com/news/news-details/2026/Costco-Wholesale-Corporation-Reports-June-Sales-Results-and-Announces-Quarterly-Cash-Dividend/default.aspx",
+                "https://www.nasdaqtrader.com/TraderNews.aspx?id=ETA2024-29",
+                "https://listingcenter.nasdaq.com/assets/RuleBook/Nasdaq/rules/Issuer_Alert_2024-001.pdf",
+            ],
         },
         {
             "action_type": "cash_dividend", "symbol": "ASML", "cusip": "N07059210",
@@ -415,7 +455,7 @@ def main() -> None:
         "result": "22 symbols have identical type/ex-date signatures; three require primary-source disposition",
         "exceptions": [
             {"symbol": "ASML", "issue": "Yahoo adds 2026-07-28; Alpaca adds false 2024-12-02", "resolution": "add issuer event; quarantine CUSIP G3730V147"},
-            {"symbol": "COST", "issue": "Yahoo date 2026-07-24; Alpaca omits event", "resolution": "issuer controls: ex 2026-07-23, record 2026-07-24"},
+            {"symbol": "COST", "issue": "Yahoo date 2026-07-24; Alpaca omits event", "resolution": "issuer record 2026-07-24 plus Nasdaq T+1 regular-distribution rule support same-day ex-date"},
             {"symbol": "ETN", "issue": "Yahoo says 2025-11-05; Alpaca says 2025-11-06", "resolution": "issuer record date and exchange corroboration support 2025-11-06"},
         ],
     }

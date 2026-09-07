@@ -24,10 +24,10 @@ BUILDER = STUDY / "build_input_disposition.py"
 DECISION = ROOT / "governance/decisions/LADDER-0003-ladder-input-evidence-disposition.md"
 
 PINS = {
-    AMENDMENT: "c6e44d91aaa022f7159cd40f4df0c3cfc2b8fabfbed50044b83299f229647e81",
-    BUILDER: "f3996075c763c3b81b8a9e56ac248540b3e6aa5c9f0b806855247f9851d9c746",
-    DISPOSITION: "bf8280a4d99c1584b307c606bbe32a6cc53d7b224e307164acf04b5100443e21",
-    ACTIONS: "4cd066e9ef72041941ab59a283bc5b2aa61351979f47356c27a9ec4c06c9b828",
+    AMENDMENT: "6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f",
+    BUILDER: "0d6f2311d0e3cbc01f16d729ca8ca0e68f769c855364559218590ea077e90cdd",
+    DISPOSITION: "bc59b76c63387b8f8049128a8fcb16b0cfff776f4930dd6f20c8b9a2ee9dba96",
+    ACTIONS: "79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1",
     YAHOO: "3a2a7b7604a43bd97a485065b0e59af11e8fd65c3c487a012c0c1ad0f6496544",
 }
 ROSTER = (
@@ -182,7 +182,7 @@ def test_action_ledger_is_unique_complete_and_preserves_receivables() -> None:
     late = [(event["symbol"], event["ex_date"], event["payable_date"])
             for event in events if event.get("payable_date", "") > "2026-07-31"]
     assert late == [
-        ("COST", "2026-07-23", "2026-08-07"),
+        ("COST", "2026-07-24", "2026-08-07"),
         ("ASML", "2026-07-28", "2026-08-05"),
     ]
 
@@ -198,7 +198,12 @@ def test_cross_security_contamination_and_date_conflicts_are_closed() -> None:
     assert not any(event.get("cusip") == "G3730V147" for event in events)
 
     lookup = {(event["symbol"], event["ex_date"]): event for event in events}
-    assert lookup[("COST", "2026-07-23")]["gross_rate_usd"] == 1.47
+    cost = lookup[("COST", "2026-07-24")]
+    assert cost["gross_rate_usd"] == 1.47
+    assert cost["ex_date_evidence"] == (
+        "RULE_BASED_INFERENCE_RECORD_DATE_EQUALS_REGULAR_EX_DATE_UNDER_NASDAQ_T1"
+    )
+    assert any("nasdaqtrader.com" in source for source in cost["source_lineage"])
     assert lookup[("ASML", "2026-07-28")]["gross_rate_usd"] == 2.137748
     assert ("ETN", "2025-11-06") in lookup
     assert ("ETN", "2025-11-05") not in lookup
@@ -230,10 +235,28 @@ def test_foreign_dividend_facts_inferences_and_tax_math_are_explicit() -> None:
     assert source_withholding == gross - Decimal(str(event["source_net_rate_usd"]))
     assert total_tax == max(source_withholding, tentative_us_tax)
 
+    etn = [event for event in dividends if event["symbol"] == "ETN"]
+    assert etn
+    assert {event["withholding_convention"] for event in etn} == {
+        "US_BROKER_DOCUMENTED_EXEMPTION_RESEARCH_ASSUMPTION"
+    }
+    assert {event["source_withholding_usd"] for event in etn} == {0.0}
+    assert {event["withholding_sensitivity"]["case"] for event in etn} == {
+        "NO_EXEMPTION_25_PERCENT_IRISH_DWT"
+    }
+
+    module = _load_builder()
+    gross_quote = module.etn_dividend_terms(1.0, "GROSS")
+    net_quote = module.etn_dividend_terms(0.75, "SOURCE_NET_AT_25_PERCENT")
+    for key in ("gross_rate_usd", "source_net_rate_usd", "source_withholding_usd"):
+        assert gross_quote[key] == net_quote[key]
+    assert gross_quote["withholding_sensitivity"] == net_quote["withholding_sensitivity"]
+
     text = AMENDMENT.read_text(encoding="utf-8")
     for token in (
         "foreign_tax_credit      = min(source_withholding, tentative_us_tax)",
         "foreign-tax-credit sensitivity that sets the credit to zero",
+        "mandatory no-exemption sensitivity with 25% Irish DWT",
         "INSUFFICIENT_EVIDENCE",
         "UNARMED AND NOT EXECUTABLE",
     ):
@@ -243,7 +266,7 @@ def test_foreign_dividend_facts_inferences_and_tax_math_are_explicit() -> None:
 def test_entitlement_filter_does_not_repeat_process_date_cutoff_defect() -> None:
     module = _load_builder()
     included = {
-        "ex_date": "2026-07-23",
+        "ex_date": "2026-07-24",
         "process_date": "2026-08-07",
         "payable_date": "2026-08-07",
     }
