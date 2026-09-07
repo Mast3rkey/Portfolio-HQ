@@ -57,14 +57,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           CURRENT_LOCK: whole-portfolio-execution-lock-PORTFOLIO-ROBUSTNESS-0001-${{ github.run_id }}
+          CURRENT_RESULT: whole-portfolio-results-${{ github.sha }}
         run: |
           set -euo pipefail
-          locks="$(gh api --paginate \
+          artifacts="$(gh api --paginate \
             "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
-            --jq '.artifacts[] | select(.expired == false) | .name | select(startswith("whole-portfolio-execution-lock-PORTFOLIO-ROBUSTNESS-0001-"))')"
+            --jq '.artifacts[] | select(.expired == false) | .name')"
+          locks="$(printf '%s\n' "$artifacts" | \
+            grep -F 'whole-portfolio-execution-lock-PORTFOLIO-ROBUSTNESS-0001-' || true)"
           prior="$(printf '%s\n' "$locks" | grep -Fvx "$CURRENT_LOCK" || true)"
           if [ -n "$prior" ]; then
             echo "PORTFOLIO-ROBUSTNESS-0001 already has a persistent execution lock; use a new study ID." >&2
+            exit 1
+          fi
+          if printf '%s\n' "$artifacts" | grep -Fxq "$CURRENT_RESULT"; then
+            echo "PORTFOLIO-ROBUSTNESS-0001 already published governed results; use a new study ID." >&2
             exit 1
           fi
           if printf '%s\n' "$locks" | grep -Fxq "$CURRENT_LOCK"; then

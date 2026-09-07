@@ -160,6 +160,7 @@ def test_workflow_limits_manual_execution_and_refuses_retained_result_rerun():
     assert "Refuse execution after governed results are retained" in workflow
     assert "research/whole_portfolio_robustness/execution/output_manifest.json" in workflow
     assert "whole-portfolio-execution-lock-PORTFOLIO-ROBUSTNESS-0001-${{ github.run_id }}" in workflow
+    assert "CURRENT_RESULT: whole-portfolio-results-${{ github.sha }}" in workflow
     assert workflow.count("if: always()") == 1
 
 
@@ -251,6 +252,30 @@ def test_path_validator_binds_identity_fields_to_cell_id():
     }
     with pytest.raises(result_validator.ResultValidationError,
                        match="identity fields disagree"):
+        result_validator._validate_paths(document, {cell})
+
+
+def test_path_validator_reconciles_index_and_returns():
+    cell = "BASELINE|W|QUARTERLY|10|TAXABLE_MID"
+    document = {
+        "schema_version": "1.0",
+        "study_id": "PORTFOLIO-ROBUSTNESS-0001",
+        "scope": "DECISION_CELL_ONLY_ALL_REGISTERED_WINDOWS",
+        "records": [{
+            "cell_id": cell,
+            "variant": "BASELINE",
+            "window": "W",
+            "cadence": "QUARTERLY",
+            "one_way_cost_bps": "10",
+            "tax_profile": "TAXABLE_MID",
+            "dates": ["2024-01-02", "2024-01-03"],
+            "index": [1.0, 1.1],
+            "daily_net_returns": [0.0, 0.0],
+            "daily_lagged_dff_returns": [0.0, 0.0],
+        }],
+    }
+    with pytest.raises(result_validator.ResultValidationError,
+                       match="index/return reconciliation failed"):
         result_validator._validate_paths(document, {cell})
 
 

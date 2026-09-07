@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import math
+from datetime import date
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -133,12 +134,14 @@ def _expected_registry(prereg: Mapping[str, Any]) -> tuple[set[str], set[str], l
 
 
 def _validate_freeze(document: Mapping[str, Any]) -> None:
+    _require_identity(document, "input_freeze.json")
     if document.get("gate") != "READY" or document.get("holdout_results_emitted") is not True:
         raise ResultValidationError("input_freeze.json: READY emitted-holdout freeze required")
     if document.get("stage1") != "UNARMED_AND_NOT_EXECUTABLE":
         raise ResultValidationError("input_freeze.json: Stage 1 boundary drift")
     receipt_hash = document.get("validation_receipt_sha256")
-    if not isinstance(receipt_hash, str) or len(receipt_hash) != 64:
+    if (not isinstance(receipt_hash, str) or len(receipt_hash) != 64
+            or any(character not in "0123456789abcdef" for character in receipt_hash)):
         raise ResultValidationError("input_freeze.json: validation receipt hash missing")
     current = runner.input_freeze()
     emitted = dict(document)
@@ -213,9 +216,26 @@ def _validate_paths(document: Mapping[str, Any], expected: set[str]) -> list[dic
             raise ResultValidationError(f"portfolio_paths.json[{index}]: invalid dates")
         if any(not isinstance(values, list) or len(values) != len(dates) for values in series):
             raise ResultValidationError(f"portfolio_paths.json[{index}]: unaligned path")
+        if any(type(day) is not str for day in dates):
+            raise ResultValidationError(f"portfolio_paths.json[{index}]: non-string date")
+        try:
+            tuple(date.fromisoformat(day) for day in dates)
+        except ValueError as exc:
+            raise ResultValidationError(
+                f"portfolio_paths.json[{index}]: invalid ISO date"
+            ) from exc
+        if any(type(value) not in (int, float) for values in series for value in values):
+            raise ResultValidationError(f"portfolio_paths.json[{index}]: numeric series required")
         if any(float(value) <= 0 for value in series[0]):
             raise ResultValidationError(f"portfolio_paths.json[{index}]: nonpositive index")
         _assert_finite(record, f"portfolio_paths.json[{index}]")
+        for offset, (level, daily_return) in enumerate(zip(series[0], series[1])):
+            prior = 1.0 if offset == 0 else float(series[0][offset - 1])
+            expected_return = float(level) / prior - 1.0
+            if abs(float(daily_return) - expected_return) > 1e-12:
+                raise ResultValidationError(
+                    f"portfolio_paths.json[{index}]: index/return reconciliation failed"
+                )
         found.add(cell)
     if found != expected:
         raise ResultValidationError("portfolio_paths.json: decision-path registry mismatch")
@@ -335,6 +355,10 @@ def validate(root: Path) -> dict[str, Any]:
     for name, text in (("limitations.md", limitations), ("results.md", results)):
         if STUDY_ID not in text or "UNARMED" not in text or "NOT EXECUTABLE" not in text:
             raise ResultValidationError(f"{name}: required identity/boundary missing")
+    if limitations != runner._limitations_text(prereg, disposition):
+        raise ResultValidationError("limitations.md: narrative does not reproduce")
+    if results != runner._results_text(prereg, disposition):
+        raise ResultValidationError("results.md: narrative does not reproduce")
     return {
         "status": "PASS", "study_id": STUDY_ID,
         "metric_cells": len(expected_cells), "decision_paths": len(expected_paths),
