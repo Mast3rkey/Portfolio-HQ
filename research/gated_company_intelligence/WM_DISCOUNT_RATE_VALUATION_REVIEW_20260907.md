@@ -8,7 +8,7 @@ allocation optimization, target change, trade instruction, or execution
 authorization.
 
 **Disposition:** retain `cash_pending_clearance` and `allow_add: false`. The
-accepted 0.50% WM target remains protected cash while the gate is closed. No
+accepted 0.75% WM target remains protected cash while the gate is closed. No
 change is made to `gates.yaml`, `targets.yaml`, holdings, margin policy, or any
 Stage-1 artifact.
 
