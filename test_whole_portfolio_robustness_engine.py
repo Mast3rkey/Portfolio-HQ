@@ -77,6 +77,8 @@ def test_crypto_uses_only_lawfully_completed_prior_utc_close():
     assert engine._required_dates("crypto", sessions, "2024-04-02", "2024-04-03") == [
         "2024-04-01", "2024-04-02"
     ]
+    assert engine._eligible_session_start("crypto", "2021-01-04", "2021-06-17") == "2021-06-18"
+    assert engine._eligible_session_start("equity", "2021-01-04", "2021-06-17") == "2021-06-17"
 
 
 def test_dff_validation_rejects_internal_calendar_gap_and_nonfinite_rate():

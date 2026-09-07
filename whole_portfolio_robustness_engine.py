@@ -294,6 +294,17 @@ def _required_dates(kind: str, sessions: list[str], start: str, end: str) -> lis
     return [day for day in sessions if start <= day <= end]
 
 
+def _eligible_session_start(kind: str, window_start: str, first_observation: str) -> str:
+    """Return the first session that can lawfully use the selected series."""
+
+    if not first_observation:
+        return window_start
+    first = date.fromisoformat(first_observation)
+    if kind == "crypto":
+        first += timedelta(days=1)
+    return max(window_start, first.isoformat())
+
+
 @dataclass(frozen=True)
 class GateReport:
     ready: bool
@@ -350,7 +361,9 @@ def build_data_gate(root: Path = ROOT) -> GateReport:
         )
         missing_by_window = {
             name: [day for day in _required_dates(
-                kind, sessions, max(str(window["start"]), primary_start), str(window["end"])
+                kind, sessions,
+                _eligible_session_start(kind, str(window["start"]), primary_start),
+                str(window["end"]),
             ) if day not in rows]
             for name, window in voting_windows.items()
         }
@@ -368,7 +381,9 @@ def build_data_gate(root: Path = ROOT) -> GateReport:
                 )
                 selected_missing = {
                     name: [day for day in _required_dates(
-                        kind, sessions, max(str(window["start"]), fallback_start), str(window["end"])
+                        kind, sessions,
+                        _eligible_session_start(kind, str(window["start"]), fallback_start),
+                        str(window["end"]),
                     ) if day not in selected_rows]
                     for name, window in voting_windows.items()
                 }
