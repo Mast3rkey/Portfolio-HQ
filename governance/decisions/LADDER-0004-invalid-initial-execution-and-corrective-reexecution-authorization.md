@@ -36,7 +36,9 @@ The material defects were:
    output recomputation, exact reproducibility, or tamper refusal.
 
 The invalid attempt is preserved by PR number, immutable commit identities, review
-comment, and these retained artifact hashes:
+comment
+[`5574233731`](https://github.com/Mast3rkey/Portfolio-HQ/pull/384#issuecomment-5574233731),
+and these retained artifact hashes:
 
 | Artifact at PR #384 head | SHA-256 |
 |---|---|
@@ -47,8 +49,9 @@ comment, and these retained artifact hashes:
 | `execution/metrics.json` | `33bc1d7ecd3fee14ccf827aa04c0a5c72b0211f8c2d8199617e4addbe994fb8d` |
 | `execution/sensitivities.json` | `5f11e9a000bc26bd5c43c276c82a491d4546ecbd2b1c00784eb9ac3fe1199238` |
 
-`portfolio_paths.json` has no retained blob on that head.  Its manifest-only hash is
-not evidence that the artifact was preserved.
+`portfolio_paths.json` has no retained blob on that head.  Its manifest-only hash,
+`ad1c154e654d2ddfccc1cf67c43de237e2b7c929e47c9b7931398f0a91347054`, is not
+evidence that the artifact was preserved.
 
 ## Decision
 

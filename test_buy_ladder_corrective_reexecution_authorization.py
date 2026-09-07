@@ -13,8 +13,10 @@ def test_invalid_attempt_is_explicitly_non_decision_grade():
     text = DECISION.read_text(encoding="utf-8")
     assert "c435243376b1ed761ac4c0f5e69281fcbbce4d45" in text
     assert "https://github.com/Mast3rkey/Portfolio-HQ/pull/384" in text
+    assert "issuecomment-5574233731" in text
     assert "INVALID AND NON-DECISION-GRADE" in text
     assert "portfolio_paths.json` has no retained blob" in text
+    assert "ad1c154e654d2ddfccc1cf67c43de237e2b7c929e47c9b7931398f0a91347054" in text
     assert "does not close LADDER V2" in text
 
 
