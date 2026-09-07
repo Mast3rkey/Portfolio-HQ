@@ -43,7 +43,7 @@ gates:
     authority: PHQ-2026-01
     allow_add: false
     holds_existing_shares: false
-    next_gate: "Retrieve and model the complete Q2 2026 earnings package and update valuation."
+    next_gate: "Re-anchor the valuation after Q3 2026 results, or sooner if price provides a positive base-case margin with a survivable downside-case gap."
   - ticker: RKLB
     status: cash_pending_clearance
     authority: PHQ-2026-01
