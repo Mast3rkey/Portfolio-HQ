@@ -39,6 +39,20 @@ jobs:
           python whole_portfolio_sol_reacquisition.py
           --output-dir artifacts/frozen-sol
 
+      - name: Verify the complete network-free data gate
+        run: |
+          install -D -m 0644 \
+            artifacts/frozen-sol/SOL.json \
+            research/level1_sleeve_robustness/data/quarantine/selected/SOL.json
+          python - <<'PY'
+          import whole_portfolio_robustness_engine as engine
+
+          freeze = engine.require_ready()
+          assert freeze["gate"] == "READY"
+          assert freeze["stage1"] == "UNARMED_AND_NOT_EXECUTABLE"
+          print("whole-portfolio data gate: READY")
+          PY
+
       - name: Retain candidate, raw pages, and verification receipt
         if: always()
         uses: actions/upload-artifact@v4
