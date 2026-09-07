@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import subprocess
+import sys
 from decimal import Decimal
 from pathlib import Path
 
@@ -23,8 +25,8 @@ DECISION = ROOT / "governance/decisions/LADDER-0003-ladder-input-evidence-dispos
 
 PINS = {
     AMENDMENT: "c6e44d91aaa022f7159cd40f4df0c3cfc2b8fabfbed50044b83299f229647e81",
-    BUILDER: "7536af8b8b7e8595beb99f8a2ad0a33d65861663bcbaf6d8850adf2f32e34d8b",
-    DISPOSITION: "a045d88e23c49210e933787b9e151c6f2ce5cdfb5e3b970ebf072691276af210",
+    BUILDER: "f3996075c763c3b81b8a9e56ac248540b3e6aa5c9f0b806855247f9851d9c746",
+    DISPOSITION: "bf8280a4d99c1584b307c606bbe32a6cc53d7b224e307164acf04b5100443e21",
     ACTIONS: "4cd066e9ef72041941ab59a283bc5b2aa61351979f47356c27a9ec4c06c9b828",
     YAHOO: "3a2a7b7604a43bd97a485065b0e59af11e8fd65c3c487a012c0c1ad0f6496544",
 }
@@ -48,6 +50,12 @@ def _load_builder():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _aggregate(root: Path, files: list[Path]) -> tuple[str, int]:
+    ordered = sorted(files, key=lambda path: path.relative_to(root).as_posix())
+    rows = "".join(f"{_sha(path)}  {path.relative_to(root).as_posix()}\n" for path in ordered)
+    return hashlib.sha256(rows.encode("utf-8")).hexdigest(), len(ordered)
 
 
 def test_exact_artifacts_and_catalog_entry_are_pinned() -> None:
@@ -85,6 +93,73 @@ def test_price_roster_paths_and_hashes_fail_closed() -> None:
     assert by_ticker["CEG"]["admitted_start"] == "2022-02-02"
     assert by_ticker["GEV"]["admitted_start"] == "2024-04-02"
     assert by_ticker["RTX"]["identity_floor"] == "2020-04-03"
+
+
+def test_selected_transforms_reconstruct_from_pinned_raw_bytes_and_receipts() -> None:
+    disposition = _json(DISPOSITION)
+    frozen = disposition["frozen_source_evidence"]
+    data = ROOT / "research/level1_sleeve_robustness/data"
+    inventory = data / "acquisition_receipt_inventory.json"
+    raw_files = [path for path in (data / "raw").rglob("*") if path.is_file()]
+    receipt_files = [path for path in (data / "receipts").rglob("*") if path.is_file()]
+
+    assert _sha(inventory) == frozen["receipt_inventory_sha256"] == (
+        "260095460e120a1ab222d48846f45fd1b246a634c04d900d966db64662d31a95"
+    )
+    assert _aggregate(ROOT, raw_files) == (
+        frozen["raw_aggregate_sha256"], frozen["raw_file_count"]
+    ) == ("76b9a429d15280b9b16624e66cc80129d2a7359cb12bcc948ed126ad2c19bfb7", 66)
+    assert _aggregate(ROOT, receipt_files) == (
+        frozen["receipt_aggregate_sha256"], frozen["receipt_file_count"]
+    ) == ("abf6f603d71f388288a4c3e691e810f683f36fbec2c5d696ef9448551a677ce7", 963)
+    assert frozen["transform_reconstruction"] == "EXACT_BYTE_IDENTITY_VERIFIED"
+
+    provenance = disposition["upstream_action_registry"]["raw_provenance"]
+    assert disposition["upstream_action_registry"]["reconstructed_from_raw"] is True
+    assert len(provenance) == 28
+    assert len({row["raw_path"] for row in provenance}) == 28
+    assert len({row["receipt_path"] for row in provenance}) == 28
+    for row in provenance + [entry["raw_provenance"] for entry in disposition["price_files"]]:
+        assert _sha(ROOT / row["raw_path"]) == row["raw_sha256"]
+        assert _sha(ROOT / row["receipt_path"]) == row["receipt_sha256"]
+
+    # Re-run the actual reconstruction gate; it compares the reconstructed
+    # canonical bytes with every retained transformed file before emitting.
+    _load_builder().main()
+
+
+def test_builder_checks_survive_optimized_python() -> None:
+    source = BUILDER.read_text(encoding="utf-8")
+    assert "assert " not in source
+    before = _sha(DISPOSITION)
+    completed = subprocess.run(
+        [sys.executable, "-O", str(BUILDER)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert _sha(DISPOSITION) == before
+
+    probe = subprocess.run(
+        [
+            sys.executable,
+            "-O",
+            "-c",
+            (
+                "import runpy; "
+                f"m=runpy.run_path({str(BUILDER)!r}); "
+                "m['require'](False, 'OPTIMIZED_SENTINEL')"
+            ),
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert probe.returncode != 0
+    assert "InputIntegrityError: OPTIMIZED_SENTINEL" in probe.stderr
 
 
 def test_action_ledger_is_unique_complete_and_preserves_receivables() -> None:

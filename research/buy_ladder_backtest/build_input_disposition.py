@@ -9,18 +9,27 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
+from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "research/buy_ladder_backtest/inputs"
 ALPACA = ROOT / "research/level1_sleeve_robustness/data/transformed/candidates/alpaca"
 ACTIONS = ROOT / "research/level1_sleeve_robustness/data/transformed/actions/alpaca_actions.json"
+DATA = ROOT / "research/level1_sleeve_robustness/data"
+RAW = DATA / "raw"
+RECEIPTS = DATA / "receipts"
+RECEIPT_INVENTORY = DATA / "acquisition_receipt_inventory.json"
 YAHOO = OUT / "yahoo_action_crosscheck.json"
 AMENDMENT = ROOT / "research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md"
 
 EXPECTED_ACTIONS_SHA256 = "a75341f1279665423722074fbc3c89eed2a0c4708e8aefcd658220c3e7bc83b2"
 EXPECTED_YAHOO_SHA256 = "3a2a7b7604a43bd97a485065b0e59af11e8fd65c3c487a012c0c1ad0f6496544"
+EXPECTED_RECEIPT_INVENTORY_SHA256 = "260095460e120a1ab222d48846f45fd1b246a634c04d900d966db64662d31a95"
+EXPECTED_RAW_AGGREGATE_SHA256 = "76b9a429d15280b9b16624e66cc80129d2a7359cb12bcc948ed126ad2c19bfb7"
+EXPECTED_RECEIPT_AGGREGATE_SHA256 = "abf6f603d71f388288a4c3e691e810f683f36fbec2c5d696ef9448551a677ce7"
 STUDY_START = "2021-06-01"
 STUDY_END = "2026-07-31"
 ACTION_AS_OF = "2026-09-07"
@@ -73,9 +82,172 @@ TSM = [
 ]
 TSM_BY_DATE = {d: (g, n, q) for d, g, n, q in TSM}
 
+ACTION_TYPES = (
+    "cash_dividend", "stock_dividend", "forward_split", "reverse_split",
+    "spin_off", "cash_merger", "stock_merger",
+)
+ACTION_CATEGORY = {
+    "cash_dividends": "cash_dividend",
+    "stock_dividends": "stock_dividend",
+    "forward_splits": "split",
+    "reverse_splits": "split",
+    "spin_offs": "spin_off",
+    "cash_mergers": "cash_merger",
+    "stock_mergers": "stock_merger",
+}
+
+
+class InputIntegrityError(RuntimeError):
+    """Raised when any frozen evidence or deterministic transform drifts."""
+
+
+def require(condition: bool, message: str) -> None:
+    """Enforce an invariant under normal and optimized Python interpreters."""
+    if not condition:
+        raise InputIntegrityError(message)
+
 
 def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def aggregate(root: Path, files: Iterable[Path]) -> tuple[str, int]:
+    ordered = sorted(files, key=lambda path: path.relative_to(root).as_posix())
+    rows = "".join(
+        f"{sha(path)}  {path.relative_to(root).as_posix()}\n"
+        for path in ordered
+    )
+    return hashlib.sha256(rows.encode("utf-8")).hexdigest(), len(ordered)
+
+
+def encoded(value: object) -> bytes:
+    return (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+
+
+def finite_number(value: object) -> float | None:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def verify_receipt(
+    receipt_path: Path,
+    *,
+    expected_dataset: str,
+    inventory: dict[str, dict[str, object]],
+) -> Path:
+    relative_receipt = receipt_path.relative_to(ROOT).as_posix()
+    require(relative_receipt in inventory, f"receipt absent from frozen inventory: {relative_receipt}")
+    inventory_row = inventory[relative_receipt]
+    require(sha(receipt_path) == inventory_row["receipt_sha256"], f"receipt hash drift: {relative_receipt}")
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    require(receipt.get("dataset_id") == expected_dataset, f"receipt dataset drift: {relative_receipt}")
+    require(receipt.get("response_status") == 200 and receipt.get("error") is None, f"receipt unsuccessful: {relative_receipt}")
+    require(receipt.get("next_page_or_terminal_marker") == "TERMINAL", f"receipt pagination incomplete: {relative_receipt}")
+    raw_relative = receipt.get("raw_path")
+    require(isinstance(raw_relative, str) and raw_relative, f"receipt raw path missing: {relative_receipt}")
+    raw_path = ROOT / raw_relative
+    require(raw_path.is_file(), f"raw evidence missing: {raw_relative}")
+    require(sha(raw_path) == receipt.get("raw_sha256"), f"raw evidence hash drift: {raw_relative}")
+    require(raw_path.stat().st_size == receipt.get("raw_byte_count"), f"raw evidence size drift: {raw_relative}")
+    return raw_path
+
+
+def reconstruct_actions(inventory: dict[str, dict[str, object]]) -> tuple[dict[str, object], list[dict[str, str]]]:
+    source_rows: list[dict[str, object]] = []
+    provenance: list[dict[str, str]] = []
+    for action_type in ACTION_TYPES:
+        for batch in range(4):
+            receipt_path = RECEIPTS / f"actions_{action_type}_batch-{batch:02d}.page-0000.final.json"
+            raw_path = verify_receipt(
+                receipt_path,
+                expected_dataset=f"actions:{action_type}:batch-{batch:02d}:alpaca",
+                inventory=inventory,
+            )
+            raw = json.loads(raw_path.read_text(encoding="utf-8"))
+            require(raw.get("next_page_token") in (None, ""), f"raw action page is not terminal: {raw_path}")
+            grouped = raw.get("corporate_actions") or {}
+            require(isinstance(grouped, dict), f"raw action buckets malformed: {raw_path}")
+            for kind, rows in grouped.items():
+                require(kind in ACTION_CATEGORY, f"unknown action bucket {kind}: {raw_path}")
+                require(isinstance(rows, list), f"action bucket is not a list: {raw_path}")
+                source_rows.extend({"action_type": kind, **row} for row in rows)
+            provenance.append({
+                "raw_path": raw_path.relative_to(ROOT).as_posix(),
+                "raw_sha256": sha(raw_path),
+                "receipt_path": receipt_path.relative_to(ROOT).as_posix(),
+                "receipt_sha256": sha(receipt_path),
+            })
+
+    normalized = []
+    for source in source_rows:
+        record = dict(source)
+        record["provider_action_type"] = record.get("action_type")
+        record["action_type"] = ACTION_CATEGORY.get(str(record.get("action_type")), record.get("action_type"))
+        for key in ("rate", "new_rate", "old_rate", "cash", "quantity"):
+            if key in record:
+                record[key] = finite_number(record[key])
+        normalized.append(record)
+    normalized.sort(key=lambda item: (
+        str(item.get("symbol", "")),
+        str(item.get("ex_date", item.get("process_date", ""))),
+        str(item.get("action_type", "")),
+        str(item.get("id", "")),
+    ))
+    document: dict[str, object] = {
+        "schema_version": "1.0",
+        "provider": "ALPACA_CORPORATE_ACTIONS",
+        "rows": normalized,
+    }
+    require(encoded(document) == ACTIONS.read_bytes(), "action transform does not reconstruct from frozen raw evidence")
+    return document, provenance
+
+
+def reconstruct_price(
+    ticker: str,
+    action_rows: list[dict[str, object]],
+    inventory: dict[str, dict[str, object]],
+) -> tuple[dict[str, object], dict[str, str]]:
+    receipt_path = RECEIPTS / f"stock_{ticker}_alpaca.page-0000.final.json"
+    raw_path = verify_receipt(
+        receipt_path,
+        expected_dataset=f"stock:{ticker}:alpaca",
+        inventory=inventory,
+    )
+    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    require(raw.get("symbol") == ticker, f"raw price symbol drift: {raw_path}")
+    require(raw.get("next_page_token") in (None, ""), f"raw price page is not terminal: {raw_path}")
+    bars = raw.get("bars")
+    require(isinstance(bars, list) and bars, f"raw price bars missing: {raw_path}")
+    rows = [{
+        "date": str(bar["t"])[:10],
+        "open": finite_number(bar.get("o")),
+        "high": finite_number(bar.get("h")),
+        "low": finite_number(bar.get("l")),
+        "close": finite_number(bar.get("c")),
+        "volume": finite_number(bar.get("v")),
+    } for bar in bars]
+    rows.sort(key=lambda item: item["date"])
+    document: dict[str, object] = {
+        "schema_version": "1.0",
+        "instrument": ticker,
+        "provider": "ALPACA_MARKET_DATA",
+        "adjustment": "SPLIT_ADJUSTED_NON_TOTAL_RETURN",
+        "rows": rows,
+        "events": [row for row in action_rows if row.get("symbol") == ticker],
+    }
+    transformed = ALPACA / f"{ticker}.json"
+    require(encoded(document) == transformed.read_bytes(), f"{ticker} transform does not reconstruct from frozen raw evidence")
+    return document, {
+        "raw_path": raw_path.relative_to(ROOT).as_posix(),
+        "raw_sha256": sha(raw_path),
+        "receipt_path": receipt_path.relative_to(ROOT).as_posix(),
+        "receipt_sha256": sha(receipt_path),
+    }
 
 
 def dump(path: Path, value: object) -> None:
@@ -90,14 +262,45 @@ def is_in_entitlement_window(event: dict[str, object]) -> bool:
 
 
 def main() -> None:
-    assert sha(ACTIONS) == EXPECTED_ACTIONS_SHA256
-    assert sha(YAHOO) == EXPECTED_YAHOO_SHA256
+    require(sha(ACTIONS) == EXPECTED_ACTIONS_SHA256, "upstream action transform hash drift")
+    require(sha(YAHOO) == EXPECTED_YAHOO_SHA256, "Yahoo cross-check hash drift")
+    require(
+        sha(RECEIPT_INVENTORY) == EXPECTED_RECEIPT_INVENTORY_SHA256,
+        "acquisition receipt inventory hash drift",
+    )
+    raw_aggregate, raw_count = aggregate(ROOT, (path for path in RAW.rglob("*") if path.is_file()))
+    receipt_aggregate, receipt_count = aggregate(
+        ROOT,
+        (path for path in RECEIPTS.rglob("*") if path.is_file()),
+    )
+    require(
+        (raw_count, raw_aggregate) == (66, EXPECTED_RAW_AGGREGATE_SHA256),
+        "frozen raw-evidence aggregate drift",
+    )
+    require(
+        (receipt_count, receipt_aggregate) == (963, EXPECTED_RECEIPT_AGGREGATE_SHA256),
+        "frozen acquisition-receipt aggregate drift",
+    )
+    receipt_inventory_payload = json.loads(RECEIPT_INVENTORY.read_text(encoding="utf-8"))
+    receipt_records = receipt_inventory_payload.get("records")
+    require(isinstance(receipt_records, list), "acquisition receipt inventory records malformed")
+    receipt_inventory = {
+        str(record["receipt_path"]): record for record in receipt_records
+        if isinstance(record, dict) and isinstance(record.get("receipt_path"), str)
+    }
+    require(
+        len(receipt_inventory) == receipt_inventory_payload.get("receipt_count") == 963,
+        "acquisition receipt inventory count or uniqueness drift",
+    )
+    reconstructed_actions, action_raw_provenance = reconstruct_actions(receipt_inventory)
+    action_rows = reconstructed_actions["rows"]
+    require(isinstance(action_rows, list), "reconstructed action rows malformed")
 
     price_files = []
     for ticker in ROSTER:
         path = ALPACA / f"{ticker}.json"
-        assert sha(path) == EXPECTED_OHLC_SHA256[ticker]
-        payload = json.loads(path.read_text())
+        require(sha(path) == EXPECTED_OHLC_SHA256[ticker], f"{ticker} transformed OHLC hash drift")
+        payload, provenance = reconstruct_price(ticker, action_rows, receipt_inventory)
         rows = payload["rows"]
         price_files.append({
             "ticker": ticker,
@@ -110,9 +313,10 @@ def main() -> None:
             "last_observation": rows[-1]["date"],
             "admitted_start": max(STUDY_START, rows[0]["date"]),
             "identity_floor": "2020-04-03" if ticker == "RTX" else None,
+            "raw_provenance": provenance,
         })
 
-    raw = json.loads(ACTIONS.read_text())["rows"]
+    raw = action_rows
     events = []
     quarantined = []
     for source in raw:
@@ -134,7 +338,7 @@ def main() -> None:
             gross = paid
             if event["symbol"] == "TSM":
                 gross, official_paid, quarter = TSM_BY_DATE[event["ex_date"]]
-                assert abs(paid - official_paid) < 1e-12
+                require(abs(paid - official_paid) < 1e-12, f"TSM source-net rate drift: {event['ex_date']}")
                 event["source_lineage"].append(f"https://investor.tsmc.com/english/dividends/{quarter}")
                 event["rate_evidence"] = "ISSUER_EXACT_GROSS_AND_SOURCE_NET"
             elif event["symbol"] == "ASML":
@@ -185,9 +389,12 @@ def main() -> None:
         },
     ])
     events.sort(key=lambda x: (x["ex_date"], x["symbol"], x["action_type"], x["id"]))
-    assert len(events) == 381
-    assert len(quarantined) == 1
-    assert len({(x["symbol"], x["action_type"], x["ex_date"]) for x in events}) == len(events)
+    require(len(events) == 381, "selected action count drift")
+    require(len(quarantined) == 1, "quarantined action count drift")
+    require(
+        len({(x["symbol"], x["action_type"], x["ex_date"]) for x in events}) == len(events),
+        "selected action identities are not unique",
+    )
 
     action_payload = {
         "schema_version": "1.0", "decision_id": "LADDER-0003",
@@ -201,7 +408,7 @@ def main() -> None:
     dump(action_path, action_payload)
 
     yahoo = json.loads(YAHOO.read_text())
-    assert set(yahoo["symbols"]) == set(ROSTER)
+    require(set(yahoo["symbols"]) == set(ROSTER), "Yahoo cross-check roster drift")
     crosscheck = {
         "snapshot_path": str(YAHOO.relative_to(ROOT)), "snapshot_sha256": sha(YAHOO),
         "scope": "secondary completeness cross-check only; not a canonical rate source",
@@ -232,6 +439,17 @@ def main() -> None:
         "upstream_action_registry": {
             "path": str(ACTIONS.relative_to(ROOT)),
             "sha256": EXPECTED_ACTIONS_SHA256,
+            "reconstructed_from_raw": True,
+            "raw_provenance": action_raw_provenance,
+        },
+        "frozen_source_evidence": {
+            "receipt_inventory_path": str(RECEIPT_INVENTORY.relative_to(ROOT)),
+            "receipt_inventory_sha256": EXPECTED_RECEIPT_INVENTORY_SHA256,
+            "raw_file_count": raw_count,
+            "raw_aggregate_sha256": raw_aggregate,
+            "receipt_file_count": receipt_count,
+            "receipt_aggregate_sha256": receipt_aggregate,
+            "transform_reconstruction": "EXACT_BYTE_IDENTITY_VERIFIED",
         },
         "action_crosscheck": crosscheck,
         "rtx_identity": {"lawful_start": "2020-04-03", "admitted_study_start": "2021-06-01", "predecessor_stitching": "PROHIBITED"},
