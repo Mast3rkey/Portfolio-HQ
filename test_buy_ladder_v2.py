@@ -220,6 +220,16 @@ def test_fill_refuses_negative_cash_and_retains_event():
     assert account.fills[0]["notional"] + account.fills[0]["cost"] == pytest.approx(100.0)
 
 
+def test_segment_mirror_caps_fill_at_cash_after_negative_carry():
+    order = {"arm": "C_IMMEDIATE", "bps": 0, "ticker": "VEA", "budget": 140.0, "selection_date": "2021-06-01", "segment": "broad_funds"}
+    account = engine.Account(cash=139.9981422222222)
+    engine._fill_v2(account, order, "2021-06-02", 50.0, segment_mirror=True)
+    assert account.cash == pytest.approx(0.0)
+    assert account.fills[0]["budget"] == pytest.approx(139.9981422222222)
+    assert account.fills[0]["requested_budget"] == pytest.approx(140.0)
+    assert account.fills[0]["segment_mirror"] is True
+
+
 def test_bootstrap_is_deterministic_and_cost_cells_are_separate():
     paths = {}
     for arm_index, arm in enumerate(engine.ARMS):
