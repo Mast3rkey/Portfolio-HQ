@@ -806,15 +806,28 @@ def _apply_flow_v2(path: list[dict[str, Any]], account: Account, day: str, amoun
     row["cash"] = account.cash
 
 
-def _fill_v2(account: Account, order: dict[str, Any], fill_day: str, price: float) -> None:
-    notional, cost = transaction(float(order["budget"]), int(order["bps"]))
-    if account.cash + 1e-8 < order["budget"]:
+def _fill_v2(
+    account: Account, order: dict[str, Any], fill_day: str, price: float,
+    *, segment_mirror: bool = False,
+) -> None:
+    requested_budget = float(order["budget"])
+    # Segment paths are attribution mirrors, not separately funded accounts.
+    # Their allocated cash can decline slightly between selection and activation
+    # when the registered net cash rate is negative. Mirror the executable whole
+    # account's fill with the cash actually available instead of manufacturing a
+    # tiny segment-level loan or failing an otherwise funded whole-account order.
+    budget = min(requested_budget, max(0.0, account.cash)) if segment_mirror else requested_budget
+    if budget <= 0:
+        raise StudyError("nonpositive cash available for fill")
+    notional, cost = transaction(budget, int(order["bps"]))
+    if account.cash + 1e-8 < budget:
         raise StudyError("negative cash required for fill")
-    account.cash -= order["budget"]
+    account.cash -= budget
     account.shares[order["ticker"]] += notional / price
     account.fills.append({
         "ticker": order["ticker"], "selection_date": order["selection_date"],
-        "date": fill_day, "budget": order["budget"], "notional": notional,
+        "date": fill_day, "budget": budget, "requested_budget": requested_budget,
+        "segment_mirror": segment_mirror, "notional": notional,
         "cost": cost, "fill_price": price, "segment": order["segment"],
     })
 
@@ -887,7 +900,10 @@ def simulate(cfg: Mapping[str, Any], prices: Mapping[str, list[dict[str, Any]]],
                 if fillable:
                     fill_price = float(bar["open"]) if order["arm"] == "C_IMMEDIATE" else min(float(bar["open"]), float(order["limit"]))
                     _fill_v2(accounts[cell_key(order["arm"], order["bps"])], order, day, fill_price)
-                    _fill_v2(accounts[cell_key(order["arm"], order["bps"], order["segment"])], order, day, fill_price)
+                    _fill_v2(
+                        accounts[cell_key(order["arm"], order["bps"], order["segment"])],
+                        order, day, fill_price, segment_mirror=True,
+                    )
                     order["status"] = "filled"; order["resolution_date"] = day; order["fill_price"] = fill_price
                 elif day == order["expiry"]:
                     order["status"] = "expired"; order["resolution_date"] = day
