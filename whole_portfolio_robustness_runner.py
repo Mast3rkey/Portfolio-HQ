@@ -682,31 +682,30 @@ def run_non_holdout_validation(output_dir: Path) -> dict[str, Any]:
     weights = gate.derive_instrument_weights(targets, gates, prereg)
     cutoff = str(prereg["windows"]["confirmation"]["end"])
     market = load_market_data(freeze, config, max_date=cutoff)
-    cases: list[dict[str, Any]] = []
     decision = config["decision_cell"]
     validation_windows = [
         (name, start, end) for name, start, end in registered_windows(prereg)
         if end <= cutoff
     ]
-    for name, start, end in validation_windows:
-        for variant, variant_weights in weights.items():
-            result = simulate(variant, name, start, end, decision["cadence"],
-                              decision["one_way_cost_bps"], decision["tax_profile"],
-                              variant_weights, prereg, config, market)
-            cases.append({
-                "cell": _cell_id(variant, name, decision["cadence"],
-                                 decision["one_way_cost_bps"], decision["tax_profile"]),
-                "ending_value": round(result.values[-1], 10),
-                "rebalance_count": result.rebalance_count,
-                "max_market_date_used": result.facts["max_market_date_used"],
-            })
-    first = simulate("BASELINE", "confirmation", "2021-01-04", cutoff,
-                     decision["cadence"], decision["one_way_cost_bps"],
-                     decision["tax_profile"], weights["BASELINE"], prereg, config, market)
-    second = simulate("BASELINE", "confirmation", "2021-01-04", cutoff,
-                      decision["cadence"], decision["one_way_cost_bps"],
-                      decision["tax_profile"], weights["BASELINE"], prereg, config, market)
-    if _canonical_hash(first.values) != _canonical_hash(second.values):
+    def evaluate() -> list[dict[str, Any]]:
+        evaluated: list[dict[str, Any]] = []
+        for name, start, end in validation_windows:
+            for variant, variant_weights in weights.items():
+                result = simulate(variant, name, start, end, decision["cadence"],
+                                  decision["one_way_cost_bps"], decision["tax_profile"],
+                                  variant_weights, prereg, config, market)
+                evaluated.append({
+                    "cell": _cell_id(variant, name, decision["cadence"],
+                                     decision["one_way_cost_bps"], decision["tax_profile"]),
+                    "ending_value": round(result.values[-1], 10),
+                    "rebalance_count": result.rebalance_count,
+                    "max_market_date_used": result.facts["max_market_date_used"],
+                })
+        return evaluated
+
+    cases = evaluate()
+    replay = evaluate()
+    if _canonical_hash(cases) != _canonical_hash(replay):
         raise ExecutionError("non-deterministic non-holdout simulation")
     if any(case["max_market_date_used"] > cutoff for case in cases):
         raise ExecutionError("non-holdout validation accessed a future market date")
@@ -717,7 +716,7 @@ def run_non_holdout_validation(output_dir: Path) -> dict[str, Any]:
         "validation_cutoff": cutoff, "max_market_date_used": max(case["max_market_date_used"] for case in cases),
         "validation_case_count": len(cases), "validation_summary_sha256": _canonical_hash(cases),
         "validation_cases": cases,
-        "determinism_replay_sha256": _canonical_hash(first.values),
+        "determinism_replay_sha256": _canonical_hash(replay),
         "holdout_results_emitted": False,
         "advisory_only": True, "stage1": "UNARMED_AND_NOT_EXECUTABLE",
     }
@@ -727,7 +726,10 @@ def run_non_holdout_validation(output_dir: Path) -> dict[str, Any]:
 
 def verify_validation_receipt(path: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     receipt = _read_json(path)
-    if receipt.get("phase") != "NON_HOLDOUT_VALIDATION" or receipt.get("status") != "PASS":
+    if (receipt.get("schema_version") != "1.0"
+            or receipt.get("study_id") != "PORTFOLIO-ROBUSTNESS-0001"
+            or receipt.get("phase") != "NON_HOLDOUT_VALIDATION"
+            or receipt.get("status") != "PASS"):
         raise ExecutionError("valid non-holdout PASS receipt required")
     if receipt.get("holdout_results_emitted") is not False:
         raise ExecutionError("validation receipt improperly exposed holdout results")
@@ -738,6 +740,38 @@ def verify_validation_receipt(path: Path) -> tuple[dict[str, Any], dict[str, Any
     config = load_config()
     if receipt.get("validation_cutoff") != prereg["windows"]["confirmation"]["end"]:
         raise ExecutionError("validation cutoff drift")
+    if receipt.get("advisory_only") is not True or receipt.get("stage1") != "UNARMED_AND_NOT_EXECUTABLE":
+        raise ExecutionError("validation receipt safety boundary drift")
+    cutoff = str(receipt["validation_cutoff"])
+    cases = receipt.get("validation_cases")
+    if not isinstance(cases, list):
+        raise ExecutionError("validation receipt cases missing")
+    weights = gate.derive_instrument_weights(
+        _read_yaml(gate.TARGETS_PATH), _read_yaml(gate.GATES_PATH), prereg
+    )
+    decision = config["decision_cell"]
+    expected = {
+        _cell_id(variant, window, decision["cadence"],
+                 decision["one_way_cost_bps"], decision["tax_profile"])
+        for window, _start, end in registered_windows(prereg) if end <= cutoff
+        for variant in weights
+    }
+    found = {str(row.get("cell")) for row in cases if isinstance(row, Mapping)}
+    if (found != expected or len(cases) != len(expected)
+            or receipt.get("validation_case_count") != len(expected)):
+        raise ExecutionError("validation receipt case registry mismatch")
+    if (receipt.get("validation_summary_sha256") != _canonical_hash(cases)
+            or receipt.get("determinism_replay_sha256") != _canonical_hash(cases)):
+        raise ExecutionError("validation receipt determinism evidence mismatch")
+    if any(
+        not math.isfinite(float(row.get("ending_value", math.nan)))
+        or not isinstance(row.get("rebalance_count"), int)
+        or str(row.get("max_market_date_used", "")) > cutoff
+        for row in cases
+    ):
+        raise ExecutionError("validation receipt contains invalid or future evidence")
+    if receipt.get("max_market_date_used") != max(str(row["max_market_date_used"]) for row in cases):
+        raise ExecutionError("validation receipt maximum market date mismatch")
     return receipt, prereg, config
 
 

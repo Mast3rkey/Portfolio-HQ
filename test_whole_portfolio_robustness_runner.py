@@ -135,6 +135,7 @@ def test_validation_receipt_refuses_code_or_input_drift(tmp_path: Path, monkeypa
     original = {"gate": "READY", "code_commit": "a" * 40,
                 "holdout_results_emitted": False}
     receipt = {
+        "schema_version": "1.0", "study_id": "PORTFOLIO-ROBUSTNESS-0001",
         "phase": "NON_HOLDOUT_VALIDATION", "status": "PASS",
         "holdout_results_emitted": False,
         "input_freeze": original,
@@ -146,6 +147,15 @@ def test_validation_receipt_refuses_code_or_input_drift(tmp_path: Path, monkeypa
     monkeypatch.setattr(runner, "input_freeze", lambda: original | {"code_commit": "b" * 40})
     with pytest.raises(runner.ExecutionError, match="changed after non-holdout validation"):
         runner.verify_validation_receipt(path)
+
+
+def test_workflow_limits_manual_execution_and_refuses_retained_result_rerun():
+    workflow = Path(".github/workflows/run-whole-portfolio-robustness.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "if: github.ref == 'refs/heads/main'" in workflow
+    assert "Refuse execution after governed results are retained" in workflow
+    assert "research/whole_portfolio_robustness/execution/output_manifest.json" in workflow
 
 
 def test_stationary_bootstrap_is_paired_and_deterministic():

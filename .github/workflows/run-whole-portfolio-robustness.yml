@@ -26,6 +26,7 @@ concurrency:
 
 jobs:
   reacquire-frozen-input:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -44,6 +45,13 @@ jobs:
 
       - name: Install pinned dependencies
         run: python -m pip install -r requirements.txt
+
+      - name: Refuse execution after governed results are retained
+        run: |
+          if [ -e research/whole_portfolio_robustness/execution/output_manifest.json ]; then
+            echo "PORTFOLIO-ROBUSTNESS-0001 already has retained results; use a new study ID." >&2
+            exit 1
+          fi
 
       - name: Reacquire exact frozen SOL evidence
         run: >-
