@@ -1,6 +1,6 @@
 # WM — Waste Management, Inc.
 
-Last updated: 2026-09-03 -- record created through AI-assisted research and
+Last updated: 2026-09-07 -- record created through AI-assisted research and
 drafting under `governance/decisions/PI-0038-ws0005-gated-six-company-
 intelligence-completion.md` (status: Proposed at authoring time -- not yet
 independently reviewed or principal-accepted). First Company Intelligence
@@ -220,9 +220,11 @@ function as de facto regional monopolies.
    Site-level timing and exposure remain material estimation uncertainties.
 7. **Fuel/labor cost inflation** -- not separately quantified this
    session; a disclosed gap.
-8. **Valuation evidence** -- primary source access is now resolved, but the
-   current multiple is demanding and no governed discount-rate valuation is
-   available.
+8. **Valuation sensitivity** -- a governed 2026-09-07 FCFE-proxy DCF closes
+   the prior discount-rate evidence gap but does not clear the gate. The base
+   value is $177.24 per share versus the 2026-09-04 close of $218.99; only the
+   optimistic case reaches the market price, and terminal value supplies
+   70-79% of modeled equity value.
 
 ## Relationship to the gate
 
@@ -259,6 +261,18 @@ illustrative range. The comparison is a caution screen, not a precise fair
 value. A discount-rate DCF remains an explicit abstention because a governed,
 reproducible beta/equity-risk-premium/capital-structure set was not established.
 
+**2026-09-07 disposition:** the discount-rate gap is now closed with a
+reproducible sensitivity review. The 4.78% Treasury yield, a published
+industry beta, and a current implied equity-risk premium produce an 8.85% base
+cost of equity. A levered-FCF sensitivity values WM at $131.36, $177.24, and
+$222.56 per share across downside, base, and optimistic cases, versus the
+2026-09-04 close of $218.99. Peer FCF yields make WM look no worse than RSG or
+WCN on a relative basis, but that does not create an absolute margin of safety.
+Because only the optimistic endpoint reaches the market and terminal value
+drives 70-79% of the result, the existing gate remains closed. Full inputs,
+definitions, assumptions, and falsification criteria are in
+`research/gated_company_intelligence/WM_DISCOUNT_RATE_VALUATION_REVIEW_20260907.md`.
+
 ## Investment thesis (descriptive, no recommendation)
 
 **Concise statement:** WM's collection/landfill/transfer core is a
@@ -266,12 +280,12 @@ structurally moated, cash-generative business with an exceptional
 capital-return track record; the Stericycle acquisition added real
 diversification but carried documented integration friction now
 characterized (by management, unverified) as resolved; the gate's
-purchase-valuation concern remains genuinely contested across sources
-even after this research.
+purchase-valuation concern is now better bounded but does not pass a robust
+margin-of-safety test.
 
-**Conditions that would support initiation**: a reproducible valuation with
-an adequate margin across sensitivity cases; continued Healthcare Solutions
-integration evidence; resolution of the Stericycle synergy-target
+**Conditions that would support initiation**: an updated valuation with a
+positive base-case margin and survivable downside-case gap; continued
+Healthcare Solutions integration evidence; resolution of the Stericycle synergy-target
 inconsistency; and a WM-specific PFAS-exposure figure, if one exists.
 
 **Conditions that would argue for continued caution**: a further
@@ -297,8 +311,9 @@ guidance trim.
    settlement costs.
 6. WM-specific PFAS litigation/reserve exposure -- not found (disclosed
    gap, not a clean-record finding).
-7. Waste Connections (WCN), a third major public competitor, was not
-   researched this session.
+7. Waste Connections (WCN) and Republic Services (RSG) are now included in a
+   current peer valuation cross-check, but issuer-defined adjusted FCF is not
+   standardized and therefore remains a comparability limitation.
 8. The Q2 10-Q accession is confirmed as 0001104659-26-088016.
 9. FY2025 revenue could not be reconciled to a single, complete,
    non-overlapping segment/line-of-business breakdown -- see Business
@@ -336,3 +351,6 @@ issuer-reported facts.
 The 2026-09-03 refresh adds direct links to WM's official Q2 results and filed
 10-Q and a timestamped market-price screen. The bounded evidence memo is
 `research/gated_company_intelligence/ICE_WM_PRIMARY_SOURCE_RECOVERY_20260903.md`.
+The 2026-09-07 discount-rate derivation, DCF sensitivity, peer cross-check, and
+gate disposition are in
+`research/gated_company_intelligence/WM_DISCOUNT_RATE_VALUATION_REVIEW_20260907.md`.
