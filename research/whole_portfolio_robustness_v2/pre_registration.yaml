@@ -53,21 +53,27 @@ variants:
   optimization: PROHIBITED
   definitions:
     - id: BASELINE
+      hypothesis: The accepted allocation is not robustly dominated.
       transforms: []
       expected_sleeves_pct: {eligible_direct_equity: "56.50", broad_market_funds: "23.00", gold: "4.00", crypto: "4.00", cash_and_protected_capital: "12.50"}
     - id: BROAD_PLUS_5
+      hypothesis: Five points shifted from eligible single names to broad funds improve diversification without material return sacrifice.
       transforms: [{from: eligible_direct_equity, to: broad_market_funds, percentage_points: "5.00", within_sleeve_rule: PRO_RATA}]
       expected_sleeves_pct: {eligible_direct_equity: "51.50", broad_market_funds: "28.00", gold: "4.00", crypto: "4.00", cash_and_protected_capital: "12.50"}
     - id: DEFENSIVE_PLUS_5
+      hypothesis: Five points shifted from eligible single names to protected cash improve tail survival enough to justify opportunity cost.
       transforms: [{from: eligible_direct_equity, to: cash_and_protected_capital, percentage_points: "5.00", within_sleeve_rule: PRO_RATA}]
       expected_sleeves_pct: {eligible_direct_equity: "51.50", broad_market_funds: "23.00", gold: "4.00", crypto: "4.00", cash_and_protected_capital: "17.50"}
     - id: CRYPTO_HALF
+      hypothesis: Halving crypto reduces tail risk and drawdown enough to offset foregone upside.
       transforms: [{from: crypto, to: cash_and_protected_capital, percentage_points: "2.00", within_sleeve_rule: PRO_RATA}]
       expected_sleeves_pct: {eligible_direct_equity: "56.50", broad_market_funds: "23.00", gold: "4.00", crypto: "2.00", cash_and_protected_capital: "14.50"}
     - id: GOLD_PLUS_2
+      hypothesis: Two points shifted from eligible single names to gold improve regime and tail resilience.
       transforms: [{from: eligible_direct_equity, to: gold, percentage_points: "2.00", within_sleeve_rule: PRO_RATA}]
       expected_sleeves_pct: {eligible_direct_equity: "54.50", broad_market_funds: "23.00", gold: "6.00", crypto: "4.00", cash_and_protected_capital: "12.50"}
     - id: DIVERSIFIED_BALANCE
+      hypothesis: A fixed multi-sleeve deconcentration improves several risk metrics without relying on one hedge sleeve.
       transforms:
         - {from: eligible_direct_equity, to: broad_market_funds, percentage_points: "3.00", within_sleeve_rule: PRO_RATA}
         - {from: eligible_direct_equity, to: gold, percentage_points: "1.00", within_sleeve_rule: PRO_RATA}
@@ -151,6 +157,13 @@ review_thresholds:
     bootstrap_min_probability_sharpe_positive: "0.75"
     bootstrap_min_probability_tail_metric_positive: "0.75"
     concentration_controls_must_pass: true
+    concentration_limits:
+      direct_hhi_max_delta: "0.00"
+      max_direct_name_max_delta_pp: "0.00"
+      effective_issuer_max_worsening_pp: "0.25"
+      ai_platform_common_driver_max_worsening_pp: "0.25"
+      semis_cluster_cap_pct: "25.00"
+      power_infra_cluster_cap_pct: "20.00"
     data_and_integrity_gates_must_pass: true
   multiple_comparison_rule: NO_WINNER_PICKING_IF_NO_VARIANT_PASSES_ALL_GATES
   close_call_rule: RETAIN_BASELINE

@@ -82,10 +82,20 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
     required_variants = {"BASELINE", "BROAD_PLUS_5", "DEFENSIVE_PLUS_5", "CRYPTO_HALF", "GOLD_PLUS_2", "DIVERSIFIED_BALANCE"}
     definitions = p.get("variants", {}).get("definitions", [])
     require({v.get("id") for v in definitions} == required_variants, "fixed variant set mismatch")
+    require(all(isinstance(v.get("hypothesis"), str) and v["hypothesis"].strip() for v in definitions), "variant hypothesis missing")
+    baseline_sleeves = {k: Decimal(v) for k, v in p.get("baseline", {}).get("sleeves_pct", {}).items()}
     for variant in definitions:
         try:
-            total = sum(Decimal(x) for x in variant["expected_sleeves_pct"].values())
+            expected = {k: Decimal(x) for k, x in variant["expected_sleeves_pct"].items()}
+            total = sum(expected.values())
             require(total == Decimal("100.00"), f"variant {variant.get('id')} does not sum to 100%")
+            derived = dict(baseline_sleeves)
+            for transform in variant.get("transforms", []):
+                amount = Decimal(transform["percentage_points"])
+                derived[transform["from"]] -= amount
+                derived[transform["to"]] += amount
+                require(transform.get("within_sleeve_rule") == "PRO_RATA", f"variant {variant.get('id')} transform is not pro rata")
+            require(derived == expected, f"variant {variant.get('id')} expected sleeves do not match transforms")
         except Exception as exc:
             errors.append(f"invalid variant {variant.get('id')}: {exc}")
 
@@ -112,6 +122,15 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
     require(thresholds.get("default") == "RETAIN_BASELINE", "baseline is not default disposition")
     require(thresholds.get("close_call_rule") == "RETAIN_BASELINE", "close-call rule changed")
     require(thresholds.get("target_change_rule") == "SEPARATE_EXPLICIT_REVIEWED_DECISION_REQUIRED", "automatic target change possible")
+    concentration = thresholds.get("required_for_recommend_policy_review", {}).get("concentration_limits", {})
+    require(concentration == {
+        "direct_hhi_max_delta": "0.00",
+        "max_direct_name_max_delta_pp": "0.00",
+        "effective_issuer_max_worsening_pp": "0.25",
+        "ai_platform_common_driver_max_worsening_pp": "0.25",
+        "semis_cluster_cap_pct": "25.00",
+        "power_infra_cluster_cap_pct": "20.00",
+    }, "numeric concentration limits missing or changed")
 
     integrity = p.get("integrity", {})
     for key in ("no_interpolation", "no_forward_fill_prices", "no_zero_return_substitution"):

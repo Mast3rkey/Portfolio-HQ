@@ -102,6 +102,10 @@ The default is `RETAIN_BASELINE`. A candidate can only earn
 `RECOMMEND_POLICY_REVIEW` if it clears every numeric gate in the preregistration
 across the voting interval, context direction, fixed regimes, friction/tax and
 cadence cells, bootstrap probabilities, data integrity, and concentration.
+A candidate may not increase direct-name HHI or the largest direct weight;
+effective-issuer and AI-platform common-driver exposure may worsen by at most
+0.25 percentage points; the registered 25% semiconductor and 20% power-
+infrastructure caps remain hard limits.
 A close call or mixed result retains baseline. Even a passing result only
 recommends a separate reviewed policy decision.
 

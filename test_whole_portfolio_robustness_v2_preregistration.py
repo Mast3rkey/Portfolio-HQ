@@ -16,10 +16,11 @@ def test_tampered_variant_fails_closed(tmp_path: Path) -> None:
     data = yaml.safe_load(validator.PREREG.read_text(encoding="utf-8"))
     data = copy.deepcopy(data)
     data["variants"]["definitions"][1]["expected_sleeves_pct"]["broad_market_funds"] = "29.00"
+    data["variants"]["definitions"][1]["expected_sleeves_pct"]["cash_and_protected_capital"] = "11.50"
     path = tmp_path / "pre_registration.yaml"
     path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
     errors = validator.validate(prereg_path=path)
-    assert any("does not sum to 100%" in error for error in errors)
+    assert any("do not match transforms" in error for error in errors)
 
 
 def test_safety_and_holdout_labels_fail_closed(tmp_path: Path) -> None:
