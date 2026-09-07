@@ -41,7 +41,11 @@ engine must independently verify the referenced hashes and reconstruct the
 selected transforms from retained raw bytes and receipts. RTX begins no
 earlier than its lawful identity boundary. Dividends are credited once on the
 ex-date from the frozen registry; split-adjusted prices are not total-return
-prices.
+prices. The LADDER-0003 foreign-dividend amendment is also pinned: reported
+source-net dividends are normalized to gross entitlement, foreign withholding
+and available credit are shown separately, and both the zero-credit and ETN
+25% Irish-withholding cases are mandatory sensitivities. If either changes an
+apparent winner or adoption gate, the disposition is `UNABLE_TO_DETERMINE`.
 
 Crypto is a new fail-closed gate. BTC, ETH, and SOL require a successor input
 disposition that pins raw bytes, receipts, transformation rules, daily
@@ -51,6 +55,12 @@ forward-fill, assumed inception date, or silent shortening is allowed. If any
 required crypto series cannot pass, the whole study disposition is
 `UNABLE_TO_DETERMINE`; the engine may not silently move that sleeve to cash or
 drop SOL.
+
+The portfolio valuation calendar is XNYS sessions. Each crypto series is built
+from consecutive UTC daily closes; every intervening calendar-day return,
+including weekends and exchange holidays, is compounded into the next XNYS
+portfolio valuation. Discarding weekend returns or using future UTC closes is
+prohibited.
 
 Cash earns lagged DFF on an ACT/360 basis less 25 bps annual operating drag.
 The XNYS calendar, DFF, targets, gates, look-through, LADDER-0003 disposition,
@@ -65,12 +75,20 @@ calendar subperiods cover the 2022 rate/inflation drawdown and each later
 calendar year. Expanding-origin, no-refit annual evaluations begin in 2022.
 Asset-selected peak/trough windows are prohibited.
 
+This is a current-roster historical counterfactual, not a reconstruction of
+what would have been recommended at each historical date. Holding unavailable
+weights as cash prevents invented predecessor returns, but does not remove
+survivorship or hindsight-selection bias; all outputs must carry that limit.
+
 Primary rebalancing is quarterly at the first available XNYS close; annual
 rebalancing is a sensitivity. Every variant is evaluated at 0, 10, and 25 bps
 one-way costs and under tax-deferred, taxable-mid, and taxable-high profiles.
 Tax lots use HIFO with acquisition dates; losses create no modeled tax credit,
 wash-sale benefit is prohibited, dividends and realized gains are taxed when
-recognized, and ending unrealized gains are not liquidated.
+recognized, and ending unrealized gains are not liquidated. Equities and funds
+use ordinary short-/long-term capital-gain treatment, crypto uses the same
+property-gain holding-period treatment, and GLD uses the registered
+collectibles-rate sensitivity.
 
 Required outputs include daily paths, TWR/CAGR, volatility, downside
 deviation, Sharpe, Sortino, Calmar, maximum drawdown and recovery, worst

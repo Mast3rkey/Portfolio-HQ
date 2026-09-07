@@ -25,6 +25,7 @@ frozen_inputs:
     research/buy_ladder_backtest/inputs/input_disposition.json: 05a86b0f42df6b055532076d2e84e7ac7a460799012402904afe1fcb1e72ab2e
     research/buy_ladder_backtest/inputs/corporate_actions.json: 79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1
     research/buy_ladder_backtest/inputs/price_anomaly_overrides.json: 9f0a9513b769e036f4d1b209f5d63b6b32893fdc375a319252b5b89dc953c13f
+    research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md: 6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f
     research/level1_sleeve_robustness/data/transformed/selected/DFF.json: a4610d02a33fc4e72eff5c54ba8499b7d0f85e5d828dd054e4158f967b530b5b
     research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json: 365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe
   drift_rule: ANY_PIN_MISMATCH_HALTS_BEFORE_RESULTS
@@ -83,9 +84,12 @@ portfolio_mechanics:
   cadence_sensitivity: ANNUAL_FIRST_AVAILABLE_XNYS_CLOSE
   unavailable_weight: CASH_UNTIL_NEXT_SCHEDULED_REBALANCE_AFTER_LAWFUL_AVAILABILITY
   gated_weight: ALWAYS_CASH_NEVER_REDISTRIBUTED
+  valuation_calendar: XNYS_SESSIONS
+  crypto_calendar_alignment: COMPOUND_EVERY_INTERVENING_UTC_DAILY_CLOSE_RETURN_INTO_NEXT_XNYS_VALUATION_NO_FUTURE_CLOSE
   dividends: SPLIT_ADJUSTED_PRICES_PLUS_EXPLICIT_EX_DATE_CASH_CREDIT_ONCE
   cash_return: LAGGED_DFF_ACTUAL_360_MINUS_25_BPS_ANNUAL_DRAG
   borrowing: PROHIBITED
+  survivorship_disclosure: CURRENT_ROSTER_HISTORICAL_COUNTERFACTUAL_WITH_HINDSIGHT_SELECTION_BIAS
 
 windows:
   common_start: "2021-06-01"
@@ -109,9 +113,14 @@ frictions:
     TAXABLE_MID: {qualified_dividend_rate: "0.15", ordinary_income_rate: "0.24", short_gain_rate: "0.24", long_gain_rate: "0.15", gold_gain_rate: "0.28", qualified_dividend_fraction: "0.80"}
     TAXABLE_HIGH: {qualified_dividend_rate: "0.20", ordinary_income_rate: "0.32", short_gain_rate: "0.32", long_gain_rate: "0.20", gold_gain_rate: "0.28", qualified_dividend_fraction: "0.00"}
   tax_lot_method: HIFO_WITH_ACQUISITION_DATE_TRACKING
+  tax_character: {equities_and_funds: STANDARD_SHORT_LONG_CAPITAL_GAIN, crypto: PROPERTY_SHORT_LONG_CAPITAL_GAIN, GLD: COLLECTIBLES_RATE}
   realized_loss_credit: PROHIBITED
   wash_sale_benefit: PROHIBITED
   final_unrealized_gain_tax: NONE
+  foreign_dividends:
+    rule: PINNED_LADDER_0003_GROSS_ENTITLEMENT_WITH_SOURCE_WITHHOLDING_AND_AVAILABLE_CREDIT
+    mandatory_sensitivities: [ZERO_FOREIGN_TAX_CREDIT, ETN_25_PERCENT_IRISH_WITHHOLDING]
+    decision_rule: WINNER_OR_GATE_CHANGE_CAUSES_UNABLE_TO_DETERMINE
 
 metrics:
   return: [NET_TWR_CAGR, CUMULATIVE_TWR, CASH_DRAG, COST_DRAG, TAX_DRAG]

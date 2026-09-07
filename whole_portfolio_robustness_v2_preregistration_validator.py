@@ -95,6 +95,13 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
     require(len(windows.get("fixed_regimes", [])) >= 5, "insufficient fixed regime subperiods")
     require(p.get("frictions", {}).get("one_way_cost_bps") == ["0", "10", "25"], "cost sensitivities changed")
     require(set(p.get("frictions", {}).get("tax_profiles", [])) == {"TAX_DEFERRED", "TAXABLE_MID", "TAXABLE_HIGH"}, "tax sensitivity incomplete")
+    mechanics = p.get("portfolio_mechanics", {})
+    require(mechanics.get("valuation_calendar") == "XNYS_SESSIONS", "portfolio valuation calendar missing")
+    require(mechanics.get("crypto_calendar_alignment") == "COMPOUND_EVERY_INTERVENING_UTC_DAILY_CLOSE_RETURN_INTO_NEXT_XNYS_VALUATION_NO_FUTURE_CLOSE", "crypto weekend/calendar alignment ambiguous")
+    require(mechanics.get("survivorship_disclosure") == "CURRENT_ROSTER_HISTORICAL_COUNTERFACTUAL_WITH_HINDSIGHT_SELECTION_BIAS", "survivorship disclosure missing")
+    foreign = p.get("frictions", {}).get("foreign_dividends", {})
+    require(set(foreign.get("mandatory_sensitivities", [])) == {"ZERO_FOREIGN_TAX_CREDIT", "ETN_25_PERCENT_IRISH_WITHHOLDING"}, "foreign-dividend sensitivities incomplete")
+    require(foreign.get("decision_rule") == "WINNER_OR_GATE_CHANGE_CAUSES_UNABLE_TO_DETERMINE", "foreign-dividend decision rule ambiguous")
     require(p.get("bootstrap", {}).get("resamples") == 2000, "bootstrap draws changed")
     require(p.get("bootstrap", {}).get("mean_block_sessions") == 21, "bootstrap block length changed")
 

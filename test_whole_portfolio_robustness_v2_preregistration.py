@@ -33,6 +33,17 @@ def test_safety_and_holdout_labels_fail_closed(tmp_path: Path) -> None:
     assert any("correction interval exposure" in error for error in errors)
 
 
+def test_calendar_and_foreign_tax_controls_fail_closed(tmp_path: Path) -> None:
+    data = yaml.safe_load(validator.PREREG.read_text(encoding="utf-8"))
+    data["portfolio_mechanics"]["crypto_calendar_alignment"] = "XNYS_ROWS_ONLY"
+    data["frictions"]["foreign_dividends"]["mandatory_sensitivities"] = []
+    path = tmp_path / "pre_registration.yaml"
+    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    errors = validator.validate(prereg_path=path)
+    assert any("crypto weekend/calendar alignment" in error for error in errors)
+    assert any("foreign-dividend sensitivities" in error for error in errors)
+
+
 def test_v2_contains_no_result_outputs() -> None:
     root = validator.PREREG.parent
     prohibited = {"input_freeze.json", "portfolio_paths.json", "metrics.json", "bootstrap.json", "sensitivity_matrix.json", "results.md", "disposition.yaml"}
