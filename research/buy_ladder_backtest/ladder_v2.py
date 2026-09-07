@@ -37,6 +37,7 @@ STUDY = ROOT / "research/buy_ladder_backtest"
 CONFIG = STUDY / "implementation_config.yaml"
 DISPOSITION = STUDY / "inputs/input_disposition.json"
 ACTIONS = STUDY / "inputs/corporate_actions.json"
+ANOMALIES = STUDY / "inputs/price_anomaly_overrides.json"
 PROTOCOL = STUDY / "PROTOCOL_V2.md"
 AMENDMENT = STUDY / "PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md"
 RECEIPT = STUDY / "validation/validation_receipt.json"
@@ -95,6 +96,22 @@ def code_commit() -> str:
 
 def config() -> dict[str, Any]:
     cfg = yaml.safe_load(CONFIG.read_text())
+    registered = {
+        "schema_version": "2.0",
+        "study_id": "LADDER-V2-0001",
+        "window": {
+            "simulation_start": date(2021, 6, 1), "context_end": date(2023, 12, 29),
+            "holdout_start": date(2024, 4, 2), "end": date(2026, 7, 31),
+        },
+        "friction_bps": [0, 10, 25], "decision_friction_bps": 10,
+        "monthly_contribution": 2000.0, "protected_weight": 0.165,
+        "minimum_lot": 25.0, "dividend_tax_rate": 0.168,
+        "cash_tax_rate": 0.24, "cash_drag_bps": 25,
+        "bootstrap": {"seed": 20260907, "resamples": 2000, "mean_block_sessions": 21},
+    }
+    drift = [key for key, value in registered.items() if cfg.get(key) != value]
+    if drift:
+        raise StudyError("registered parameter drift: " + ", ".join(drift))
     if cfg.get("status") != "FROZEN_BEFORE_REGISTERED_EXECUTION" or cfg.get("advisory_only") is not True:
         raise StudyError("implementation status or advisory boundary drift")
     if cfg.get("stage1") != "UNARMED_AND_NOT_EXECUTABLE":
@@ -131,9 +148,26 @@ def load_inputs() -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]], list
         raise StudyError("input disposition roster/status drift")
     prices: dict[str, list[dict[str, Any]]] = {}
     manifest = []
-    overrides = read_json(STUDY / "inputs/price_anomaly_overrides.json")
-    override_map = {(x["ticker"], x["date"]): (x["field"], x["accepted_value"])
-                    for x in overrides["corrections"]}
+    anomaly_meta = disp.get("price_anomaly_corrections", {})
+    if (anomaly_meta.get("path") != str(ANOMALIES.relative_to(ROOT))
+            or anomaly_meta.get("sha256") != sha(ANOMALIES)):
+        raise StudyError("price-anomaly disposition drift")
+    overrides = read_json(ANOMALIES)
+    if overrides.get("schema_version") != "1.0" or type(overrides.get("corrections")) is not list:
+        raise StudyError("invalid price-anomaly override document")
+    override_map = {}
+    for correction in overrides["corrections"]:
+        key = (correction.get("ticker"), correction.get("date"))
+        if (key in override_map or key[0] not in EXPECTED
+                or correction.get("field") not in {"open", "high", "low", "close"}
+                or type(correction.get("evidence_receipt_ids")) is not list
+                or len(correction["evidence_receipt_ids"]) < 2):
+            raise StudyError("invalid/duplicate price-anomaly override")
+        accepted = float(correction.get("accepted_value", float("nan")))
+        observed = float(correction.get("observed_value", float("nan")))
+        if not all(math.isfinite(value) and value > 0 for value in (accepted, observed)):
+            raise StudyError("nonpositive/nonfinite price-anomaly override")
+        override_map[key] = (correction["field"], accepted, observed)
     for item in rows:
         path = ROOT / item["path"]
         if sha(path) != item["sha256"]:
@@ -149,7 +183,9 @@ def load_inputs() -> tuple[dict[str, Any], dict[str, list[dict[str, Any]]], list
                 raise StudyError(f"{item['ticker']}: invalid date sequence/end")
             row = dict(raw)
             if (item["ticker"], day) in override_map:
-                field_name, accepted = override_map[(item["ticker"], day)]
+                field_name, accepted, observed = override_map[(item["ticker"], day)]
+                if abs(float(row[field_name]) - observed) > 1e-12:
+                    raise StudyError(f"{item['ticker']}: anomaly source value drift on {day}")
                 row[field_name] = accepted
             vals = [float(row[k]) for k in ("open", "high", "low", "close")]
             if not all(math.isfinite(x) and x > 0 for x in vals) or row["low"] > min(row["open"], row["close"], row["high"]) or row["high"] < max(row["open"], row["close"], row["low"]):
@@ -697,11 +733,11 @@ def select_allocations(
         if marginal:
             room = (shadow_nav * float(look["common_driver_ceiling_pct"]) / 100 - common_value) / marginal
             constraints.append(("common_driver", "AI_PLATFORM", max(0.0, room)))
-        binding: list[tuple[str, str]] = []
-        for kind, subject, room in constraints:
-            if room + 1e-9 < want:
-                want = room
-                binding.append((kind, subject))
+        want = min([want, *(room for _kind, _subject, room in constraints)])
+        binding = [
+            (kind, subject) for kind, subject, room in constraints
+            if room + 1e-9 < initial and abs(room - want) <= 1e-9
+        ]
         if want < minimum_lot:
             for kind, subject in binding:
                 events.append({"ticker": ticker, "segment": segment(ticker), "constraint": kind, "subject": subject, "outcome": "block", "requested": initial, "admitted": 0.0})
@@ -995,11 +1031,13 @@ def _metric_row(
     targets = {row["ticker"]: float(row["target_pct"]) / 100 for row in target_doc["destination"] if row["ticker"] in EXPECTED}
     max_weight = 0.0
     max_deviation = 0.0
+    scope_tickers = [ticker for ticker in EXPECTED if scope == "whole" or segment(ticker) == scope]
     for row in rows:
         denominator = row["whole_nav"]
         if denominator <= 0:
             continue
-        for ticker, value in row["position_values"].items():
+        for ticker in scope_tickers:
+            value = row["position_values"].get(ticker, 0.0)
             weight = value / denominator
             max_weight = max(max_weight, weight)
             max_deviation = max(max_deviation, abs(weight - targets[ticker]))
@@ -1223,7 +1261,10 @@ def isolated_reconstruction() -> dict[str, Any]:
 def bundle(cfg: Mapping[str, Any], include_holdout: bool) -> dict[str, Any]:
     input_disposition = read_json(DISPOSITION)
     paths = [CONFIG, PROTOCOL, AMENDMENT, DISPOSITION, ACTIONS, BUILDER, CORRECTIVE_DECISION, Path(__file__), ROOT / "targets.yaml", ROOT / "gates.yaml", ROOT / "issuer_lookthrough.yaml"]
+    paths.extend(ROOT / relative for relative in cfg["configuration_hashes"])
+    paths.extend(ROOT / relative for relative in cfg["support_hashes"])
     paths.extend(ROOT / row["path"] for row in input_disposition["price_files"])
+    paths = list(dict.fromkeys(paths))
     return {
         "schema_version": "2.1", "study_id": cfg["study_id"],
         "code_commit": code_commit(),
