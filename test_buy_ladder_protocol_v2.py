@@ -14,7 +14,7 @@ DECISION = (
     ROOT
     / "governance/decisions/LADDER-0002-canonical-buy-ladder-execution-amendment.md"
 )
-PROTOCOL_SHA256 = "3465f9aecf6c379919c872b1e63ca41bee67e17afd24c4b0bd3ed124dd6a7041"
+PROTOCOL_SHA256 = "55087b83d02dbdd0b0ca972b3f957794a3895b24a28b6d0ef30da89793ba1328"
 CONFIG_HASHES = {
     "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
     "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
@@ -27,6 +27,12 @@ CONFIG_HASHES = {
     ),
     "research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json": (
         "365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe"
+    ),
+    "research/level1_sleeve_robustness/data/source_inventory.json": (
+        "9b604871e9180e9aa7a7ae298a749050a267ea81a7e402e099d9519a1d979f71"
+    ),
+    "research/level1_sleeve_robustness/data/transformed/actions/alpaca_actions.json": (
+        "a75341f1279665423722074fbc3c89eed2a0c4708e8aefcd658220c3e7bc83b2"
     ),
 }
 ELIGIBLE = {
@@ -82,6 +88,11 @@ def test_protocol_freezes_identifiable_held_out_comparison() -> None:
         "sole master trading calendar",
         "A blocked or sub-$25 candidate does not stop later candidates",
         "against both\nother arms",
+        "accepted evidence-disposition decision",
+        "effective 16.8% rate",
+        "price-only diagnostic",
+        "after-tax total-return whole-portfolio voting holdout",
+        "SOL's provider first observation",
         "historical earnings calendar",
         "UNARMED AND NOT EXECUTABLE",
     ):

@@ -43,8 +43,12 @@ identifiable and decision-useful by:
   while leaving the current production gate untouched;
 - freezing 2021-06-01–2023-12-29 as non-voting context and
   2024-04-02–2026-07-31 as the voting holdout;
-- adding 0/10/25 bp cost cells, lagged after-tax cash yield, and a paired deterministic
-  block-bootstrap confirmation gate; and
+- adding 0/10/25 bp cost cells, lagged after-tax cash yield, arm-specific after-tax
+  dividend entitlements, a non-voting price-only diagnostic, and a paired
+  deterministic block-bootstrap confirmation gate;
+- requiring a separate accepted evidence disposition to resolve the inherited
+  selected-source, corporate-action, and SOL-lawful-inception conflicts before any
+  ladder validation or execution; and
 - specifying next-session activation, gap-through fills, cycle expiry, 210-session
   availability, the exact greedy allocator, XNYS calendar, Actual/360 cash accrual,
   pairwise winner gates, deterministic tie-breaking, event order, metric
@@ -55,7 +59,7 @@ identifiable and decision-useful by:
 
 `research/buy_ladder_backtest/PROTOCOL_V2.md`
 
-SHA-256: `3465f9aecf6c379919c872b1e63ca41bee67e17afd24c4b0bd3ed124dd6a7041`
+SHA-256: `55087b83d02dbdd0b0ca972b3f957794a3895b24a28b6d0ef30da89793ba1328`
 
 The protocol was finalized and hashed before this decision record was written. Any
 byte change requires another reviewed amendment. No registered execution may begin
@@ -63,11 +67,13 @@ until this decision merges and the committed blob matches the pin.
 
 ## Authorized next unit
 
-After merge and post-merge verification, one implementation PR may add deterministic
-code, configuration, manifests, validation receipts, results, report, and focused
-tests only within `research/buy_ladder_backtest/`, plus one root-level focused test if
-the repository test layout requires it. Reuse of the already-retained input files is
-read-only.
+After merge and post-merge verification, the next bounded unit must disposition the
+inherited selected-source, corporate-action, and SOL-lawful-inception conflicts while
+preserving the completed whole-portfolio evidence and its once-only locks. Only after
+that decision is accepted may one implementation PR add deterministic code,
+configuration, manifests, validation receipts, results, report, and focused tests
+within `research/buy_ladder_backtest/`, plus one root-level focused test if the
+repository test layout requires it. Reuse of retained inputs is read-only.
 
 The implementation must first pass a validation-only run that emits no holdout
 result. It may then execute one registered run and retain the complete evidence. The

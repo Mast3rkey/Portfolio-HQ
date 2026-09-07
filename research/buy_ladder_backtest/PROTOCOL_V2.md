@@ -62,12 +62,11 @@ roster row is fatal; unavailable history is handled only by §4.
 
 ## 3. Frozen inputs and facts/inference boundary
 
-The implementation reuses the retained, split-adjusted, non-total-return daily OHLC
-files at
-`research/level1_sleeve_robustness/data/transformed/candidates/alpaca/<TICKER>.json`
-and the retained raw and validated transformed DFF series named below. It must write a manifest
-with the SHA-256, provider, adjustment, first/last observation, and row count for
-every consumed file before computing results.
+The implementation uses retained, split-adjusted, non-total-return daily OHLC only
+after the evidence-disposition prerequisite below selects and reconciles the exact
+files. It also consumes the retained corporate-action file for cash dividends and
+splits. It must write a manifest with the SHA-256, provider, adjustment, first/last
+observation, and row count for every consumed file before computing results.
 
 The raw DFF file is already frozen at SHA-256
 `a052a99256ac7fdf075911b03496ab14acbcfd76f428137966bc0fd8781c4849`.
@@ -77,7 +76,31 @@ The validated transformed DFF file at
 The XNYS session calendar at
 `research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json` is frozen at
 `365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe`.
+The retained source inventory is frozen at
+`9b604871e9180e9aa7a7ae298a749050a267ea81a7e402e099d9519a1d979f71` and the
+corporate-action file at
+`a75341f1279665423722074fbc3c89eed2a0c4708e8aefcd658220c3e7bc83b2`.
 The implementation must reject any mismatch before validation or execution.
+
+**Execution prerequisite.** The current inventory selects Yahoo files for much of
+the earlier robustness study while the first V2 draft named Alpaca candidate files,
+and the inventory records unresolved corporate-action reconciliation mismatches for
+17 stock/fund series used by that study. The completed whole-portfolio study also
+substituted SOL's provider first observation for its registered lawful inception.
+These are known evidence conflicts, not benign provider labels. Before either
+validation or execution, a distinct accepted evidence-disposition decision must:
+
+1. reconcile every selected OHLC series with splits and cash-dividend actions,
+   selecting one exact split-adjusted, non-total-return OHLC file per ladder ticker;
+2. explain or quarantine every source-selection and action mismatch rather than
+   choosing whichever source improves a result;
+3. dispose of the prior SOL lawful-inception gap without rewriting or rerunning the
+   once-only whole-portfolio result; and
+4. publish the selected paths and hashes that this protocol's implementation binds.
+
+Absence, drift, or an unresolved row in that disposition is fatal. The disposition
+may limit evidence or require abstention; it may not inspect a V2 holdout result,
+change this protocol's arms, or silently alter accepted targets.
 
 Market data end is fixed at **2026-07-31**. Later rows, if present, are rejected.
 Input facts, computed metrics, and recommendation inference must be stored in
@@ -168,6 +191,19 @@ prohibited.
   one-third rung budget. No cell may create negative cash to pay costs.
 - Fractional shares are allowed. No sale, trim, borrowing, shorting, or forced
   liquidation exists in this study.
+- A cash dividend is earned only on shares held at the preceding XNYS close for an
+  action whose `ex_date` is the current session. Gross entitlement is
+  `eligible_quantity * rate`; it is credited after marking securities at the
+  ex-date close and before final close NAV is recorded, so it first earns cash
+  interest in the next close-to-close interval. Because the
+  retained action rows do not consistently carry payable dates, this ex-date credit
+  is an explicit timing approximation and must be disclosed. The decision cell
+  debits tax at the same time using the preregistered taxable-middle approximation:
+  80% qualified at 15% and 20% ordinary at 24%, an effective 16.8% rate. Split
+  events must reconcile to the chosen split-adjusted OHLC series and must not be
+  applied a second time to simulated quantities. Gross dividends, dividend tax, and
+  net dividends are retained by ticker, arm, and session. Missing, duplicate,
+  nonpositive, or unreconciled dividend/split facts are fatal.
 - Cash accrues daily between market closes at the retained DFF rate available with
   a one-federal-business-day publication lag, less 25 bp annual operating drag, with
   no zero floor. Missing dates use only the last rate already available after that
@@ -181,17 +217,19 @@ prohibited.
   session's close valuation and therefore cannot fund a same-session fill.
   These settings match the already-preregistered middle taxable assumptions used by
   the whole-portfolio robustness program; they are held identical across arms.
-- Price returns exclude dividends. This biases the absolute return level and is
-  reported prominently; arm comparisons remain paired on identical price files.
+- Tradable prices remain split-adjusted, non-total-return OHLC. Voting returns include
+  each arm's own after-tax dividend entitlement under the rule above. A separate
+  price-only diagnostic is reported but is non-voting and cannot initiate or confirm
+  a recommendation.
 
 ## 8. Friction cells
 
 The decision cell is **10 bp one-way transaction cost** on filled notional. Mandatory
 sensitivity cells are **0 bp and 25 bp**. Gross security notional plus transaction
 cost equals the cash budget and is applied on every fill through §7's identity. No
-result from a sensitivity cell may replace
-the decision cell. Because the study never sells and excludes dividends, capital-gains
-and dividend taxes are not applicable; cash-interest tax is specified in §7.
+result from a sensitivity cell may replace the decision cell. Because the study never
+sells, capital-gains tax is not applicable. Dividend and cash-interest taxes are
+specified in §7.
 
 ## 9. Required outputs and metrics
 
@@ -203,13 +241,16 @@ friction cell, report:
 - ending value, cumulative contributions, time-weighted cash percentage, cash drag,
   transaction count, deployed dollars, median deployment days, unfilled dollars,
   and unfilled-capital days;
+- gross dividends, dividend tax, net dividends, and the non-voting price-only TWR
+  diagnostic;
 - maximum single-name weight, maximum target deviation, and counts of cluster,
   effective-issuer, and common-driver clips/blocks;
 - paired A/B/C cycle allocations proving selector identity.
 
 External contributions occur after the contribution-session close valuation and earn
-no return that session. Daily returns and drawdowns use a cash-flow-adjusted TWR index,
-never raw account value; the first contribution initializes the index at 1.0. Segment
+no return that session. Voting daily returns and drawdowns include after-tax dividend
+entitlements and use a cash-flow-adjusted total-return TWR index, never raw account
+value; the first contribution initializes the index at 1.0. Segment
 TWR attributes selected cash budgets and their unfilled cash to the selected segment.
 Unassigned whole-portfolio cash is reported only at the whole level. A segment with
 fewer than 12 attributed cycles is `INSUFFICIENT_EVIDENCE` for a segment veto.
@@ -243,7 +284,8 @@ baseline's. There is no composite score.
 
 ## 10. Voting and adoption gates
 
-Only the whole-portfolio voting holdout at 10 bp can initiate a recommendation. For
+Only the after-tax total-return whole-portfolio voting holdout at 10 bp can initiate
+a recommendation. For
 each ordered challenger-baseline pair, the challenger must:
 
 1. improve annualized TWR over the baseline by **more than 1.00 percentage point**;
@@ -275,8 +317,9 @@ the repository's test layout. The engine must support a validation-only mode tha
 checks all inputs and invariants without revealing holdout results, followed by one
 registered execution that emits the complete outputs atomically.
 
-The implementation must pin the protocol hash, configuration hashes, input manifest,
-Python/runtime identity, code commit, seed 20260907, and output hashes. Exact reruns must be
+The implementation must pin the protocol hash, configuration hashes, accepted
+evidence-disposition decision and selected-input manifest, Python/runtime identity,
+code commit, seed 20260907, and output hashes. Exact reruns must be
 byte-identical except for an explicitly separated execution timestamp. Independent
 review must recompute manifests, selector identity, metrics, gates, and narrative from
 retained artifacts.
