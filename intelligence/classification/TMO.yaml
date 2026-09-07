@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: TMO
+economic_role:
+  economic_system_ref: Healthcare & Life Sciences
+  company_role: life sciences research tools, analytical instruments, diagnostics, and laboratory/biopharma
+    services
+  role_basis: FY2025 segment data shows four disclosed segments -- Life Sciences Solutions (+8%), Analytical
+    Instruments (+1%), Specialty Diagnostics (+4%), and Laboratory Products and Biopharma Services ($23.98B,
+    +4%, the largest segment) -- all growing, positioning Thermo Fisher as a diversified supplier of consumables,
+    instruments, and services to biopharma and laboratory end markets.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - DHR
+  - A
+  - WAT
+  - AVTR
+  rationale: 'Q2 2026 secondary reporting surfaces two developments absent from this record''s prior FY2025-anchored
+    evidence base: an announced divestiture of the microbiology business, and confirmation that a previously-unmentioned
+    Clario acquisition has already closed and contributed a first full quarter of results -- both a portfolio
+    separation and an already-integrated acquisition are the kind of structural change distinct from ordinary
+    segment-level risk. Deal terms, closing date, financial contribution, and divestiture materiality
+    are all currently unknown pending primary-source confirmation, meaning the fact pattern itself (not
+    merely the ability to write a rationale about it) constitutes a genuine, unresolved change to the
+    company''s disclosed profile worth a reviewer''s explicit reconsideration.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the reported microbiology-business divestiture or the Clario acquisition integration producing a materially
+    different financial outcome than management's raised guidance implies, given neither transaction's
+    terms are yet primary-source confirmed.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-C
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#TMO
+content_sha256: 0be165cf15cf0fe51b380d241232fe8332f078f7dbc47014cb351d5bdbf02ed8

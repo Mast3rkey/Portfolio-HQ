@@ -1,0 +1,21 @@
+schema_version: '1.0'
+governing_decision: XASSET-0004
+cohort:
+- instrument_id: BTC
+  sealed_at: '2026-08-07T23:56:51Z'
+  content_sha256: a1fabed97e0c00aefba1b6de3750446a3eed51ea0bad29d950b368d6010030d0
+  schema_version: '1.0'
+  governing_decision: XASSET-0004
+  record_path: intelligence/crypto_classification/BTC.yaml
+- instrument_id: ETH
+  sealed_at: '2026-08-07T23:56:51Z'
+  content_sha256: c9b931471e876b947c78a0a0c27412bdf003bc0133f5c53976442dab593caa73
+  schema_version: '1.0'
+  governing_decision: XASSET-0004
+  record_path: intelligence/crypto_classification/ETH.yaml
+- instrument_id: SOL
+  sealed_at: '2026-08-07T23:56:51Z'
+  content_sha256: 1609d3718cccecaf8eb5759dadc116c6b4041e809609290ae9950bae6c0d6f1c
+  schema_version: '1.0'
+  governing_decision: XASSET-0004
+  record_path: intelligence/crypto_classification/SOL.yaml

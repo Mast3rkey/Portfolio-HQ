@@ -1,0 +1,104 @@
+schema_version: '1.0'
+instrument_id: GLD
+asset_type: etf
+structural_role:
+  role_category: precious_metals_or_commodity
+constituent_exposure:
+  geographic_concentration: not_applicable
+  sector_concentration: not_applicable
+  currency_exposure: usd_only
+overlap_and_concentration:
+  not_applicable: true
+cost_and_tracking_quality:
+  expense_ratio_pct: 0.4
+  tracking_quality_category: not_yet_measured
+liquidity:
+  liquidity_tier: high_liquidity
+structure_and_methodology:
+  replication_method: direct_physical_commodity_holding
+  benchmark_type: spot_commodity_price
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: Every primary source for this record (State Street's own GLD fund page,
+    the SPDR Gold Shares prospectus, and SEC EDGAR) was attempted but not directly inspected -- this environment's
+    network egress policy blocked www.ssga.com, www.spdrgoldshares.com, and www.sec.gov outright. A precise,
+    sourced tracking-difference figure against the LBMA Gold Price PM benchmark (beyond the disclosed
+    0.40% expense ratio itself, which is the primary but not the only possible source of tracking drag)
+    could not be located and is recorded as not_yet_measured rather than assumed.
+provenance:
+  sources:
+  - source_identifier: SPDR Gold Shares (GLD) fund page, www.spdrgoldshares.com
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the spdrgoldshares.com domain.
+  - source_identifier: State Street SPDR Gold Shares (GLD) fund page, www.ssga.com/us/en/intermediary/etfs/spdr-gold-shares-gld
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the ssga.com domain.
+  - source_identifier: SEC EDGAR filings for SPDR Gold Trust (CIK 0001222333), including the SPDR Gold
+      Trust Prospectus and Form 10-Q filings, www.sec.gov
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the sec.gov domain.
+  - source_identifier: WebSearch aggregation citing SPDR Gold Shares' own fact sheet (ssga.com library-content
+      PDF, as of 2026-03-31) -- the Trust holds gold bars and issues/redeems Baskets in exchange for gold
+      deposits/redemptions; expense ratio 0.40%; HSBC serves as custodian responsible for physical safekeeping
+      of the gold; approximately 34.6 million ounces (over 1,077 metric tons) of physical gold bullion
+      held; Bureau Veritas Commodities UK Ltd. conducts an annual full count and a random sample count
+      each year
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation confirming the Trust's grantor-trust tax structure, that
+      it is not registered as an investment company under the Investment Company Act of 1940 and is not
+      subject to regulation under the Commodity Exchange Act of 1936, and that effective March 20 2015
+      the Trust adopted the LBMA Gold Price PM as its reference benchmark for calculating NAV
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on GLD trading liquidity and AUM -- average daily volume
+      approximately 18.22 million shares; net assets (AUM) approximately $172.9 billion as of 2026-02-13
+    source_type: secondary
+    as_of_date: 2026-02-13 (AUM figure); 2026-08-07 (volume figure)
+    access_status: consulted_via_search_aggregation
+uncertainty_summary: Every primary source for this record (State Street's own GLD fund page, the SPDR
+  Gold Shares prospectus, and SEC EDGAR) was attempted but not directly inspected -- this environment's
+  network egress policy blocked www.ssga.com, www.spdrgoldshares.com, and www.sec.gov outright. A precise,
+  sourced tracking-difference figure against the LBMA Gold Price PM benchmark (beyond the disclosed 0.40%
+  expense ratio itself, which is the primary but not the only possible source of tracking drag) could
+  not be located and is recorded as not_yet_measured rather than assumed.
+evidence_quality_status: partial
+structural_risk_flags:
+  unmeasured_flag: null
+  not_applicable: true
+record_status: sealed
+valuation_and_economic_assessment_readiness:
+  status: valuation_required
+  rationale: No governed valuation methodology exists in this repository for any asset type -- equity,
+    ETF, or cryptocurrency alike (TIER-0009 SS G.4/SS G.5's forced equity-sleeve design; XASSET-0002 supporting
+    artifact SS6.3 carries the same discipline forward for this fund). This classification record supplies
+    structural, categorical facts only; it neither computes nor implies a fair value, target price, target_pct,
+    target range, or maximum position size.
+cross_asset_handoff:
+  role_summary: precious_metals_or_commodity
+  evidence_quality_summary: partial
+  uncertainty_summary: Every primary source for this record (State Street's own GLD fund page, the SPDR
+    Gold Shares prospectus, and SEC EDGAR) was attempted but not directly inspected -- this environment's
+    network egress policy blocked www.ssga.com, www.spdrgoldshares.com, and www.sec.gov outright. A precise,
+    sourced tracking-difference figure against the LBMA Gold Price PM benchmark (beyond the disclosed
+    0.40% expense ratio itself, which is the primary but not the only possible source of tracking drag)
+    could not be located and is recorded as not_yet_measured rather than assumed.
+  liquidity_risk_summary: high_liquidity
+  overlap_or_correlation_signal:
+    unmeasured_flag: null
+    not_applicable: true
+  valuation_readiness: valuation_required
+abstention_index: []
+sealed_at: '2026-08-07T21:32:11Z'
+governing_decision: XASSET-0003
+drafting_session_or_shard_id: single-pass-etf-implementation
+content_sha256: d3b58455193441ff492a86660e05a8b62500e5847f8699564c7f5f5ed4ad5888
+cohort_manifest_entry: intelligence/etf_classification/COHORT_MANIFEST.yaml#GLD

@@ -1,0 +1,108 @@
+schema_version: '1.0'
+analytical_subject: CASH_LIKE_CAPITAL
+deployability_and_optionality:
+  deployability_category: high_optionality_low_friction
+  rationale: This determination concerns the combined, undifferentiated CASH_LIKE_CAPITAL family as a
+    whole -- it is never split into a per-legacy-identifier answer, per this methodology's own binding
+    design. Per CLAUDE.md's own Workflow section, the entire deposit-to-allocation cycle begins with cash
+    or buying power ('I deposit money and report buying power... run python allocate.py --cash X for a
+    cash deposit') -- cash-like capital requires no conversion or liquidation step before it can fund
+    a newly identified opportunity, unlike a market-traded instrument that would first need to be sold.
+    Both legacy structural identifiers this family combines carry an already-sealed liquidity_character
+    finding (cited by structural reference only, never restated as an independent finding here). This
+    determination makes no claim about whether deploying this capital right now is advisable, and does
+    not evaluate CASH or RESERVE separately.
+instrument_specific_economic_characterization:
+  not_applicable: true
+legacy_structural_references:
+- source_capital_use_type: CASH
+  source_schema: functional_doctrine
+  source_file: intelligence/functional_doctrine/CASH.yaml
+  referenced_content_sha256: 165e2de8bba5017b2619b3a6affd2d22babb65adef68970981d85c2a367c20a7
+- source_capital_use_type: RESERVE
+  source_schema: functional_doctrine
+  source_file: intelligence/functional_doctrine/RESERVE.yaml
+  referenced_content_sha256: a06e477ea3b66cdcd1da941fd00b112ca45667dd4acc3c221202dc5821a27db3
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: This record's single substantive axis is reasoned entirely from CLAUDE.md's
+    own governing text and the mechanical structure of the allocator workflow -- both directly inspected,
+    primary repository sources -- rather than from either legacy record's own prior characterization,
+    per this methodology's own binding rule. Coverage is marked partial rather than comprehensive because
+    no dated, governed dollar-figure sync exists for either legacy identifier at the resolution a fuller
+    characterization might eventually want (the same limitation both CASH.yaml and RESERVE.yaml already
+    disclose in their own records, cited here only as an acknowledged fact, never restated as this record's
+    own finding). RESERVE.yaml's own sealed functional_role abstention remains exactly as sealed and is
+    not resolved, narrowed, or worked around by this record -- no axis in this schema is asked on RESERVE's
+    behalf specifically, so there is nothing for that abstention to cascade into.
+provenance:
+  sources:
+  - source_identifier: CLAUDE.md Portfolio Doctrine section (this repository's own governing operational-synthesis
+      document)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: CLAUDE.md Workflow section (deposit cycle, allocate.py --cash/--margin, manual
+      Robinhood execution)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: CLAUDE.md Guardrails section ('enforce on me' rules), including the cash-tight
+      guardrail
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: 'targets.yaml destination: list CASH and RESERVE rows (asset_class identity only,
+      per XASSET-0008''s own contamination boundary -- target_pct values read but never cited as evidence)'
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: gates.yaml (confirmed zero RESERVE mentions and only incidental cash_pending_clearance-label
+      CASH occurrences -- no CASH- or RESERVE-specific gate or lockup mechanism exists)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: allocate.py / levels.py (confirmed ('reserve', 'cash') are grouped as one identical
+      tuple in every conditional branch -- no mechanical distinction between the two legacy identifiers
+      anywhere in production code)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+evidence_quality_status: partial
+uncertainty_summary: This record's single substantive axis is reasoned entirely from CLAUDE.md's own governing
+  text and the mechanical structure of the allocator workflow -- both directly inspected, primary repository
+  sources -- rather than from either legacy record's own prior characterization, per this methodology's
+  own binding rule. Coverage is marked partial rather than comprehensive because no dated, governed dollar-figure
+  sync exists for either legacy identifier at the resolution a fuller characterization might eventually
+  want (the same limitation both CASH.yaml and RESERVE.yaml already disclose in their own records, cited
+  here only as an acknowledged fact, never restated as this record's own finding). RESERVE.yaml's own
+  sealed functional_role abstention remains exactly as sealed and is not resolved, narrowed, or worked
+  around by this record -- no axis in this schema is asked on RESERVE's behalf specifically, so there
+  is nothing for that abstention to cascade into.
+record_status: sealed
+later_governance_action: A future, separately authorized cross-asset opportunity-cost synthesis (XASSET-0001
+  SS E/SS F) would consume this record's categorical findings; none is authorized or performed by this
+  record itself. Whether the legacy CASH and RESERVE targets.yaml rows should ultimately be consolidated
+  remains a separate, disclosed, unanswered future governance question (XASSET-0008 SSN), not addressed,
+  resolved, or implied by this record.
+abstention_index: []
+cross_asset_handoff:
+  deployability_summary: high_optionality_low_friction
+  instrument_specific_summary:
+    not_applicable: true
+  evidence_quality_summary: partial
+  uncertainty_summary: This record's single substantive axis is reasoned entirely from CLAUDE.md's own
+    governing text and the mechanical structure of the allocator workflow -- both directly inspected,
+    primary repository sources -- rather than from either legacy record's own prior characterization,
+    per this methodology's own binding rule. Coverage is marked partial rather than comprehensive because
+    no dated, governed dollar-figure sync exists for either legacy identifier at the resolution a fuller
+    characterization might eventually want (the same limitation both CASH.yaml and RESERVE.yaml already
+    disclose in their own records, cited here only as an acknowledged fact, never restated as this record's
+    own finding). RESERVE.yaml's own sealed functional_role abstention remains exactly as sealed and is
+    not resolved, narrowed, or worked around by this record -- no axis in this schema is asked on RESERVE's
+    behalf specifically, so there is nothing for that abstention to cascade into.
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0009
+drafting_session_or_shard_id: single-pass-economic-assessment-implementation
+content_sha256: bf9abf8876e0a9c88599636c37fe5183963c6521bb42fd4dbff143e3bcaacaaa
+cohort_manifest_entry: intelligence/economic_assessment/COHORT_MANIFEST.yaml#CASH_LIKE_CAPITAL

@@ -1,0 +1,173 @@
+schema_version: '1.0'
+instrument_id: SOL
+asset_type: cryptocurrency
+network_fundamentals:
+  consensus_mechanism: other_consensus
+  consensus_basis: Solana combines Proof of History (PoH) -- a verifiable, tamper-proof clock/ordering
+    mechanism giving every validator the same transaction-ordering record without constant inter-validator
+    messaging -- with Tower BFT proof-of-stake voting for consensus among validators (reported at roughly
+    1,300 active validator nodes as of an April 2025 data point; a more current 2026 count was not located).
+    This hybrid design is materially different from a "plain" proof-of-stake network and is itself scheduled
+    for a major architecture change -- the Alpenglow upgrade, which passed validator governance in September
+    2025 with 98.27% approval, is expected to remove Proof of History from the consensus process and replace
+    Tower BFT entirely, targeted for mainnet via the Agave 4.1 release in late 2026.
+  adoption_trend_category: growing_usage
+economic_model:
+  supply_model: disinflationary_schedule
+  fee_accrual_applicable: true
+  fee_accrual_basis: 50% of every base transaction fee is burned (removing SOL from circulating supply),
+    while the remaining 50% of base fees plus all priority fees and MEV accrue to validators/stakers.
+    Two pending governance proposals disclosed as of this record's evidence date would materially change
+    this mechanism if adopted -- SIMD-0553 would introduce resource-based transaction fees and lift daily
+    SOL burns from roughly 650 to as many as 9,000 coins, and SIMD-0550 would accelerate the disinflation
+    schedule so the network reaches its 1.5% terminal inflation rate by 2029 rather than 2032 -- recorded
+    here as pending, not yet adopted.
+  staking_applicable: true
+  staking_basis: Native SOL staking currently yields approximately 5.5% APY (inflation-based rewards supplemented
+    by a share of base fees, priority fees, and MEV), down from roughly 5.9% earlier in Q2 2026, with
+    roughly two-thirds of circulating supply currently staked across the validator set.
+liquidity_and_market_structure:
+  liquidity_tier: high_liquidity
+  market_structure_notes: Market capitalization reported in the approximately $41.8-47 billion range depending
+    on measurement date (e.g., ~$41.77 billion on 2026-06-03; ~$47 billion in a separate February 2026
+    data point), with billions of dollars in daily trading volume (~$3.61 billion 24-hour volume against
+    the ~$47 billion February 2026 figure). A genuine dispersion is disclosed rather than averaged away
+    -- venue-specific decentralized-exchange volume dropped approximately 82% within a two-week window
+    in May 2026 (from roughly $104.3 billion to $18.8 billion weekly), concentrated in meme-coin-driven
+    trading on a single venue (Meteora), even as broader network-usage metrics (active addresses, transaction
+    throughput) reached or approached all-time highs over the same general period -- overall trading liquidity
+    and single-venue DEX volume are genuinely distinct facts here, not interchangeable.
+custody_and_counterparty_risk:
+  custody_model: exchange_custodied
+  smart_contract_risk_category: smart_contract_platform_material_surface
+correlation_and_volatility:
+  historical_volatility_category: extreme_volatility
+  cross_coin_correlation_status: not_yet_measured
+regulatory_and_structural_uncertainty:
+  disclosed_regulatory_matter_exists: true
+  matter_summary_and_citation: On 2026-03-17, the SEC and CFTC jointly issued interpretive guidance formally
+    classifying Solana -- together with 15 other digital assets including Bitcoin and Ethereum -- as a
+    digital commodity rather than a security under federal law, ending a multi-year period of regulatory
+    ambiguity. The same guidance's disclosed staking-specific interpretation states that staking activities
+    on proof-of-stake networks (directly applicable to Solana) are not securities transactions, covering
+    self-staking, self-custodial staking with a third party, custodial arrangements, and liquid staking.
+    A further, separate formal rulemaking proposal (reported at 400+ pages) was expected within weeks
+    of the guidance to provide additional implementation detail and safe-harbor provisions. The same guidance
+    explicitly does not resolve the CFTC's own regulatory authority over digital-commodity spot markets
+    and intermediaries -- multiple law-firm analyses describe this gap as requiring further rulemaking
+    and, most likely, congressional action to fully resolve.
+  structural_uncertainty_category: disclosed_and_unresolved
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: The primary source attempted for this record (solana.com) was blocked
+    by this environment's network egress policy and could not be directly inspected; every fact below
+    rests on WebSearch-aggregated secondary sources, cross-corroborated across multiple independent outlets
+    where possible. The most current validator-count figure located (~1,300, April 2025) predates this
+    record's evidence date by more than a year -- a genuine, disclosed evidence gap rather than an assumed-current
+    figure. The consensus_mechanism classification of "other_consensus" (rather than a bare "proof_of_stake")
+    is this record's own drafting judgment, made because Solana's Proof of History layer is a materially
+    distinct architectural feature from a plain proof-of-stake design, not a claim that any external source
+    disputes Solana's proof-of-stake foundation.
+provenance:
+  sources:
+  - source_identifier: Solana.com, official project site
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the solana.com domain.
+  - source_identifier: WebSearch aggregation on Solana's Proof of History and Tower BFT proof-of-stake
+      consensus design, and the pending Alpenglow consensus-architecture change -- PoH gives every validator
+      a shared tamper-proof ordering record; Alpenglow passed validator governance in September 2025 with
+      98.27% approval and is expected to remove PoH from consensus and replace Tower BFT, targeted for
+      mainnet via Agave 4.1 in late 2026; approximately 1,300 active validator nodes as of April 2025
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on Solana's inflation schedule, staking yield, and fee-burn
+      mechanism -- inflation began at 8% in 2021, decreasing 15% year-over-year toward a 1.5% terminal
+      rate, standing at approximately 4.7% currently; staking yield eased from ~5.9% to ~5.5% across the
+      network in Q2 2026 with roughly two-thirds of supply staked; 50% of every transaction fee is burned;
+      pending proposals SIMD-0553 (resource-based fees, raising daily burns toward ~9,000 SOL) and SIMD-0550
+      (accelerated disinflation reaching the 1.5% terminal rate by 2029 instead of 2032) were disclosed
+      but not yet adopted as of this record's evidence date; the network still issues roughly 60,000 SOL/day
+      in staking rewards, remaining net inflationary even under the proposed higher burn rate
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on Solana market capitalization and trading volume -- approximately
+      $41.77 billion market capitalization at $72.20/SOL as of 2026-06-03; a separate February 2026 data
+      point reported approximately $47 billion market capitalization with $3.61 billion in 24-hour trading
+      volume; decentralized-exchange volume specific to the leading meme-coin venue (Meteora) dropped
+      roughly 82% within a two-week window in May 2026 (from ~$104.3 billion to ~$18.8 billion weekly,
+      network-wide)
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on Solana network usage and uptime -- over 4.16 million daily
+      active users on 2026-06-05 (a 6.2% increase from one month earlier), averaging more than 3.4 million
+      daily users, with daily active addresses retesting yearly highs near 7 million by mid-2026; 7-day
+      average throughput of approximately 1,100 transactions/second (1,899 TPS in late June 2026 against
+      a 65,000 TPS theoretical maximum); an average of 102.7 million transactions/day (peaking at 118.1
+      million on June 2, 2026; June 2026 alone saw 3.77 billion total transactions); over 1,000 active
+      dApps (roughly doubled from ~500 previously); the network reported 100% uptime for over a year through
+      March 26, 2026, following a February 2024 mainnet outage attributed to a legacy loader/JIT cache
+      bug
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on the 2026-03-17 SEC/CFTC joint interpretive guidance classifying
+      16 digital assets (including Bitcoin, Ethereum, and Solana) as digital commodities, its disclosed
+      staking-specific interpretation (staking is not a securities transaction, covering self-staking,
+      self-custodial staking, custodial arrangements, and liquid staking), and its disclosed unresolved
+      gap regarding CFTC authority over digital-commodity spot markets and intermediaries
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: CLAUDE.md, this repository's Portfolio Doctrine section -- confirms the account's
+      actual custody arrangement (Robinhood) for the crypto sleeve, including SOL
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: directly_inspected
+uncertainty_summary: The primary source attempted for this record (solana.com) was blocked by this environment's
+  network egress policy and could not be directly inspected; every fact below rests on WebSearch-aggregated
+  secondary sources, cross-corroborated across multiple independent outlets where possible. The most current
+  validator-count figure located (~1,300, April 2025) predates this record's evidence date by more than
+  a year -- a genuine, disclosed evidence gap rather than an assumed-current figure. The consensus_mechanism
+  classification of "other_consensus" (rather than a bare "proof_of_stake") is this record's own drafting
+  judgment, made because Solana's Proof of History layer is a materially distinct architectural feature
+  from a plain proof-of-stake design, not a claim that any external source disputes Solana's proof-of-stake
+  foundation.
+evidence_quality_status: partial
+structural_risk_flags:
+  custody_model: exchange_custodied
+  smart_contract_risk_category: smart_contract_platform_material_surface
+  cross_coin_correlation_status: not_yet_measured
+record_status: sealed
+valuation_and_economic_assessment_readiness:
+  status: valuation_required
+  rationale: No governed valuation methodology exists in this repository for any asset type -- equity,
+    ETF, or cryptocurrency alike (TIER-0009 SS G.4/SS G.5's forced equity-sleeve design; XASSET-0002 supporting
+    artifact SS6.3 and XASSET-0004 SS F carry the same discipline forward for this coin). This classification
+    record supplies structural, categorical facts only; it neither computes nor implies a fair value,
+    target price, target_pct, target range, or maximum position size.
+cross_asset_handoff:
+  role_summary: other_consensus / growing_usage
+  evidence_quality_summary: partial
+  uncertainty_summary: The primary source attempted for this record (solana.com) was blocked by this environment's
+    network egress policy and could not be directly inspected; every fact below rests on WebSearch-aggregated
+    secondary sources, cross-corroborated across multiple independent outlets where possible. The most
+    current validator-count figure located (~1,300, April 2025) predates this record's evidence date by
+    more than a year -- a genuine, disclosed evidence gap rather than an assumed-current figure. The consensus_mechanism
+    classification of "other_consensus" (rather than a bare "proof_of_stake") is this record's own drafting
+    judgment, made because Solana's Proof of History layer is a materially distinct architectural feature
+    from a plain proof-of-stake design, not a claim that any external source disputes Solana's proof-of-stake
+    foundation.
+  liquidity_risk_summary: high_liquidity
+  overlap_or_correlation_signal: not_yet_measured
+  valuation_readiness: valuation_required
+abstention_index: []
+sealed_at: '2026-08-07T23:56:51Z'
+governing_decision: XASSET-0004
+drafting_session_or_shard_id: single-pass-crypto-implementation
+content_sha256: 1609d3718cccecaf8eb5759dadc116c6b4041e809609290ae9950bae6c0d6f1c
+cohort_manifest_entry: intelligence/crypto_classification/COHORT_MANIFEST.yaml#SOL

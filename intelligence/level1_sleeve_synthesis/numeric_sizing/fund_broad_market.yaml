@@ -1,0 +1,299 @@
+schema_version: '2.0'
+sleeve_id: fund_broad_market
+source_authority:
+  source_validation_profile: profile_relationship_policy_chain_v1
+  source_validation_required: true
+  numeric_source_field_allowlist: axis_b_c_r2_r3_structured_fields_v1
+  profile_references:
+  - source_kind: sleeve_profile
+    source_record_id: cash_reserve
+    source_path: intelligence/level1_sleeve_synthesis/profiles/cash_reserve.yaml
+    source_content_sha256: 387cb8943643af3538b6e36e733630438f35944c4365ea9a3fb7c7cd4c340c3e
+  - source_kind: sleeve_profile
+    source_record_id: crypto
+    source_path: intelligence/level1_sleeve_synthesis/profiles/crypto.yaml
+    source_content_sha256: 3c0cfcd1e7fd61357e5507e23b460a3d63137b6b678815f194982588df683e31
+  - source_kind: sleeve_profile
+    source_record_id: debt_reduction
+    source_path: intelligence/level1_sleeve_synthesis/profiles/debt_reduction.yaml
+    source_content_sha256: ab706eaa75425882e3e8970bc65c0a0693c9d7871234707fbdc644ce4cc1aa66
+  - source_kind: sleeve_profile
+    source_record_id: equity
+    source_path: intelligence/level1_sleeve_synthesis/profiles/equity.yaml
+    source_content_sha256: 1f44f44369a4c1fe9ea824d99e82539d96f9ccf6407a740ef93d182a8b64bedc
+  - source_kind: sleeve_profile
+    source_record_id: fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/profiles/fund_broad_market.yaml
+    source_content_sha256: 2ed99d67847a9aea644be6867c53cac15b5870eff84ea759ab87a7a3a2d49de1
+  - source_kind: sleeve_profile
+    source_record_id: fund_gld_defensive
+    source_path: intelligence/level1_sleeve_synthesis/profiles/fund_gld_defensive.yaml
+    source_content_sha256: 255c74fc9b3d901de1aa1418765aabcac6f995e62270cdc306dd1c07373a23e1
+  policy_adoption_references:
+  - source_kind: policy_adoption
+    source_record_id: cash_reserve
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/cash_reserve.yaml
+    source_content_sha256: ea87b49ed060520e2d5e9ac5a5771dad45c3676693bf11bc8f87d1e6c073cefe
+  - source_kind: policy_adoption
+    source_record_id: crypto
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/crypto.yaml
+    source_content_sha256: 0288fb71c413805a776b2e209f94716ff18daf0f3095344f1bbf12bca6139f6b
+  - source_kind: policy_adoption
+    source_record_id: debt_reduction
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/debt_reduction.yaml
+    source_content_sha256: 82228f6bc48da3db861340caf27bb8cf2be8ce9160a3939e0e506e84dde2877f
+  - source_kind: policy_adoption
+    source_record_id: equity
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/equity.yaml
+    source_content_sha256: 7d7332653e2c6e6a3df931e71cafedc946f8fdf29696c1e4053edbb37ad6aabd
+  - source_kind: policy_adoption
+    source_record_id: fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml
+    source_content_sha256: ea034151588a55d214f9564fcc01f489107744293cd50f1e29fa9289658e6315
+  - source_kind: policy_adoption
+    source_record_id: fund_gld_defensive
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_gld_defensive.yaml
+    source_content_sha256: 9e7d68b5376d0345450fe68836616d2e4beebe006481c8dd710cc876307584b6
+  relationship_references:
+  - source_kind: sleeve_relationship
+    source_record_id: cash_reserve_debt_reduction
+    source_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_debt_reduction.yaml
+    source_content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd
+  - source_kind: sleeve_relationship
+    source_record_id: cash_reserve_equity
+    source_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_equity.yaml
+    source_content_sha256: 9f67ba0b83a92b1fe92ec6cfc3fe57f5140073f8a8037677343103687cd1898e
+  - source_kind: sleeve_relationship
+    source_record_id: crypto_equity
+    source_path: intelligence/level1_sleeve_synthesis/relationships/crypto_equity.yaml
+    source_content_sha256: 54fa83d59e761536fa332ef3eb23f8a995a5f2ce3a99acb2034fb90042aa7e9e
+  - source_kind: sleeve_relationship
+    source_record_id: crypto_fund_gld_defensive
+    source_path: intelligence/level1_sleeve_synthesis/relationships/crypto_fund_gld_defensive.yaml
+    source_content_sha256: d939157d59d4d59fdab81d3d1a51900551dd6a69588c7198864c7608c33b8312
+  - source_kind: sleeve_relationship
+    source_record_id: debt_reduction_equity
+    source_path: intelligence/level1_sleeve_synthesis/relationships/debt_reduction_equity.yaml
+    source_content_sha256: 39fdad3d0193bdba3cefe7438c72e69563eb172b7c2fc1780d30ff5847356e28
+  - source_kind: sleeve_relationship
+    source_record_id: equity_fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/relationships/equity_fund_broad_market.yaml
+    source_content_sha256: 8667974b8e08926173ffb9819e4418a06fe2731b0983883fab062e8a272ed0f8
+  - source_kind: sleeve_relationship
+    source_record_id: equity_fund_gld_defensive
+    source_path: intelligence/level1_sleeve_synthesis/relationships/equity_fund_gld_defensive.yaml
+    source_content_sha256: 5f5daa85f6aea16354fb8a6202df23747c39b57147a201debffdc37b67dbabed
+numeric_target_status: provisional_target_assigned
+provisional_target_pct: '14.67'
+starting_baseline_pct: '16.67'
+applied_adjustments:
+- governing_rule_id: R2
+  direction: down
+  magnitude_pct: '2.00'
+  evidence_refs:
+  - source_kind: policy_adoption
+    source_record_id: crypto
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/crypto.yaml
+    source_content_sha256: 0288fb71c413805a776b2e209f94716ff18daf0f3095344f1bbf12bca6139f6b
+    selector: relationship_coverage_ledger.deferred_disclosed_count
+    projection: integer_count
+  - source_kind: policy_adoption
+    source_record_id: equity
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/equity.yaml
+    source_content_sha256: 7d7332653e2c6e6a3df931e71cafedc946f8fdf29696c1e4053edbb37ad6aabd
+    selector: relationship_coverage_ledger.deferred_disclosed_count
+    projection: integer_count
+  - source_kind: policy_adoption
+    source_record_id: fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml
+    source_content_sha256: ea034151588a55d214f9564fcc01f489107744293cd50f1e29fa9289658e6315
+    selector: relationship_coverage_ledger.deferred_disclosed_count
+    projection: integer_count
+  - source_kind: policy_adoption
+    source_record_id: fund_gld_defensive
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_gld_defensive.yaml
+    source_content_sha256: 9e7d68b5376d0345450fe68836616d2e4beebe006481c8dd710cc876307584b6
+    selector: relationship_coverage_ledger.deferred_disclosed_count
+    projection: integer_count
+governing_rule_ids:
+- R2
+target_classification: provisional_governance_guardrail
+review_conditions:
+- condition_type: first_descriptive_risk_analysis
+  governed_subject: provisional_target
+- condition_type: first_targeted_sizing_backtest
+  governed_subject: provisional_target
+- condition_type: material_sleeve_population_change
+  governed_subject: provisional_target
+- condition_type: material_relationship_accounting_change
+  governed_subject: provisional_target
+- condition_type: baseline_specific_evidence_or_calibration_study
+  governed_subject: starting_baseline
+- condition_type: increment_specific_evidence_or_calibration_study
+  governed_subject: adjustment_increment
+uncertainty_assertions:
+- assertion_type: policy_blocking_evidence
+  source_ref:
+    source_kind: policy_adoption
+    source_record_id: fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml
+    source_content_sha256: ea034151588a55d214f9564fcc01f489107744293cd50f1e29fa9289658e6315
+    selector: policy.blocking_evidence.entry
+    projection: reason_code_counterpart_reference_state
+    selector_key:
+      reason_code: deferred_relationship_pair
+      other_sleeve_id: cash_reserve
+    counterpart_sleeve_id: cash_reserve
+  numeric_effect: none
+- assertion_type: policy_blocking_evidence
+  source_ref:
+    source_kind: policy_adoption
+    source_record_id: fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml
+    source_content_sha256: ea034151588a55d214f9564fcc01f489107744293cd50f1e29fa9289658e6315
+    selector: policy.blocking_evidence.entry
+    projection: reason_code_counterpart_reference_state
+    selector_key:
+      reason_code: deferred_relationship_pair
+      other_sleeve_id: crypto
+    counterpart_sleeve_id: crypto
+  numeric_effect: none
+- assertion_type: policy_blocking_evidence
+  source_ref:
+    source_kind: policy_adoption
+    source_record_id: fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml
+    source_content_sha256: ea034151588a55d214f9564fcc01f489107744293cd50f1e29fa9289658e6315
+    selector: policy.blocking_evidence.entry
+    projection: reason_code_counterpart_reference_state
+    selector_key:
+      reason_code: deferred_relationship_pair
+      other_sleeve_id: debt_reduction
+    counterpart_sleeve_id: debt_reduction
+  numeric_effect: none
+- assertion_type: policy_blocking_evidence
+  source_ref:
+    source_kind: policy_adoption
+    source_record_id: fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml
+    source_content_sha256: ea034151588a55d214f9564fcc01f489107744293cd50f1e29fa9289658e6315
+    selector: policy.blocking_evidence.entry
+    projection: reason_code_counterpart_reference_state
+    selector_key:
+      reason_code: deferred_relationship_pair
+      other_sleeve_id: fund_gld_defensive
+    counterpart_sleeve_id: fund_gld_defensive
+  numeric_effect: none
+- assertion_type: policy_blocking_evidence
+  source_ref:
+    source_kind: policy_adoption
+    source_record_id: fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml
+    source_content_sha256: ea034151588a55d214f9564fcc01f489107744293cd50f1e29fa9289658e6315
+    selector: policy.blocking_evidence.entry
+    projection: reason_code_counterpart_reference_state
+    selector_key:
+      reason_code: secondary_condition_present
+      other_sleeve_id: equity
+    counterpart_sleeve_id: equity
+  numeric_effect: none
+- assertion_type: relationship_secondary_condition
+  source_ref:
+    source_kind: sleeve_relationship
+    source_record_id: equity_fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/relationships/equity_fund_broad_market.yaml
+    source_content_sha256: 8667974b8e08926173ffb9819e4418a06fe2731b0983883fab062e8a272ed0f8
+    selector: relationship.secondary_conditions.entry
+    projection: condition_presence
+    selector_key:
+      condition_type: evidence_partial_present
+    counterpart_sleeve_id: equity
+  numeric_effect: none
+- assertion_type: relationship_secondary_condition
+  source_ref:
+    source_kind: sleeve_relationship
+    source_record_id: equity_fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/relationships/equity_fund_broad_market.yaml
+    source_content_sha256: 8667974b8e08926173ffb9819e4418a06fe2731b0983883fab062e8a272ed0f8
+    selector: relationship.secondary_conditions.entry
+    projection: condition_presence
+    selector_key:
+      condition_type: forced_abstention_present
+    counterpart_sleeve_id: equity
+  numeric_effect: none
+- assertion_type: relationship_secondary_condition
+  source_ref:
+    source_kind: sleeve_relationship
+    source_record_id: equity_fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/relationships/equity_fund_broad_market.yaml
+    source_content_sha256: 8667974b8e08926173ffb9819e4418a06fe2731b0983883fab062e8a272ed0f8
+    selector: relationship.secondary_conditions.entry
+    projection: condition_presence
+    selector_key:
+      condition_type: overlap_or_duplication_disclosed
+    counterpart_sleeve_id: equity
+  numeric_effect: none
+- assertion_type: stronger_evidence_maturity
+  source_ref:
+    source_kind: sleeve_relationship
+    source_record_id: equity_fund_broad_market
+    source_path: intelligence/level1_sleeve_synthesis/relationships/equity_fund_broad_market.yaml
+    source_content_sha256: 8667974b8e08926173ffb9819e4418a06fe2731b0983883fab062e8a272ed0f8
+    selector: relationship.primary_disposition.stronger_evidence_maturity
+    projection: presence_only
+    selector_key: null
+    counterpart_sleeve_id: equity
+  numeric_effect: none
+comparative_provenance:
+- counterpart_sleeve_id: crypto
+  target_relation: lower
+  self_rule_states:
+    R2: down
+    R3: no_fire
+  counterpart_rule_states:
+    R2: no_fire
+    R3: no_fire
+  differing_rule_ids:
+  - R2
+  cancellation_status: not_cancelled
+- counterpart_sleeve_id: equity
+  target_relation: lower
+  self_rule_states:
+    R2: down
+    R3: no_fire
+  counterpart_rule_states:
+    R2: up
+    R3: no_fire
+  differing_rule_ids:
+  - R2
+  cancellation_status: not_cancelled
+- counterpart_sleeve_id: fund_gld_defensive
+  target_relation: lower
+  self_rule_states:
+    R2: down
+    R3: no_fire
+  counterpart_rule_states:
+    R2: no_fire
+    R3: no_fire
+  differing_rule_ids:
+  - R2
+  cancellation_status: not_cancelled
+blocking_reason_refs: []
+authority_boundaries:
+  scope_level: level_1_sleeve_only
+  policy_status: provisional_not_adopted
+  level_2_sizing_authority: prohibited
+  allocation_check_authority: prohibited
+  portfolio_config_mutation_authority: prohibited
+  brokerage_execution_authority: prohibited
+  margin_or_leverage_input: prohibited
+  chart_or_deployment_input: prohibited
+record_status: sealed
+sealed_at: '2026-08-13T00:00:00Z'
+governing_decisions:
+- XASSET-0016
+- XASSET-0017
+- XASSET-0018
+drafting_session_or_shard_id: xasset-0018-numeric-sizing-structural-replacement
+content_sha256: 5d5d573efd83e6a095d258dc3dcdb00ac464882bfd5d0014df0b9559f8e901d5
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/numeric_sizing/COHORT_MANIFEST.yaml#fund_broad_market

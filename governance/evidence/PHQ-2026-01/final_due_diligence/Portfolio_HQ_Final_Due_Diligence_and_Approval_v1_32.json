@@ -1,0 +1,722 @@
+{
+  "version": "1.32",
+  "created_at": "2026-07-30T18:21:00-04:00",
+  "status": "ARCHITECTURE DUE DILIGENCE CLOSED; EXECUTION DILIGENCE OPEN",
+  "principal_approval": {
+    "recorded": true,
+    "scope": "Canonical destination architecture, actionable core transition architecture, no-new-margin rule, quarterly tolerance-band review, gated allocations held as cash.",
+    "not_in_scope": "Trade execution, tax-lot selection, exact quantities, current-price valuation clearance, or automatic target filling."
+  },
+  "controlling_architecture_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+  "master_report_source_sha256": "fadc2636e178af3fe49faf5df5af1f8b10e3c796b0706fb3c1ba59b0f3d41d96",
+  "architecture_rows": [
+    {
+      "ticker": "NVDA",
+      "data_symbol": "NVDA",
+      "target_weight": "0.06",
+      "target_weight_percent": "6.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "TSM",
+      "data_symbol": "TSM",
+      "target_weight": "0.035",
+      "target_weight_percent": "3.5000000000000004",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "ASML",
+      "data_symbol": "ASML",
+      "target_weight": "0.0225",
+      "target_weight_percent": "2.25",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "AVGO",
+      "data_symbol": "AVGO",
+      "target_weight": "0.03",
+      "target_weight_percent": "3.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "SNPS",
+      "data_symbol": "SNPS",
+      "target_weight": "0.025",
+      "target_weight_percent": "2.5",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "Conditional initiation gate",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "KLAC",
+      "data_symbol": "KLAC",
+      "target_weight": "0.01",
+      "target_weight_percent": "1.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "MSFT",
+      "data_symbol": "MSFT",
+      "target_weight": "0.055",
+      "target_weight_percent": "5.5",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "GOOGL",
+      "data_symbol": "GOOGL",
+      "target_weight": "0.04",
+      "target_weight_percent": "4.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "AMZN",
+      "data_symbol": "AMZN",
+      "target_weight": "0.05",
+      "target_weight_percent": "5.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "META",
+      "data_symbol": "META",
+      "target_weight": "0.025",
+      "target_weight_percent": "2.5",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "PANW",
+      "data_symbol": "PANW",
+      "target_weight": "0.005",
+      "target_weight_percent": "0.5",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "LLY",
+      "data_symbol": "LLY",
+      "target_weight": "0.035",
+      "target_weight_percent": "3.5000000000000004",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "ISRG",
+      "data_symbol": "ISRG",
+      "target_weight": "0.035",
+      "target_weight_percent": "3.5000000000000004",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "TMO",
+      "data_symbol": "TMO",
+      "target_weight": "0.03",
+      "target_weight_percent": "3.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "ICE",
+      "data_symbol": "ICE",
+      "target_weight": "0.0125",
+      "target_weight_percent": "1.25",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "Conditional initiation gate",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "SPGI",
+      "data_symbol": "SPGI",
+      "target_weight": "0.0125",
+      "target_weight_percent": "1.25",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "Conditional comparison gate",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "V",
+      "data_symbol": "V",
+      "target_weight": "0.02",
+      "target_weight_percent": "2.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "COST",
+      "data_symbol": "COST",
+      "target_weight": "0.0125",
+      "target_weight_percent": "1.25",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "WM",
+      "data_symbol": "WM",
+      "target_weight": "0.0075",
+      "target_weight_percent": "0.75",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "Conditional initiation gate",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "CEG",
+      "data_symbol": "CEG",
+      "target_weight": "0.015",
+      "target_weight_percent": "1.5",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "ETN",
+      "data_symbol": "ETN",
+      "target_weight": "0.0225",
+      "target_weight_percent": "2.25",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "GEV",
+      "data_symbol": "GEV",
+      "target_weight": "0.03",
+      "target_weight_percent": "3.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "GNRC",
+      "data_symbol": "GNRC",
+      "target_weight": "0.0125",
+      "target_weight_percent": "1.25",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "PWR",
+      "data_symbol": "PWR",
+      "target_weight": "0.0125",
+      "target_weight_percent": "1.25",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "RTX",
+      "data_symbol": "RTX",
+      "target_weight": "0.0075",
+      "target_weight_percent": "0.75",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "RKLB",
+      "data_symbol": "RKLB",
+      "target_weight": "0.005",
+      "target_weight_percent": "0.5",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "Milestone-gated",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "SPCX",
+      "data_symbol": "SPCX",
+      "target_weight": "0.0075",
+      "target_weight_percent": "0.75",
+      "market_data_required": "False",
+      "private_or_nonmarket_reason": "Private holding; no listed daily market series.",
+      "governance_gate": "Milestone-gated and private",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "TSLA",
+      "data_symbol": "TSLA",
+      "target_weight": "0.005",
+      "target_weight_percent": "0.5",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "Milestone-gated",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "SPY",
+      "data_symbol": "SPY",
+      "target_weight": "0.15",
+      "target_weight_percent": "15.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "VEA",
+      "data_symbol": "VEA",
+      "target_weight": "0.07",
+      "target_weight_percent": "7.000000000000001",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "VWO",
+      "data_symbol": "VWO",
+      "target_weight": "0.01",
+      "target_weight_percent": "1.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "RESERVE",
+      "data_symbol": "RESERVE",
+      "target_weight": "0.04",
+      "target_weight_percent": "4.0",
+      "market_data_required": "False",
+      "private_or_nonmarket_reason": "Portfolio-level reserve designation, not a market symbol.",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "CASH",
+      "data_symbol": "CASH",
+      "target_weight": "0.01",
+      "target_weight_percent": "1.0",
+      "market_data_required": "False",
+      "private_or_nonmarket_reason": "Engine-native cash sleeve; no market-data request required.",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "GLD",
+      "data_symbol": "GLD",
+      "target_weight": "0.04",
+      "target_weight_percent": "4.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "BTC",
+      "data_symbol": "BTC/USD",
+      "target_weight": "0.02",
+      "target_weight_percent": "2.0",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "ETH",
+      "data_symbol": "ETH/USD",
+      "target_weight": "0.015",
+      "target_weight_percent": "1.5",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    },
+    {
+      "ticker": "SOL",
+      "data_symbol": "SOL/USD",
+      "target_weight": "0.005",
+      "target_weight_percent": "0.5",
+      "market_data_required": "True",
+      "private_or_nonmarket_reason": "",
+      "governance_gate": "",
+      "controlling_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv",
+      "controlling_source_sha256": "09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1"
+    }
+  ],
+  "gated_dispositions": [
+    {
+      "ticker": "SNPS",
+      "target_weight": 0.025,
+      "status": "HOLD TARGET IN CASH",
+      "reason": "Business execution is strong, but Ansys integration, leverage, GAAP normalization, and purchase valuation remain unresolved.",
+      "next_gate": "Review after September 30, 2026 Investor Day and a fresh normalized valuation model.",
+      "evidence": "Synopsys Q2 FY2026 results: revenue above guidance, raised revenue/EPS outlook, accelerating synergies."
+    },
+    {
+      "ticker": "ICE",
+      "target_weight": 0.0125,
+      "status": "HOLD TARGET IN CASH",
+      "reason": "Core exchange/data economics remain strong, but the current strategic-transaction and leverage/integration case is not yet fully modeled.",
+      "next_gate": "Review official Q2 package and transaction financing/integration assumptions before initiation.",
+      "evidence": "ICE Q1 2026 record results and strong Q2 trading/open-interest statistics."
+    },
+    {
+      "ticker": "SPGI",
+      "target_weight": 0.0125,
+      "status": "HOLD TARGET IN CASH",
+      "reason": "Mobility separation and recast financials reduce comparability; SPGI versus MSCI capital-priority comparison is not yet clean enough for initiation.",
+      "next_gate": "Review one clean post-spin quarter and normalized SPGI-versus-MSCI valuation, leverage, and growth comparison.",
+      "evidence": "S&P Global completed the Mobility spin and issued recast financials; Q2 2026 materials were newly released."
+    },
+    {
+      "ticker": "WM",
+      "target_weight": 0.0075,
+      "status": "HOLD TARGET IN CASH",
+      "reason": "The role and moat remain attractive, but current Q2 detail and purchase valuation were not sufficiently verified for initiation.",
+      "next_gate": "Retrieve and model the complete Q2 2026 earnings package and update valuation.",
+      "evidence": "Q1 2026 showed higher cash flow and reaffirmed outlook; Q2 call occurred July 29."
+    },
+    {
+      "ticker": "RKLB",
+      "target_weight": 0.005,
+      "status": "HOLD TARGET IN CASH",
+      "reason": "Revenue, backlog, and liquidity improved materially, but Neutron execution, acquisition integration, dilution, and continuing losses remain milestone risks.",
+      "next_gate": "Require Q2 results plus a defined Neutron technical milestone before activation.",
+      "evidence": "Q1 2026 record revenue, 38.2% GAAP gross margin, $2.2B backlog, and more than $2B liquidity; company remained loss-making."
+    },
+    {
+      "ticker": "TSLA",
+      "target_weight": 0.005,
+      "status": "HOLD TARGET IN CASH",
+      "reason": "Vehicle and storage scale are substantial, but the small target depends on autonomy, energy, robotics, capital allocation, and valuation milestones rather than current deliveries alone.",
+      "next_gate": "Activate only under the accepted milestone framework and a fresh valuation review.",
+      "evidence": "Q2 2026 deliveries exceeded 480,000 and storage deployments were 13.5 GWh; Q2 financial materials are available."
+    },
+    {
+      "ticker": "SPCX",
+      "target_weight": 0.0075,
+      "status": "HOLD TARGET IN CASH",
+      "reason": "Private security with no listed daily series, no standardized public financial reporting, and no currently approved investable vehicle or terms.",
+      "next_gate": "Require an accessible investable vehicle, reviewed terms, verified financial evidence, liquidity analysis, and principal approval.",
+      "evidence": "Backtests conservatively represented the allocation as cash; no proxy was invented."
+    }
+  ],
+  "lookthrough_exposure": [
+    {
+      "issuer": "NVDA",
+      "direct_target": 0.06,
+      "fund": "SPY",
+      "fund_allocation": 0.15,
+      "fund_holding_weight": 0.0766,
+      "embedded_weight": 0.01149,
+      "effective_weight": 0.07149
+    },
+    {
+      "issuer": "MSFT",
+      "direct_target": 0.055,
+      "fund": "SPY",
+      "fund_allocation": 0.15,
+      "fund_holding_weight": 0.0456,
+      "embedded_weight": 0.00684,
+      "effective_weight": 0.06184
+    },
+    {
+      "issuer": "AMZN",
+      "direct_target": 0.05,
+      "fund": "SPY",
+      "fund_allocation": 0.15,
+      "fund_holding_weight": 0.0377,
+      "embedded_weight": 0.0056549999999999994,
+      "effective_weight": 0.055655
+    },
+    {
+      "issuer": "Alphabet (GOOGL+GOOG)",
+      "direct_target": 0.04,
+      "fund": "SPY",
+      "fund_allocation": 0.15,
+      "fund_holding_weight": 0.0572,
+      "embedded_weight": 0.008579999999999999,
+      "effective_weight": 0.04858
+    },
+    {
+      "issuer": "AVGO",
+      "direct_target": 0.03,
+      "fund": "SPY",
+      "fund_allocation": 0.15,
+      "fund_holding_weight": 0.0274,
+      "embedded_weight": 0.00411,
+      "effective_weight": 0.03411
+    },
+    {
+      "issuer": "META",
+      "direct_target": 0.025,
+      "fund": "SPY",
+      "fund_allocation": 0.15,
+      "fund_holding_weight": 0.0221,
+      "embedded_weight": 0.0033150000000000002,
+      "effective_weight": 0.028315
+    },
+    {
+      "issuer": "LLY",
+      "direct_target": 0.035,
+      "fund": "SPY",
+      "fund_allocation": 0.15,
+      "fund_holding_weight": 0.0147,
+      "embedded_weight": 0.002205,
+      "effective_weight": 0.037205
+    },
+    {
+      "issuer": "TSLA",
+      "direct_target": 0.005,
+      "fund": "SPY",
+      "fund_allocation": 0.15,
+      "fund_holding_weight": 0.0167,
+      "embedded_weight": 0.002505,
+      "effective_weight": 0.0075049999999999995
+    },
+    {
+      "issuer": "AAPL",
+      "direct_target": 0.0,
+      "fund": "SPY",
+      "fund_allocation": 0.15,
+      "fund_holding_weight": 0.0764,
+      "embedded_weight": 0.01146,
+      "effective_weight": 0.01146
+    },
+    {
+      "issuer": "TSM",
+      "direct_target": 0.035,
+      "fund": "VWO",
+      "fund_allocation": 0.01,
+      "fund_holding_weight": 0.1464,
+      "embedded_weight": 0.001464,
+      "effective_weight": 0.036464
+    },
+    {
+      "issuer": "ASML",
+      "direct_target": 0.0225,
+      "fund": "VEA",
+      "fund_allocation": 0.07,
+      "fund_holding_weight": 0.019,
+      "embedded_weight": 0.00133,
+      "effective_weight": 0.02383
+    }
+  ],
+  "lookthrough_summary": {
+    "highest_effective_issuer": "NVDA",
+    "highest_effective_weight": 0.07149,
+    "effective_mega6_weight": 0.29999,
+    "effective_ai_platform_common_driver_estimate": 0.40028400000000003,
+    "approved_single_issuer_ceiling": 0.08,
+    "approved_ai_platform_common_driver_ceiling": 0.4,
+    "conclusion": "No current effective issuer exceeds 8%; AI/platform common-driver exposure is approximately at the 40% ceiling and requires monitoring."
+  },
+  "decisions": [
+    {
+      "id": "DD-001",
+      "decision": "Approve canonical v1.30 architecture as the long-term destination framework.",
+      "status": "APPROVED",
+      "authority": "Principal conditional approval, satisfied by architecture-level diligence closure.",
+      "consequence": "The 37 target rows and weights become the approved destination baseline; execution remains separately gated."
+    },
+    {
+      "id": "DD-002",
+      "decision": "Approve the actionable core as the current transition architecture.",
+      "status": "APPROVED",
+      "authority": "Principal approval plus completed unlevered comparison.",
+      "consequence": "Seven uncleared allocations remain cash; total modeled cash/reserve is 12.5% until gates clear."
+    },
+    {
+      "id": "DD-003",
+      "decision": "Quarterly review with tolerance bands; no monthly forced rebalancing.",
+      "status": "APPROVED",
+      "authority": "Completed eight-case unlevered matrix.",
+      "consequence": "Review quarterly; only trade when drift, valuation, tax, and thesis gates justify action."
+    },
+    {
+      "id": "DD-004",
+      "decision": "No new margin; deposits and approved sale proceeds repay inherited debit first.",
+      "status": "APPROVED",
+      "authority": "Completed repayment-band, activation, and constraint-dominance studies.",
+      "consequence": "Margin capacity is not investment capital and does not authorize purchases."
+    },
+    {
+      "id": "DD-005",
+      "decision": "Adopt look-through concentration controls.",
+      "status": "APPROVED",
+      "authority": "ETF constituent overlap audit.",
+      "consequence": "Effective single-issuer ceiling 8%; AI/platform common-driver ceiling 40%; no automatic buy that would breach either."
+    },
+    {
+      "id": "DD-006",
+      "decision": "Do not activate the seven gated allocations.",
+      "status": "APPROVED",
+      "authority": "Current primary-source freshness review.",
+      "consequence": "SNPS, ICE, SPGI, WM, RKLB, TSLA, and SPCX remain cash placeholders until their stated gates clear."
+    },
+    {
+      "id": "DD-007",
+      "decision": "Execution authorization remains withheld.",
+      "status": "BLOCKED",
+      "authority": "Tax-lot, valuation, and wash-sale evidence incomplete.",
+      "consequence": "No sale or purchase quantities are approved; a lot-aware transition packet is still required."
+    }
+  ],
+  "sources": [
+    {
+      "topic": "SPY holdings and sector allocation",
+      "publisher": "State Street Global Advisors",
+      "as_of": "2026-07-17 / 2026-07-23",
+      "url": "https://www.ssga.com/us/en/intermediary/etfs/state-street-spdr-sp-500-etf-trust-spy"
+    },
+    {
+      "topic": "VEA holdings",
+      "publisher": "Vanguard",
+      "as_of": "2026-05-31",
+      "url": "https://investor.vanguard.com/investment-products/etfs/profile/vea"
+    },
+    {
+      "topic": "VWO holdings",
+      "publisher": "Vanguard",
+      "as_of": "2026-05-31",
+      "url": "https://investor.vanguard.com/investment-products/etfs/profile/vwo"
+    },
+    {
+      "topic": "Synopsys Q2 FY2026 results and guidance",
+      "publisher": "Synopsys Investor Relations",
+      "as_of": "2026-05-27",
+      "url": "https://investor.synopsys.com/news/news-details/2026/Synopsys-Posts-Financial-Results-for-Second-Quarter-Fiscal-Year-2026/default.aspx"
+    },
+    {
+      "topic": "ICE Q1 2026 results",
+      "publisher": "ICE Investor Relations",
+      "as_of": "2026-04-30",
+      "url": "https://ir.theice.com/press/news-details/2026/Intercontinental-Exchange-Reports-Record-First-Quarter-2026/default.aspx"
+    },
+    {
+      "topic": "ICE Q2 2026 volume and open-interest statistics",
+      "publisher": "ICE Investor Relations",
+      "as_of": "2026-07-06",
+      "url": "https://ir.theice.com/press/news-details/2026/Intercontinental-Exchange-Reports-June-and-Second-Quarter-2026-Statistics/default.aspx"
+    },
+    {
+      "topic": "S&P Global Mobility spin recast",
+      "publisher": "S&P Global Investor Relations",
+      "as_of": "2026-07-06",
+      "url": "https://investor.spglobal.com/news-releases/news-details/2026/SP-Global-Provides-Pro-Forma-and-Recast-Financial-Results-and-Updated-Segment-Information/default.aspx"
+    },
+    {
+      "topic": "S&P Global Q2 2026 results release",
+      "publisher": "S&P Global Investor Relations",
+      "as_of": "2026-07-28",
+      "url": "https://investor.spglobal.com/news-releases/news-details/2026/SP-Global-Reports-Second-Quarter-Results/default.aspx"
+    },
+    {
+      "topic": "MSCI Q1 2026 results",
+      "publisher": "MSCI Investor Relations",
+      "as_of": "2026-04-21",
+      "url": "https://ir.msci.com/news-releases/news-release-details/msci-reports-financial-results-first-quarter-2026"
+    },
+    {
+      "topic": "WM Q1 2026 results",
+      "publisher": "WM Investor Relations",
+      "as_of": "2026-04-28",
+      "url": "https://investors.wm.com/news-releases/news-release-details/wm-announces-first-quarter-2026-earnings/"
+    },
+    {
+      "topic": "Rocket Lab Q1 2026 results",
+      "publisher": "Rocket Lab Investor Relations",
+      "as_of": "2026-05-07",
+      "url": "https://investors.rocketlabcorp.com/news-releases/news-release-details/rocket-lab-announces-first-quarter-2026-financial-results"
+    },
+    {
+      "topic": "Tesla Q2 2026 production, deliveries, and storage",
+      "publisher": "Tesla Investor Relations",
+      "as_of": "2026-07-02",
+      "url": "https://ir.tesla.com/press-release/tesla-second-quarter-2026-production-deliveries-and-deployments"
+    }
+  ],
+  "residual_risks": [
+    "Backtest common window is approximately 23 months and contains look-ahead and survivorship limitations.",
+    "Current valuations are separate execution gates and can change the timing of purchases.",
+    "Tax lots, holding periods, and wash-sale-safe quantities are not yet available.",
+    "Private SpaceX economics cannot be validated with listed-market history.",
+    "ETF holdings and effective issuer exposure change over time and must be refreshed at quarterly review."
+  ],
+  "next_authorized_work": "Prepare a lot-aware staged transition packet after the principal supplies lot-level screenshots; until then, no trades are authorized."
+}

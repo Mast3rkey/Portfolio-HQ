@@ -1,0 +1,2394 @@
+schema_version: '1.0'
+study_id: RISK-0001
+generated_at_utc: '2026-08-14T12:29:08Z'
+authority:
+  protocol_sha256: 90277ad4767e4766d7a38c1199affde66f44e55ff16fd7f73e0894380cf8a425
+  preregistration_sha256: 8da1697456e8a8f4a168c99ae8387c77cd023e0e615cf51c78110165223d3c5a
+  implementation_config_sha256: 9f97162260ca97ef340b56811d8d91009235922cddf478ff39be7270614301de
+provider_fallback_hierarchy:
+  equities_etfs:
+  - ALPACA_MARKET_DATA
+  - YAHOO_FINANCE_CHART
+  - ABSTAIN
+  crypto:
+  - ALPACA_CRYPTO
+  - COINBASE_EXCHANGE
+  - ABSTAIN
+  comparator:
+  - FRED_DFF
+  - ABSTAIN_OPPORTUNITY_COST_CELLS
+  corporate_actions:
+  - ALPACA_CORPORATE_ACTIONS
+  - SEC_EDGAR_OR_ISSUER
+  - ABSTAIN_AFFECTED_CELLS
+  provider_change_after_result_inspection: PROHIBITED
+  fallback_retry_before_registered_execution: PERMITTED_AND_LOGGED
+dataset_count: 38
+datasets:
+- dataset_id: RISK-0001:EQUITY:AMZN
+  instrument_identity: AMZN
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: &id002
+    interval: 1d
+    events: div,splits,capitalGains
+  acquisition_timestamp_utc: '2026-08-14T12:24:47Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_AMZN_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 602504
+  raw_sha256: e27ea51ae5555e3db8362fb83cc18127b4eeb841561b218f9d5a5b65294692f0
+  raw_page_hashes:
+  - bf556fc7eb32280906ebb931931066f8e6c62416b3ec2d49e55a001d8b5b92fc
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/AMZN.json
+  transformed_byte_count: 775603
+  transformed_sha256: a4b8d32bfb978a89c009c8f1a4cf60363ecc76780de55cf30dbe40caf2bbe6fc
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id001
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id001
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:ASML
+  instrument_identity: ASML
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:24:49Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_ASML_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 587850
+  raw_sha256: fb6208fb52e70086b03fd75293152c4677f69b97b6e61ca96f67686070976881
+  raw_page_hashes:
+  - 4e8ed9d3bba47f0ad6cd8df23004b661d587b939982b248dcf5fd31195e1defe
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/ASML.json
+  transformed_byte_count: 763670
+  transformed_sha256: 4f62541b43ffdb26526e97292044d0b7b8b172073c85317ce477f68d22bb600e
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id003
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id003
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:AVGO
+  instrument_identity: AVGO
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:24:53Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_AVGO_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 476512
+  raw_sha256: 5edec92b2530ed6ff872d093ed96ef7e5561ecd6f84a0e833352837ce80ec78a
+  raw_page_hashes:
+  - 857b78bf205e6dd46d53f08b868afc22df88a265c4dc3826d360b56c21e2f28f
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/AVGO.json
+  transformed_byte_count: 615344
+  transformed_sha256: 2ddeabe5fb673df8355b3f72549cd017f3e95c73d8ad48e29efcf06e81b7ffd0
+  first_observation: '2009-08-06'
+  last_observation: '2026-07-31'
+  row_count: 4272
+  expected_row_count: 4272
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2009-08-06'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id004
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id004
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:CEG
+  instrument_identity: CEG
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: ALPACA_MARKET_DATA
+  source_classification: PRIMARY
+  endpoint_locator: https://data.alpaca.markets/v2/stocks/{symbol}/bars
+  query_parameters: &id008
+    timeframe: 1Day
+    adjustment: split
+    feed: sip
+    limit: 10000
+  acquisition_timestamp_utc: '2026-08-14T12:24:53Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_CEG_alpaca.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 122648
+  raw_sha256: 176c8ed883f5a524023200d8f23c35c690517ab327560709cfefecc73a63cb9c
+  raw_page_hashes:
+  - 036f2403ef7bd0da72ec59b3b2fbf36727a1d5dd1bd601996874096c90abbc6a
+  transformed_path: research/level1_sleeve_robustness/data/transformed/selected/CEG.json
+  transformed_byte_count: 113298
+  transformed_sha256: 923df00f4dcf7b45a792227dd1a680c976e8c353dcdfe8b4d4eb5a2ef29b396c
+  first_observation: '2022-02-02'
+  last_observation: '2026-07-31'
+  row_count: 1127
+  expected_row_count: 1127
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2022-02-02'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id005
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    COVID_2020:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    RATE_INFLATION_2022:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: PRE_STANDALONE_HISTORY_UNAVAILABLE
+  limitations: []
+  licensing_provenance: EXISTING_REPOSITORY_ALPACA_PRECEDENT
+  commit_quarantine_disposition: COMMITTED
+  scenario_window_eligibility: *id005
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:COST
+  instrument_identity: COST
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:24:55Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_COST_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 581738
+  raw_sha256: 5d6357eec9dbaf7b1acc838bf1a59e46f58c05ba79e8d9dd04dc8f523a2d5591
+  raw_page_hashes:
+  - be67f0029edf2c45f084458b6462d1299ddaa4eae3789fc7d5c05d437cec38d8
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/COST.json
+  transformed_byte_count: 761677
+  transformed_sha256: 3cb8885ef803b2675c51c044db11cd0d72ab183e6f792a97c686bf0fd28df616
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id006
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id006
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:ETN
+  instrument_identity: ETN
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:24:56Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_ETN_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 588061
+  raw_sha256: 4e51bc055f1472233675bc8db4592a9de59bfff3f74b48307c478cb32b292e67
+  raw_page_hashes:
+  - 5d5dedf6e06e49991e29ca72bb289cc0cc9f5f8efadb00596ed72110652336ec
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/ETN.json
+  transformed_byte_count: 766340
+  transformed_sha256: b2a217c08495c051f918d42600efb23b30764bd0d82ada543bd4eddb50b07bde
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5456
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks:
+  - count: 2
+    end: '2026-07-22'
+    start: '2026-07-21'
+  duplicates: 0
+  missingness_classification: &id007
+    ASSET_AVAILABLE_HISTORY:
+    - KNOWN_DATA_GAP
+    FAMILY_COMMON_OVERLAP:
+    - KNOWN_DATA_GAP
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id007
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:GEV
+  instrument_identity: GEV
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: ALPACA_MARKET_DATA
+  source_classification: PRIMARY
+  endpoint_locator: https://data.alpaca.markets/v2/stocks/{symbol}/bars
+  query_parameters: *id008
+  acquisition_timestamp_utc: '2026-08-14T12:24:57Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_GEV_alpaca.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 64582
+  raw_sha256: dd9f03763671fa28fdcf9008700152780cb391231f2a5e7aac8cf1758dc1cbe5
+  raw_page_hashes:
+  - 12aa3a39c431699a727c650443e2175c0dc0501b73d91fe1006209894a0bb054
+  transformed_path: research/level1_sleeve_robustness/data/transformed/selected/GEV.json
+  transformed_byte_count: 59040
+  transformed_sha256: 6ad467d7d54a31cdab6401976020ee7ef65ac228fe9c9a23125199347ab450db
+  first_observation: '2024-04-02'
+  last_observation: '2026-07-31'
+  row_count: 585
+  expected_row_count: 585
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2024-04-02'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id009
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    COVID_2020:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    RATE_INFLATION_2022:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    CRYPTO_STRESS_2022:
+    - NOT_APPLICABLE_PRE_INCEPTION
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: PRE_SPIN_HISTORY_UNAVAILABLE
+  limitations: []
+  licensing_provenance: EXISTING_REPOSITORY_ALPACA_PRECEDENT
+  commit_quarantine_disposition: COMMITTED
+  scenario_window_eligibility: *id009
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:GNRC
+  instrument_identity: GNRC
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:24:58Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_GNRC_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 440385
+  raw_sha256: 61410046d6d47de1dbcfe933b39a3ad611ba2ca08f304dae188c2f88e2fddca7
+  raw_page_hashes:
+  - ee885e3512f0bab1280ea95fc03a9b3d4a33b5636e2d803467a435716145a684
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/GNRC.json
+  transformed_byte_count: 572407
+  transformed_sha256: 51eaa45c3b49cd87a70057abd9b136fb8568b99f29dcf8b54aebd0ce5d565d84
+  first_observation: '2010-02-11'
+  last_observation: '2026-07-31'
+  row_count: 4140
+  expected_row_count: 4142
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2010-02-11'
+  structured_gap_blocks:
+  - count: 2
+    end: '2026-07-22'
+    start: '2026-07-21'
+  duplicates: 0
+  missingness_classification: &id010
+    ASSET_AVAILABLE_HISTORY:
+    - KNOWN_DATA_GAP
+    FAMILY_COMMON_OVERLAP:
+    - KNOWN_DATA_GAP
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id010
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:GOOGL
+  instrument_identity: GOOGL
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:00Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_GOOGL_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 609023
+  raw_sha256: c8df153ae860bb925ef2559994010844291c8919534b88accca68c8b1012954e
+  raw_page_hashes:
+  - c900b55882a8d05a9ca7d556fa90470bdb392f59807d7b2b84ee58337b9e81e7
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/GOOGL.json
+  transformed_byte_count: 781317
+  transformed_sha256: 8d3664dfa91090d38c73792f74b1c576c47d0d7d7b08c438c76fbb3b39a17af7
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id011
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id011
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:ICE
+  instrument_identity: ICE
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:01Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_ICE_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 572138
+  raw_sha256: de67ae16b336d1ff3d70207cbc6cb402a8f9cdd0c211fc899cfb803062830961
+  raw_page_hashes:
+  - f7e38c661cdb7ac381440df1522df259e1c41fbbce5c2401358877e5b39c9f1f
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/ICE.json
+  transformed_byte_count: 739877
+  transformed_sha256: 9c3557d1f307fd7ad5c49b37929e7c51b849e2d2147c1750ff134ff0d4870236
+  first_observation: '2005-11-16'
+  last_observation: '2026-07-31'
+  row_count: 5207
+  expected_row_count: 5207
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2005-11-16'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id012
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id012
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:ISRG
+  instrument_identity: ISRG
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:02Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_ISRG_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 593512
+  raw_sha256: 6f16c1a720a0d93fe8dbb2ac49cb16e1c2d812bedd570374cbf89cf0182f5f66
+  raw_page_hashes:
+  - 021709bce2dd8dacb0132b7fc94b416d5af925dbfcfb77f84a84f1b7329168d7
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/ISRG.json
+  transformed_byte_count: 766738
+  transformed_sha256: d95d5bde6a5a8436cec4d40deff9fa06dd59120baca87dac2576c68a84dadb5f
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id013
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id013
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:KLAC
+  instrument_identity: KLAC
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:03Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_KLAC_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 606022
+  raw_sha256: c25b8eeaa84ccd9ef42f9f4efce826bfd945e92140b88f52043d5c9ec426d59b
+  raw_page_hashes:
+  - d3c3c930a397a5b9f61b8d6eeacaead605a49be7249df588a6c0a7592869cc89
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/KLAC.json
+  transformed_byte_count: 784447
+  transformed_sha256: d068f70134d22aa6ea2d9979393cffa08f58f4c761509d2425b24bda406d6466
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id014
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id014
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:LLY
+  instrument_identity: LLY
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:05Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_LLY_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 583423
+  raw_sha256: 09c6ad48b4721a6c6ef85da5a215661d91dad3da58f73384ce7dfe1a34f38f07
+  raw_page_hashes:
+  - 1b04f93a2df16f27378cb134e2a89083cacb11e627d18a70b002206c23f272c1
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/LLY.json
+  transformed_byte_count: 762441
+  transformed_sha256: a62d100206e8bf0b5e89ab7e1b39eafadeaffa6d25fc50f0ee6e36c688cda126
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id015
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id015
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:META
+  instrument_identity: META
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:07Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_META_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 385016
+  raw_sha256: d111553440dc10fbcf7f4bac0db44b9a2989c2b137ca7bc13fc17742df038598
+  raw_page_hashes:
+  - b90fa3b1a7eac804ff0ca701fc82fb5d4bc02f08ec36ef97a069e1cbfbea0ee4
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/META.json
+  transformed_byte_count: 498352
+  transformed_sha256: 01d3e5e484faa7fca04c8c7a1be3ce1762cfb869d7d2cab1874468cbf4ac9073
+  first_observation: '2012-05-18'
+  last_observation: '2026-07-31'
+  row_count: 3570
+  expected_row_count: 3570
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2012-05-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id016
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: FB_TO_META_SAME_LEGAL_ENTITY_TICKER_LINEAGE_REQUIRES_PRIMARY_EVIDENCE
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id016
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:MSFT
+  instrument_identity: MSFT
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:08Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_MSFT_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 600175
+  raw_sha256: 3a1cb96365e2aaf8fce0c1f0949f360db3b46e00ffe796bc2e9fd200cb05d6e7
+  raw_page_hashes:
+  - 3d30af67a44708b72a838e7cac20d01acdae06d6114767a27a4b83698f071829
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/MSFT.json
+  transformed_byte_count: 778457
+  transformed_sha256: 7c0cad4e4ab0f6a529d0a73616c93ce8b1cbd758dbaf6abb0cfacf57afbc91b0
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id017
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id017
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:NVDA
+  instrument_identity: NVDA
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:09Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_NVDA_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 629429
+  raw_sha256: 70e7e8be21b08891222ddac88e38330d7a6fb6902e2022ca9011690d79f58d15
+  raw_page_hashes:
+  - 1ec973a8c908b242685e2771b500cfa2bd1e9bf103b5012431592ede7d4d395f
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/NVDA.json
+  transformed_byte_count: 802690
+  transformed_sha256: f7182fd9ff22420e40ec7f3ed4e9ee0385b1d648610b98fda307fb7bf0865bf8
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id018
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id018
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:PANW
+  instrument_identity: PANW
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:11Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_PANW_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 383087
+  raw_sha256: 18c84b1aa80527aeb86cfeff4f4c1f7822b60042662dcce1b3b1d1bfb7cd692a
+  raw_page_hashes:
+  - 3a5b73201e566da84340e50911cd7b5eef8cee4dca3ac2e4576a2000373c6ab7
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/PANW.json
+  transformed_byte_count: 494779
+  transformed_sha256: 4664375ec692115c96e0f9a719e14e1e502599c9249a6719b54ab370a76568d8
+  first_observation: '2012-07-20'
+  last_observation: '2026-07-31'
+  row_count: 3527
+  expected_row_count: 3527
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2012-07-20'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id019
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id019
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:PWR
+  instrument_identity: PWR
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:12Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_PWR_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 590852
+  raw_sha256: 1e85ed7f9ec557a21f38cf52417172a0a1283f02472ef6bd675f6b701cbca5ed
+  raw_page_hashes:
+  - b21d33258c7c7c14abb1677b264360a7fe401c7cce9249cf44238b2ee06d8306
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/PWR.json
+  transformed_byte_count: 764684
+  transformed_sha256: f95b8b00fa059e69429bcbcb4a6e9cac6faf46b5cea65724345eb0dcb4db4b7e
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id020
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id020
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:RKLB
+  instrument_identity: RKLB
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: ALPACA_MARKET_DATA
+  source_classification: PRIMARY
+  endpoint_locator: https://data.alpaca.markets/v2/stocks/{symbol}/bars
+  query_parameters: *id008
+  acquisition_timestamp_utc: '2026-08-14T12:25:12Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_RKLB_alpaca.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 148111
+  raw_sha256: 3dd3daaba1bc6ca17b6971af66a72cc3fba3da61ea59367920d56c1e0d9bf122
+  raw_page_hashes:
+  - 1bebe208aca6d99b1a5d108cbadd08d03a97fd97cfbdea70cb2d591543b0adfa
+  transformed_path: research/level1_sleeve_robustness/data/transformed/selected/RKLB.json
+  transformed_byte_count: 130599
+  transformed_sha256: ecd7fae3dce60a7f0eed7bf0757d0ceb3e53de506e147de957caca2d0475e5f6
+  first_observation: '2020-11-24'
+  last_observation: '2026-07-31'
+  row_count: 1426
+  expected_row_count: 1238
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2021-08-25'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id021
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    COVID_2020:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: PRE_2021_08_25_NOT_RKLB_HISTORY
+  limitations: []
+  licensing_provenance: EXISTING_REPOSITORY_ALPACA_PRECEDENT
+  commit_quarantine_disposition: COMMITTED
+  scenario_window_eligibility: *id021
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:RTX
+  instrument_identity: RTX
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:15Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_RTX_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 598880
+  raw_sha256: 76d9567067ded72cffe3e425b46b038a33c7d50dab132cf5e28c87e08906a26f
+  raw_page_hashes:
+  - 87a4bdf707207af7506a2532d0b76aba51f172c7e73f0a8722609cee23f0444d
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/RTX.json
+  transformed_byte_count: 777993
+  transformed_sha256: 4ce6ce559c07f8349df2ca209fba42e54d305e37b317437dbab7609bd64a5708
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 1589
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2020-04-03'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id022
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    COVID_2020:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: PREDECESSOR_HISTORY_NOT_SILENTLY_STITCHED
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id022
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:SNPS
+  instrument_identity: SNPS
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:16Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_SNPS_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 580397
+  raw_sha256: 88c239c6bf54a605b3f6c76213035a8e56334a9f7ba2e0401165eafb3c3f0de4
+  raw_page_hashes:
+  - c57297d0f17f10ba020dca07bf3c5141fb79f4dabc47938678cb876a5758cebc
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/SNPS.json
+  transformed_byte_count: 755457
+  transformed_sha256: fb4be67e56bbddf5ec2d4c0e02e5805dd81a1e8b57096b235a9ecc379c0ac403
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id023
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id023
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:SPGI
+  instrument_identity: SPGI
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:18Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_SPGI_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 604516
+  raw_sha256: bca8a9729943b610cca3750846038245b85e8f64f8597e402d3d246310ccd20c
+  raw_page_hashes:
+  - d670480e109f13f85f4e0870b892c37b3be0ae70f59e7e7518143ae47d0d261f
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/SPGI.json
+  transformed_byte_count: 783833
+  transformed_sha256: bffc435f41d99385d8746b5d43f9b746b66b915d689b7bec71269059ad139a53
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id024
+    ASSET_AVAILABLE_HISTORY:
+    - CORPORATE_ACTION_UNRESOLVED
+    FAMILY_COMMON_OVERLAP:
+    - CORPORATE_ACTION_UNRESOLVED
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id024
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:TMO
+  instrument_identity: TMO
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:19Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_TMO_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 584032
+  raw_sha256: 1fafd3c18e046e55aa5d3e57f87c482345d4e72fa02b6aab4e6f525b346d9756
+  raw_page_hashes:
+  - d7cc6f901e5952e53b83498da7dc42a592a87ec7cc9b1496e7ce3c0dd57df1ab
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/TMO.json
+  transformed_byte_count: 761257
+  transformed_sha256: 25d924cf3fa5889bd09e984262ec9e5df5ae09fa07f3466de05e900fed7c9418
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id025
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id025
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:TSLA
+  instrument_identity: TSLA
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:21Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_TSLA_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 450655
+  raw_sha256: 721e3ac457fe27672ef4545636aed5e257d3f084c412e646dcb9c5e77581eb60
+  raw_page_hashes:
+  - dadec0f66ea09318cbc3647cf6f38cbe7e5294de87dca90ec203fc282f55a1df
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/TSLA.json
+  transformed_byte_count: 577891
+  transformed_sha256: dae3f3d7b9bab6d8fa632dc48cf83fb92e1e7a5636ba170203ddde827738823b
+  first_observation: '2010-06-29'
+  last_observation: '2026-07-31'
+  row_count: 4047
+  expected_row_count: 4047
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2010-06-29'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id026
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id026
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:TSM
+  instrument_identity: TSM
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:22Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_TSM_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 597418
+  raw_sha256: 886677807de76e3386f50e24dea9ff38536cdedd604827394bee788658316885
+  raw_page_hashes:
+  - 9c8c7dbf9851653c6d60f74c1cabde160a80cabc59c4e04aa0cbe958d8273cfe
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/TSM.json
+  transformed_byte_count: 773062
+  transformed_sha256: 1607978be55e0e2421179cfd92678aec174eb484cea9e01cb53243b2073f73bc
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id027
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id027
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:V
+  instrument_identity: V
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:23Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_V_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 500223
+  raw_sha256: 172f69adf268f583a5d25a81dff194f441404f1b8ee0a1c20290c8b122e990bf
+  raw_page_hashes:
+  - 53c85330df14ff7a484bfe22f8a7d52b5fe803c448e4769ec0cb4f2116c3f447
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/V.json
+  transformed_byte_count: 650873
+  transformed_sha256: be6ab9d72cd9b479cabb3943a70d86ca0986ebff28f7a791429781d2fb118abb
+  first_observation: '2008-03-19'
+  last_observation: '2026-07-31'
+  row_count: 4621
+  expected_row_count: 4621
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2008-03-19'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id028
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id028
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:EQUITY:WM
+  instrument_identity: WM
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:25Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_WM_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 592733
+  raw_sha256: ebf3f28a0af40383240096b8e0c1933d766735866828ce98b0440b09acbba0bd
+  raw_page_hashes:
+  - fa7c04170f831e3a1e6a5054cb7d47dc1441269db39a413e325db2db6de6868b
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/WM.json
+  transformed_byte_count: 770367
+  transformed_sha256: a6d67bedf80659a2cb576f32873200d078f1efb04d1101d536d064e68f8c48e6
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5456
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks:
+  - count: 2
+    end: '2026-07-22'
+    start: '2026-07-21'
+  duplicates: 0
+  missingness_classification: &id029
+    ASSET_AVAILABLE_HISTORY:
+    - KNOWN_DATA_GAP
+    FAMILY_COMMON_OVERLAP:
+    - KNOWN_DATA_GAP
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id029
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:FUND_BROAD_MARKET:SPY
+  instrument_identity: SPY
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:26Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_SPY_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 605606
+  raw_sha256: d6e6c969bf3fd068872a6bfbd139fae8ffa9ec32dd1f07f37d72ec6f1c952f50
+  raw_page_hashes:
+  - 6be4765fab8a5c41101008d302c17ddcfcc5fbfbb73fc6c4cb1504cec90f49be
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/SPY.json
+  transformed_byte_count: 785142
+  transformed_sha256: c77ce4cdffafc63499d490440f936703785eeedc09d3b385bfa2739b697be626
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id030
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id030
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:FUND_BROAD_MARKET:VEA
+  instrument_identity: VEA
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:27Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_VEA_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 524883
+  raw_sha256: 09dd2aef8d43cf62a3cce91ee380845db9cc905104c196422bc978a843439f30
+  raw_page_hashes:
+  - 793e160b2642168113609351e893ce06715794e22f6c15b24894bdf066afd08b
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/VEA.json
+  transformed_byte_count: 680014
+  transformed_sha256: d511731190074eceb913a00f5b82583d30f3babd9a78b300e1ff808407aa3ea7
+  first_observation: '2007-07-26'
+  last_observation: '2026-07-31'
+  row_count: 4784
+  expected_row_count: 4784
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2007-07-26'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id031
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id031
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:FUND_BROAD_MARKET:VWO
+  instrument_identity: VWO
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:28Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_VWO_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 587662
+  raw_sha256: ae0b8f2cc80b175fe47700b29ea8f6247837de9e38c8d7a9134bac4b21f145b2
+  raw_page_hashes:
+  - 41c3b5d22b5b0cda72b4b53a5a25351ee106bb2190dbaad5446573b1f28a8b73
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/VWO.json
+  transformed_byte_count: 761155
+  transformed_sha256: 31da5be487548c6ae2e905ed8ed40aae4c01fedfa4243636f1eff42ca141cc68
+  first_observation: '2005-03-10'
+  last_observation: '2026-07-31'
+  row_count: 5380
+  expected_row_count: 5382
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2005-03-10'
+  structured_gap_blocks:
+  - count: 2
+    end: '2026-07-22'
+    start: '2026-07-21'
+  duplicates: 0
+  missingness_classification: &id032
+    ASSET_AVAILABLE_HISTORY:
+    - KNOWN_DATA_GAP
+    FAMILY_COMMON_OVERLAP:
+    - KNOWN_DATA_GAP
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id032
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:FUND_GLD_DEFENSIVE:GLD
+  instrument_identity: GLD
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:29Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_GLD_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 596336
+  raw_sha256: a3ac3d5ff9d1d79b874691ebf5bde2b143a5df096b9148f10a1ebe7ca1ae0819
+  raw_page_hashes:
+  - 45dc2467ffe2a1ef4feeb916c6b9ca02f2125a71f0626c0035980899795364b2
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/GLD.json
+  transformed_byte_count: 770265
+  transformed_sha256: 13e137ea919376333ff54eae7c51b24e69ebf7f7469f1da8e84d60ec020c9f1b
+  first_observation: '2004-11-18'
+  last_observation: '2026-07-31'
+  row_count: 5458
+  expected_row_count: 5458
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2004-11-18'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id033
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id033
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:FUND_GLD_DEFENSIVE:IAU
+  instrument_identity: IAU
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:30Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_IAU_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 591912
+  raw_sha256: d373b505b043a3d6b8e10355ab0d47f7bd02ae2554b5993491a60b52ea50464e
+  raw_page_hashes:
+  - 15bc9c223dc32f4884cfe34f6275a88a948d738654a5e2fc7611deb2a4f00760
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/IAU.json
+  transformed_byte_count: 763883
+  transformed_sha256: 6501f00962a3786fd3a40150493fd02f738f1e125c93fb3f729b68f9f9bddba4
+  first_observation: '2005-01-28'
+  last_observation: '2026-07-31'
+  row_count: 5410
+  expected_row_count: 5410
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2005-01-28'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id034
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - ELIGIBLE
+    Q4_2018:
+    - ELIGIBLE
+    COVID_2020:
+    - ELIGIBLE
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id034
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:FUND_GLD_DEFENSIVE:SGOL
+  instrument_identity: SGOL
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: YAHOO_FINANCE_CHART
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+  query_parameters: *id002
+  acquisition_timestamp_utc: '2026-08-14T12:25:31Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_SGOL_yahoo-reconciliation.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 470862
+  raw_sha256: 44006f91513c038cebd2e5ecd5d29fc204e495f8d387788e75d5fa9ee7cd4d29
+  raw_page_hashes:
+  - 7d400968439883fd4fa274060a0adfd9993a2f42c174ef3dd2fd6e30be5346c6
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/SGOL.json
+  transformed_byte_count: 603799
+  transformed_sha256: b0cae56657f07f6e2bef2d08c1a5edc37f55e2e7ac0bf4c8081e13ca5c574858
+  first_observation: '2009-09-09'
+  last_observation: '2026-07-30'
+  row_count: 4247
+  expected_row_count: 4248
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2009-09-09'
+  structured_gap_blocks:
+  - count: 1
+    end: '2026-07-21'
+    start: '2026-07-21'
+  duplicates: 0
+  missingness_classification: &id035
+    ASSET_AVAILABLE_HISTORY:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    FAMILY_COMMON_OVERLAP:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    GFC_2008:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    Q4_2018:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    COVID_2020:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    RATE_INFLATION_2022:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    CRYPTO_STRESS_2022:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id035
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:FUND_GLD_DEFENSIVE:GLDM
+  instrument_identity: GLDM
+  study_role: EQUITY_ETF_TOTAL_RETURN_INPUT
+  provider: ALPACA_MARKET_DATA
+  source_classification: PRIMARY
+  endpoint_locator: https://data.alpaca.markets/v2/stocks/{symbol}/bars
+  query_parameters: *id008
+  acquisition_timestamp_utc: '2026-08-14T12:25:32Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/stock_GLDM_alpaca.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 208913
+  raw_sha256: b7e3ef939382f50b1a4ed7fd3c68a76e7402aa50827c6a15b7c5f17bbc58f7bd
+  raw_page_hashes:
+  - f8508a5f5d03966663296aef7838fa6b97b96e8a1c3bf8152fbe38bcc7ae7ab5
+  transformed_path: research/level1_sleeve_robustness/data/transformed/selected/GLDM.json
+  transformed_byte_count: 188868
+  transformed_sha256: eb357c0ac2085a00c895f3525a83545a1321bf87672e2d8ed2b558a6321e21bc
+  first_observation: '2018-06-26'
+  last_observation: '2026-07-31'
+  row_count: 2035
+  expected_row_count: 2035
+  frequency: XNYS_SESSION_DAILY
+  timezone: America/New_York
+  market_session_calendar: XNYS_OFFICIAL_SESSIONS
+  close_convention: OFFICIAL_SESSION_CLOSE
+  inception_listing_date: '2018-06-26'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id036
+    ASSET_AVAILABLE_HISTORY:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    FAMILY_COMMON_OVERLAP:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    GFC_2008:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    Q4_2018:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    COVID_2020:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    RATE_INFLATION_2022:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    CRYPTO_STRESS_2022:
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_EVENTS
+  total_return_construction: SPLIT_ADJUSTED_NON_TOTAL_RETURN_PRICE_PLUS_EXPLICIT_GROSS_DIVIDENDS
+  dividend_treatment: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE
+  split_treatment: PRICE_PATH_SPLIT_ADJUSTED_SPLIT_EVENTS_CONTINUITY_ONLY_NO_DOUBLE_COUNT
+  corporate_action_treatment: UNRESOLVED_NONCASH_ACTION_MAKES_INTERSECTING_CELL_NULL
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: EXISTING_REPOSITORY_ALPACA_PRECEDENT
+  commit_quarantine_disposition: COMMITTED
+  scenario_window_eligibility: *id036
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:CRYPTO:BTC
+  instrument_identity: BTC
+  study_role: CRYPTO_SPOT_RETURN_INPUT
+  provider: ALPACA_CRYPTO
+  source_classification: PRIMARY
+  endpoint_locator: https://data.alpaca.markets/v1beta3/crypto/us/bars
+  query_parameters: &id038
+    timeframe: 1Day
+    limit: 10000
+  acquisition_timestamp_utc: '2026-08-14T12:25:32Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/crypto_BTC_alpaca.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 266594
+  raw_sha256: 243eee0620f6b7aa19f4a16a501bf7212fc630ce08e53a61a6cdfed58dac2b2c
+  raw_page_hashes:
+  - c0259e8d47bbb8706ec3946deae4c6e8b7a5954232896f9ab5b30dc2b937e51e
+  transformed_path: research/level1_sleeve_robustness/data/transformed/selected/BTC.json
+  transformed_byte_count: 224972
+  transformed_sha256: 2060887fe9921ac9c5a8e5db57011cb0a03bdcfd9077e0875be36d2a82fc9fb9
+  first_observation: '2021-01-01'
+  last_observation: '2026-07-31'
+  row_count: 2038
+  expected_row_count: 2038
+  frequency: UTC_DAILY
+  timezone: UTC
+  market_session_calendar: UTC_24_7
+  close_convention: UTC_DAILY_CLOSE
+  inception_listing_date: '2021-01-01'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id037
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    COVID_2020:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPOT
+  total_return_construction: SPOT_PRICE_RETURN_ONLY
+  dividend_treatment: NOT_APPLICABLE
+  split_treatment: NOT_APPLICABLE
+  corporate_action_treatment: SPOT_ONLY_NO_YIELD
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: EXISTING_REPOSITORY_ALPACA_PRECEDENT
+  commit_quarantine_disposition: COMMITTED
+  scenario_window_eligibility: *id037
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:CRYPTO:ETH
+  instrument_identity: ETH
+  study_role: CRYPTO_SPOT_RETURN_INPUT
+  provider: ALPACA_CRYPTO
+  source_classification: PRIMARY
+  endpoint_locator: https://data.alpaca.markets/v1beta3/crypto/us/bars
+  query_parameters: *id038
+  acquisition_timestamp_utc: '2026-08-14T12:25:33Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/crypto_ETH_alpaca.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 256321
+  raw_sha256: 711ef50e50b8824022cf8fcfe32245949b69e94fb96b0910b4cdb67e91fd39b8
+  raw_page_hashes:
+  - 026074c64d23c40b860368b05076388d9dead4d0235d522a14bff2b2b1bd9dc0
+  transformed_path: research/level1_sleeve_robustness/data/transformed/selected/ETH.json
+  transformed_byte_count: 217137
+  transformed_sha256: f2f2ff4c998575a7a1172649aba4e6078e2534848f272c4fb43e4ea15363b186
+  first_observation: '2021-01-01'
+  last_observation: '2026-07-31'
+  row_count: 2038
+  expected_row_count: 2038
+  frequency: UTC_DAILY
+  timezone: UTC
+  market_session_calendar: UTC_24_7
+  close_convention: UTC_DAILY_CLOSE
+  inception_listing_date: '2021-01-01'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id039
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - ELIGIBLE
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    COVID_2020:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPOT
+  total_return_construction: SPOT_PRICE_RETURN_ONLY
+  dividend_treatment: NOT_APPLICABLE
+  split_treatment: NOT_APPLICABLE
+  corporate_action_treatment: SPOT_ONLY_NO_YIELD
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: EXISTING_REPOSITORY_ALPACA_PRECEDENT
+  commit_quarantine_disposition: COMMITTED
+  scenario_window_eligibility: *id039
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:CRYPTO:SOL
+  instrument_identity: SOL
+  study_role: CRYPTO_SPOT_RETURN_INPUT
+  provider: COINBASE_EXCHANGE
+  source_classification: WHOLE_PATH_FALLBACK
+  endpoint_locator: https://api.exchange.coinbase.com/products/{product}-USD/candles
+  query_parameters:
+    granularity: 86400
+    maximum_days_per_request: 250
+  acquisition_timestamp_utc: '2026-08-14T12:25:34Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0000.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0001.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0002.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0003.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0004.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0005.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0006.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0007.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0008.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0009.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0010.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0011.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0012.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0013.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0014.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0015.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0016.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0017.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0018.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0019.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0020.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0021.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0022.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0023.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0024.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0025.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0026.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0027.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0028.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0029.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0030.final.json
+  - research/level1_sleeve_robustness/data/receipts/crypto_SOL_coinbase.page-0031.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 98510
+  raw_sha256: 5a62d955a8fd28ff01d07b26bcbdeaea844550b7f9ad9b3b095096867aabe664
+  raw_page_hashes:
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  - d25b0468e6659bd3bbf3591d9e0555e9bf0e857c6aea27d6fa3f3ff8f19a102c
+  - dc91b787cdaa657c1fb5c6cad8151e78735ddd3ea4d6ab7850fb9328248d5767
+  - 22d5bfcb4f4767be7dbe232b723571854fcd6181ebcb3cf79919944ff4d6f091
+  - d01e03d1460739763afce532dad2317789e5a4541a938cfdc767e5fdc1022729
+  - 11b097bc38e8f317a074c171cf79fa9bc490b90bf14120cdb9849bdac0722013
+  - 7af7bab107ec03e5158036ad48035f2333282ea713c4b10e82362e20d68cbf38
+  - 535217079135fc218422b7b295ee943e9b7136595bc35e3aee30f16fbb59bcf6
+  - 020f2d1e5c9f5fd194d54eb302b2addd0898a5baa6ceef21d1f72a18585082a0
+  transformed_path: research/level1_sleeve_robustness/data/quarantine/selected/SOL.json
+  transformed_byte_count: 184675
+  transformed_sha256: 79b1f614d43b57e530297c503322b2c282dcca2f6f6e474ce20ced8611cd584a
+  first_observation: '2021-06-17'
+  last_observation: '2026-07-31'
+  row_count: 1871
+  expected_row_count: 1871
+  frequency: UTC_DAILY
+  timezone: UTC
+  market_session_calendar: UTC_24_7
+  close_convention: UTC_DAILY_CLOSE
+  inception_listing_date: '2021-01-01'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: &id040
+    ASSET_AVAILABLE_HISTORY:
+    - ELIGIBLE
+    FAMILY_COMMON_OVERLAP:
+    - MISSING_SOURCE_DATA
+    GFC_2008:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    Q4_2018:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    COVID_2020:
+    - NOT_APPLICABLE_PRE_INCEPTION
+    RATE_INFLATION_2022:
+    - ELIGIBLE
+    CRYPTO_STRESS_2022:
+    - ELIGIBLE
+  transformations:
+  - UTC_OR_SESSION_DATE_NORMALIZATION
+  - SORT_CANONIC_ASCENDING
+  - FINITE_OHLC_NORMALIZATION
+  adjustment_mode: SPOT
+  total_return_construction: SPOT_PRICE_RETURN_ONLY
+  dividend_treatment: NOT_APPLICABLE
+  split_treatment: NOT_APPLICABLE
+  corporate_action_treatment: SPOT_ONLY_NO_YIELD
+  ticker_legal_identity_lineage: CURRENT_LISTED_IDENTITY_NO_PREDECESSOR_STITCHING
+  limitations: []
+  licensing_provenance: QUARANTINED_NOT_COMMITTED
+  commit_quarantine_disposition: QUARANTINED_HASH_PINNED
+  scenario_window_eligibility: *id040
+  metric_eligibility: PATH_METRICS_FOLLOW_CELL_STATE_DFF_METRICS_SEPARATELY_GATED
+  abstention_remediation_status: FROZEN_NO_REMEDIATION_AFTER_EXECUTION
+- dataset_id: RISK-0001:COMPARATOR:DFF
+  instrument_identity: DFF
+  study_role: ANALYTICAL_OPPORTUNITY_COST_ONLY
+  provider: FRED
+  source_classification: OFFICIAL_PUBLIC_DOMAIN
+  endpoint_locator: https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF
+  query_parameters:
+    series: DFF
+  acquisition_timestamp_utc: '2026-08-14T12:25:45Z'
+  pagination_page_receipts:
+  - research/level1_sleeve_robustness/data/receipts/comparator_DFF_FRED.page-0000.final.json
+  terminal_pagination_proved: true
+  raw_byte_count: 423291
+  raw_sha256: 0fcf0de802c14c64a0b850c18dce10649417ab7c039acc23d515aa7a4cca31e4
+  raw_page_hashes:
+  - a052a99256ac7fdf075911b03496ab14acbcfd76f428137966bc0fd8781c4849
+  transformed_path: research/level1_sleeve_robustness/data/transformed/selected/DFF.json
+  transformed_byte_count: 1055041
+  transformed_sha256: a4610d02a33fc4e72eff5c54ba8499b7d0f85e5d828dd054e4158f967b530b5b
+  first_observation: '1954-07-01'
+  last_observation: '2026-07-31'
+  row_count: 26329
+  expected_row_count: null
+  frequency: FEDERAL_RESERVE_BUSINESS_DAY_OBSERVATION
+  timezone: America/New_York
+  market_session_calendar: US_FEDERAL_RESERVE_BANK_BUSINESS_DAYS
+  close_convention: LAWFUL_AT_23_59_59_ET_ONE_BUSINESS_DAY_LAGGED
+  inception_listing_date: '1954-07-01'
+  structured_gap_blocks: []
+  duplicates: 0
+  missingness_classification: PER_WINDOW_ZERO_MISSING_REQUIRED_LAWFULLY_LAGGED_OBSERVATIONS
+  transformations:
+  - CSV_PARSE
+  - DOT_MISSING_ROWS_PRESERVED_AS_MISSING
+  - ONE_BUSINESS_DAY_LAWFUL_AVAILABILITY_LAG
+  adjustment_mode: NOT_APPLICABLE
+  total_return_construction: SIMPLE_ACTUAL_360_DAILY_FACTOR_COMPOUNDED_BY_CALENDAR_DAY
+  dividend_treatment: NOT_APPLICABLE
+  split_treatment: NOT_APPLICABLE
+  corporate_action_treatment: NOT_APPLICABLE
+  ticker_legal_identity_lineage: OFFICIAL_FRED_SERIES_DFF
+  limitations: []
+  licensing_provenance: OFFICIAL_US_GOVERNMENT_PUBLIC_DOMAIN
+  commit_quarantine_disposition: COMMITTED_PUBLIC_DOMAIN
+  scenario_window_eligibility: AFFECTED_OPPORTUNITY_COST_METRICS_ONLY
+  metric_eligibility: ZERO_MISSING_REQUIRED_OBSERVATIONS
+  abstention_remediation_status: FROZEN_NO_ANALYTICAL_FALLBACK
+corporate_actions:
+  error: null
+  receipt_count: 28
+  row_count: 820
+  selected_provider: ALPACA_CORPORATE_ACTIONS
+  transformed_path: research/level1_sleeve_robustness/data/transformed/actions/alpaca_actions.json
+  transformed_sha256: a75341f1279665423722074fbc3c89eed2a0c4708e8aefcd658220c3e7bc83b2
+  type_failures: {}
+identity_evidence:
+  receipt_count: 6
+  registry_path: research/level1_sleeve_robustness/data/identity_lineage.yaml
+  registry_sha256: 9f29e8ca9d2357e665e5ae1dbf1b802b1b3df52fa9fc557d658a7d54558f56c1
+quarantine_policy: YAHOO_AND_COINBASE_BYTES_NOT_COMMITTED_HASH_PINNED_BY_RECEIPTS_AND_MANIFEST

@@ -1,0 +1,156 @@
+schema_version: '1.0'
+analytical_subject: GLD
+deployability_and_optionality:
+  deployability_category: high_optionality_low_friction
+  rationale: 'GLD is a normal, ungated canonical destination row (targets.yaml, asset_class: fund) with
+    no allocator-level gate or lockup of any kind -- confirmed by direct inspection, gates.yaml carries
+    zero mentions of GLD. Per CLAUDE.md''s own Workflow section, this tool never places orders -- every
+    position, GLD included, is executed manually by the operator on Robinhood, meaning holding GLD imposes
+    no structural barrier to redirecting that capital toward a different future opportunity whenever the
+    operator chooses to act. GLD''s own sealed ETF classification record independently establishes it
+    as a high-liquidity, actively-traded instrument (structural reference below, consumed by reference
+    only, never restated). This determination concerns optionality only -- it makes no claim about whether
+    redirecting capital out of GLD is currently advisable.'
+instrument_specific_economic_characterization: &id001
+  cost_and_tracking_economic_significance:
+    significance_category: elevated_vs_category
+    rationale: GLD's own sealed ETF classification record discloses its expense ratio as a structural
+      fact (consumed here by reference only, never restated as a bare figure). Sourced comparison against
+      other major physically-backed gold-trust ETFs -- iShares Gold Trust (IAU), abrdn Physical Gold Shares
+      (SGOL), and SPDR Gold MiniShares (GLDM) -- found GLD's own expense ratio is meaningfully higher
+      than every one of those three peers, each of which is also a direct, physically-backed gold-holding
+      structure in GLD's own fund category. This is a categorical cost comparison against same-category
+      peers, never a numeric cost-savings or hurdle-rate calculation.
+  historical_inflation_sensitivity:
+    sensitivity_category: historically_mixed_or_inconsistent
+    rationale: Sourced academic and financial-press material presents a genuinely mixed, horizon-dependent
+      picture rather than a single consistent relationship. Several cited studies find gold has functioned
+      as a positive, effective inflation hedge over long horizons (multi-decade, and specifically horizons
+      exceeding roughly ten years), with the relationship shaped by major historical episodes (the 1970s
+      oil shock and its disinflation, the 2008 crisis and subsequent quantitative easing, and the COVID-era
+      monetary response). Other cited sources, covering shorter windows since the early 1970s, describe
+      the correlation with headline inflation as inconsistent, time-varying, and on the whole not statistically
+      reliable over shorter periods. This record discloses both findings rather than silently reconciling
+      them -- the evidence genuinely diverges by measurement horizon, and no single clean characterization
+      is supportable from what was located.
+  historical_equity_drawdown_behavior:
+    behavior_category: historically_mixed
+    rationale: Sourced material covering three separate historical episodes shows a genuinely mixed pattern,
+      not a clean hedge relationship. During the acute panic phase of the 2008 financial crisis, gold
+      fell sharply alongside equities (a substantial peak-to-trough decline around the Lehman Brothers
+      collapse) before ending that year roughly flat and then rising materially over the following several
+      years, while broad equity indices fell far further during the crisis itself. During the March 2020
+      pandemic-driven crash, gold likewise sold off initially alongside equities before recovering within
+      months and reaching new highs later that same year, a year in which broad equities also recovered.
+      During the 2022 broad equity decline, cited material describes gold as comparatively stable rather
+      than falling in step with equities. The pattern across all three episodes is initial co-decline
+      during acute liquidity panics, with divergence (sometimes positive, sometimes merely stable) emerging
+      afterward or in episodes without an acute liquidity-panic character -- not a reliable, uniform negative-correlation
+      relationship.
+    single_asset_disclosure: This finding characterizes gold's own historical price behavior in isolation
+      during past equity-market drawdown episodes -- a single-asset, historical characterization only.
+      It does not compute, constitute, imply, or substitute for a whole-portfolio diversification-benefit
+      or correlation finding specific to Portfolio-HQ's own current holdings; that remains the separate,
+      still-forced-abstention job of the overlap model's defensive_offset_interface dimension.
+structural_reference_etf_classification:
+  source_instrument_id: GLD
+  source_schema: etf_classification
+  source_file: intelligence/etf_classification/GLD.yaml
+  referenced_content_sha256: d3b58455193441ff492a86660e05a8b62500e5847f8699564c7f5f5ed4ad5888
+structural_reference_functional_doctrine:
+  source_capital_use_type: GLD_DEFENSIVE_ROLE
+  source_schema: functional_doctrine
+  source_file: intelligence/functional_doctrine/GLD_DEFENSIVE_ROLE.yaml
+  referenced_content_sha256: 52dd76614fab7e3a6ac33b9da6486ea2d485b935a8ab633cef88ba323c9a9b5e
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: Every finding in this record was sourced via web-search aggregation citing
+    secondary financial-press, industry, and academic-summary material -- no primary issuer disclosure,
+    SEC filing, or paywalled academic paper was directly inspected, matching this record's own referenced
+    GLD.yaml's disclosed primary-source-access limitation. The inflation-sensitivity finding in particular
+    rests on genuinely divergent sourced material across different measurement horizons, disclosed above
+    rather than resolved. The drawdown-behavior finding synthesizes three separate historical episodes
+    from multiple sourced articles rather than a single dataset or primary market-data series.
+provenance:
+  sources:
+  - source_identifier: CLAUDE.md Portfolio Doctrine section (this repository's own governing operational-synthesis
+      document)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: CLAUDE.md Workflow section (deposit cycle, manual Robinhood execution, this tool
+      never places orders)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: 'targets.yaml destination: list GLD row (asset_class: fund identity only, per XASSET-0008''s
+      own contamination boundary -- target_pct read but never cited as evidence)'
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: gates.yaml (confirmed zero GLD-specific entries -- no gate or lockup mechanism
+      exists for GLD)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: WebSearch aggregation on gold price behavior during the 2008 financial crisis and
+      subsequent years, including U.S. Bureau of Labor Statistics commentary and industry retrospectives
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing multiple financial-press and industry retrospective articles;
+      no primary market-data series or original BLS publication was directly opened.
+  - source_identifier: WebSearch aggregation on gold price behavior during the March 2020 pandemic-driven
+      crash and the 2022 broad equity decline
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing multiple financial-press and industry retrospective articles;
+      no primary market-data series was directly opened.
+  - source_identifier: WebSearch aggregation on physically-backed gold ETF expense-ratio comparison (iShares
+      Gold Trust IAU, abrdn Physical Gold Shares SGOL, SPDR Gold MiniShares GLDM)
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing financial-press fund-comparison articles; no primary
+      issuer fact sheet was directly opened for any of the three peer funds.
+  - source_identifier: WebSearch aggregation on gold's historical relationship with inflation, citing
+      academic literature summaries (ScienceDirect abstracts, an MDPI comparative-analysis article) and
+      financial-press commentary (CNBC)
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing academic-journal abstracts and financial-press articles;
+      no full paywalled academic paper was directly opened.
+evidence_quality_status: partial
+uncertainty_summary: Every finding in this record was sourced via web-search aggregation citing secondary
+  financial-press, industry, and academic-summary material -- no primary issuer disclosure, SEC filing,
+  or paywalled academic paper was directly inspected, matching this record's own referenced GLD.yaml's
+  disclosed primary-source-access limitation. The inflation-sensitivity finding in particular rests on
+  genuinely divergent sourced material across different measurement horizons, disclosed above rather than
+  resolved. The drawdown-behavior finding synthesizes three separate historical episodes from multiple
+  sourced articles rather than a single dataset or primary market-data series.
+record_status: sealed
+later_governance_action: A future, separately authorized cross-asset opportunity-cost synthesis (XASSET-0001
+  SS E/SS F) would consume this record's categorical findings; none is authorized or performed by this
+  record itself. This record's own historical_equity_drawdown_behavior finding remains structurally distinct
+  from, and does not compute, defensive_offset_interface's own portfolio-level, still-forced not_yet_computable_interface_only
+  value (XASSET-0007) -- loosening that dimension requires its own separate, future, explicit schema-amendment
+  decision, not implied by this record.
+abstention_index: []
+cross_asset_handoff:
+  deployability_summary: high_optionality_low_friction
+  instrument_specific_summary: *id001
+  evidence_quality_summary: partial
+  uncertainty_summary: Every finding in this record was sourced via web-search aggregation citing secondary
+    financial-press, industry, and academic-summary material -- no primary issuer disclosure, SEC filing,
+    or paywalled academic paper was directly inspected, matching this record's own referenced GLD.yaml's
+    disclosed primary-source-access limitation. The inflation-sensitivity finding in particular rests
+    on genuinely divergent sourced material across different measurement horizons, disclosed above rather
+    than resolved. The drawdown-behavior finding synthesizes three separate historical episodes from multiple
+    sourced articles rather than a single dataset or primary market-data series.
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0009
+drafting_session_or_shard_id: single-pass-economic-assessment-implementation
+content_sha256: 055d3e9abd270122c7120bbfd474b61a2282d7c0fd7803b82fe8ec1edfce5406
+cohort_manifest_entry: intelligence/economic_assessment/COHORT_MANIFEST.yaml#GLD

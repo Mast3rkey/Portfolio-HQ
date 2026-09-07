@@ -1,0 +1,131 @@
+schema_version: '1.0'
+instrument_id: SOL
+asset_type: cryptocurrency
+structural_reference:
+  source_instrument_id: SOL
+  source_schema: crypto_classification
+  source_file: intelligence/crypto_classification/SOL.yaml
+  referenced_content_sha256: 1609d3718cccecaf8eb5759dadc116c6b4041e809609290ae9950bae6c0d6f1c
+macro_behavioral_characterization:
+  historical_equity_market_drawdown_behavior:
+    behavior_category: unable_to_determine
+    rationale: SOL's own mainnet beta launched days after the March 2020 acute equity-drawdown episode
+      (the one clean, widely-sourced liquidity-panic reference point available for BTC and ETH), leaving
+      no meaningful liquid-market price data for SOL during that specific episode. For the 2022 episode,
+      sourced material attributes SOL's own decline overwhelmingly to idiosyncratic, SOL-specific factors
+      -- direct balance-sheet exposure to the FTX/Alameda Research collapse (which held a large SOL
+      position and triggered forced liquidations) and separately disclosed network-outage/technical
+      reliability issues during the same year -- rather than to a clean, equity-market-drawdown-driven
+      signal comparable to what sourced material establishes for BTC and ETH. SOL's own reported 2022
+      decline was also reported as substantially deeper than either BTC's or ETH's own reported decline
+      over the same broad window, consistent with a dominant idiosyncratic driver rather than a shared
+      macro one. Sourced material also discloses that broader network-usage metrics for SOL were reported
+      reaching or approaching multi-year highs during a similar general period even as trading-volume
+      on a single major venue fell sharply, a further sign that SOL's own historical episodes do not
+      resolve into one clean equity-drawdown-behavior signal the way BTC's and ETH's do.
+    single_asset_disclosure: This abstention concerns SOL's own single-asset historical price behavior
+      only. It does not compute, constitute, imply, or substitute for a whole-portfolio diversification-benefit
+      or correlation finding specific to Portfolio-HQ's own current holdings; that remains the separate,
+      still-forced-abstention job of the overlap model's defensive_offset_interface dimension. It also
+      makes no claim, and is not intended to be read as making any claim, about SOL's own relationship to
+      BTC or ETH specifically; any cross-coin relationship remains a separate, future, bounded,
+      pre-registered research charter's own unaddressed question.
+    abstention_reason: No meaningful liquid-market price data exists for SOL during the March 2020 acute
+      equity-drawdown episode (SOL's own mainnet beta launched only days afterward), and the one major
+      subsequent drawdown episode located (2022) is confounded by dominant, disclosed, SOL-specific
+      factors -- direct FTX/Alameda counterparty exposure and separately reported network-outage issues
+      -- that make it impossible to honestly isolate a clean equity-market-drawdown-correlation signal
+      for SOL specifically from the sourced material located. Forcing a categorical value here would
+      misrepresent an idiosyncratic-risk-dominated episode as evidence of a general equity-drawdown
+      relationship.
+  historical_inflation_sensitivity_narrative:
+    sensitivity_category: historically_weakly_associated
+    rationale: Sourced material finds SOL carries essentially no established inflation-hedge or "digital
+      gold" narrative of its own. Sourced industry commentary positions SOL explicitly as infrastructure
+      for decentralized applications and transaction processing rather than as a store-of-value asset,
+      in direct contrast to BTC's own widely-cited framing. Sourced material further discloses that SOL's
+      own token-supply schedule remains net inflationary at the protocol level today (a disinflationary
+      path toward a lower terminal rate, but not yet net-deflationary or fixed-supply), a structural
+      property in tension with the scarcity premise an inflation-hedge narrative would typically rest on.
+      This record treats the narrative's own clear, sourced absence -- not merely a comparative weakness
+      relative to BTC, as with ETH's own determination -- as the basis for this determination, since
+      unlike the drawdown-behavior sub-field above, adequate sourced evidence exists here to sustain a
+      determined finding rather than an abstention.
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: SOL's own referenced crypto classification record already discloses that
+    solana.com was blocked by this environment's network egress policy; this record's own two findings
+    rest entirely on further WebSearch-aggregated secondary sources -- financial-press retrospectives and
+    industry-commentary articles -- none of which was directly inspected as a primary document. The
+    drawdown-behavior sub-field abstains outright rather than forcing a value onto evidence this session's
+    own research found genuinely confounded by idiosyncratic, SOL-specific factors; the inflation-sensitivity
+    sub-field, by contrast, rests on adequately sourced, mutually reinforcing material and reaches a
+    determined finding.
+provenance:
+  sources:
+  - source_identifier: SOL's own sealed intelligence/crypto_classification/SOL.yaml record (structural
+      reference, consumed by hash pin only)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: WebSearch aggregation on SOL's own mainnet-beta launch date (March 16 2020 --
+      just days after the March 2020 acute equity-drawdown episode) and its initial trading history,
+      citing multiple crypto-industry-education sources
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing crypto-industry-education articles; no primary
+      blockchain-explorer or exchange trading-history record was directly opened.
+  - source_identifier: WebSearch aggregation on SOL's own 2022 price decline and its disclosed relationship
+      to the FTX/Alameda Research collapse and separately reported network-outage/technical-reliability
+      issues, citing multiple financial-press articles
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing financial-press articles; no primary market-data series
+      or exchange disclosure was directly opened.
+  - source_identifier: WebSearch aggregation on SOL's own positioning as infrastructure rather than a
+      store-of-value asset, and its own disclosed token-supply inflation schedule, citing industry-commentary
+      and protocol-documentation-summary articles
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing industry-commentary and protocol-documentation-summary
+      articles; no primary Solana Foundation document was directly opened.
+uncertainty_summary: SOL's own referenced crypto classification record already discloses that solana.com
+  was blocked by this environment's network egress policy; this record's own two findings rest entirely
+  on further WebSearch-aggregated secondary sources -- financial-press retrospectives and industry-commentary
+  articles -- none of which was directly inspected as a primary document. The drawdown-behavior sub-field
+  abstains outright rather than forcing a value onto evidence this session's own research found genuinely
+  confounded by idiosyncratic, SOL-specific factors; the inflation-sensitivity sub-field, by contrast,
+  rests on adequately sourced, mutually reinforcing material and reaches a determined finding.
+evidence_quality_status: partial
+record_status: sealed
+cross_asset_handoff:
+  economic_characterization_summary:
+    historical_equity_market_drawdown_behavior: unable_to_determine
+    historical_inflation_sensitivity_narrative: historically_weakly_associated
+  evidence_quality_summary: partial
+  uncertainty_summary: SOL's own referenced crypto classification record already discloses that
+    solana.com was blocked by this environment's network egress policy; this record's own two findings
+    rest entirely on further WebSearch-aggregated secondary sources -- financial-press retrospectives and
+    industry-commentary articles -- none of which was directly inspected as a primary document. The
+    drawdown-behavior sub-field abstains outright rather than forcing a value onto evidence this session's
+    own research found genuinely confounded by idiosyncratic, SOL-specific factors; the inflation-sensitivity
+    sub-field, by contrast, rests on adequately sourced, mutually reinforcing material and reaches a
+    determined finding.
+abstention_index:
+- axis: macro_behavioral_characterization.historical_equity_market_drawdown_behavior
+  field: behavior_category
+  value: unable_to_determine
+  reason: No meaningful liquid-market price data exists for SOL during the March 2020 acute equity-drawdown
+    episode (SOL's own mainnet beta launched only days afterward), and the one major subsequent drawdown
+    episode located (2022) is confounded by dominant, disclosed, SOL-specific factors -- direct FTX/Alameda
+    counterparty exposure and separately reported network-outage issues -- that make it impossible to
+    honestly isolate a clean equity-market-drawdown-correlation signal for SOL specifically from the
+    sourced material located.
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0011
+drafting_session_or_shard_id: single-pass-etf-crypto-economic-assessment-implementation
+content_sha256: b94b5785a661479ba6a9a8539dded3c180cf36703797263785e878e49f089734
+cohort_manifest_entry: intelligence/instrument_economic_assessment/COHORT_MANIFEST.yaml#SOL

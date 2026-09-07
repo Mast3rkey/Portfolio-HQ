@@ -1,0 +1,339 @@
+schema_version: '1.0'
+ticker: ASML
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 18611
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2021 net sales
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 5883
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.363
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2021 operating income EUR6,750M divided by net sales EUR18,611M equals
+        36.3 percent.'
+      provenance:
+        sources:
+        - source_identifier: ASML FY2021 operating income EUR6,750M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 21173
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2022 net sales
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 5624
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.307
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2022 operating income EUR6.5B divided by net sales EUR21,173M equals
+        30.7 percent.'
+      provenance:
+        sources:
+        - source_identifier: ASML FY2022 operating income EUR6.5B
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 27560
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2023 net sales
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 7840
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.328
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2023 operating income EUR9.04B divided by net sales EUR27.56B equals
+        32.8 percent.'
+      provenance:
+        sources:
+        - source_identifier: ASML FY2023 operating income EUR9.04B
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 28300
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2024 net sales
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 7600
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      abstention_reason: The one FY2024 operating-income figure found (~EUR9.76B, currency-tag inconsistent/suspicious
+        across sources) was not reliable enough to derive a confident operating margin.
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 32700
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2025 net sales
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 9609
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      abstention_reason: Full-year FY2025 operating income was not found; only gross margin (52.8%, reported)
+        and a rough, explicitly-non-full-year Q4-based extrapolation (~35%) were located -- the latter
+        is not reported here as a full-year figure.
+    - item_category: cash
+      value: 10999.7
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML cash & equivalents, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 4375
+      unit: eur_millions
+      value_basis: derived
+      derivation_note: 'Derived: long-term debt EUR2,692.7M plus short-term debt EUR1,681.9M equals ~EUR4,375M
+        total.'
+      provenance:
+        sources:
+        - source_identifier: ASML balance sheet, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 388.5
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income EUR9,609.4M divided by diluted EPS EUR24.73
+        equals ~388.5M diluted shares. (A separate ''34.9 million shares'' figure found elsewhere is implausibly
+        low for ASML and was rejected as an evident error.)'
+      provenance:
+        sources:
+        - source_identifier: ASML FY2025 net income and diluted EPS figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: EUV systems
+    revenue:
+      item_category: revenue
+      value: 11600
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2025 EUV systems revenue, +39% YoY, 48 systems recognized
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: DUV systems
+    revenue:
+      item_category: revenue
+      value: 12000
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2025 DUV systems revenue, -6% YoY, 279 systems recognized
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Installed Base Management
+    revenue:
+      item_category: revenue
+      value: 8200
+      unit: eur_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ASML FY2025 Installed Base Management revenue, +26% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 1740.99
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Nasdaq ADR close, Aug 7 2026 (EUR1,499.00 on Euronext Amsterdam, Aug 8 2026). Market
+          cap reported in a $640-669B range across sources.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: KLAC
+    comparability_rationale: KLA Corporation -- semiconductor process-control equipment, adjacent capital-equipment
+      peer.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: LRCX
+    comparability_rationale: Lam Research -- semiconductor deposition/etch equipment, adjacent capital-equipment
+      peer.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: AMAT
+    comparability_rationale: Applied Materials -- broad semiconductor capital equipment peer.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: China export-control exposure
+    variables:
+    - variable_name: china_export-control_exposure
+      evidence_basis: China share of ASML revenue fell from ~36% (Q4 2025) to ~19% (Q1 2026); full-year
+        2025 China share ~33%. EUV has never shipped to China (restricted since 2023). A pending US MATCH
+        Act would ban DUV immersion-system exports/servicing to China -- not yet law, and contains a 150-day
+        window for the Netherlands/Japan to tighten their own controls first.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  ASML reports in EUR; figures above are as-reported in that currency, not converted to USD. FY2024 and
+  FY2025 operating margin are abstained -- the underlying operating-income figures found carried currency-tag
+  inconsistencies or were not full-year figures. A cash-flow/capex multi-year table was attempted but
+  the figures found were USD-labeled (suspicious for a EUR reporter) and are not used. No IPO/spin-off/restructuring
+  affects ASML's own 5-year comparability.
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: ASML
+content_sha256: 0f76013f537703ee1ca94c80b33400b8b8659b94518aa8b9528a13f0af58c0ef

@@ -1,0 +1,428 @@
+schema_version: '1.0'
+ticker: TSLA
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 53823
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 5519
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2021 net income attributable to common
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.1212
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2021 operating income $6,523M divided by revenue $53,823M equals 12.12
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2021 operating income $6,523M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 81462
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 12556
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2022 net income attributable to common
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.1677
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2022 operating income $13,656M divided by revenue $81,462M equals 16.77
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2022 operating income $13,656M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 96773
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 14997
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2023 net income attributable to common
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Includes a one-time, non-cash $5.9B deferred-tax valuation-allowance release; excluding
+            that item, non-GAAP-adjusted net income for FY2023 was reported at ~$10.9B -- FY2023 GAAP
+            net income/EPS is not directly comparable to other years in this record without adjustment
+            for that item.
+    - item_category: operating_margin
+      value: 0.0919
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2023 operating income $8,891M divided by revenue $96,773M equals 9.19
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2023 operating income $8,891M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 97690
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 7000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2024 net income attributable to common (rounded)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.0724
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2024 operating income $7,076M divided by revenue $97,690M equals 7.24
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2024 operating income $7,076M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 3584
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2024 free cash flow (operating cash flow $14,923M minus capex $11,339M;
+            reported and derived figures match)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 11339
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2024 capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 94827
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2025 revenue, -3% YoY, a second consecutive annual delivery decline
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 3790
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2025 net income attributable to common
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.0459
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2025 operating income $4,355M divided by revenue $94,827M equals 4.59
+        percent (matches an independently-reported ''~4.6%'' figure).'
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2025 operating income $4,355M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 6220
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2025 free cash flow (operating cash flow $14,747M minus capex $8,527M;
+            matches an independently-reported '$6.22B, +74% YoY' figure)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 8527
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2025 capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 44059
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: cash & equivalents $16,513M plus short-term investments $27,546M equals
+        $44,059M combined.'
+      provenance:
+        sources:
+        - source_identifier: TSLA balance sheet, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 8376
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: current debt & finance leases $1,640M plus long-term debt & finance leases
+        $6,736M equals $8,376M total.'
+      provenance:
+        sources:
+        - source_identifier: TSLA balance sheet, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_debt
+      value: -35683
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived (net CASH position): cash+investments $44,059M minus total debt $8,376M
+        equals ~$35.68B net cash.'
+      provenance:
+        sources:
+        - source_identifier: TSLA balance sheet figures above
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 3751
+      unit: shares_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA shares outstanding (issued, year-end, not weighted-average diluted)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: This is a year-end issued-share count, not the weighted-average diluted count used
+            to compute EPS; a diluted weighted-average cross-check via net income/EPS implies ~3.51B shares.
+segment_evidence:
+  segments:
+  - segment_name: Automotive
+    revenue:
+      item_category: revenue
+      value: 69520
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2025 Automotive segment revenue, -10% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Energy Generation & Storage
+    revenue:
+      item_category: revenue
+      value: 12800
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2025 Energy Generation & Storage segment revenue, +27% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Services & Other
+    revenue:
+      item_category: revenue
+      value: 12530
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSLA FY2025 Services & Other segment revenue, +19% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 328.58
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: 'Aug 8 2026; market cap ~$1.26T (sanity check: 3,751M shares x $328.58 = ~$1.233T,
+          in the right range but not exact, likely a slightly different/more current share count is used
+          by market-cap providers).'
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: F
+    comparability_rationale: Ford / GM / Toyota (traditional automakers) -- legacy ICE/hybrid manufacturers
+      now building EVs; useful for auto-industry multiples but a very different growth/margin profile
+      than TSLA.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: BYDDY
+    comparability_rationale: BYD -- largest EV maker by global unit volume (reported ~17.1% global EV
+      share vs. Tesla), direct EV competitor with a China-centric geographic mix.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: RIVN
+    comparability_rationale: Rivian -- much smaller (~$20B market cap reported) pure-play EV startup,
+      an early-growth rather than scale comparable.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Robotaxi/FSD rollout
+    variables:
+    - variable_name: robotaxi/fsd_rollout
+      evidence_basis: Unsupervised robotaxi service active in Austin (full metro, ~245 sq mi) plus expansion
+        confirmed to Dallas and Houston as of late April 2026, with additional cities (Phoenix, Miami,
+        Orlando, Tampa, Las Vegas) targeted for H1 2026 -- some of this reflects company guidance rather
+        than confirmed completed rollout, disclosed as mixed-quality sourcing. ~700,000 paid robotaxi
+        miles logged since the June 2025 launch.
+      provenance_label: historically_observed
+  - scenario_name: Energy storage growth and deliveries
+    variables:
+    - variable_name: energy_storage_growth_and_deliveries
+      evidence_basis: Q2 2026 energy storage deployments of 13.5 GWh, up over 40% YoY from 9.6 GWh in
+        Q2 2025; SpaceX purchased $269M of Megapacks in April 2026 for xAI data-center power in Memphis.
+        FY2025 vehicle deliveries were ~1.64M, a second consecutive annual decline, though Q2 2026 deliveries
+        rebounded to 480,126 units (+25% YoY), the first quarterly YoY growth since the 2023 sales peak.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  FY2023 net income includes a disclosed one-time $5.9B tax benefit and is not directly comparable to
+  other years without adjustment (a non-GAAP-adjusted ~$10.9B figure was separately reported for that
+  year). Some search results returned stale market-cap figures ($1.46-1.49T) from apparently older articles;
+  the most recently-dated observation ($328.58/$1.26T, Aug 8 2026) was used instead and the rejected stale
+  figures are disclosed here rather than silently discarded. FY2025 shares outstanding is a year-end issued-share
+  count, not the weighted-average diluted count actually used to compute EPS.
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: TSLA
+content_sha256: 83c134f5556d4907226b7720fdf2377fc2e5dc23cb390fec3d6cd3c73129eaa1

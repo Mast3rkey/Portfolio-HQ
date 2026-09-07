@@ -1,0 +1,30 @@
+dimension_id: etf_direct_equity_duplication
+schema_version: '1.0'
+dimension_type: mechanical_rollup
+source_mechanism:
+- intelligence/etf_classification/<TICKER>.yaml:overlap_and_concentration
+computation_status: computed_from_existing_mechanism
+evidence_or_source_refs:
+- intelligence/etf_classification/SPY.yaml:overlap_and_concentration
+- intelligence/etf_classification/VEA.yaml:overlap_and_concentration
+- intelligence/etf_classification/VWO.yaml:overlap_and_concentration
+- intelligence/etf_classification/GLD.yaml:overlap_and_concentration
+output_shape: A future computed record would restate, per fund, whether that fund's own already-sealed
+  overlap_and_concentration finding (mechanically computed against issuer_lookthrough.yaml at classification
+  time) indicates any embedded exposure to a name the account also holds directly as a canonical equity
+  -- a categorical duplication flag per fund, never a numeric overlap percentage duplicated from the ETF
+  record's own field.
+uncertainty_or_gap_disclosure: SPY, VEA, and VWO's own overlap_and_concentration fields already resolve
+  against issuer_lookthrough.yaml's own live fund-carrier membership at classification time; GLD's own
+  record resolves not_applicable outright, since GLD holds physical gold, not equity constituents. This
+  dimension cites those already-sealed findings; it does not re-derive them.
+later_governance_action: None required by this record itself. A future cross-asset synthesis unit consuming
+  this dimension should re-check each cited ETF record's own overlap_and_concentration field for drift
+  before relying on it, since that field is itself a live mechanical rollup against issuer_lookthrough.yaml
+  at the ETF framework's own validation time.
+record_status: sealed
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0007
+drafting_session_or_shard_id: single-pass-overlap-model-implementation
+content_sha256: aae8dcc80b9a55741910abacad90dbbb6c7e27f0cacbd339d17b49d7c34c7b77
+cohort_manifest_entry: intelligence/overlap_model/COHORT_MANIFEST.yaml#etf_direct_equity_duplication

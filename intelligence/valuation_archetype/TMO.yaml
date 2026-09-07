@@ -1,0 +1,36 @@
+schema_version: '1.0'
+ticker: TMO
+primary_archetype: G
+secondary_archetype: A
+rationale: 'TMO is a large-scale ($44.56B FY2025 revenue), mature supplier across four segments with positive
+  growth in every segment and a large recurring consumables/reagents/services revenue base anchoring the
+  largest segment (Laboratory Products and Biopharma Services, $23.98B). No segment shows disclosed extreme
+  cyclicality, commodity-price dependence, or binary/pre-commercial economics. The company is well covered
+  by public life-sciences-tools comparables and shows steady, diversified growth consistent with a mature
+  compounder. The strong emphasis on recurring consumables/reagents/services revenue (the classic instrument-plus-consumable
+  model) also supports a secondary asset-light, recurring-revenue read, tempered by the fact that instrument
+  and biopharma-services manufacturing is not purely asset-light. Archetype-F test: F was considered given
+  the packet''s own framing of TMO as ''a diversified supplier of consumables, instruments, and services''
+  across four segments, but was not selected as primary: unlike a case with disclosed materially different
+  segment margins, the evidence here shows only revenue-growth dispersion (1%-8%), not a disclosed difference
+  in underlying economics, and all four segments share a common recurring consumables/reagents/services
+  revenue engine rather than fundamentally distinct business models.'
+evidence_quality:
+  primary_source_coverage: limited
+  uncertainty_statement: No primary document was directly opened by any researcher for this record --
+    direct rendering of Thermo Fisher's primary documents was never achieved, and no claim in this record
+    is labeled directly inspected first-party; the four disclosed FY2025 segment totals sum to a figure
+    not directly additive to the stated consolidated total, an unreconciled gap this record does not rely
+    on.
+disclosed_evidence_conflicts:
+- The four-segment revenue sum (~$46.58B) does not reconcile to the stated consolidated FY2025 total ($44.56B);
+  Q2 2026 figures (revenue, EPS, guidance raise, divestiture, and the Clario acquisition) are secondary-sourced
+  only and not verified against a primary filing.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-5
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#TMO
+content_sha256: 40be6359a2a4b9b7cb874a989e7993f724ae900dc880b81971596031b8fe24e9

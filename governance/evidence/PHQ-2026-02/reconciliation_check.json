@@ -1,0 +1,193 @@
+{
+  "check": "PHQ-2026-02 v1.35 -> holdings.yaml quantity reconciliation",
+  "evidence_sha256": "fb8eb811df29eb560bfaed16e8d0e89c6cbcf44bc42e1f1ae2ccfca4cddd889e",
+  "all_captured_quantities_match": true,
+  "rows": [
+    {
+      "symbol": "AMZN",
+      "evidence_qty": 0.423377,
+      "holdings_qty": 0.423377,
+      "match": true
+    },
+    {
+      "symbol": "ASML",
+      "evidence_qty": 0.083505,
+      "holdings_qty": 0.083505,
+      "match": true
+    },
+    {
+      "symbol": "AVGO",
+      "evidence_qty": 0.375702,
+      "holdings_qty": 0.375702,
+      "match": true
+    },
+    {
+      "symbol": "CEG",
+      "evidence_qty": 0.425616,
+      "holdings_qty": 0.425616,
+      "match": true
+    },
+    {
+      "symbol": "COST",
+      "evidence_qty": 0.081544,
+      "holdings_qty": 0.081544,
+      "match": true
+    },
+    {
+      "symbol": "ETN",
+      "evidence_qty": 0.262049,
+      "holdings_qty": 0.262049,
+      "match": true
+    },
+    {
+      "symbol": "GEV",
+      "evidence_qty": 0.208382,
+      "holdings_qty": 0.208382,
+      "match": true
+    },
+    {
+      "symbol": "GLD",
+      "evidence_qty": 0.61757,
+      "holdings_qty": 0.61757,
+      "match": true
+    },
+    {
+      "symbol": "GNRC",
+      "evidence_qty": 0.320007,
+      "holdings_qty": 0.320007,
+      "match": true
+    },
+    {
+      "symbol": "GOOGL",
+      "evidence_qty": 0.602817,
+      "holdings_qty": 0.602817,
+      "match": true
+    },
+    {
+      "symbol": "ISRG",
+      "evidence_qty": 0.300031,
+      "holdings_qty": 0.300031,
+      "match": true
+    },
+    {
+      "symbol": "KLAC",
+      "evidence_qty": 0.304258,
+      "holdings_qty": 0.304258,
+      "match": true
+    },
+    {
+      "symbol": "LLY",
+      "evidence_qty": 0.179485,
+      "holdings_qty": 0.179485,
+      "match": true
+    },
+    {
+      "symbol": "META",
+      "evidence_qty": 0.332674,
+      "holdings_qty": 0.332674,
+      "match": true
+    },
+    {
+      "symbol": "MSFT",
+      "evidence_qty": 0.742767,
+      "holdings_qty": 0.742767,
+      "match": true
+    },
+    {
+      "symbol": "NVDA",
+      "evidence_qty": 0.986492,
+      "holdings_qty": 0.986492,
+      "match": true
+    },
+    {
+      "symbol": "PANW",
+      "evidence_qty": 0.137346,
+      "holdings_qty": 0.137346,
+      "match": true
+    },
+    {
+      "symbol": "RTX",
+      "evidence_qty": 0.240403,
+      "holdings_qty": 0.240403,
+      "match": true
+    },
+    {
+      "symbol": "SKHY",
+      "evidence_qty": 0.278473,
+      "holdings_qty": 0.278473,
+      "match": true
+    },
+    {
+      "symbol": "SPCX",
+      "evidence_qty": 0.502727,
+      "holdings_qty": 0.502727,
+      "match": true
+    },
+    {
+      "symbol": "SPY",
+      "evidence_qty": 0.25105,
+      "holdings_qty": 0.25105,
+      "match": true
+    },
+    {
+      "symbol": "TMO",
+      "evidence_qty": 0.2038,
+      "holdings_qty": 0.2038,
+      "match": true
+    },
+    {
+      "symbol": "TSM",
+      "evidence_qty": 0.520584,
+      "holdings_qty": 0.520584,
+      "match": true
+    },
+    {
+      "symbol": "V",
+      "evidence_qty": 0.343424,
+      "holdings_qty": 0.343424,
+      "match": true
+    },
+    {
+      "symbol": "BONK",
+      "evidence_qty": 0.81,
+      "holdings_qty": null,
+      "match": "excluded_dust_permanent_ignore_convention"
+    },
+    {
+      "symbol": "BTC",
+      "evidence_qty": 0.00180473,
+      "holdings_qty": 0.00180473,
+      "match": true
+    },
+    {
+      "symbol": "ETH",
+      "evidence_qty": 0.04574,
+      "holdings_qty": 0.04574,
+      "match": true
+    },
+    {
+      "symbol": "PEPE",
+      "evidence_qty": 0.8071283495258854,
+      "holdings_qty": null,
+      "match": "excluded_dust_permanent_ignore_convention"
+    },
+    {
+      "symbol": "SOL",
+      "evidence_qty": 1.59509,
+      "holdings_qty": 1.59509,
+      "match": true
+    },
+    {
+      "symbol": "WIF",
+      "evidence_qty": 8.4e-05,
+      "holdings_qty": null,
+      "match": "excluded_dust_permanent_ignore_convention"
+    },
+    {
+      "symbol": "ZORA",
+      "evidence_qty": 0.0709035426729393,
+      "holdings_qty": null,
+      "match": "excluded_dust_permanent_ignore_convention"
+    }
+  ]
+}

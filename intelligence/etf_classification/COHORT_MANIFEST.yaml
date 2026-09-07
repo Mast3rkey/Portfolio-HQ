@@ -1,0 +1,27 @@
+schema_version: '1.0'
+governing_decision: XASSET-0003
+cohort:
+- instrument_id: GLD
+  sealed_at: '2026-08-07T21:32:11Z'
+  content_sha256: d3b58455193441ff492a86660e05a8b62500e5847f8699564c7f5f5ed4ad5888
+  schema_version: '1.0'
+  governing_decision: XASSET-0003
+  record_path: intelligence/etf_classification/GLD.yaml
+- instrument_id: SPY
+  sealed_at: '2026-08-07T21:32:11Z'
+  content_sha256: 10f3f805933b134fdfb0f1fcb9ad0126b5f0130e30c95088b6c9de1d5a58f63f
+  schema_version: '1.0'
+  governing_decision: XASSET-0003
+  record_path: intelligence/etf_classification/SPY.yaml
+- instrument_id: VEA
+  sealed_at: '2026-08-07T21:32:11Z'
+  content_sha256: cd005cf8310e8dfa37c138f2173b9d0509c8dcfac92bbcaa3770e45a060471fe
+  schema_version: '1.0'
+  governing_decision: XASSET-0003
+  record_path: intelligence/etf_classification/VEA.yaml
+- instrument_id: VWO
+  sealed_at: '2026-08-07T21:32:11Z'
+  content_sha256: af297ea75766b9d992a1dee68f05652fef9cf4df20cf24f54fe48f41cd96ebe3
+  schema_version: '1.0'
+  governing_decision: XASSET-0003
+  record_path: intelligence/etf_classification/VWO.yaml

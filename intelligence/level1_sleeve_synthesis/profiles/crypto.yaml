@@ -1,0 +1,59 @@
+schema_version: '1.0'
+sleeve_id: crypto
+evidence_layer_references:
+- layer_name: crypto_classification
+  module: crypto_classification_validator.py
+  directory: intelligence/crypto_classification
+  manifest_content_sha256: e51a21737ae4d5effc97fe6004d410f3cc6c342cfa9d43b52ea14ccb1b7c75f2
+  as_of_note: Reflects crypto_classification's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+- layer_name: instrument_economic_assessment
+  module: instrument_economic_assessment_validator.py
+  directory: intelligence/instrument_economic_assessment
+  manifest_content_sha256: 8ac78dafe43b3248c4748d802ad8f5832e631751b3ae997c96fbca549e9ddf04
+  sleeve_subject_scope:
+    referenced_subject_ids:
+    - BTC
+    - ETH
+    - SOL
+    referenced_record_content_sha256:
+      BTC: 99a2e2dabc40aa6cf8004b17807495390e1d65523efa9bd4d48fe9329f72d3c0
+      ETH: 830953dc1da2f74f30f77fc7ab6e518e59c77cc6612454554ba133010c6ba4b4
+      SOL: b94b5785a661479ba6a9a8539dded3c180cf36703797263785e878e49f089734
+  as_of_note: Reflects instrument_economic_assessment's own currently sealed cohort state as of this record's
+    own sealed_at date; a validator independently re-derives every fact live rather than trusting this
+    note.
+economic_role_summary: The crypto sleeve holds a small, sealed group of digital-asset positions, each
+  covered under its own structural classification record and its own instrument-level economic-assessment
+  record. Like the broad-market fund sleeve, this sleeve's own covered coins have never passed through
+  a qualitative archetype or valuation-evidence research program -- no archetype, evidence, or results
+  layer of any kind exists for this sleeve. Cross-coin correlation is structurally forced to an unmeasured
+  state across the entire sleeve, and a single covered coin's own historical equity-market-drawdown characterization
+  is separately forced to an abstention, distinct from its sibling coins' own determined findings. This
+  summary describes currently governed evidence only; it makes no claim that the covered coin population
+  is complete or permanently fixed.
+evidence_coverage_profile: substantially_computed_with_disclosed_gaps
+functional_role_note: null
+abstention_index:
+- source_layer: crypto_classification
+  field_path: correlation_and_volatility.cross_coin_correlation_status
+  value: not_yet_measured
+  reason: Cross-coin correlation is forced not-yet-measured across the crypto sleeve's entire sealed classification
+    corpus. No cross-coin correlation study of any kind has been separately authorized -- this remains
+    a bounded, pre-registered future research question, not a currently computable finding, per every
+    covered coin's own sealed record.
+- source_layer: instrument_economic_assessment
+  field_path: SOL.macro_behavioral_characterization.historical_equity_market_drawdown_behavior
+  value: unable_to_determine
+  reason: No meaningful liquid-market price data exists for this coin during the sourced acute equity-drawdown
+    episode nearest its own market launch, and the sourced material for the coin's own subsequent drawdown
+    episode is confounded by dominant, coin-specific factors -- per this coin's own sealed economic-assessment
+    record, forcing a categorical value would misrepresent an idiosyncratic-risk-dominated episode as
+    general evidence.
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/profiles/COHORT_MANIFEST.yaml#crypto
+content_sha256: 3c0cfcd1e7fd61357e5507e23b460a3d63137b6b678815f194982588df683e31

@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: MSFT
+economic_role:
+  economic_system_ref: Digital Platforms & Enterprise Software
+  company_role: cloud platform / enterprise software
+  role_basis: Microsoft reports FY2025 revenue of $281.724B across three segments (Productivity and Business
+    Processes, Intelligent Cloud, More Personal Computing), with Azure/Intelligent Cloud as the fastest-growing
+    segment and a management-disclosed AI business exceeding a $37B annual revenue run rate.
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - GOOGL
+  - AMZN
+  - META
+  - ORCL
+  rationale: 'Microsoft''s evidence shows continued strong operating performance (FY2026 Q4 revenue +17.8%
+    YoY, Azure accelerating to 43% YoY and reportedly crossing $100B annualized) alongside ordinary, already-disclosed
+    risk categories: AI-capex-driven cloud-margin pressure, Azure capacity constraints, OpenAI relationship
+    concentration (now partially diversified by a newly reported Anthropic investment), and a preliminary,
+    non-final EU DMA cloud-gatekeeper designation. None of these represents a marked departure from Microsoft''s
+    own established profile as a fast-growing, AI-capex-heavy hyperscaler; each is best treated as ordinary
+    monitored risk rather than a distinctive trigger.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: true
+  relationship_record_coverage:
+  - AMZN_MSFT
+  - CEG_MSFT
+  - GOOGL_MSFT
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a sustained deterioration in Microsoft Cloud gross margin (69% in FY2025) beyond what is currently
+    attributed to AI-infrastructure scaling, or a material adverse development in the OpenAI relationship
+    this record cannot fully evaluate.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-A
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#MSFT
+content_sha256: f1af6bb8f6680e12385ae6c7812ea9659a301a05300233bf036145d3e8941697

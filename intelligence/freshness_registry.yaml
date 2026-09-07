@@ -1,0 +1,436 @@
+# intelligence/freshness_registry.yaml — AUTO-0001 static enrollment configuration.
+# Owned by AUTO-0001. Contains enrollment/monitoring configuration only — no
+# conviction, portfolio_role_ref, tier, target, weight, cluster membership, or
+# any allocator-visible fact, and no copy of review.last_reviewed/next_due/
+# cadence_days (those remain owned by each company's own Company Intelligence
+# record; PI-0011 is the reporting consumer of those fields, not their owner).
+# A row's presence here means monitoring MAY run for
+# that ticker once its checkpoint (intelligence/freshness_checkpoints.yaml) is
+# verified — see monitoring_enabled below. This file never gains a row for a
+# ticker without its own existing, cited Company Intelligence record.
+schema_version: 1
+tickers:
+  - ticker: COST
+    company_record_authority: PI-0003
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: XOM
+    company_record_authority: PI-0005
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: NVDA
+    company_record_authority: PI-0007
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: GEV
+    company_record_authority: PI-0007
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: ISRG
+    company_record_authority: PI-0034
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: TMO
+    company_record_authority: PI-0009
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: TSM
+    company_record_authority: PI-0012
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: foreign_private_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: ASML
+    company_record_authority: PI-0023
+    enrollment_authority: PI-0023
+    enrolled_at: "2026-07-25"
+    template_version: v1
+    filing_trigger_profile: foreign_private_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: AMAT
+    company_record_authority: PI-0023
+    enrollment_authority: PI-0023
+    enrolled_at: "2026-07-25"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: KLAC
+    company_record_authority: PI-0023
+    enrollment_authority: PI-0023
+    enrolled_at: "2026-07-25"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: LRCX
+    company_record_authority: PI-0023
+    enrollment_authority: PI-0023
+    enrolled_at: "2026-07-25"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: MU
+    company_record_authority: PI-0024
+    enrollment_authority: PI-0024
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: SKHY
+    company_record_authority: PI-0024
+    enrollment_authority: PI-0024
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: foreign_private_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: AVGO
+    company_record_authority: PI-0025
+    enrollment_authority: PI-0025
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: AMD
+    company_record_authority: PI-0025
+    enrollment_authority: PI-0025
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: MRVL
+    company_record_authority: PI-0025
+    enrollment_authority: PI-0025
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: INTC
+    company_record_authority: PI-0025
+    enrollment_authority: PI-0025
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: ETN
+    company_record_authority: PI-0026
+    enrollment_authority: PI-0026
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: VRT
+    company_record_authority: PI-0026
+    enrollment_authority: PI-0026
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: PWR
+    company_record_authority: PI-0026
+    enrollment_authority: PI-0026
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: MSFT
+    company_record_authority: PI-0027
+    enrollment_authority: PI-0027
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: GOOGL
+    company_record_authority: PI-0027
+    enrollment_authority: PI-0027
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: META
+    company_record_authority: PI-0027
+    enrollment_authority: PI-0027
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: AMZN
+    company_record_authority: PI-0027
+    enrollment_authority: PI-0027
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: V
+    company_record_authority: PI-0028
+    enrollment_authority: PI-0028
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: MA
+    company_record_authority: PI-0028
+    enrollment_authority: PI-0028
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: JPM
+    company_record_authority: PI-0028
+    enrollment_authority: PI-0028
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: LLY
+    company_record_authority: PI-0029
+    enrollment_authority: PI-0029
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: ABBV
+    company_record_authority: PI-0029
+    enrollment_authority: PI-0029
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: MRK
+    company_record_authority: PI-0029
+    enrollment_authority: PI-0029
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: JNJ
+    company_record_authority: PI-0029
+    enrollment_authority: PI-0029
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: GILD
+    company_record_authority: PI-0029
+    enrollment_authority: PI-0029
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: IBM
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: NOW
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: CRM
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: ORCL
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: CRWD
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: PANW
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: CVX
+    company_record_authority: PI-0031
+    enrollment_authority: PI-0031
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: WDC
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: CEG
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: BRK.B
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: WMT
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: MLM
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: AAPL
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: GNRC
+    company_record_authority: PI-0036
+    enrollment_authority: PI-0036
+    enrolled_at: "2026-08-03"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: RTX
+    company_record_authority: PI-0036
+    enrollment_authority: PI-0036
+    enrolled_at: "2026-08-03"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: SNPS
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: ICE
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: SPGI
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: WM
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: RKLB
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: TSLA
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false

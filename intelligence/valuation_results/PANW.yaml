@@ -1,0 +1,97 @@
+schema_version: '1.0'
+ticker: PANW
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/PANW.yaml
+  content_sha256: e6e6ed06888c1a25c9ed6405064ec44a206983119c9487354daabb53f2713cd1
+evidence_reference:
+  source_file: intelligence/valuation_evidence/PANW.yaml
+  content_sha256: ab3362e5b297a65b3c990de333d8edd45f286b411cd9031aa8b60c19e7e511e8
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: primary_candidate
+  family_status: completed
+  valuation_range:
+    low: 83280
+    base: 104100
+    high: 131860
+    unit_and_basis: USD millions, aggregate implied equity value (no diluted share count available in
+      Stage-3 evidence to convert to a per-share basis)
+    governing_sensitivity: Illustrative Price/FCF-equivalent band for an asset-light, high-margin cybersecurity-platform
+      archetype (A); reflects typical sensitivity to platformization-durability assumptions, not a peer-derived
+      or market-observed multiple. Presented in aggregate dollar terms, not per-share (see uncertainty_summary).
+  assumptions_ledger:
+  - assumption_name: pfcf_multiple_low
+    value: 24
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pfcf multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pfcf_multiple_base
+    value: 30
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pfcf multiple, same disclosed-illustrative basis
+      as the low/high band.
+  - assumption_name: pfcf_multiple_high
+    value: 38
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pfcf multiple, same disclosed-illustrative basis
+      as the low/high band.
+  - assumption_name: latest_fy_fcf
+    value: 3470
+    provenance_label: historically_observed
+    source_or_derivation_note: FY2025 (ended 2025-07-31) free cash flow $3,470M, reported, from the pinned
+      Stage-3 evidence record's own financial_evidence -- used in place of net income, since PANW's own
+      reported earnings figure is not present in Stage-3 evidence.
+  applied_peers:
+  - CRWD
+  - FTNT
+  - ZS
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-A
+  Price/FCF-equivalent assumption applied to aggregate free cash flow; not an independent fair-value opinion
+  and not a comparison to the current market price.
+uncertainty_summary: 'Relative-valuation range built from real reported FY2025 free cash flow (net income
+  is not a populated Stage-3 evidence field for PANW). Diluted share count is also not a Stage-3 evidence
+  field for PANW, so this record presents the range in aggregate dollar terms rather than per-share. No
+  peer-specific trading multiples were gathered in Stage-3 evidence (peer_set_evidence carries only candidate
+  identity and comparability rationale, never the peer''s own financial figures or multiples) -- the multiple
+  bands applied here are disclosed, illustrative assumptions (provenance_label: assumed_for_illustration),
+  archetype-informed but not peer-derived or market-derived. Families 2 (FCFF DCF) and 3 (FCFE DCF) were
+  not applied to this or any other ticker in the 27-company VALUATION-0007 cohort. discount_rate_evidence
+  is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005) -- no risk-free-rate, cost-of-debt,
+  tax-rate, capital-structure, or beta-observation input exists to enable even a partial DCF computation.
+  No discount rate, WACC, beta, or terminal growth rate was fabricated for this or any other ticker. Closing
+  this evidence gap is a separate, future, unauthorized governance unit.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+  - segment_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: PANW
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: primary_candidate
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+    - segment_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchA-compounder
+content_sha256: d5eabe04c25388465365efb069fb71288ef25e096ef15a509c3b15bbe6e8df2f
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for PANW

@@ -1,0 +1,90 @@
+tickers: [NVDA, TSM]
+relationship_type: manufacturing_dependency
+symmetric: false
+subject: NVDA
+object: TSM
+direction: >
+  NVDA (subject) is manufacturing-dependent on TSM (object): NVIDIA is
+  fabless and relies on external foundry capacity for physical production
+  of its GPU/accelerator products; industry-wide reporting and this
+  repository's own TSM record place TSM as the dominant advanced-node/
+  advanced-packaging manufacturing partner for NVDA-class fabless designers.
+  No TSM-side dependency on NVDA is asserted by this record.
+relationship_status: current
+decision_served:
+  - duplicate_exposure_detection
+  - stress_testing
+evidence:
+  - claim: >
+      NVIDIA (NVDA) is a fabless semiconductor company that depends on
+      external foundry partners for physical manufacturing of its products;
+      NVIDIA's own Q1 FY2027 Form 10-Q risk-factor language (independently
+      inspected during a prior PR review, per NVDA.yaml's own sourcing)
+      discloses that competitors and customers may constrain NVIDIA's
+      ability to procure foundry capacity, that NVIDIA has experienced
+      manufacturing lead times exceeding 12 months, and that foundry
+      partners and contract manufacturers may be unable to provide
+      sufficient capacity — without naming any specific foundry partner.
+      Separately, this repository's own comparison-artifact research
+      (Batch 3, semis compute/connectivity) independently found that public
+      reporting, cross-corroborated across this repository's TSM record and
+      the batch's own company records, places TSMC as the dominant
+      advanced-node/advanced-packaging supplier to the class of fabless
+      AI-accelerator designers NVDA belongs to — while explicitly noting
+      that no company-specific, named-percentage TSM dependence disclosure
+      was located for any of the fabless companies examined, including
+      NVDA's own record.
+    source: >
+      intelligence/companies/NVDA.yaml (risk entry, "Supply-chain and
+      manufacturing-capacity concentration risk", sourced to NVIDIA's Q1
+      FY2027 Form 10-Q); intelligence/BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md
+      §5 ("TSMC and advanced-packaging dependence") and §16 ("Cross-batch
+      structural and correlated-risk overlap with Batch 1"), both
+      independently re-inspected this session; intelligence/companies/TSM.yaml
+      and TSM.md (customer-concentration disclosure: largest customer 19% of
+      2025 revenue, second-largest 17%, top ten 78%, "the filing does not
+      name these customers" — independently grepped this session and
+      confirmed TSM's own record does not name NVDA).
+    inspected_source_type: secondary
+    source_date: "2026-07-26"
+    effective_date: "2026-08-04"
+    evidence_classification: inferred
+    confidence: moderate
+    materiality: high
+    uncertainty: >
+      This is a structural inference from NVDA's disclosed fabless status
+      and industry-wide foundry concentration, not a company-specific,
+      named-percentage TSM dependence figure from either side. NVDA's own
+      Q1 FY2027 Form 10-Q risk-factor language deliberately does not name
+      TSM (or any foundry) by name — this is standard supplier-disclosure
+      practice, not evidence against the relationship, but it means this
+      claim rests on external/industry-wide corroboration rather than
+      NVDA's own primary-source naming. TSM's own Form 20-F customer-
+      concentration disclosure (19%/17%/78% top-ten) likewise does not name
+      its customers — independently confirmed by this session's direct grep
+      of TSM.yaml/TSM.md for "NVDA"/"NVIDIA," which returned zero matches.
+      No new external research was performed to locate a more specific
+      figure; this record relies exclusively on evidence already present in
+      the repository at this unit's own preflight.
+    disconfirming_evidence: null
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-04"
+  next_due: "2026-11-02"
+  log:
+    - date: "2026-08-04"
+      note: >
+        Record created under governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+        (frozen schema/taxonomy/evidence standard) and
+        governance/decisions/REL-0005-ws0005-milestone4-third-relationship-content-batch-semis-tsm.md
+        (this batch's own authorization), following the semiconductor-
+        manufacturing-dependency classification in
+        governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+        §4.1. Uses only evidence already identified in that inventory and in
+        intelligence/companies/NVDA.yaml, intelligence/companies/TSM.yaml/.md,
+        and intelligence/BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md — no
+        external research was performed. One-sided sourcing (neither NVDA's
+        nor TSM's own record names the other specifically) is disclosed
+        explicitly in this entry's own evidence[0].uncertainty and in
+        NVDA_TSM.md. No correlation of any kind was computed. Neither
+        NVDA.yaml/NVDA.md nor TSM.yaml/TSM.md was modified by this unit.

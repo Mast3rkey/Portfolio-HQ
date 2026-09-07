@@ -1,0 +1,38 @@
+{
+  "decision_id": "PHQ-2026-06",
+  "evidence_date": "2026-08-01",
+  "source": "Robinhood Account Summary screenshot, supplied directly in the Claude Code session as an inline chat image attachment (not a filesystem upload)",
+  "provenance_note": "The session was first told the file existed at a client-side path ('/mnt/data/image(256).png'); that path does not exist in this execution container and was never found. The retained evidence below was instead extracted from this session's own conversation transcript, where the image the user attached is stored as base64-encoded content (media_type image/webp) exactly as received by the model. The extracted bytes were independently hashed and visually re-inspected before being copied into this evidence directory, and were confirmed identical to what was rendered inline in the chat.",
+  "provenance_chain": {
+    "1_principal_supplied_inline_image": "What the principal's Robinhood client rendered and attached in the Claude Code chat session. Exists only as what the principal saw and sent; not independently reconstructable by anyone outside that original exchange.",
+    "2_authoring_session_extraction": "The authoring session decoded the base64 image/webp content stored in its own conversation transcript (the same bytes the model received as the inline image content block) and wrote them to disk. Required access to that session's own transcript state, which a third party cannot independently re-execute.",
+    "3_retained_repository_artifact": "governance/evidence/PHQ-2026-06/robinhood_account_summary_20260801.webp as committed — the one artifact every downstream party (any independent reviewer, the principal) actually has direct access to.",
+    "4_independently_verifiable_by_any_reviewer": [
+      "SHA-256 of the retained file recomputes to d602da67bee33644da8600691974ddd3098549c78c73292904320a16c0e2ffca, matching this manifest",
+      "byte size (49254) and media type (image/webp) are directly inspectable",
+      "every displayed figure recorded below is directly legible by opening the retained file and reading it"
+    ],
+    "5_necessarily_relies_on_principal_acceptance": "That the retained artifact (layer 3) is bit-for-bit identical to what the principal's client actually rendered and transmitted (layer 1) -- i.e. nothing was substituted, corrupted, or altered between the principal's screen and the authoring session's extraction -- and that the underlying Robinhood screen itself was authentic and current when captured. No independent reviewer, including a later audit of this manifest, can prove this layer cryptographically; it is resolved by principal review and acceptance of the retained artifact as a faithful copy, identical in kind to every prior PHQ-#### screenshot-evidenced decision in this repository (PHQ-2026-02, PHQ-2026-04, PHQ-2026-05)."
+  },
+  "original_filename": "not supplied by the client — received as an inline image attachment with no associated filename; the claimed path '/mnt/data/image(256).png' was checked and does not exist on this container",
+  "retained_filename": "robinhood_account_summary_20260801.webp",
+  "screenshot_media_type": "image/webp",
+  "screenshot_bytes": 49254,
+  "screenshot_sha256": "d602da67bee33644da8600691974ddd3098549c78c73292904320a16c0e2ffca",
+  "displayed_figures": {
+    "total_account_value": 6315.28,
+    "equities_market_value": 4958.55,
+    "crypto_market_value": 315.12,
+    "cash": 1041.23,
+    "buying_power": 7444.11,
+    "margin_available": 6403.06,
+    "margin_used": 0.00
+  },
+  "prior_repository_cash": 941.05,
+  "prior_connected_snapshot_cash": 941.23,
+  "deposit_amount": 100.00,
+  "deposit_reconciliation": "941.23 + 100.00 = 1041.23 (exact match against the retained screenshot's displayed cash)",
+  "discrepancy_note_0_18": "There is an unexplained $0.18 difference between the repository's prior resolved cash ($941.05, PHQ-2026-05 v1.38 bounded correction) and an earlier connected-account snapshot cash figure the principal separately mentioned ($941.23). This discrepancy is disclosed as-is and is NOT treated as evidence of a trade, quantity change, or accounting error. No cause is asserted for it — it may be ordinary timing, interest accrual, or rounding drift between the two prior data sources, offered here only as a labeled inference, not a fact.",
+  "point_in_time_note": "total_account_value and crypto_market_value are live, continuously-moving figures (crypto trades 24/7 even though this screenshot's own equities market was closed) and drifted slightly across three successive screenshots supplied earlier in this same session ($6,315.86/$315.73, then $6,315.34/$315.18, then this retained capture's $6,315.28/$315.12). This drift is ordinary point-in-time market-value movement, not evidence of a trade or a quantity change, and is not the fact this decision synchronizes. cash, buying_power, margin_available, and margin_used were identical across all three captures and are the figures this decision actually relies on.",
+  "authority_note": "buying_power ($7,444.11) and margin_available ($6,403.06) are not cash and do not by themselves authorize any deployment, purchase, trim, or margin draw. margin_used ($0.00) confirms no margin is currently drawn. This evidence package and its governing decision authorize a factual cash synchronization only."
+}

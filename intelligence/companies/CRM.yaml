@@ -1,0 +1,75 @@
+sector: Information Technology
+industry: Application Software / CRM Platform
+portfolio_role_ref: band
+competitive_advantages:
+  - "Platform thesis integrates CRM applications with Slack, Data Cloud, MuleSoft, Tableau, and Agentforce -- the annual filing explains how AI agents use Salesforce's own data, metadata, applications, and MuleSoft APIs, describing a genuinely integrated architecture rather than a loose bundle. Per Salesforce's Form 10-K for the fiscal year ended 2026-01-31 (SEC accession 0001108524-26-000060) and Salesforce's latest earnings filing, directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 8 evidence bundle (see Source-access disclosure in CRM.md) -- not directly inspected by this Claude session."
+  - "Reported fiscal-year-end 2026 remaining performance obligations (RPO) of $72.4 billion and an approximately 8% attrition rate at 2026-01-31 (excluding Slack self-service and current-year acquisitions) -- disclosed recurring-revenue scale and durability evidence, alongside the filing's own explicit warning that RPO is affected by seasonality, renewal timing, contract terms, currency, new business, and acquisitions (including ~$2.2 billion tied to Informatica). Per Salesforce's Form 10-K for the fiscal year ended 2026-01-31, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Materially increased capital returns: fiscal 2026 repurchases were approximately $12.7 billion and dividends approximately $1.6 billion, followed by a $25 billion accelerated share repurchase announced in March 2026 -- current, filed evidence of an actively deployed capital-return program, though the ASR's final share count and effective price were not settled at initial delivery. Per Salesforce's Form 10-K for the fiscal year ended 2026-01-31 and Salesforce's Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001108524-26-000127), directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "The product stack (CRM applications, Slack, Data Cloud, MuleSoft, Tableau, Agentforce) is acquisition-assembled and faces integration, competition, and monetization risk; Agentforce revenue, margin, cannibalization, and customer-payback evidence remain incomplete in the inspected sources -- product-adoption narratives should not be conflated with disclosed revenue and cash economics."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "RPO ($72.4 billion at fiscal year-end 2026) is not necessarily indicative of future revenue growth per Salesforce's own disclosure, is acquisition- and timing-sensitive (including ~$2.2 billion tied to Informatica), and is not directly comparable with Oracle's or ServiceNow's own differently defined RPO/renewal metrics."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Large and increasing capital returns (~$12.7 billion repurchases, ~$1.6 billion dividends in fiscal 2026, plus a $25 billion March 2026 accelerated share repurchase) compete with acquisition financing, debt reduction, and reinvestment; economic return depends on the price paid and future per-share cash generation, neither of which is established as favorable by the inspected sources alone."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, multiple company investor-relations domains, and a neutral non-target control domain all returned HTTP 403) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See CRM.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Salesforce's next quarterly results and any further Agentforce-specific KPI disclosure, which would update RPO, attrition, and AI-monetization evidence beyond the Q1 FY2027 figures inspected for this record -- not available as of this record's 2026-07-28 evidence cutoff."
+    expected: "2026-08-27"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which Agentforce standalone economics, Informatica integration progress, and the final accelerated-share-repurchase settlement will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). Salesforce shows a large, integrated platform (CRM, Slack, Data Cloud, MuleSoft, Tableau, Agentforce), meaningful disclosed recurring-revenue scale ($72.4 billion RPO, ~8% attrition), and an aggressively deployed capital-return program ($12.7 billion repurchases and $1.6 billion dividends in fiscal 2026, plus a further $25 billion accelerated repurchase). Held at Medium rather than higher because Agentforce's own standalone revenue, margin, and customer-payback economics are not established in the inspected sources, the product stack's acquisition-assembled nature (most recently Informatica) creates real integration risk, and RPO is explicitly acquisition- and timing-sensitive rather than a clean forward-revenue signal. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0030-ws0005-milestone3-batch8-enterprise-software-cybersecurity.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior Salesforce Company Intelligence record existed). Portfolio HQ's WS-0005
+        Milestone 3 Batch 8, alongside IBM, NOW, ORCL, CRWD, and PANW ("Enterprise Software and
+        Cybersecurity"). This session's own WebFetch attempts on 2026-07-28 were tested and
+        confirmed blocked (HTTP 403) on SEC EDGAR, multiple company investor-relations domains,
+        and a neutral non-target control domain (en.wikipedia.org), confirming a session-wide
+        network-policy denial -- per governance/decisions/OPS-0008-research-wave-protocol-v1.md
+        Section 2's stop-before-drafting gate, this session then used the principal-supplied,
+        frozen, independently-authored evidence bundle
+        BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml (SHA-256
+        4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c; 1612 lines, 8139 words,
+        78577 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte against
+        the uploaded copy and its external .sha256 manifest by this session before use, and
+        retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md.
+        Every fact in this record is attributed to that bundle's own directly-inspected primary
+        sources (CRM-S1 through CRM-S3), not to this Claude session's own document inspection --
+        see CRM.md's Source-access disclosure. Known, disclosed, non-blocking bundle
+        characteristic: the source-manifest's claims_supported reverse index is not fully
+        reciprocal with claim-level source_ids; claim-level source_ids control and are what this
+        record's claims are drawn from.
+sources:
+  - note: "Salesforce, Inc. Form 10-K for the fiscal year ended 2026-01-31 (SEC accession 0001108524-26-000060), filed 2026-03-02. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports platform-architecture, RPO, attrition, repurchase/dividend, and Informatica-financing content."
+    url: "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000060/crm-20260131.htm"
+    date: "2026-03-02"
+  - note: "Salesforce, Inc. Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001108524-26-000127), filed 2026-05-28. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports RPO, accelerated-share-repurchase, and issuer-purchase content; ASR initial delivery is not the final share count or effective purchase price."
+    url: "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000127/crm-20260430.htm"
+    date: "2026-05-28"
+  - note: "Salesforce Form 8-K reporting first-quarter fiscal 2027 results (Item 2.02 and Exhibit 99.1, SEC accession 0001108524-26-000125), furnished 2026-05-27. Directly inspected by the evidence-recovery researcher, not by this Claude session. Contains management guidance and non-GAAP metrics, separated in this record from filed historical results."
+    url: "https://www.sec.gov/Archives/edgar/data/1108524/000110852426000125/crm-20260527.htm"
+    date: "2026-05-27"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 primary-source evidence bundle (BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml), SHA-256 4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c, principal-supplied implementation input under PI-0030/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the three sources above into claim-level extracts (CRM-C1 through CRM-C5) with source-ID-level provenance and fact/inference/judgment labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1612/8139/78577) against the uploaded copy and its external manifest before use; also retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"

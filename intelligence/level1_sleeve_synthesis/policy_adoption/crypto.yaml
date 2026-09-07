@@ -1,0 +1,98 @@
+schema_version: '1.0'
+sleeve_id: crypto
+profile_reference:
+  record_path: intelligence/level1_sleeve_synthesis/profiles/crypto.yaml
+  referenced_content_sha256: 3c0cfcd1e7fd61357e5507e23b460a3d63137b6b678815f194982588df683e31
+relationship_references:
+- sleeve_pair:
+    sleeve_a: crypto
+    sleeve_b: equity
+  record_path: intelligence/level1_sleeve_synthesis/relationships/crypto_equity.yaml
+  referenced_content_sha256: 54fa83d59e761536fa332ef3eb23f8a995a5f2ce3a99acb2034fb90042aa7e9e
+- sleeve_pair:
+    sleeve_a: crypto
+    sleeve_b: fund_gld_defensive
+  record_path: intelligence/level1_sleeve_synthesis/relationships/crypto_fund_gld_defensive.yaml
+  referenced_content_sha256: d939157d59d4d59fdab81d3d1a51900551dd6a69588c7198864c7608c33b8312
+portfolio_function_status: function_confirmed_distinct
+function_rationale: 'Reached on independently available lawful bases. Basis 1 (relationship-record finding):
+  the sealed crypto_fund_gld_defensive relationship record resolves coexistence_supported -- a non-evidence-maturity
+  finding independently sufficient to satisfy the requirement. Basis 3 (structural sleeve-definition basis):
+  this sleeve''s own asset_class scope (BTC, ETH, and SOL) is currently populated in a live destination-configuration
+  category, confirmed directly this session. Basis 2 is not asserted: a sizing-doctrine passage may exist
+  for this sleeve, but is not relied upon here since Basis 1 and Basis 3 already independently suffice,
+  and this filing does not manufacture a citation it does not need. This sleeve''s own sealed relationship
+  with equity resolves stronger_evidence_maturity favoring equity -- mechanically excluded from supplying
+  Basis 1 grounds by design; this determination does not depend on, and would be unchanged without, that
+  finding''s own favored-sleeve content.'
+abstention_index: []
+capital_eligibility_status: eligible_for_target_consideration
+sizing_readiness_status: sizing_conditionally_ready
+blocking_evidence:
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: cash_reserve
+  detail: The crypto-cash_reserve pair is among the relationship pairs XASSET-0013 explicitly deferred
+    -- no governed doctrine currently frames the crypto sleeve and the cash-and-reserve sleeve as competing
+    for the same marginal dollar -- disclosed here as a genuine, unresolved coverage gap.
+  reference: null
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: debt_reduction
+  detail: The crypto-debt_reduction pair is likewise among the deferred pairs, for the same reasoning.
+  reference: null
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: fund_broad_market
+  detail: The crypto-fund_broad_market pair is among the deferred pairs, part of fund_broad_market's own
+    deferred group.
+  reference: null
+- reason_type: secondary_condition_present
+  other_sleeve_id: equity
+  detail: The sealed crypto_equity relationship record carries evidence_partial_present and forced_abstention_present
+    as secondary conditions alongside its stronger_evidence_maturity primary disposition (favoring equity,
+    not this sleeve).
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/crypto_equity.yaml
+    referenced_content_sha256: 54fa83d59e761536fa332ef3eb23f8a995a5f2ce3a99acb2034fb90042aa7e9e
+- reason_type: secondary_condition_present
+  other_sleeve_id: fund_gld_defensive
+  detail: The sealed crypto_fund_gld_defensive relationship record carries evidence_partial_present and
+    forced_abstention_present as secondary conditions alongside its coexistence_supported primary disposition.
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/crypto_fund_gld_defensive.yaml
+    referenced_content_sha256: d939157d59d4d59fdab81d3d1a51900551dd6a69588c7198864c7608c33b8312
+unresolved_relationships: []
+relationship_coverage_ledger:
+- other_sleeve_id: cash_reserve
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_3
+    governing_decision: XASSET-0013
+- other_sleeve_id: debt_reduction
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_3
+    governing_decision: XASSET-0013
+- other_sleeve_id: equity
+  coverage_state: sealed_determined
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/crypto_equity.yaml
+    referenced_content_sha256: 54fa83d59e761536fa332ef3eb23f8a995a5f2ce3a99acb2034fb90042aa7e9e
+- other_sleeve_id: fund_broad_market
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_1
+    governing_decision: XASSET-0013
+- other_sleeve_id: fund_gld_defensive
+  coverage_state: sealed_determined
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/crypto_fund_gld_defensive.yaml
+    referenced_content_sha256: d939157d59d4d59fdab81d3d1a51900551dd6a69588c7198864c7608c33b8312
+overlap_coordination_notes: []
+cash_reserve_consolidation_note: null
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0014
+- XASSET-0015
+drafting_session_or_shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+record_status: sealed
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/policy_adoption/COHORT_MANIFEST.yaml#crypto
+content_sha256: 0288fb71c413805a776b2e209f94716ff18daf0f3095344f1bbf12bca6139f6b

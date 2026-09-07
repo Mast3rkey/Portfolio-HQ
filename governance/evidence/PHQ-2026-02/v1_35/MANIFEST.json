@@ -1,0 +1,36 @@
+{
+  "version": "1.35",
+  "created_at": "2026-07-31T13:46:22.054991+00:00",
+  "files": [
+    {
+      "path": "Portfolio_HQ_Post_Execution_Holdings_v1_35.csv",
+      "bytes": 4616,
+      "sha256": "1cfbb57c4d64ed710bce16c82ce7d46f4095587f50558fb9feb4c8ce45d2ee35"
+    },
+    {
+      "path": "Portfolio_HQ_Post_Execution_Reconciliation_v1_35.html",
+      "bytes": 6580,
+      "sha256": "e3948448f206e43bf72f57c1af2653d02564a1c56c5a314b395a6f64c6d851bc"
+    },
+    {
+      "path": "Portfolio_HQ_Post_Execution_Reconciliation_v1_35.json",
+      "bytes": 13422,
+      "sha256": "e887c9abc53aedeff0f98fad88827375b22eed4d955d51a3e0c62244b7536b0d"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1696,
+      "sha256": "93bd9146e1ef04814f6c49e563c481e3482b6d1312ea6e4b7bbba61b50bf6e65"
+    },
+    {
+      "path": "evidence/positions_crypto_and_account_earlier.png",
+      "bytes": 759162,
+      "sha256": "3fda038e297acf772ab285b4288fa49fc2e74f16077caeff8d1b38502bcf4942"
+    },
+    {
+      "path": "evidence/positions_equities_and_account_later.png",
+      "bytes": 736711,
+      "sha256": "f927dea5962cdf83de83dbed5ec9d0043abaef6d0bccc14da136dc35d9a83542"
+    }
+  ]
+}

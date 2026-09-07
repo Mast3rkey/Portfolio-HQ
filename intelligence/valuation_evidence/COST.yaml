@@ -1,0 +1,365 @@
+schema_version: '1.0'
+ticker: COST
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-08-29'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 195929
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2021 (ended late Aug 2021) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 5007
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      abstention_reason: Only a rounded '~$6.7B, +20.7%' operating-income figure was found for FY2021;
+        an exact dollar figure was not confirmed, so a confident operating margin is not derived here.
+  - period_type: annual
+    fiscal_period_end_date: '2022-08-28'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 226954
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 5844
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.0343
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2022 operating income $7,793M divided by revenue $226,954M equals 3.43
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: COST FY2022 operating income $7,793M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-09-03'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 242290
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 6292
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.0335
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2023 operating income $8,114M divided by revenue $242,290M equals 3.35
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: COST FY2023 operating income $8,114M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-09-01'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 254453
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 7367
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.0365
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2024 operating income $9,285M divided by revenue $254,453M equals 3.65
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: COST FY2024 operating income $9,285M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-08-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 275235
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2025 total revenue (net sales $269,912M plus membership fee revenue
+            $5,323M)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 8099
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.0377
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived and resolved: FY2025 operating income $10,383M divided by total revenue
+        $275,235M equals 3.77 percent (3.85% on a net-sales-only basis excluding membership fees). A separately-found
+        ''3.14%'' figure was investigated and rejected as unreliable -- it does not reconcile against
+        any fiscal year''s reported revenue/operating-income pair (FY2022: 3.43%, FY2023: 3.35%, FY2024:
+        3.65%, FY2025: 3.77-3.85%).'
+      provenance:
+        sources:
+        - source_identifier: COST FY2025 operating income $10,383M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 7837
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: 'Derived: FY2025 operating cash flow $13,335M minus capex $5,498M equals
+            $7,837M.'
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 5498
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST FY2025 capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 14161
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: COST cash & equivalents, Aug 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 5788
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: long-term debt $5,713M plus current portion $75M equals $5,788M total
+        debt.'
+      provenance:
+        sources:
+        - source_identifier: COST balance sheet, Aug 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_debt
+      value: -8373
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived (net CASH position): cash $14,161M minus total debt $5,788M equals ~$8,373M
+        net cash.'
+      provenance:
+        sources:
+        - source_identifier: COST balance sheet figures above
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 444.8
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $8,099M divided by diluted EPS $18.21
+        equals ~444.8M diluted shares.'
+      provenance:
+        sources:
+        - source_identifier: COST FY2025 net income and diluted EPS figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments: []
+  abstention_reason: Costco discloses three geographic segments (US, Canada, Other International) but
+    only growth percentages (US +9%, Canada +6%, Other International +8% for FY2025) and a qualitative
+    statement ('US and Canadian operations accounted for 86% of net sales and 84% of operating income')
+    were found -- no precise dollar-value segment breakdown was located.
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 950.5
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: '~Aug 6 2026 (reported range ~$949-952); market cap ~$422.1B (sanity check: 444.8M
+          shares x $951 = ~$423B, consistent).'
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: WMT
+    comparability_rationale: Walmart (including Sam's Club) -- largest general/warehouse retailer, direct
+      membership-club overlap via Sam's Club, trades at a lower multiple than Costco per one source (~31x
+      vs. ~40x earnings).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: BJ
+    comparability_rationale: BJ's Wholesale Club -- closest pure-play warehouse-club peer, smaller footprint,
+      trades at a materially lower multiple.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: TGT
+    comparability_rationale: Target -- a weaker structural comparable than Walmart/BJ's for a membership
+      warehouse model, since it is a general-merchandise retailer rather than a warehouse club.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Membership fee growth and renewal trends
+    variables:
+    - variable_name: membership_fee_growth_and_renewal_trends
+      evidence_basis: FY2025 membership fee revenue grew 10.3% YoY to $5,323M (Q4 fee income +14% YoY
+        to $1,724M); company guiding to ~9.1% fee growth in FY2026. Worldwide renewal rate eased slightly
+        to 89.8% from 90.2%, attributed partly to a mix shift toward online sign-ups.
+      provenance_label: historically_observed
+  - scenario_name: E-commerce growth
+    variables:
+    - variable_name: e-commerce_growth
+      evidence_basis: FY2025 e-commerce sales exceeded $19.6B, +15.6% YoY, ~7.3% of total sales -- an
+        eighth straight quarter of 10%+ e-commerce growth; the company added deferred-payment/installment
+        financing via Affirm. Warehouse count reached 914 locations after 24 net new openings in FY2025
+        (15 US, 2 Canada, 7 Other International).
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  FY2021 operating margin is abstained -- only a rounded operating-income figure was found. FY2025 operating
+  margin required resolving a genuine prior conflict between a 3.77% derived figure and a previously-circulated,
+  unreliable 3.14% figure that does not reconcile against any fiscal year's reported numbers -- 3.77%
+  (total-revenue basis) is used, with the rejected figure disclosed rather than silently dropped. Precise
+  dollar-value geographic segment data was not found (only growth percentages and a qualitative statement).
+abstention_index:
+- domain: segment_evidence
+  reason: Costco discloses three geographic segments (US, Canada, Other International) but only growth
+    percentages (US +9%, Canada +6%, Other International +8% for FY2025) and a qualitative statement ('US
+    and Canadian operations accounted for 86% of net sales and 84% of operating income') were found --
+    no precise dollar-value segment breakdown was located.
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: COST
+content_sha256: a3a934ffcb68206d91944f9c8d0b25425e7574887c9d133035f7c25af3298417

@@ -1,0 +1,30 @@
+dimension_id: sleeve_concentration
+schema_version: '1.0'
+dimension_type: mechanical_rollup
+source_mechanism:
+- targets.yaml:destination[].asset_class
+computation_status: computed_from_existing_mechanism
+evidence_or_source_refs:
+- targets.yaml:destination[] (37 rows, each carrying its own asset_class of equity, fund, crypto, reserve,
+  or cash)
+- targets.yaml:caps.clusters (the semis, power_infra, and oil correlated-cluster caps -- equity sub-sleeve
+  members only)
+output_shape: A future computed record would restate, per sleeve (equity, fund, crypto, reserve, cash),
+  a categorical comparison of that sleeve's own aggregate destination weight against whatever cap mechanism
+  already governs it -- within_governed_cap, at_or_near_governed_cap, exceeds_governed_cap, or no_governed_cap_defined
+  -- never the sleeve's own numeric aggregate percentage, which allocate.py's own plan() already computes
+  and enforces at runtime.
+uncertainty_or_gap_disclosure: targets.yaml's own caps.clusters mechanism governs only three named sub-groupings
+  within the equity sleeve (semis, power_infra, oil) -- no cap mechanism of any kind exists today for
+  the fund, crypto, reserve, or cash sleeves as wholes, or for the equity sleeve in aggregate; a future
+  computed record for those uncapped sleeves would correctly read no_governed_cap_defined, not a fabricated
+  threshold.
+later_governance_action: Defining a whole-sleeve cap for the fund, crypto, reserve, cash, or aggregate-equity
+  sleeves, if ever warranted, requires its own separate future governance decision -- not proposed, implied,
+  or begun by this record.
+record_status: sealed
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0007
+drafting_session_or_shard_id: single-pass-overlap-model-implementation
+content_sha256: bf5fc22ae07273cfe4cbb095910e9e808521622f10cfdb998eac3a4b06144cbb
+cohort_manifest_entry: intelligence/overlap_model/COHORT_MANIFEST.yaml#sleeve_concentration

@@ -1,0 +1,102 @@
+schema_version: '1.0'
+ticker: TSM
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/TSM.yaml
+  content_sha256: 68437998d7f6d1057edf01a0ca01acd0e84df4aaa8ff9394f1a3e8d47dcfe22b
+evidence_reference:
+  source_file: intelligence/valuation_evidence/TSM.yaml
+  content_sha256: 51d5143435a1b48118f584e83e8cbadb61d1afb190173576e68ab81df6aac295
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: primary_candidate
+  family_status: partial
+  valuation_range:
+    low: 159.69
+    base: 202.28
+    high: 255.51
+    unit_and_basis: USD per diluted share, equity value
+    governing_sensitivity: Illustrative P/E band for a capital-intensive semiconductor-foundry infrastructure
+      archetype (B); capped at partial because only one included peer exists in Stage-3 evidence, below
+      the two-peer floor for 'completed' (VALUATION-0006 SS C item 11).
+  assumptions_ledger:
+  - assumption_name: pe_multiple_low
+    value: 15
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pe multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pe_multiple_base
+    value: 19
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: pe_multiple_high
+    value: 24
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: latest_fy_net_income
+    value: 55211.42
+    provenance_label: historically_observed
+    source_or_derivation_note: 'FY2025 (ended 2025-12-31) net income, derived: net margin 45.1% (reported)
+      times USD-equivalent revenue $122,420M (derived from the pinned Stage-3 evidence record''s own TWD-reported
+      figure) equals ~$55,211.62M -- TSM''s own FY2025 net income is reported only in TWD (NTD1,717.88B)
+      in Stage-3 evidence, with no USD-equivalent figure disclosed.'
+  - assumption_name: diluted_shares_outstanding
+    value: 5186
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+  applied_peers:
+  - ASML
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-B
+  P/E assumption applied to a derived (not directly reported) USD net-income figure; not an independent
+  fair-value opinion.
+uncertainty_summary: 'family_5 (relative valuation) was attempted using a USD-equivalent net-income figure
+  derived from TSM''s own disclosed net margin applied to its USD-equivalent revenue (TSM''s own reported
+  net income exists only in TWD in Stage-3 evidence, with no USD-equivalent disclosed), and the ADR-equivalent
+  diluted share count Stage-3 evidence discloses. The result is capped at partial because only one peer
+  (ASML) is an included candidate in Stage-3 evidence -- below the two-peer minimum VALUATION-0006 requires
+  for ''completed'' status, regardless of the underlying data quality. No peer-specific trading multiples
+  were gathered in Stage-3 evidence (peer_set_evidence carries only candidate identity and comparability
+  rationale) -- the multiple band applied here is a disclosed, illustrative assumption (provenance_label:
+  assumed_for_illustration), archetype-informed but not peer-derived or market-derived. family_2 (FCFF
+  DCF), adjustment_required for archetype B and prohibited for archetype C, was not applied to any ticker
+  in this batch -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005),
+  so no discount rate, WACC, beta, or terminal growth rate was fabricated for this or any other ticker.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+  - segment_evidence
+conflicts_carried_forward: []
+result_status: partial
+cross_asset_handoff:
+  ticker: TSM
+  asset_class: equity
+  result_status: partial
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: primary_candidate
+    family_status: partial
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+    - segment_evidence
+record_status: sealed
+abstention_reason: 'family_5 reached family_status partial only (not completed): only one included peer
+  exists in Stage-3 evidence, below the two-peer floor for completed.'
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchC-relative
+content_sha256: b5f7eca88647dbc5bed8797246f7a6dd15645e634c4fbe90b8915d63e414d546
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for TSM

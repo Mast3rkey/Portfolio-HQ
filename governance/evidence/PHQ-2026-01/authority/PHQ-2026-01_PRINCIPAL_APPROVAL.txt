@@ -1,0 +1,39 @@
+PHQ-2026-01 — PRINCIPAL APPROVAL RECORD
+=======================================
+
+Exact principal approval:
+
+“I approve Principal Resolution PHQ-2026-01 exactly as written. I authorize
+preparation of the lot-aware transition packet, but no trades are authorized
+until I separately approve the final manual order list.”
+
+Approved policy scope
+---------------------
+
+1. Canonical v1.30 is the approved long-term destination architecture.
+2. The actionable core is the approved current transition architecture.
+3. SNPS, ICE, SPGI, WM, RKLB, TSLA, and SPCX are gated. Their target capital
+   remains cash until separately cleared.
+4. Quarterly review with tolerance bands is approved.
+5. Monthly forced rebalancing is rejected.
+6. No new margin is authorized.
+7. Deposits and approved sale proceeds repay inherited debit first.
+8. Effective single-issuer exposure may not exceed 8%.
+9. AI/platform common-driver exposure may not exceed 40%.
+10. Execution remains manual in Robinhood.
+11. Research, Intelligence, reports, backtests, and software do not
+    automatically change targets or policy.
+12. Exact trades and live holdings remain separately controlled.
+
+Current-state warning
+---------------------
+
+- Some Robinhood orders were entered after the frozen snapshot; some filled and
+  others were queued.
+- The frozen v1.31 portfolio is historical evidence only.
+- holdings.yaml must not be synchronized from the frozen snapshot.
+- The simplified v1.34/v1.34a allocation outputs are stale and are intentionally
+  excluded from this repository-sync package.
+- SPCX was later corrected to HOLD / NO ADD rather than sell-all.
+- SKHY remains unresolved and is not silently governed by PHQ-2026-01.
+- This approval record is policy authority, not order authority.

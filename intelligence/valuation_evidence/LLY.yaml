@@ -1,0 +1,289 @@
+schema_version: '1.0'
+ticker: LLY
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 28540
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: LLY FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.29
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2022 operating income $8,280M divided by revenue $28,540M equals 29.0
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: LLY FY2022 operating income $8,280M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      abstention_reason: FY2021/FY2022 net income could not be reliably confirmed -- one search result
+        appeared to erroneously repeat the FY2025 net income figure when queried about FY2021, and the
+        FY2022 figure was not independently corroborated; discarded rather than reported as fact.
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 34120
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: LLY FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.303
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2023 operating income $10,330M divided by revenue $34,120M equals 30.3
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: LLY FY2023 operating income $10,330M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 45040
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: LLY FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 10590
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: LLY FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.378
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2024 operating income $17,040M divided by revenue $45,040M equals 37.8
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: LLY FY2024 operating income $17,040M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 65180
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: LLY FY2025 revenue (also cited as $65.2B)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 20640
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: LLY FY2025 net income (corroborated by two independent searches)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.456
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2025 operating income $29,700M divided by revenue $65,180M equals 45.6
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: LLY FY2025 operating income $29,700M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      abstention_reason: FY2025 capex was not found as a specific dollar figure (only a vague 'meaningfully
+        higher capex' characterization and an unclear TTM figure), so free cash flow cannot be reliably
+        derived from the $16.8B FY2025 operating cash flow figure.
+    - item_category: cash
+      value: 7300
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: LLY cash & equivalents, year-end 2025 (vs. $3.3B year-end 2024)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 42500
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: LLY total debt, 2025 (secondary aggregator); long-term debt specifically
+            cited at $40,868M, +43.26% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_debt
+      value: 35200
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total debt $42.5B minus cash $7.3B equals ~$35.2B; approximate, ignores
+        short-term investments (figure not available).'
+      provenance:
+        sources:
+        - source_identifier: LLY FY2025 cash and debt figures above
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 894
+      unit: shares_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: LLY diluted shares outstanding, mid-2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments: []
+  abstention_reason: LLY discloses revenue predominantly by product/therapeutic area (Mounjaro, Zepbound,
+    Trulicity, Verzenios, Jardiance, etc.) rather than classic business/geographic segments. Mounjaro
+    + Zepbound alone were 56% of FY2025 revenue (reported), but a clean full product-revenue table was
+    not obtained this session.
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 1123.0
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Price observed alongside a 52-week high of $1,249.45 on Jul 7 2026 -- this is recent-2026
+          context, not necessarily the exact observation date of the price itself.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: NVO
+    comparability_rationale: Novo Nordisk -- direct GLP-1/obesity-drug competitor (Ozempic/Wegovy vs.
+      Mounjaro/Zepbound).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: PFE
+    comparability_rationale: Pfizer -- comparable large-cap diversified pharmaceutical company.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: MRK
+    comparability_rationale: Merck -- comparable large-cap pharmaceutical company with its own oncology/vaccine
+      franchise concentration dynamics.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Orforglipron oral GLP-1 approval
+    variables:
+    - variable_name: orforglipron_oral_glp-1_approval
+      evidence_basis: FDA approved Lilly's oral GLP-1 pill for obesity/overweight on Apr 1 2026 -- the
+        first GLP-1 pill approved with no food/water timing restriction; Phase 3 ATTAIN data showed up
+        to 12.4% average weight loss at 72 weeks. Will compete against Novo Nordisk's oral semaglutide
+        (approved Dec 2025).
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  FY2021 net income and FY2022 net income could not be reliably confirmed and are abstained rather than
+  reported (one search result appears to have erroneously repeated the FY2025 net-income figure when the
+  FY2021 figure was requested). FY2025 capex and therefore free cash flow could not be pinned down to
+  a specific dollar figure. Revenue/earnings growth 2021-2025 is extremely steep (driven by GLP-1 franchise
+  growth), disclosed as organic growth concentrated in two products (56% of FY2025 revenue), not a structural
+  discontinuity -- but multi-year trend comparisons should be read with that concentration in mind.
+abstention_index:
+- domain: segment_evidence
+  reason: LLY discloses revenue predominantly by product/therapeutic area (Mounjaro, Zepbound, Trulicity,
+    Verzenios, Jardiance, etc.) rather than classic business/geographic segments. Mounjaro + Zepbound
+    alone were 56% of FY2025 revenue (reported), but a clean full product-revenue table was not obtained
+    this session.
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: LLY
+content_sha256: 8c8c630c9423d22f935a3ce9a979b91bf7bbf20e6b5d364a30c5d5deb20d7bae

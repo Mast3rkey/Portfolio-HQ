@@ -1,0 +1,39 @@
+schema_version: '1.0'
+sleeve_pair:
+  sleeve_a: cash_reserve
+  sleeve_b: debt_reduction
+profile_references:
+- sleeve_id: cash_reserve
+  referenced_content_sha256: 387cb8943643af3538b6e36e733630438f35944c4365ea9a3fb7c7cd4c340c3e
+- sleeve_id: debt_reduction
+  referenced_content_sha256: ab706eaa75425882e3e8970bc65c0a0693c9d7871234707fbdc644ce4cc1aa66
+primary_disposition: unable_to_determine
+favored_sleeve_id: null
+secondary_conditions:
+- evidence_partial_present
+- forced_abstention_present
+overlap_dimension_references: []
+rationale: 'The cash-and-reserve sleeve and the debt-reduction sleeve are both survival-oriented levers
+  this account''s own governing guardrails treat with matching severity -- a cash-tight condition and
+  a margin-buffer floor breach are each described, in this account''s own governing text, as triggering
+  a matching forced-pause or forced-deleverage response. Whether these sleeves genuinely compete for the
+  same marginal capital, whether they serve distinct functions that never trade off against each other,
+  or whether they simply coexist without competing cannot be determined from these sleeves'' own currently
+  governed evidence alone: the RESERVE identifier''s own functional role remains an unresolved abstention,
+  and the debt-reduction sleeve''s own opportunity-cost evidence base is entirely forced-abstained. Both
+  gaps sit precisely on the question this comparison would need to answer, so this record abstains rather
+  than asserting a finding the governed evidence does not actually support.'
+abstention_index:
+- field: primary_disposition
+  value: unable_to_determine
+  reason: Both cited profiles carry an unresolved abstention on exactly the sub-field this comparison
+    would need -- the cash-and-reserve sleeve's own RESERVE functional-role finding, and the debt-reduction
+    sleeve's own entirely forced-abstained opportunity-cost evidence base -- so no primary disposition
+    beyond an explicit abstention is supportable from currently governed evidence.
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#cash_reserve_debt_reduction
+content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd

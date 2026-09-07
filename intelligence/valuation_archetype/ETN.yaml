@@ -1,0 +1,36 @@
+schema_version: '1.0'
+ticker: ETN
+primary_archetype: F
+secondary_archetype: B
+rationale: 'Eaton''s disclosed segment structure shows genuinely different economics: Electrical segments
+  (73% of FY2025 revenue) carry a current data-center growth narrative with 48% YoY backlog growth and
+  long, regulation-driven lead times, Aerospace serves commercial/defense OEMs plus aftermarket, and Vehicle/eMobility
+  are both contracting and being separated via a Reverse Morris Trust combination with Dana expected to
+  close Q1 2027. The Electrical segment''s capacity-expansion investments (a new switchgear plant, multi-hundred-million-dollar
+  capacity build) and reinvestment-sensitive growth tied to a multi-year electrification/data-center buildout
+  support B as a secondary lens on top of the primary segment-diversity finding, particularly given the
+  disclosed dispute over whether current margin contraction is temporary (management) or structurally
+  lower on new data-center revenue (an analyst estimate). Archetype-F test: F was considered and selected
+  as primary: Eaton reports five segments -- Electrical Americas, Electrical Global, Aerospace, Vehicle,
+  and eMobility -- with materially different economics and trajectories (Electrical Americas growing with
+  48% YoY backlog on data-center demand versus Vehicle/eMobility both contracting, Q4 2025 sales down
+  9% and 15% YoY respectively, and now being combined with Dana Incorporated via a Reverse Morris Trust
+  transaction), directly supporting a sum-of-the-parts framing over a single blended valuation.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: FY2025-2026 figures have already required two independent corrections (the Dana
+    Reverse Morris Trust structure and the Boyd Thermal close date), and a debt-to-equity figure surfaced
+    inconsistently (0.46 vs. ~1.15) within a single secondary source without resolution.
+disclosed_evidence_conflicts:
+- A debt-to-equity figure surfaced inconsistently within a single secondary source (0.46 in one sentence,
+  ~1.15 derived in the next) and is not resolved in this record; management characterizes recent segment-margin
+  contraction as temporary while at least one analyst (UBS) estimates incremental margin on new data-center
+  revenue at only approximately 28%, a disclosed, unresolved disagreement.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-1
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#ETN
+content_sha256: 55d395d89adb5d798af2ff3e284e2fd0e993c0e9d5d6bb2d3c12d31e02dca352

@@ -1,0 +1,31 @@
+schema_version: '1.0'
+sleeve_pair:
+  sleeve_a: crypto
+  sleeve_b: equity
+profile_references:
+- sleeve_id: crypto
+  referenced_content_sha256: 3c0cfcd1e7fd61357e5507e23b460a3d63137b6b678815f194982588df683e31
+- sleeve_id: equity
+  referenced_content_sha256: 1f44f44369a4c1fe9ea824d99e82539d96f9ccf6407a740ef93d182a8b64bedc
+primary_disposition: stronger_evidence_maturity
+favored_sleeve_id: equity
+secondary_conditions:
+- evidence_partial_present
+- forced_abstention_present
+overlap_dimension_references: []
+rationale: Both the equity and crypto sleeves deploy capital toward growth-oriented positions, making
+  this pair a genuine evidence-maturity comparison rather than a functional-role question. The equity
+  sleeve's own governed research base spans economic-role classification, a qualitative archetype judgment,
+  structured valuation evidence, and a produced valuation-result record for every covered company. The
+  crypto sleeve carries only a structural classification and an instrument-level economic-assessment record
+  -- no archetype, valuation-evidence, or valuation-result layer exists for any covered coin, and cross-coin
+  correlation is structurally forced to an unmeasured state across the entire sleeve. On currently governed
+  evidence, the equity sleeve's own research base is materially more developed.
+abstention_index: []
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#crypto_equity
+content_sha256: 54fa83d59e761536fa332ef3eb23f8a995a5f2ce3a99acb2034fb90042aa7e9e

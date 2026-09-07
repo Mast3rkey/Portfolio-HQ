@@ -1,0 +1,48 @@
+schema_version: '1.0'
+ticker: NVDA
+economic_role:
+  economic_system_ref: AI & Compute Infrastructure
+  company_role: compute
+  role_basis: Q1 FY2027 Data Center segment revenue was $75.2 billion (+92% YoY), split $60.4B compute
+    and $14.8B networking, and the company is described as the reported leading supplier of accelerated-compute
+    hardware for AI training and inference at scale.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - AMD
+  - AVGO
+  - TSM
+  - MRVL
+  - INTC
+  rationale: NVIDIA's Q1 FY2027 results show Data Center revenue growth accelerating (92% YoY vs. FY2026's
+    own 68% YoY) alongside a materially expanded capital-return posture (a 25x quarterly dividend increase
+    and an additional $80B buyback authorization). Separately, unresolved secondary reporting describes
+    NVIDIA in talks to provide up to roughly $250B in financing guarantees and roughly $350B in chip-purchase
+    financing for OpenAI, which named commentators (Michael Burry, Bernstein's Stacy Rasgon) have characterized
+    as circular financing that would compound existing customer-concentration risk if finalized. This
+    combination of a recently-realized strengthening in the core business and an unresolved, unusually
+    large financing-dependency exposure is distinctive enough to warrant a reviewer's fresh look, without
+    asserting how the unfinalized financing talks will resolve.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - semis
+  issuer_lookthrough_membership: true
+  relationship_record_coverage:
+  - NVDA_TSM
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a material loss of position among the three customers representing 21%/17%/16% of Q1 FY2027 revenue,
+    or a further tightening of the 2026 export-control regime beyond what is currently disclosed.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-A
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#NVDA
+content_sha256: 614cd0de31eb881206c903dc13cd5bc2e834984165f0e1426b29da4d346a34ea

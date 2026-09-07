@@ -1,0 +1,79 @@
+sector: Health Care
+industry: Pharmaceuticals
+portfolio_role_ref: band
+competitive_advantages:
+  - "Keytruda remains a very large, still-growing oncology franchise: Keytruda and Keytruda Qlex sales were $8.0 billion in Q1 2026, approximately 49% of total company sales of $16.286 billion (up 5% reported, 3% excluding foreign exchange). The FDA approved a Keytruda/Keytruda Qlex plus Welireg adjuvant regimen in renal-cell carcinoma in June 2026 -- evidence of active lifecycle extension into new indications, not a franchise standing still ahead of exclusivity risk. Per Merck's Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001628280-26-029802), Merck's Q1 2026 earnings release, and the FDA's belzutifan/pembrolizumab approval announcement, all directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 7 evidence bundle (see Source-access disclosure in MRK.md) -- not directly inspected by this Claude session."
+  - "Real, if early, diversification beyond Keytruda: Q1 2026 included $525 million of Winrevair sales and $1.8 billion of Animal Health sales -- disclosed, non-oncology revenue engines distinct from the core Keytruda franchise. Per Merck's Q1 2026 earnings release, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "New non-oncology pipeline conversion: the FDA approved Merck's oral PCSK9 inhibitor Lipfendra (the first oral PCSK9 inhibitor approved to lower LDL cholesterol) in July 2026 -- a genuinely new diversification asset outside oncology and outside Merck's existing disclosed franchises. Per the FDA's approval announcement, directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "Extreme single-franchise concentration: Keytruda and Keytruda Qlex represented approximately 49% of total Q1 2026 company sales -- essentially half of the company's revenue rests on one franchise's continued commercial and regulatory success, even as lifecycle-extension work (the June 2026 renal-cell-carcinoma approval) continues."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Underlying growth was materially slower than the headline figure once currency effects are removed: Q1 2026 worldwide sales were up 5% reported but only 3% excluding foreign exchange."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Merck recorded a $9.0 billion charge for the Cidara acquisition and announced a Terns transaction expected to produce an additional approximately $5.8 billion one-time charge -- very large, disclosed one-time costs for business-development-driven diversification, whose eventual return on capital is not established in this record's evidence base."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Whether launches and acquired pipeline assets (Winrevair, Animal Health, Lipfendra, Cidara- and Terns-derived assets) can offset Keytruda concentration before its principal exclusivity step-downs is not established by a probability-weighted replacement curve in this record's evidence base (unresolved question B7-U004)."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "This session's own primary-source access (WebFetch) was tested and confirmed blocked on 2026-07-27 (SEC EDGAR, and a neutral non-target control domain, both returned HTTP 403) -- every fact in this record is attributed to the governed v2 evidence bundle's own directly-inspected sources, not to this Claude session's independent document inspection. See MRK.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+catalysts:
+  - catalyst: "Merck's Q2 2026 financial results, scheduled for 2026-08-04 per the governing evidence bundle -- not available as of this record's 2026-07-27 evidence cutoff. This record requires refresh once those results are published."
+    expected: "2026-08-04"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which Keytruda's lifecycle-extension progress, the Cidara/Terns integration and charge realization, and non-oncology launch uptake (Winrevair, Lipfendra) will next be actively re-checked."
+    expected: "2026-10-25"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). Merck shows a still-large, still-growing Keytruda franchise with active lifecycle-extension execution (the June 2026 adjuvant renal-cell-carcinoma approval) and genuine, if early, diversification evidence (Winrevair, Animal Health, and the July 2026 Lipfendra approval). Held at Medium rather than High because of concrete, disclosed tensions this record does not discount: extreme concentration (Keytruda approximately 49% of Q1 2026 sales); underlying growth of only 3% excluding foreign exchange even before any exclusivity step-down; very large one-time acquisition charges ($9.0 billion Cidara, an additional ~$5.8 billion expected for Terns) whose return on capital is unproven in this record's evidence base; and an unresolved, batch-wide replacement-timing question (B7-U004) this record does not resolve. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-27"
+  next_due: "2026-10-25"
+  log:
+    - date: "2026-07-27"
+      note: >
+        Record created under governance/decisions/PI-0029-ws0005-milestone3-batch7-biopharmaceuticals.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior Merck Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3
+        Batch 7, alongside LLY, ABBV, JNJ, and GILD ("Biopharmaceuticals"). This implementation
+        used the principal-accepted, independently corrective-validated evidence bundle
+        BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml (SHA-256
+        cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826; 1227 lines, 5659 words,
+        56667 bytes; research cutoff 2026-07-27), independently re-verified byte-for-byte against
+        both uploaded copies by this session before use. This Claude Code session's own WebFetch
+        attempts on 2026-07-27 were blocked (HTTP 403) on SEC EDGAR and on a neutral non-target
+        control domain (example.com), confirming a session-wide network-policy denial. Every fact
+        in this record is attributed to the v2 evidence bundle's own directly-inspected primary
+        sources (MRK-S01 through MRK-S05), not to this Claude session's own document inspection --
+        see MRK.md's Source-access disclosure. No F-2 through F-5 corrective-validation finding
+        applies to MRK; the bundle's v2 correction scope was limited to JNJ (F-1).
+sources:
+  - note: "Merck & Co., Inc. 2025 Form 10-K (SEC accession 0000310158-26-000063), filed 2026-02-24. Directly inspected by the evidence-recovery researcher who authored the governed v2 evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports product-sales, patent/pipeline-risk, and capital-allocation content used in this record's thesis-break conditions."
+    url: "https://www.sec.gov/Archives/edgar/data/310158/000031015826000063/mrk-20251231.htm"
+    date: "2026-02-24"
+  - note: "Merck & Co., Inc. Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001628280-26-029802). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 sales, acquisition/R&D-charge, and guidance/risk updates."
+    url: "https://www.sec.gov/Archives/edgar/data/310158/000162828026029802/mrk-20260331.htm"
+    date: "2026-04-30"
+  - note: "Merck & Co., Inc. Announces First-Quarter 2026 Financial Results; Highlights Significant Regulatory Approvals and Clinical Milestones (earnings release). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 headline results, product-sales table, acquisition charges, and outlook."
+    url: "https://www.merck.com/news/merck-co-inc-rahway-n-j-usa-announces-first-quarter-2026-financial-results-highlights-significant-regulatory-approvals-and-clinical-milestones/"
+    date: "2026-04-30"
+  - note: "FDA approves belzutifan with pembrolizumab for adjuvant treatment of renal cell carcinoma. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports the Welireg-plus-Keytruda adjuvant approval and LITESPARK-022 efficacy evidence."
+    url: "https://www.fda.gov/drugs/resources-information-approved-drugs/fda-approves-belzutifan-pembrolizumab-adjuvant-treatment-renal-cell-carcinoma"
+    date: "2026-06-12"
+  - note: "FDA Approves First Oral PCSK9 Inhibitor to Lower LDL Cholesterol in Adults with High Cholesterol (Lipfendra). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports the Lipfendra approval, indication, and trial-efficacy/safety evidence."
+    url: "https://www.fda.gov/news-events/press-announcements/fda-approves-first-oral-pcsk9-inhibitor-lower-ldl-cholesterol-adults-high-cholesterol"
+    date: "2026-07-17"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 7 primary-source evidence bundle, v2 (BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml), SHA-256 cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826, principal-custodied implementation input under PI-0029/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the five sources above into claim-level extracts (MRK-C001 through MRK-C007) with source-ID-level provenance and fact/inference labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1227/5659/56667) against both uploaded copies before use."
+    url: null
+    date: "2026-07-27"

@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: CEG
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: nuclear and multi-fuel power generation
+  role_basis: Constellation describes itself, post-Calpine acquisition, as the largest private-sector
+    power producer globally and the largest U.S. nuclear-energy company (~55 GW capacity), operating a
+    nuclear fleet with a 94.7% 2025 capacity factor and a 20-year Microsoft power purchase agreement supporting
+    the Crane Clean Energy Center restart tied specifically to data-center/AI electricity demand.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - VST
+  - NRG
+  - PEG
+  - EXC
+  rationale: Constellation completed a large, transformative acquisition (Calpine, January 2026) that
+    materially changed its scale and generation mix, adding roughly 23 GW across 72 generation and battery-storage
+    assets -- a fundamental structural change whose integration execution risk is explicitly described
+    in the evidence as not yet resolved by any post-acquisition track record. The most recent quarter
+    also showed a large, unexplained divergence between GAAP and adjusted operating earnings, and the
+    Crane Clean Energy Center restart underpinning a key long-duration AI-demand-linked offtake contract
+    remains conditional rather than completed. These are concrete, recently-realized developments distinct
+    from ordinary disclosed risk and together warrant a reviewer's explicit reconsideration of posture
+    as the Calpine integration and Crane restart play out.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - CEG_MSFT
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the newly closed Calpine acquisition (~23 GW across 72 assets) proving harder to integrate than assumed,
+    compounding an already-material GAAP-versus-adjusted-earnings divergence this quarter.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-E
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#CEG
+content_sha256: f7886fe8009f0cca53e5914eb26682f444160002e394523bd145588e0010b4a0

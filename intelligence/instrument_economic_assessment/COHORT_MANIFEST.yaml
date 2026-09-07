@@ -1,0 +1,45 @@
+schema_version: '1.0'
+governing_decision: XASSET-0011
+cohort:
+- instrument_id: SPY
+  asset_type: etf
+  sealed_at: '2026-08-10T00:00:00Z'
+  content_sha256: 3bd02ff4028830439573a78f2b2cbe6d92070615ca1907f5530de72dfec57cda
+  schema_version: '1.0'
+  governing_decision: XASSET-0011
+  record_path: intelligence/instrument_economic_assessment/SPY.yaml
+- instrument_id: VEA
+  asset_type: etf
+  sealed_at: '2026-08-10T00:00:00Z'
+  content_sha256: b8c90454d98bbc445360f92562ff01bfee40e25e7c5f6bb004b5c95d259cc42c
+  schema_version: '1.0'
+  governing_decision: XASSET-0011
+  record_path: intelligence/instrument_economic_assessment/VEA.yaml
+- instrument_id: VWO
+  asset_type: etf
+  sealed_at: '2026-08-10T00:00:00Z'
+  content_sha256: 4f9986fb7eae9758b558d5f9d76325eb6469e82912ed0c2457d6c491ca10ac00
+  schema_version: '1.0'
+  governing_decision: XASSET-0011
+  record_path: intelligence/instrument_economic_assessment/VWO.yaml
+- instrument_id: BTC
+  asset_type: cryptocurrency
+  sealed_at: '2026-08-10T00:00:00Z'
+  content_sha256: 99a2e2dabc40aa6cf8004b17807495390e1d65523efa9bd4d48fe9329f72d3c0
+  schema_version: '1.0'
+  governing_decision: XASSET-0011
+  record_path: intelligence/instrument_economic_assessment/BTC.yaml
+- instrument_id: ETH
+  asset_type: cryptocurrency
+  sealed_at: '2026-08-10T00:00:00Z'
+  content_sha256: 830953dc1da2f74f30f77fc7ab6e518e59c77cc6612454554ba133010c6ba4b4
+  schema_version: '1.0'
+  governing_decision: XASSET-0011
+  record_path: intelligence/instrument_economic_assessment/ETH.yaml
+- instrument_id: SOL
+  asset_type: cryptocurrency
+  sealed_at: '2026-08-10T00:00:00Z'
+  content_sha256: b94b5785a661479ba6a9a8539dded3c180cf36703797263785e878e49f089734
+  schema_version: '1.0'
+  governing_decision: XASSET-0011
+  record_path: intelligence/instrument_economic_assessment/SOL.yaml

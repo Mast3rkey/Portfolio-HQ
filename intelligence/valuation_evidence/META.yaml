@@ -1,0 +1,387 @@
+schema_version: '1.0'
+ticker: META
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 117929
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 39370
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.396
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2021 operating income $46,753M divided by revenue $117,929M equals
+        39.6 percent.'
+      provenance:
+        sources:
+        - source_identifier: META FY2021 operating income $46,753M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 116609
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 23200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.248
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2022 operating income $28,944M divided by revenue $116,609M equals
+        24.8 percent.'
+      provenance:
+        sources:
+        - source_identifier: META FY2022 operating income $28,944M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 134902
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 39098
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.347
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2023 operating income $46,751M divided by revenue $134,902M equals
+        34.7 percent.'
+      provenance:
+        sources:
+        - source_identifier: META FY2023 operating income $46,751M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 164501
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 62360
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.422
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2024 operating income $69,380M divided by revenue $164,501M equals
+        42.2 percent.'
+      provenance:
+        sources:
+        - source_identifier: META FY2024 operating income $69,380M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 200966
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2025 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 60458
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Lower than FY2024's $62,360M despite operating income rising 20%; press coverage
+            links this to a large one-time Q4 2025 US tax-law-related charge, but the exact mechanism
+            was not independently verified this session.
+    - item_category: operating_margin
+      value: 0.414
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2025 operating margin (company-reported ~41%, matching the derived
+            calc of $83,276M/$200,966M=41.4%)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 43590
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: 'META FY2025 free cash flow (also ties out: OCF $115,800M minus capex $72,220M
+            = $43,580M, consistent)'
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 72220
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2025 capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Company disclosure notes this figure includes principal payments on finance leases,
+            not pure capex.
+    - item_category: debt
+      value: 58740
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META long-term debt, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 2573
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $60,458M divided by diluted EPS $23.49
+        equals ~2,573M diluted shares.'
+      provenance:
+        sources:
+        - source_identifier: META FY2025 net income and diluted EPS figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: Family of Apps
+    revenue:
+      item_category: revenue
+      value: 198696
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total revenue $200,966M minus Reality Labs revenue $2,270M equals $198,696M.'
+      provenance:
+        sources:
+        - source_identifier: META FY2025 total and Reality Labs revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: 102469
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total operating income $83,276M minus Reality Labs operating loss of
+        -$19,193M equals $102,469M.'
+      provenance:
+        sources:
+        - source_identifier: META FY2025 total and Reality Labs operating income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Reality Labs
+    revenue:
+      item_category: revenue
+      value: 2270
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2025 Reality Labs segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: -19193
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: META FY2025 Reality Labs segment operating loss
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 591.93
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Observed ~Aug 8 2026 (day range $584.95-$598.74, 52-week range $520.26-$796.25).
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: GOOGL
+    comparability_rationale: Direct digital-advertising duopoly peer, similar ad-auction/targeting business
+      model.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: SNAP
+    comparability_rationale: Smaller social/short-form-video advertising peer with comparable engagement-driven
+      ad monetization.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: PINS
+    comparability_rationale: Pinterest -- visual-discovery social advertising peer, similar ad-load/engagement
+      dynamics.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: AI capex trajectory
+    variables:
+    - variable_name: ai_capex_trajectory
+      evidence_basis: META raised FY2026 capex guidance to $130-145B (narrowed from a prior $125-145B
+        range), citing higher component pricing and data-center buildout costs.
+      provenance_label: historically_observed
+  - scenario_name: Antitrust/regulatory posture
+    variables:
+    - variable_name: antitrust/regulatory_posture
+      evidence_basis: META prevailed in the FTC's antitrust case challenging its Instagram/WhatsApp acquisitions;
+        EU Digital Markets Act 'pay-or-consent' pressure and youth-related litigation remain live regulatory/legal
+        risks.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced (accessed via WebSearch's own retrieval
+  layer, not a directly-opened primary document -- SEC.gov and Meta's own IR pages were blocked for direct
+  fetch). FY2025 net income is lower than FY2024's despite higher operating income; the specific tax mechanism
+  driving that is disclosed as unverified. Pure cash-only balance (vs. combined cash+marketable-securities)
+  and a sourced FY2025 buyback dollar figure were not found. META's current two-segment structure (Family
+  of Apps/Reality Labs) has been used since 2021, so all five years shown are internally comparable; pre-2021
+  historicals under the prior single-segment structure would not be.
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: META
+content_sha256: 8aa988c938101e936787b441ed3590958d6630acc64931aee2a56d51b632b5b4

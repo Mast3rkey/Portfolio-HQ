@@ -1,0 +1,177 @@
+sector: Information Technology
+industry: Cybersecurity / Cloud-Native Endpoint and XDR Platform
+portfolio_role_ref: band
+competitive_advantages:
+  - "Falcon platform uses a cloud-native architecture and a common sensor across endpoint, cloud, identity, SIEM, and other modules -- reported 32 modules at fiscal year-end 2026 and 33 at filing, with subscription pricing by endpoint and module. Per CrowdStrike's Form 10-K for the fiscal year ended 2026-01-31 (SEC accession 0001535527-26-000010), directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 8 evidence bundle (see Source-access disclosure in CRWD.md) -- not directly inspected by this Claude session."
+  - "Reported fiscal-year-end 2026 Annual Recurring Revenue (ARR) of approximately $5.253 billion, up 24% -- current, filed evidence of continued platform growth even after the July 2024 incident, though the ARR definition assumes expiring contracts renew on existing terms and can include active post-expiration renewal negotiations, and is not GAAP revenue. Per CrowdStrike's Form 10-K for the fiscal year ended 2026-01-31, CrowdStrike's Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001535527-26-000025), and CrowdStrike's latest earnings filing, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Disclosed, filed evidence of continued ARR growth (+24% at fiscal year-end 2026) and high retention despite the July 19, 2024 Falcon sensor incident, alongside the company's own acknowledgment of resulting customer commitment packages, longer sales cycles, and some contraction -- a genuinely mixed but not uniformly negative post-incident picture. Per CrowdStrike's Form 10-K for the fiscal year ended 2026-01-31 and the original July 2024 incident disclosure (SEC accession 0001104659-24-081571), directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "For Q1 fiscal 2027, reported $590.9 million of GAAP operating cash flow and $468.5 million of issuer-defined free cash flow, and consolidated GAAP net income of $45.966 million -- of which $18.192 million was attributable to non-controlling interests, leaving GAAP net income attributable to CrowdStrike of $27.774 million. GAAP operating loss was approximately $30.6 million against non-GAAP operating income of approximately $325.7 million in the same quarter. Per CrowdStrike's Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001535527-26-000025) and CrowdStrike's Q1 fiscal 2027 earnings release, directly inspected by the independent evidence-recovery researcher who authored the supplemental correction bundle addressing PR #177's formal review, not by this Claude session."
+  - "At April 30, 2026, reported $4.553 billion in cash and cash equivalents, $66 million in strategic investments, and $745.8 million of long-term debt (primarily the $750 million 3.00% Senior Notes due February 2029); management stated existing cash and operating cash flow were expected to cover anticipated working-capital and capital-expenditure needs for at least 12 months. Cash materially exceeded reported debt at the quarter end. Per CrowdStrike's Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001535527-26-000025), directly inspected by the independent evidence-recovery researcher who authored the supplemental correction bundle, not by this Claude session."
+risks:
+  - risk: "The July 19, 2024 Falcon sensor update caused Windows-system outages; later filings state the incident harmed sales, reputation, and partner relationships, leading to customer commitment packages, longer sales cycles, and some contraction. The company also reported continued ARR growth and high retention after the incident -- both facts are filed and neither should be read to the exclusion of the other."
+    severity: high
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "CrowdStrike states it cannot estimate the loss range from outage-related proceedings and that insurance is not expected to cover all possible costs, claims, and liabilities. Recorded settlement offers were described as immaterial and offset by insurance at fiscal year-end 2026, but broader exposure (government inquiries, customer claims, litigation) remained unresolved in the inspected sources -- this record does not, and cannot, quantify an ultimate liability."
+    severity: high
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Fiscal-year-end 2026 ARR (~$5.253 billion) assumes expiring contracts renew on existing terms and can include active post-expiration renewal negotiations -- it is not GAAP revenue and may overstate durability if renewals later contract or fail; outage-related renewal effects can emerge with contract lags not yet visible in the inspected sources."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "CrowdStrike's Q1 fiscal 2027 consolidated GAAP net income ($45.966 million) and GAAP net income attributable to CrowdStrike ($27.774 million, after $18.192 million attributable to non-controlling interests) are single-quarter results against an accumulated deficit of approximately $1.3 billion; the company states it may not sustain profitability, and stock-based compensation and acquisition-related adjustments materially affect the non-GAAP operating-income figure ($325.7 million) relative to the GAAP operating loss (approximately $30.6 million) in the same quarter. One profitable quarter does not establish durable GAAP profitability."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "CrowdStrike's reported $4.553 billion of cash and $66 million of strategic investments exceed its $745.8 million of long-term debt at April 30, 2026, but the liquidity assessment excludes an estimable ultimate loss for the July 19 incident proceedings because no reasonable range could be determined, and acquisitions/investments remain significant uses of cash. Strategic investments may be illiquid or volatile and are not treated as cash; management's 12-month sufficiency statement is not a guarantee. Do not characterize the company as risk-free because cash exceeds debt."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "CrowdStrike recorded $18.1 million of Q1 fiscal 2027 July 19 incident expenses net of insurance receivable and a $17.1 million related quarter-end balance -- current-period cost figures that are small relative to cash on hand, but the company still states it cannot reasonably estimate the ultimate loss range from proceedings and that insurance will not cover all costs, claims, and liabilities actually incurred; the recorded balance should not be read as a cap on ultimate exposure."
+    severity: high
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "CrowdStrike describes Charlotte AI as an agentic-AI capability within the Falcon platform (AgentWorks, Agentic MDR) and an official Charlotte Agentic SOAR page offers flexible, credit-based commercial packaging -- more than a conceptual roadmap. However, the inspected filings and earnings materials do not separately disclose Charlotte AI revenue, ARR, ACV, customer count, margin, or contribution to Falcon platform economics: commercially packaged, but standalone economics undisclosed. Do not infer AI revenue from company-wide ARR or pipeline commentary."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, multiple company investor-relations domains, and a neutral non-target control domain all returned HTTP 403) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See CRWD.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Any material settlement, government inquiry outcome, or litigation development in the outage-related proceedings, which would update the loss-range and insurance-recovery uncertainty beyond what was disclosed at this record's 2026-07-28 evidence cutoff."
+    expected: "2026-10-26"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which post-outage renewal cohorts, government inquiry outcomes, and product-level competitive win rates will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). CrowdStrike shows a cloud-native, multi-module Falcon platform with disclosed, filed evidence of continued ARR growth (+24% at fiscal year-end 2026, ~$5.253 billion) and high retention even after the July 2024 outage. Held at Medium rather than higher because the company's own filings state it cannot estimate the ultimate loss range from outage-related proceedings, insurance is not expected to cover all possible costs and claims, and post-outage renewal cohorts, government inquiry outcomes, and product-level competitive win rates versus Palo Alto Networks remain unresolved in the inspected sources -- material, filed, unquantified tail risk sits alongside the otherwise strong recurring-revenue evidence. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0030-ws0005-milestone3-batch8-enterprise-software-cybersecurity.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior CrowdStrike Company Intelligence record existed). Portfolio HQ's WS-0005
+        Milestone 3 Batch 8, alongside IBM, NOW, CRM, ORCL, and PANW ("Enterprise Software and
+        Cybersecurity"). This session's own WebFetch attempts on 2026-07-28 were tested and
+        confirmed blocked (HTTP 403) on SEC EDGAR, multiple company investor-relations domains,
+        and a neutral non-target control domain (en.wikipedia.org), confirming a session-wide
+        network-policy denial -- per governance/decisions/OPS-0008-research-wave-protocol-v1.md
+        Section 2's stop-before-drafting gate, this session then used the principal-supplied,
+        frozen, independently-authored evidence bundle
+        BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml (SHA-256
+        4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c; 1612 lines, 8139 words,
+        78577 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte against
+        the uploaded copy and its external .sha256 manifest by this session before use, and
+        retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md.
+        Every fact in this record is attributed to that bundle's own directly-inspected primary
+        sources (CRWD-S1 through CRWD-S4), not to this Claude session's own document inspection --
+        see CRWD.md's Source-access disclosure. Known, disclosed, non-blocking bundle
+        characteristic: the source-manifest's claims_supported reverse index is not fully
+        reciprocal with claim-level source_ids (e.g. CRWD-C5 cites CRWD-S3 and CRWD-S4 in its own
+        source_ids, but those sources' claims_supported lists omit CRWD-C5); claim-level
+        source_ids control and are what this record's claims are drawn from. This record takes
+        particular care, per PI-0030 Section D.9, to distinguish the July 2024 outage's
+        company-disclosed financial/contractual impact from any third-party estimate or
+        allegation, and asserts no predictive claim about future incident risk, litigation
+        outcome, or reputational trajectory as established fact.
+    - date: "2026-07-28"
+      note: >
+        Bounded correction addressing PR #177's formal independent exact-head review
+        (GitHub review 4797499925, reviewed head 56291cb79090595292e24561b812ce9dafff6dcb,
+        verdict CHANGES REQUIRED), MATERIAL finding 1 (financial-quality/margin-relevance
+        evidence absent), profitability/cash-flow sub-component only: adds Q1 fiscal 2027 GAAP
+        operating cash flow ($590.9 million), issuer-defined free cash flow ($468.5 million),
+        and a GAAP net-income breakdown distinguishing consolidated GAAP net income ($45.966
+        million) from the $18.192 million attributable to non-controlling interests and the
+        resulting GAAP net income attributable to CrowdStrike ($27.774 million), alongside the
+        GAAP operating loss (~$30.6 million) versus non-GAAP operating income (~$325.7 million)
+        context. This correction does not add CrowdStrike's cash/investments/debt balance-sheet
+        picture (CRWD-SUP-C1) or Charlotte AI monetization content (CRWD-SUP-C4), so finding 1's
+        liquidity/debt component and finding 2 (AI-monetization strategy absent) remain open
+        pending a further, separately authorized correction. Correction authority:
+        principal-supplied, frozen supplemental evidence bundle
+        BATCH8_supplemental_evidence_recovery_20260728_v2.yaml (SHA-256
+        e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32; 1019 lines, 6828 words,
+        60545 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte by this
+        session against the uploaded copy and its external .sha256 manifest, and independently
+        confirmed to have exact (not merely partial) claim-level/reverse-index reciprocity across
+        its 16 sources and 16 claims before use. Facts drawn from claim CRWD-SUP-C2, sourced from
+        CRWD-SUP-S1 and CRWD-SUP-S2 (added below). The original v1 bundle and its own
+        already-cited sources (CRWD-S1 through CRWD-S4) are unchanged and remain controlling for
+        every claim they support; this supplement controls only its own new claims. This
+        correction does not change CrowdStrike's governed tier/target and does not constitute
+        principal acceptance -- a fresh exact-head independent review remains required before
+        this PR may be considered ready.
+    - date: "2026-07-28"
+      note: >
+        Second bounded correction addressing PR #177's formal exact-head reassessment (GitHub
+        review 4798513926, reviewed head e2ecda34f5c6b87946b1e422bad77fc56e3abdf4, verdict
+        CHANGES REQUIRED), which found MATERIAL finding 1's liquidity/debt sub-component and
+        MATERIAL finding 2 (AI-monetization) both still fully open after the first correction.
+        This session's own WebFetch access was re-tested this same day and reconfirmed blocked
+        session-wide (HTTP 403 on SEC EDGAR and on a neutral non-target control domain,
+        en.wikipedia.org), so this correction resumes using previously unused claims from the
+        already-verified supplemental bundle BATCH8_supplemental_evidence_recovery_20260728_v2.yaml
+        (SHA-256 e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32; independently
+        re-verified exact claim-level/reverse-index reciprocity across its 16 sources and 16
+        claims in this same session), per OPS-0008 Section 2's standing evidence-recovery
+        pre-authorization -- not fresh primary-source inspection performed by this session.
+        Closes finding 1's liquidity/debt component: cash ($4.553 billion), strategic
+        investments ($66 million), long-term debt ($745.8 million, primarily 3.00% Senior Notes
+        due February 2029), and the current-period incident cost figures ($18.1 million of
+        expenses net of insurance receivable, $17.1 million quarter-end balance), all per
+        CRWD-SUP-C1 and CRWD-SUP-C3, sourced from CRWD-SUP-S1. Closes finding 2: Charlotte AI is
+        described as an agentic-AI capability with commercial packaging (AgentWorks, Agentic
+        MDR, Charlotte Agentic SOAR credit-based pricing), explicitly stating standalone
+        revenue/ARR/ACV/margin/contribution are not separately disclosed, per CRWD-SUP-C4,
+        sourced from CRWD-SUP-S2/S3/S4. Does not infer AI revenue from company-wide ARR. Does
+        not characterize the company as risk-free or debt-free. This correction does not change
+        CrowdStrike's governed tier/target and does not constitute principal acceptance -- a
+        fresh exact-head independent review remains required before this PR may be considered
+        ready.
+sources:
+  - note: "CrowdStrike Holdings, Inc. Form 10-K for the fiscal year ended 2026-01-31 (SEC accession 0001535527-26-000010), filed 2026-03-05. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports Falcon-platform, ARR/retention definition, July 2024 incident, and commitments/contingencies content."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000010/crwd-20260131.htm"
+    date: "2026-03-05"
+  - note: "CrowdStrike Holdings, Inc. Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001535527-26-000025), filed 2026-06-04. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports current ARR, legal-proceedings, and risk-factor content; outage-related legal outcomes, loss ranges, and insurance recoveries remain uncertain."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000025/crwd-20260430.htm"
+    date: "2026-06-04"
+  - note: "CrowdStrike Form 8-K reporting first-quarter fiscal 2027 results (Item 2.02 and Exhibit 99.1, SEC accession 0001535527-26-000022), furnished 2026-06-03. Directly inspected by the evidence-recovery researcher, not by this Claude session. Contains non-GAAP metrics and management guidance."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000022/crwd-20260603.htm"
+    date: "2026-06-03"
+  - note: "CrowdStrike Holdings, Inc. Form 8-K concerning the July 19, 2024 Falcon sensor incident (Item 8.01, SEC accession 0001104659-24-081571), filed 2024-07-22. Directly inspected by the evidence-recovery researcher, not by this Claude session. Foundational incident disclosure describing an evolving situation at the time; later financial and legal effects are superseded by the fiscal 2026 Form 10-K and Form 10-Q above."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000110465924081571/tm2419936d1_8k.htm"
+    date: "2024-07-22"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 primary-source evidence bundle (BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml), SHA-256 4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c, principal-supplied implementation input under PI-0030/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the four sources above into claim-level extracts (CRWD-C1 through CRWD-C5) with source-ID-level provenance and fact/inference/judgment labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1612/8139/78577) against the uploaded copy and its external manifest before use; also retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"
+  - note: "CrowdStrike Holdings, Inc. Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001535527-26-000025), filed 2026-06-04 -- re-inspected for this record's 2026-07-28 correction. Directly inspected by the independent evidence-recovery researcher who authored the supplemental correction bundle, not by this Claude session. Supports the Q1 fiscal 2027 GAAP net-income breakdown (consolidated $45.966 million; $18.192 million attributable to non-controlling interests; $27.774 million attributable to CrowdStrike) and operating cash flow ($590.9 million) added by this correction."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000025/crwd-20260430.htm"
+    date: "2026-06-04"
+  - note: "CrowdStrike Reports First Quarter Fiscal Year 2027 Financial Results (Form 8-K Exhibit 99.1, SEC accession 0001535527-26-000022), furnished 2026-06-03 -- re-inspected for this record's 2026-07-28 correction. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports the issuer-defined free-cash-flow figure ($468.5 million) and the GAAP-operating-loss/non-GAAP-operating-income reconciliation added by this correction."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000022/crwd-20260603xex991.htm"
+    date: "2026-06-03"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 supplemental primary-source evidence-recovery bundle (BATCH8_supplemental_evidence_recovery_20260728_v2.yaml), SHA-256 e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32, principal-supplied correction input addressing PR #177's formal review 4797499925 -- not committed to this repository, matching the original v1 bundle's own precedent. Supplies claim CRWD-SUP-C2 (profitability and cash-flow evidence, including the GAAP net-income attribution breakdown). This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1019/6828/60545) against the uploaded copy and its external manifest, and independently confirmed exact claim-level/reverse-index reciprocity across all 16 sources and 16 claims, before use."
+    url: null
+    date: "2026-07-28"
+  - note: "CrowdStrike Holdings, Inc. Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001535527-26-000025), filed 2026-06-04 -- re-inspected again for this record's second 2026-07-28 correction (addressing GitHub review 4798513926). Directly inspected by the independent evidence-recovery researcher who authored the supplemental correction bundle, not by this Claude session. Supports the cash/strategic-investments/long-term-debt balance-sheet figures (CRWD-SUP-C1) and the current-period incident cost figures (CRWD-SUP-C3) added by this correction."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000025/crwd-20260430.htm"
+    date: "2026-06-04"
+  - note: "CrowdStrike Holdings, Inc. Form 10-K for the fiscal year ended 2026-01-31 (SEC accession 0001535527-26-000010) -- re-inspected for this record's second 2026-07-28 correction. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports the Charlotte AI product-description content (CRWD-SUP-C4)."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000010/crwd-20260131.htm"
+    date: "2026-03-05"
+  - note: "Charlotte Agentic SOAR Pricing (official product pricing page). Directly inspected by the independent evidence-recovery researcher, not by this Claude session. Establishes a commercial, credit-based packaging architecture for Charlotte AI; does not disclose realized revenue, ARR, ACV, customer count, or product-level profitability (CRWD-SUP-C4)."
+    url: "https://www.crowdstrike.com/en-us/platform/charlotte-ai/agentic-soar/pricing/"
+    date: "2026-07-28"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 supplemental primary-source evidence-recovery bundle (BATCH8_supplemental_evidence_recovery_20260728_v2.yaml), SHA-256 e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32, re-cited for this record's second 2026-07-28 correction addressing GitHub review 4798513926 -- not committed to this repository. Supplies claims CRWD-SUP-C1 (liquidity/debt) and CRWD-SUP-C3 (incident cost/insurance) and CRWD-SUP-C4 (Charlotte AI capability/monetization-limit). Independently re-verified in this session: SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1019/6828/60545) against the uploaded copy and its external manifest, and exact claim-level/reverse-index reciprocity across all 16 sources and 16 claims."
+    url: null
+    date: "2026-07-28"

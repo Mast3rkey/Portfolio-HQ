@@ -1,0 +1,26 @@
+dimension_id: defensive_offset_interface
+schema_version: '1.0'
+dimension_type: interface_placeholder
+source_mechanism:
+- intelligence/functional_doctrine/GLD_DEFENSIVE_ROLE.yaml:capital_preservation_character
+computation_status: not_yet_computable_interface_only
+evidence_or_source_refs:
+- intelligence/functional_doctrine/GLD_DEFENSIVE_ROLE.yaml:capital_preservation_character.capital_preservation_category
+- intelligence/functional_doctrine/GLD_DEFENSIVE_ROLE.yaml:economic_assessment_readiness (forced assessment_required)
+output_shape: A future computed record, once a governed opportunity-cost/economic-assessment methodology
+  exists, would restate a categorical defensive-offset comparison against the rest of the portfolio's
+  own disclosed drawdown behavior -- never a numeric hedge ratio, correlation coefficient, or avoided-loss
+  figure.
+uncertainty_or_gap_disclosure: intelligence/functional_doctrine/GLD_DEFENSIVE_ROLE.yaml now exists and
+  is sealed and its own capital_preservation_character.capital_preservation_category resolves market_exposed_via_referenced_structural_asset
+  -- a real, populated fact to eventually read from. The governing design's own forced computation_status
+  value for this dimension is unconditional on whether a cited source record happens to exist, not contingent
+  on it -- so this dimension's own computation_status remains not_yet_computable_interface_only regardless.
+later_governance_action: Loosening this dimension's forced computation_status requires its own separate,
+  future, explicit schema-amendment decision -- not made, implied, or begun by this record.
+record_status: sealed
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0007
+drafting_session_or_shard_id: single-pass-overlap-model-implementation
+content_sha256: cf9cd500f2710c7280effde328a5b414e3620c7dcb213049b5ebd0c99a5b2316
+cohort_manifest_entry: intelligence/overlap_model/COHORT_MANIFEST.yaml#defensive_offset_interface

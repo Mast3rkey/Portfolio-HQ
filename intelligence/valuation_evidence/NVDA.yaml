@@ -1,0 +1,391 @@
+schema_version: '1.0'
+ticker: NVDA
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2022-01-30'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 26910
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2022 (ended late Jan 2022) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 9800
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.372
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2022 operating income $10,000M divided by revenue $26,910M equals 37.2
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2022 operating income $10,000M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-01-29'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 26970
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2023 (ended late Jan 2023) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 9200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-01-28'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 60922
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2024 (ended late Jan 2024) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 19300
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-01-26'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 130497
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2025 (ended late Jan 2025) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 72880
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.624
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2025 operating income $81,453M divided by revenue $130,497M equals
+        62.4 percent.'
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2025 operating income $81,453M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2026-01-25'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 215900
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 (ended Jan 25 2026) revenue, +65% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 120070
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Secondary aggregator figure, not independently re-confirmed from a second source;
+            a rough cross-check via diluted EPS x implied share count is directionally consistent.
+    - item_category: operating_margin
+      value: 0.604
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2026 operating income $130,390M divided by revenue $215,900M equals
+        60.4 percent.'
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 operating income $130,390M (one-source synthesis)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 96600
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 free cash flow; internal consistency check passes (operating
+            cash flow $102,700M minus capex $6,040M = $96,660M ~= $96,600M reported)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 6040
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 10600
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA cash & equivalents, Jan 25 2026
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 62600
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: cash $10,600M plus marketable securities $51,950M equals $62,600M total
+        cash+investments.'
+      provenance:
+        sources:
+        - source_identifier: NVDA balance sheet, Jan 25 2026
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 8468
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: short-term debt $999M plus long-term debt $7,469M equals ~$8,468M total
+        debt.'
+      provenance:
+        sources:
+        - source_identifier: NVDA balance sheet, Jan 25 2026
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_debt
+      value: -54100
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total cash+investments $62.6B minus total debt $8.468B equals ~$54.1B
+        net CASH position (negative net debt).'
+      provenance:
+        sources:
+        - source_identifier: NVDA balance sheet figures above
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: Data Center
+    revenue:
+      item_category: revenue
+      value: 193740
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 Data Center segment revenue, 89.7% of total, +68.2% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Gaming
+    revenue:
+      item_category: revenue
+      value: 16000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 Gaming segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Professional Visualization
+    revenue:
+      item_category: revenue
+      value: 3190
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 Professional Visualization segment revenue, 1.5% of total
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Automotive
+    revenue:
+      item_category: revenue
+      value: 2350
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 Automotive segment revenue, 1.1% of total, +38.7% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: OEM & Other
+    revenue:
+      item_category: revenue
+      value: 619
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: NVDA FY2026 OEM & Other segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 221.54
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Early-August 2026 context (52-week high $236.54/low $164.07); cross-check 221.54 x
+          ~24.5B implied shares ~= $5.43T, consistent with reported ~$5.424T market cap.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: AMD
+    comparability_rationale: Direct GPU/AI-accelerator competitor.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: AVGO
+    comparability_rationale: Broadcom -- custom AI silicon (ASICs) and networking, adjacent AI-infrastructure
+      competitor.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: TSM
+    comparability_rationale: NVDA's foundry manufacturer -- different business model (pure-play foundry
+      vs. fabless designer), useful as a capacity/demand cross-check rather than a direct comparable.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: China export-control / H20-Blackwell dynamics
+    variables:
+    - variable_name: china_export-control_/_h20-blackwell_dynamics
+      evidence_basis: $4.5B charge in Q1 FY2026 tied to H20 excess inventory/purchase obligations as China
+        demand collapsed under export restrictions; a reported Malaysia/Singapore/UAE subsidiary routing
+        pathway for Blackwell/Rubin chips was reportedly closed by the Commerce Department in May 2026.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  NVDA executed a 10-for-1 stock split effective June 2024 -- diluted EPS figures found for FY2022-FY2024
+  appear to be PRE-SPLIT scale while FY2025-FY2026 figures are POST-SPLIT scale, a material comparability
+  discontinuity; diluted EPS is therefore omitted from this record entirely rather than reported inconsistently
+  across the split boundary (revenue and net income, unaffected by the split, are reported normally).
+  FY2026 net income and FY2026 operating income both trace to single-source synthesis and were not independently
+  corroborated from a second source, though internal consistency checks (FCF, price x shares) are directionally
+  supportive.
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: NVDA
+content_sha256: badf7d4f92ba555c798d8c3bba7ac151aa691e04b8ce04e0fb8b2856dbd7a019

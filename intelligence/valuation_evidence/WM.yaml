@@ -1,0 +1,308 @@
+schema_version: '1.0'
+ticker: WM
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 17930
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 19700
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 2238
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 20430
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 2304
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 22060
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 2746
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 25200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2025 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: WM acquired Stericycle (announced Jun 2024, closed Nov 2024, ~$7.2B enterprise value
+            including ~$1.4B assumed net debt) -- FY2025 is the first full year including it (via the
+            new WM Healthcare Solutions segment); FY2024 and earlier do not include it or only partially
+            do.
+    - item_category: earnings
+      value: 2710
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Lower than FY2024's $2,746M despite higher revenue and operating income -- plausibly
+            reflecting Stericycle-acquisition-financing interest expense/integration costs, but the specific
+            mechanism was not independently verified this session.
+    - item_category: operating_margin
+      value: 0.171
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2025 operating margin (derived from reported operating income $4.31B
+            / revenue $25.20B = 17.1%; reported operating income figure itself sourced directly)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 2940
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2025 free cash flow, +26.8% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 2600
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM FY2025 capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A separately-cited $633M 'sustainability growth' investment figure was found; unclear
+            if included in or additive to this $2.6B figure -- not reconciled.
+    - item_category: cash
+      value: 440
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM cash, Jun 30 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: This is a mid-year figure, several months stale relative to a fiscal-year-end balance;
+            the more current figure was not found.
+    - item_category: debt
+      value: 23800
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: WM total debt (Q1 2025 10-Q cited $23.84B; a Q3 2025 snippet cited long-term
+            debt alone of $22.482B) -- materially elevated post-Stericycle acquisition financing, consistent
+            across sources.
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 404.5
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $2,710M divided by diluted EPS $6.70
+        equals ~404.5M diluted shares.'
+      provenance:
+        sources:
+        - source_identifier: WM FY2025 net income and diluted EPS figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments: []
+  abstention_reason: 'Only partial/quarterly segment data were found this session: Collection & Disposal
+    margin was quarterly-only (Q2 2025: 37.9%), Recycling Processing & Sales/WM Renewable Energy growth
+    was qualitative only (''double-digit'' EBITDA growth, no dollar figure), and the new WM Healthcare
+    Solutions segment (from Stericycle) had only a Q2 2025 quarterly revenue figure ($646M) -- a full-year
+    FY2025 segment revenue/operating-income table was not located.'
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 230.54
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Recent observation (~Aug 2026 context); market cap ~$91.01B; 52-week range $194.11-$248.13.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: RSG
+    comparability_rationale: 'Republic Services -- closest direct comparable, #2 US waste company.'
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: GFL
+    comparability_rationale: GFL Environmental -- comparable North American waste/recycling operator (not
+      separately searched this session, named from general market knowledge; treat as unverified for current-session
+      figures).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: WCN
+    comparability_rationale: Waste Connections -- comparable large-cap solid-waste peer (not separately
+      searched this session; same caveat as GFL).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Stericycle integration
+    variables:
+    - variable_name: stericycle_integration
+      evidence_basis: Full realization of medical-waste/healthcare-solutions commercial and cost synergies
+        remains an ongoing, disclosed integration story into 2026.
+      provenance_label: historically_observed
+  - scenario_name: PFAS regulatory exposure
+    variables:
+    - variable_name: pfas_regulatory_exposure
+      evidence_basis: EPA is actively developing PFAS destruction/disposal guidance and potential Superfund-related
+        cost exposure for landfill operators including WM -- a real, disclosed regulatory risk, though
+        no WM-specific dollar figure was found this session.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  WM's Nov 2024 Stericycle acquisition (~$7.2B EV) is the dominant comparability event in this record
+  -- FY2025 is the first full year including it, while FY2024 and earlier largely predate it. Full-year
+  segment revenue/operating-income detail is a genuine, disclosed gap (only quarterly figures were found
+  for each segment). Balance-sheet cash is several months stale relative to any fiscal-year-end figure.
+  FY2025 net income being lower than FY2024's despite higher revenue and operating income is disclosed
+  as a real pattern without a fully verified explanation.
+abstention_index:
+- domain: segment_evidence
+  reason: 'Only partial/quarterly segment data were found this session: Collection & Disposal margin was
+    quarterly-only (Q2 2025: 37.9%), Recycling Processing & Sales/WM Renewable Energy growth was qualitative
+    only (''double-digit'' EBITDA growth, no dollar figure), and the new WM Healthcare Solutions segment
+    (from Stericycle) had only a Q2 2025 quarterly revenue figure ($646M) -- a full-year FY2025 segment
+    revenue/operating-income table was not located.'
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: WM
+content_sha256: eba58bf0b05412585287ad41fb02e5ab32ec90a328f328985a5abfc0262ee591

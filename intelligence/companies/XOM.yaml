@@ -1,0 +1,54 @@
+sector: Energy
+industry: Integrated Oil & Gas
+portfolio_role_ref: band
+competitive_advantages:
+  - "43 consecutive years of dividend increases, funded by integrated scale across upstream, refining, and chemicals -- a Dividend Aristocrat track record"
+  - "Low-cost Permian and Guyana production growth: Guyana set a quarterly production record near 914,000 b/d in Q1 2026; Permian integration of the Pioneer Natural Resources acquisition is management-guided to add over $3 billion in additional annual earnings and cost savings"
+  - "Integrated Downstream/Chemicals footprint (Energy Products, Chemical Products, Specialty Products segments) provides some earnings diversification against pure-upstream commodity swings, though all three remain commodity-cycle sensitive"
+risks:
+  - risk: "Commodity price and refining-margin volatility -- structural to the business; Q1 2026 showed real segment-level divergence (Upstream strength vs. Energy Products/Chemical Products softness) in the same reporting period"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Documented and independently reported geopolitical risk surrounding Guyana operations -- a March 2025 Venezuelan coast guard incursion near an Exxon-operated offshore production vessel (FPSO Prosperity) in Guyana's exclusive economic zone; the underlying territorial dispute remains unresolved, and any reported easing of near-term tension is fluid, not a durable assumption"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Climate-related litigation and regulatory exposure, including active litigation in multiple U.S. states per disclosed risk factors"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Chemical Products segment cyclicality, currently disclosed at bottom-of-cycle margins"
+    severity: low
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Cybersecurity, a standard disclosed risk category given the company's operational scale"
+    severity: low
+    identified: "2026-07-18"
+    status: monitoring
+catalysts:
+  - catalyst: "2026 Permian/Guyana production ramp under a guided $27-29 billion cash capital-expenditure plan, including Guyana's Uaru development (2026 startup) and continued Permian volume growth toward a ~1.8 MMBOE/d 2026 target"
+    expected: "2026-12-31"
+    status: pending
+  - catalyst: "Execution of the Gulf Coast CCS network, with approximately 9 million metric tons of annual third-party CO2 volume under contract (Linde, CF Industries, NG3, Lake Charles Methanol II, and Nucor among contracted counterparties) and additional contracted projects expected to commence operations"
+    expected: "2026-12-31"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "Conviction is Medium rather than High because strong advantaged production growth and shareholder-return capacity remain balanced by structural commodity cyclicality, uneven segment performance, project-execution exposure, and geopolitical uncertainty surrounding Guyana. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and was not inferred from XOM's existing band portfolio-tier placement -- it was reasoned solely from the disclosed operating and geopolitical picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-18"
+  next_due: "2026-10-16"
+  log:
+    - date: "2026-07-18"
+      note: "Initial Company Intelligence record established under PI-0005."
+sources:
+  - note: "ExxonMobil FY2025 Form 10-K (filed 2026-02-18, accession 0000034088-26-000045) and FY2025 full-year results release (2026-01-30) -- full-year earnings ($28.8B), shareholder distributions ($37.2B: $17.2B dividends + $20.0B buybacks), 43rd consecutive year of dividend increases. FY2025 total revenue is not included here -- secondary sources disagreed materially ($323.9B vs. $332.2B) and this was not resolved."
+    url: "https://www.sec.gov/Archives/edgar/data/34088/000003408826000045/xom-20251231.htm"
+  - note: "ExxonMobil Q1 2026 results release (reported 2026-05-01) and supporting Form 8-K -- Q1 2026 revenue ($85.1B vs. $83.1B prior-year quarter), GAAP earnings ($4.2B / $1.00 per diluted share), earnings excluding identified items ($4.9B / $1.16/share), and earnings excluding identified items and unfavorable estimated timing effects ($8.8B / $2.09/share). Segment results: Upstream $5.7B; Energy Products a $1.3B GAAP loss, with ExxonMobil's non-GAAP presentation excluding estimated timing effects showing materially stronger segment economics (reported elsewhere at approximately $2.8B, up roughly $2B year-over-year on improved refining margins); Chemical Products $0.1B; Specialty Products $0.7B."
+    url: "https://www.sec.gov/Archives/edgar/data/0000034088/000003408826000065/livef8k1q26991.htm"
+  - note: "2026 capital-expenditure guidance ($27-29B cash capex) and Permian/Guyana production targets, from ExxonMobil's January 30, 2026 earnings materials. Gulf Coast CCS contracted-tonnage figure (~9 million metric tons/year under third-party contract, including Linde, CF Industries, NG3, Lake Charles Methanol II, and Nucor)."
+    url: "https://investor.exxonmobil.com/sec-filings/all-sec-filings/content/0000034088-26-000033/livef8k4q25991.htm"
+  - note: "Dividend history: 43 consecutive years of annual increases; current quarterly rate $1.03/share, up from $0.99 (2024) and $0.95 (2023). Corroborated via independent dividend-tracking sources and news coverage."
+  - note: "March 2025 Guyana-Venezuela incident: a Venezuelan Coast Guard patrol vessel (identified as ABF Guaiqueri PO-11) entered Guyana's exclusive economic zone and approached the FPSO Prosperity, interrogating ship captains over several hours. The U.S. State Department and the Organization of American States responded; Venezuela disputed the characterization given the unresolved maritime boundary. The underlying territorial dispute remains before the International Court of Justice."

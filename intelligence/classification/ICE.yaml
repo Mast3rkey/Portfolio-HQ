@@ -1,0 +1,51 @@
+schema_version: '1.0'
+ticker: ICE
+economic_role:
+  economic_system_ref: Financial Infrastructure
+  company_role: Operator of regulated derivatives and securities exchanges and clearing organizations,
+    plus fixed-income data/analytics and mortgage-technology services, expanding into fixed-income electronic
+    trading infrastructure.
+  role_basis: ICE operates CFTC-designated derivatives clearing organizations and futures exchanges plus
+    the SEC-regulated NYSE national securities exchange, and derives a growing subscription-like annuity
+    from Fixed Income & Data Services (recurring revenue $531M in Q2 2026, +10% YoY); its pending, all-debt-financed
+    acquisition of MarketAxess would add an electronic fixed-income RFQ trading platform serving roughly
+    2,100 institutional investors and broker-dealers to this regulated-infrastructure and data footprint.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - CME Group
+  - Nasdaq, Inc.
+  - Cboe Global Markets
+  - London Stock Exchange Group (LSEG)
+  rationale: ICE announced a definitive, entirely debt-financed agreement to acquire MarketAxess for approximately
+    $6.0B equity value, pushing pro forma gross leverage to roughly 3.4x against ICE's own stated deleveraging
+    target of 3.0x or below, while simultaneously raising its quarterly buyback rate and layering this
+    new integration on top of the still-integrating, still loss-making Black Knight acquisition. ICE has
+    direct, recent precedent for antitrust-driven value erosion on a comparable deal -- the 2023 Black
+    Knight acquisition required an FTC-mandated divestiture that cut the completed deal value from an
+    originally proposed ~$13.1B to ~$11.9B -- making the MarketAxess deal's own HSR/antitrust clearance
+    a concrete, unresolved consideration in light of that history. This is a fundamental structural change
+    (a major, leverage-increasing acquisition) squarely warranting reviewer reconsideration rather than
+    routine monitoring.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: limited
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the MarketAxess acquisition's all-debt financing pushing pro forma leverage further from ICE's own
+    stated deleveraging target than the disclosed ~3.4x estimate, especially while the prior Black Knight
+    integration is still producing GAAP operating losses in Mortgage Technology.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-B
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ICE
+content_sha256: dff902ba9bda828cc6d2a79ca7872994fbeeb0a6968d9528a27a58f2171e4a96

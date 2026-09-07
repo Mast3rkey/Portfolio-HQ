@@ -1,0 +1,99 @@
+schema_version: '1.0'
+ticker: COST
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/COST.yaml
+  content_sha256: bba6726d02f0cbbce08571509293c8f176539e8682bcdfca183092d06ee9bce1
+evidence_reference:
+  source_file: intelligence/valuation_evidence/COST.yaml
+  content_sha256: a3a934ffcb68206d91944f9c8d0b25425e7574887c9d133035f7c25af3298417
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: secondary_corroborative
+  family_status: completed
+  valuation_range:
+    low: 327.75
+    base: 400.58
+    high: 491.62
+    unit_and_basis: USD per diluted share, equity value
+    governing_sensitivity: Illustrative P/E band for a mature, stable-compounder membership-retail archetype
+      (G); narrower than the archetype-A band, reflecting lower assumed growth-premium variance, not a
+      peer-derived or market-observed multiple.
+  assumptions_ledger:
+  - assumption_name: pe_multiple_low
+    value: 18
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pe multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pe_multiple_base
+    value: 22
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: pe_multiple_high
+    value: 27
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: latest_fy_net_income
+    value: 8099
+    provenance_label: historically_observed
+    source_or_derivation_note: FY2025 (ended 2025-08-31) net income $8,099M, reported, from the pinned
+      Stage-3 evidence record's own financial_evidence.
+  - assumption_name: diluted_shares_outstanding
+    value: 444.8
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+  applied_peers:
+  - WMT
+  - BJ
+  - TGT
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-G
+  P/E assumption; not an independent fair-value opinion and not a comparison to the current market price.
+uncertainty_summary: 'Relative-valuation range built from real reported FY2025 net income and diluted
+  share count. family_5 is secondary_corroborative for archetype G (family_2/family_3, its own Primary
+  path, are blocked -- see below). No peer-specific trading multiples were gathered in Stage-3 evidence
+  (peer_set_evidence carries only candidate identity and comparability rationale, never the peer''s own
+  financial figures or multiples) -- the multiple bands applied here are disclosed, illustrative assumptions
+  (provenance_label: assumed_for_illustration), archetype-informed but not peer-derived or market-derived.
+  Families 2 (FCFF DCF) and 3 (FCFE DCF) were not applied to this or any other ticker in the 27-company
+  VALUATION-0007 cohort. discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records
+  (VALUATION-0005) -- no risk-free-rate, cost-of-debt, tax-rate, capital-structure, or beta-observation
+  input exists to enable even a partial DCF computation. No discount rate, WACC, beta, or terminal growth
+  rate was fabricated for this or any other ticker. Closing this evidence gap is a separate, future, unauthorized
+  governance unit.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+  - segment_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: COST
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: secondary_corroborative
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+    - segment_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchA-compounder
+content_sha256: 2b05bac403331a2f4c58fbe2962aacb66248b0adfe0fc69432e85401955a1753
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for COST

@@ -1,0 +1,73 @@
+schema_version: '1.0'
+instrument_id: VEA
+asset_type: etf
+structural_reference:
+  source_instrument_id: VEA
+  source_schema: etf_classification
+  source_file: intelligence/etf_classification/VEA.yaml
+  referenced_content_sha256: cd005cf8310e8dfa37c138f2173b9d0509c8dcfac92bbcaa3770e45a060471fe
+cost_and_tracking_quality_economic_significance:
+  significance_category: favorable_vs_category
+  rationale: VEA's own sealed ETF classification record discloses its expense ratio as a structural
+    fact (consumed here by reference only, never restated as a bare figure). Sourced comparison against
+    two other major developed-ex-US index funds in VEA's own category -- iShares Core MSCI EAFE ETF and
+    Schwab International Equity ETF -- found VEA's own disclosed cost figure is the lowest of the three,
+    meaningfully below both named peers. This is a categorical cost comparison against same-category
+    peers, never a numeric cost-savings or hurdle-rate calculation. The comparison is disclosed as
+    fund-coverage-imperfect rather than silently treated as apples-to-apples -- the three funds differ
+    somewhat in country/holdings breadth (VEA's own broader developed-market coverage, including Canada
+    and South Korea, versus the narrower EAFE-region and streamlined-holdings scope of its two named
+    peers respectively), a structural difference distinct from the cost comparison itself.
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: This record's own peer-comparison finding rests entirely on WebSearch-aggregated
+    secondary financial-press and fund-comparison material -- no primary issuer fact sheet, prospectus,
+    or SEC filing for VEA or either of its two named peers was directly inspected, matching VEA's own
+    sealed ETF classification record's disclosed primary-source-access limitation (this environment's
+    network egress policy blocked both investor.vanguard.com and advisors.vanguard.com outright). The
+    specific numeric cost figures located are not restated in this record's own free text under any
+    circumstance (XASSET-0010's own zero-numeric-field rule, no carve-out) -- they informed the
+    categorical determination only.
+provenance:
+  sources:
+  - source_identifier: VEA's own sealed intelligence/etf_classification/VEA.yaml record (structural
+      reference, consumed by hash pin only)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: WebSearch aggregation comparing VEA's own disclosed expense ratio and holdings
+      coverage against iShares Core MSCI EAFE ETF and Schwab International Equity ETF, citing
+      fund-comparison articles from multiple financial-press and fund-analysis outlets (2026 vintage)
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing multiple financial-press fund-comparison articles;
+      no primary issuer fact sheet, prospectus, or SEC filing for VEA or either named peer was directly
+      opened.
+uncertainty_summary: This record's own peer-comparison finding rests entirely on WebSearch-aggregated
+  secondary financial-press and fund-comparison material -- no primary issuer fact sheet, prospectus,
+  or SEC filing for VEA or either of its two named peers was directly inspected, matching VEA's own
+  sealed ETF classification record's disclosed primary-source-access limitation (this environment's
+  network egress policy blocked both investor.vanguard.com and advisors.vanguard.com outright). The
+  specific numeric cost figures located are not restated in this record's own free text under any
+  circumstance (XASSET-0010's own zero-numeric-field rule, no carve-out) -- they informed the
+  categorical determination only.
+evidence_quality_status: partial
+record_status: sealed
+cross_asset_handoff:
+  economic_characterization_summary: favorable_vs_category
+  evidence_quality_summary: partial
+  uncertainty_summary: This record's own peer-comparison finding rests entirely on WebSearch-aggregated
+    secondary financial-press and fund-comparison material -- no primary issuer fact sheet, prospectus,
+    or SEC filing for VEA or either of its two named peers was directly inspected, matching VEA's own
+    sealed ETF classification record's disclosed primary-source-access limitation (this environment's
+    network egress policy blocked both investor.vanguard.com and advisors.vanguard.com outright). The
+    specific numeric cost figures located are not restated in this record's own free text under any
+    circumstance (XASSET-0010's own zero-numeric-field rule, no carve-out) -- they informed the
+    categorical determination only.
+abstention_index: []
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0011
+drafting_session_or_shard_id: single-pass-etf-crypto-economic-assessment-implementation
+content_sha256: b8c90454d98bbc445360f92562ff01bfee40e25e7c5f6bb004b5c95d259cc42c
+cohort_manifest_entry: intelligence/instrument_economic_assessment/COHORT_MANIFEST.yaml#VEA

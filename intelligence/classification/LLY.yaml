@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: LLY
+economic_role:
+  economic_system_ref: Healthcare & Life Sciences
+  company_role: pharmaceuticals / biopharma
+  role_basis: Eli Lilly's Q1 2026 revenue of $19.8 billion (+56% YoY) was driven primarily by its incretin
+    (GLP-1) franchise, with defined key products generating 68% of quarterly revenue and continued pipeline
+    conversion including the FDA-approved oral GLP-1 Foundayo.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - NVO
+  - ABBV
+  - MRK
+  - JNJ
+  rationale: 'Lilly''s evidence shows two concrete, fundamental developments occurring in close succession:
+    FDA approval of Foundayo -- the first new molecular entity approved under the FDA''s National Priority
+    Voucher Program, carrying a boxed warning and material gastrointestinal/pancreatitis/kidney/gallbladder/thyroid-tumor
+    precautions -- and four separate acquisition agreements (Orna, Centessa, Kelonia, Ajax) announced
+    within a single quarter, alongside a newly announced Pennsylvania manufacturing-capacity commitment.
+    Combined with extreme revenue concentration (68% of Q1 2026 revenue from a narrow key-product set)
+    and net-pricing pressure already partly offsetting reported growth, this cluster of concurrent, concrete
+    regulatory and business-development events is distinctive relative to Lilly''s own established profile
+    and merits a reviewer''s fresh look, without asserting how the new approval or acquisitions will ultimately
+    perform.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: true
+  relationship_record_coverage: []
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: partial
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a further, faster erosion of realized net pricing on Mounjaro/Zepbound beyond what already partly
+    offset Q1 2026's reported growth, given 68% of revenue concentrates in a small set of cardiometabolic
+    products.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-A
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#LLY
+content_sha256: 2a6e2ceba7d0bcb5d4a4b1ba9e47649092f1f8e40b14ea0bbba15e14f053abdf

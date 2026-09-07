@@ -1,0 +1,76 @@
+sector: Industrials
+industry: Aerospace and Defense
+portfolio_role_ref: band
+competitive_advantages:
+  - "Diversified three-segment aerospace/defense conglomerate structure -- Collins Aerospace (FY2025 net sales $30,196 million, 16.3% operating margin), Pratt & Whitney (FY2025 net sales $32,916 million, 7.9% operating margin), and Raytheon defense systems (FY2025 net sales $28,043 million, 11.5% operating margin) -- giving exposure across commercial aerospace OEM/aftermarket, military engines, and missile/sensor/defense-electronics programs simultaneously. Per RTX FY2025 Form 10-K, Note 20 (Segment Financial Data), directly inspected. [RTX-C01]"
+  - "Large, growing, and increasingly defense-weighted backlog: $268 billion at 2025-12-31 (commercial $161B / defense $107B), up from $218 billion at 2024-12-31; $289 billion at 2026-06-30 (commercial $170B / defense $119B) -- defense backlog alone grew from $75B to $86B in a single quarter, driven partly by $3.7 billion of Patriot GEM-T interceptor bookings for Ukraine plus $988 million for Poland via NATO NSPA. Per RTX FY2025 Form 10-K and Q2 2026 Form 10-Q, both directly inspected. [RTX-C02]"
+  - "Pratt & Whitney's F135 engine has exclusive sole-source status on all three F-35 variants, surpassing one million flight hours in 2025, with a $2.8 billion undefinitized contract action for F135 Lot 18/19 awarded in 2025 -- a durable, multi-decade military-engine franchise largely insulated from commercial-engine competitive dynamics. Per RTX FY2025 Form 10-K, directly inspected. [RTX-C03]"
+  - "Improving financial quality and credit profile: total debt fell from $41,261 million (FY2024) to $37,904 million (FY2025); total debt/total capitalization improved from 40% to 36%; Moody's outlook improved Baa1/negative to Baa1/stable (March 2025) and S&P affirmed BBB+ with outlook improved negative to stable (June 2025); FY2026 guidance (as of the Q2 2026 release) raised to adjusted sales $95.0-96.0 billion, adjusted EPS $7.10-7.25, and free cash flow $8.50-8.75 billion. Per RTX FY2025 Form 10-K and Q2 2026 earnings release, both directly inspected. [RTX-C04]"
+risks:
+  - risk: "The Pratt & Whitney GTF (PW1100G-JM) powder-metal contamination matter remains open, not closed, more than three years after its July/August 2023 discovery: a $2.9 billion pre-tax charge was taken in Q3 2023 (net RTX/P&W 51% program share; gross 100% impact was a $5.4 billion revenue reduction offset by a $2.5 billion cost-of-sales reduction reflecting partners' share); the customer-compensation accrual has declined from $2.8 billion initially to $1.7 billion (FY2024-end) to $0.7 billion (FY2025-end) to $0.4 billion (2026-06-30), with an estimated ~$0.7 billion of further FY2026 cash impact; and affected-fleet aircraft-on-ground levels are expected to 'remain elevated through 2026' per the company's own current disclosure. An active SEC investigation (subpoenas received, outcome/timing unpredictable per the company) and an appealed securities class action remain open."
+    severity: moderate
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "A January 7, 2026 Executive Order, disclosed in RTX's own FY2025 Form 10-K, empowers the 'Secretary of War' to potentially restrict RTX's ability to pay dividends or repurchase stock if the government determines RTX has 'underperformed or lacked sufficient prioritization of, investment in or production speed in' its U.S. government contract performance -- a genuinely recent (within roughly seven months of this record) and unusual disclosed political/regulatory risk directly targeting capital-return capacity, not a generic risk-factor boilerplate."
+    severity: moderate
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "Share-repurchase pace has collapsed even as cash generation and the balance sheet improved: RTX repurchased only $50 million of stock in all of FY2025 (versus $186 million in FY2024) against an $11 billion authorization from October 2023 of which only ~$0.6 billion of authority remained at 2025-12-31 -- meaning the large majority of that authorization was executed earlier, with the pace now sharply reduced, while dividends continued rising ($2.670/share declared 2025 versus $2.320 in 2023). Shareholders are not currently the primary beneficiary of the recent cash-flow inflection."
+    severity: low
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "Persistent legacy legal/regulatory overhang beyond the GTF matter: two active Deferred Prosecution Agreements and an SEC Administrative Order (October 2024, covering FCPA/AECA-related Middle East payments and defective pricing on legacy 2011-2017 contracts) under a single external compliance monitor; a separate August 2024 State Department Consent Agreement (three-year term) for ITAR/AECA export-control violations tied mainly to the Rockwell Collins integration, requiring an external Special Compliance Officer and an ITAR-compliance audit; and roughly $2.1 billion plus interest in disputed DCMA Cost Accounting Standards overpayment claims still being litigated at the ASBCA/Federal Circuit. None is individually deemed material by RTX, but collectively they signal sustained government compliance scrutiny."
+    severity: low
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "Segment margin disparity: Pratt & Whitney's FY2025 operating margin (7.9%) remains structurally the weakest of the three segments, well below Collins (16.3%) and Raytheon (11.5%) -- roughly a third of consolidated revenue sits in the lowest-margin, GTF-liability-bearing segment, a legitimate conglomerate-discount consideration. Realized geopolitical supply-chain disruption is not merely hypothetical: Canadian sanctions (February 2024) on Russian-owned titanium suppliers forced RTX to source alternate titanium, causing a $175 million Q1 2024 charge within Collins."
+    severity: low
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "A confirmed U.S. government shutdown occurred and was only resolved February 3, 2026 (per RTX's own FY2025 Form 10-K subsequent-events disclosure), with the Department of Homeland Security remaining on a continuing resolution as of that filing -- direct, realized confirmation that appropriations/budget-cycle disruption is a recurring, not merely theoretical, exposure for a company with ~52% total government-related revenue."
+    severity: low
+    identified: "2026-08-03"
+    status: monitoring
+catalysts:
+  - catalyst: "RTX's third-quarter 2026 earnings release, which will show whether the GTF customer-compensation accrual (0.4 billion at 2026-06-30) continues its declining trend, whether affected-fleet aircraft-on-ground levels begin improving from 'elevated' as FY2026 progresses, and whether the raised FY2026 guidance (adjusted sales $95.0-96.0 billion, adjusted EPS $7.10-7.25) is reaffirmed."
+    expected: "2026-10-22"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which the GTF accrual/AOG trend, defense and commercial backlog mix, buyback resumption (near-zero pace in FY2025), the January 2026 Executive Order's actual invocation status, and SEC-investigation developments will next be actively re-checked."
+    expected: "2026-11-01"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). RTX shows genuine, primary-source-confirmed operating momentum: 22% year-over-year backlog growth to $289 billion, raised FY2026 guidance across sales/EPS/free cash flow, margin expansion in all three segments in the most recently reported quarter, an improving credit profile (debt down, ratings outlook improved), and a durable, largely insulated military-engine franchise (F135/F-35 sole-source). Held at Medium rather than higher because the GTF powder-metal matter remains genuinely unresolved more than three years after discovery (elevated aircraft-on-ground levels expected to persist through 2026, an open SEC investigation, appealed litigation), a newly disclosed and unusual January 2026 Executive Order creates real, filing-disclosed political risk specifically targeting capital-return capacity, buyback activity has collapsed to a near-token pace, and Pratt & Whitney -- roughly a third of revenue -- remains structurally the lowest-margin segment and the one still carrying the GTF liability. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from RTX's existing band portfolio-tier placement or its 0.75% canonical target -- it was reasoned solely from the disclosed operating and financial picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-03"
+  next_due: "2026-11-01"
+  log:
+    - date: "2026-08-03"
+      note: >
+        Record created under governance/decisions/PI-0036-gnrc-rtx-company-intelligence-wave.md
+        (status: Accepted at this record's base commit 71ac5d759b4f7adc5b8f2237f00e6d6a407f5d00),
+        narrowly superseding governance/decisions/PI-0033-ws0005-milestone3-residual-deferrals.md
+        solely for research-authorization purposes as to RTX specifically -- PI-0033's own
+        seventeen-name disposition text is otherwise unedited and remains fully controlling. First
+        Company Intelligence coverage for RTX (no prior record existed). Filed as an administrative
+        pairing with GNRC (identical portfolio-governance status -- held, targeted, ungated,
+        uncovered -- and execution efficiency only; the two companies share no genuine economic
+        mechanism and this record makes no such claim -- see PI-0036 and RTX.md Section 19). This
+        session directly opened and parsed RTX's FY2025 Form 10-K, Q2 2026 Form 10-Q, and Q2 2026
+        earnings press release (Exhibit 99 to Form 8-K) via a working SEC EDGAR access path
+        (User-Agent-identified fetch plus the data.sec.gov JSON API; standard WebFetch calls to
+        sec.gov returned HTTP 403) -- a materially stronger access posture than the same-day GNRC
+        record, which could not directly open any SEC-hosted document. investors.rtx.com timed out
+        on every attempt, so no standalone investor-presentation slide deck was reviewed; every fact
+        below is filing-sourced. See Source-access disclosure in RTX.md.
+sources:
+  - note: "RTX Corporation FY2025 Form 10-K for the period ended 2025-12-31, filed 2026-02-06 (SEC CIK 0000101829). Directly opened and parsed by this session (200 response via a working User-Agent-identified fetch path; standard WebFetch to sec.gov returned HTTP 403). Supports segment financial data, backlog, GTF powder-metal matter detail, export-control/sanctions/DPA/Consent Agreement disclosures, the January 2026 Executive Order disclosure, capital allocation, debt, and credit-rating content."
+    url: "https://www.sec.gov/Archives/edgar/data/101829/000010182926000006/rtx-20251231.htm"
+    date: "2026-02-06"
+  - note: "RTX Corporation Form 10-Q for the quarterly period ended 2026-06-30 (Q2 2026), filed 2026-07-23. Directly opened and parsed by this session. Supports the most recent backlog figures ($289 billion total, $170B commercial/$119B defense), Raytheon defense backlog and Ukraine/Poland Patriot GEM-T bookings, and the updated GTF accrual balance ($0.4 billion)."
+    url: "https://www.sec.gov/Archives/edgar/data/101829/000010182926000027/rtx-20260630.htm"
+    date: "2026-07-23"
+  - note: "RTX Corporation second-quarter 2026 earnings press release (Exhibit 99 to Form 8-K filed 2026-07-23). Directly opened and parsed by this session (company's own text). Supports Q2 2026 segment margin detail, raised FY2026 guidance, and CEO commentary on 22% year-over-year backlog growth."
+    url: "https://www.sec.gov/Archives/edgar/data/101829/000010182926000025/a2026-07x238xkerexhibit99.htm"
+    date: "2026-07-23"

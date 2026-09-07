@@ -1,0 +1,66 @@
+schema_version: '1.0'
+sleeve_id: fund_broad_market
+evidence_layer_references:
+- layer_name: etf_classification
+  module: etf_classification_validator.py
+  directory: intelligence/etf_classification
+  manifest_content_sha256: 8955ce87aec1df21133a632e00991599f15d1203db96dffdea130b5230973fce
+  sleeve_subject_scope:
+    referenced_subject_ids:
+    - SPY
+    - VEA
+    - VWO
+    referenced_record_content_sha256:
+      SPY: 10f3f805933b134fdfb0f1fcb9ad0126b5f0130e30c95088b6c9de1d5a58f63f
+      VEA: cd005cf8310e8dfa37c138f2173b9d0509c8dcfac92bbcaa3770e45a060471fe
+      VWO: af297ea75766b9d992a1dee68f05652fef9cf4df20cf24f54fe48f41cd96ebe3
+  as_of_note: Reflects etf_classification's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+- layer_name: instrument_economic_assessment
+  module: instrument_economic_assessment_validator.py
+  directory: intelligence/instrument_economic_assessment
+  manifest_content_sha256: 8ac78dafe43b3248c4748d802ad8f5832e631751b3ae997c96fbca549e9ddf04
+  sleeve_subject_scope:
+    referenced_subject_ids:
+    - SPY
+    - VEA
+    - VWO
+    referenced_record_content_sha256:
+      SPY: 3bd02ff4028830439573a78f2b2cbe6d92070615ca1907f5530de72dfec57cda
+      VEA: b8c90454d98bbc445360f92562ff01bfee40e25e7c5f6bb004b5c95d259cc42c
+      VWO: 4f9986fb7eae9758b558d5f9d76325eb6469e82912ed0c2457d6c491ca10ac00
+  as_of_note: Reflects instrument_economic_assessment's own currently sealed cohort state as of this record's
+    own sealed_at date; a validator independently re-derives every fact live rather than trusting this
+    note.
+economic_role_summary: The broad-market fund sleeve holds a small, sealed group of passively managed,
+  market-traded index funds -- covering domestic, developed-ex-domestic, and emerging equity exposure
+  -- each carrying its own structural classification record and its own instrument-level economic-assessment
+  record. Unlike the equity sleeve, this sleeve's own covered funds have never passed through a qualitative
+  archetype or valuation-evidence research program of any kind -- their governed evidence base begins
+  and ends at structural classification and a categorical instrument-level economic finding. This summary
+  describes only the currently governed fund population; it makes no claim that this population is a complete
+  or permanently fixed universe of broad-market index instruments.
+evidence_coverage_profile: substantially_computed_with_disclosed_gaps
+functional_role_note: null
+abstention_index:
+- source_layer: etf_classification
+  field_path: evidence_quality_status
+  value: partial
+  reason: Every fund in the broad-market sleeve's own sealed structural-classification cohort carries
+    a disclosed partial evidence-quality status. Every underlying source in this cohort's own governed
+    evidence was reached through search aggregation rather than direct primary-document inspection, per
+    the classification framework's own disclosed access limitation -- carried forward here unchanged.
+- source_layer: instrument_economic_assessment
+  field_path: evidence_quality_status
+  value: partial
+  reason: Every fund in the broad-market sleeve's own sealed instrument-economic-assessment cohort carries
+    a disclosed partial evidence-quality status. The same disclosed access limitation named above also
+    governs each fund's own separate economic-assessment record -- disclosed here rather than restated
+    per fund.
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/profiles/COHORT_MANIFEST.yaml#fund_broad_market
+content_sha256: 2ed99d67847a9aea644be6867c53cac15b5870eff84ea759ab87a7a3a2d49de1

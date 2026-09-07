@@ -1,0 +1,31 @@
+schema_version: '1.0'
+ticker: TSM
+primary_archetype: B
+secondary_archetype: null
+rationale: 'TSM''s economics are dominated by extreme, sustained reinvestment: Q2 2026 capital expenditure
+  alone was approximately 39% of quarterly revenue, with raised FY2026 capex guidance of US$60-64 billion
+  and a newly expanded ~US$265 billion total Arizona investment commitment on top of Japan and Germany
+  facilities. Revenue and margins are explicitly tied to multi-year fab buildouts and node transitions
+  (N2 entering high-volume production, N2P/A16 scheduled for second-half 2026), with management itself
+  attributing several percentage points of near-term gross-margin dilution directly to the pace of that
+  reinvestment. Long asset lives (fabs, multi-year construction) and this reinvestment sensitivity are
+  the defining characteristic disclosed, rather than a single blended, comparable-driven profile. End-market
+  revenue mix (HPC, Smartphone, IoT, Automotive, Digital Consumer) reflects demand composition within
+  one foundry-manufacturing business model, not materially different segment economics, so a diversified/multi-segment
+  read was not supported by the evidence.'
+evidence_quality:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: The quarter-end cash/debt figures and the FY2025 Form 20-F's full-year aggregate
+    long-term debt figure are explicitly disclosed as not directly comparable without further reconciliation.
+disclosed_evidence_conflicts:
+- The $265 billion total Arizona investment figure rests on an investor-relations moderator's statement
+  during the earnings call that the CEO did not explicitly correct, rather than a separately confirmed,
+  formally issued figure.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-5
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#TSM
+content_sha256: 68437998d7f6d1057edf01a0ca01acd0e84df4aaa8ff9394f1a3e8d47dcfe22b

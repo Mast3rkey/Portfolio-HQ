@@ -1,0 +1,174 @@
+sector: Information Technology
+industry: Application Software / Enterprise Workflow Automation
+portfolio_role_ref: band
+competitive_advantages:
+  - "Unified cloud workflow platform spanning IT service management, IT operations management, security operations, customer/employee workflows, and creator tooling, with Now Assist AI agents embedded across modules -- a stated, filed strategy of platform breadth rather than a single point solution. Per ServiceNow's Form 10-K for the year ended 2025-12-31 (SEC accession 0001373715-26-000007), directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 8 evidence bundle (see Source-access disclosure in NOW.md) -- not directly inspected by this Claude session."
+  - "Reported a 98% ACV-based renewal rate for 2023-2025 and year-end 2025 remaining performance obligations (RPO) of $28.2 billion, with 46% expected to be recognized within 12 months -- strong disclosed recurring-revenue and contract-durability evidence, though the renewal measure excludes several expansion/contraction effects and RPO varies with contract duration and currency. Per ServiceNow's Form 10-K for the year ended 2025-12-31, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "For first-quarter 2026, reported subscription revenue of $3.671 billion, cRPO of $12.64 billion, RPO of $27.7 billion, and more than 130% year-over-year growth in customers spending over $1 million ACV on Now Assist -- current, filed evidence of both continued recurring-revenue growth and an actively expanding AI-product customer cohort, though total Now Assist revenue and gross-margin economics are not separately disclosed. Per ServiceNow's Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001373715-26-000056) and ServiceNow's Q1 2026 earnings release, directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "Product breadth across IT, operations, security, customer, employee, and creator workflows raises bundling, sales-complexity, and execution risk; product capability does not by itself establish incremental AI revenue or profitability, and customer examples in the filing are selective rather than representative."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "The headline 98% ACV-based renewal rate is definition-limited -- it excludes several expansion and contraction effects -- and cannot be directly compared with Salesforce's attrition rate, CrowdStrike's ARR-based retention, or Palo Alto Networks' NGS ARR without accounting for each issuer's own definition and exclusions."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "ServiceNow acquired Moveworks for approximately $2.4 billion, recording substantial goodwill and developed-technology value -- integration and synergy realization are material to the AI-platform thesis and were not established as achieved in the inspected sources; purchase accounting was preliminary at filing."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "ServiceNow financed part of its Armis acquisition with a $4.0 billion unsecured term loan; its Q2 2026 filed cash-flow statement directly reports $3.991 billion of term-loan proceeds net of issuance costs and $4.000 billion of term-loan repayments in the same period -- the repayment itself is a directly reported fact, not unresolved. ServiceNow separately issued $4.0 billion of multi-tranche notes (2028-2056 maturities) around the same period. The precise funding bridge, the use of the notes' proceeds, the final debt-component composition, and Armis purchase-accounting details are not established in the inspected sources, and the notes should not be assumed to have necessarily funded the term-loan repayment."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "At June 30, 2026, ServiceNow reported $2.503 billion of cash and cash equivalents, $2.161 billion of current marketable securities, and $2.043 billion of long-term marketable securities (cash plus securities: $6.707 billion by direct arithmetic), against $2.082 billion of short-term debt and $5.435 billion of long-term debt (balance-sheet debt: $7.517 billion by direct arithmetic). The balance sheet also includes $8.057 billion of current deferred revenue, so a simple current-assets/current-liabilities comparison does not describe the subscription model fully, and strategic investments are excluded from the liquid-securities total. Do not call ServiceNow net-cash, debt-free, safely levered, or fully refinanced from these figures alone."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "For Q2 2026, ServiceNow reported GAAP operating income of $162 million (4% margin), net cash from operating activities of $587 million, and issuer-defined non-GAAP free cash flow of $634 million (16% margin); for the first six months it reported $2.257 billion of operating cash flow and $2.299 billion of non-GAAP free cash flow. Q2 GAAP operating margin was materially below the 29.5% non-GAAP operating margin because of stock compensation, acquired-intangible amortization, business-combination costs, and severance, and Q2 operating cash flow declined from the prior-year quarter. Present GAAP and non-GAAP values together; do not use these figures to recommend margin or borrowing."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, multiple company investor-relations domains, and a neutral non-target control domain all returned HTTP 403) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See NOW.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "ServiceNow's next quarterly results, which would update renewal, RPO/cRPO, and Now Assist customer-cohort metrics beyond the Q1 2026 figures inspected for those items in this record (the Q2 2026 earnings release was inspected only for the separate term-loan/notes financing facts added by this record's 2026-07-28 correction, not for renewal/RPO/cohort metrics). Correction note (2026-07-28): an earlier draft of this catalyst cited an unsupported 2026-10-22 date; independently inspected official ServiceNow sources (the July 1, 2026 earnings-date announcement and the July 22, 2026 Q2 2026 results release) establish only the already-completed Q2 2026 date and supply no official Q3 2026 date. This entry is event-based pending an official ServiceNow announcement, not a guessed date."
+    expected: "pending official announcement -- no confirmed next-earnings date established by directly inspected sources as of 2026-07-28"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which direct Now Assist revenue/margin disclosure, post-Moveworks retention evidence, and seat-versus-module expansion mix will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). ServiceNow shows strong disclosed recurring-revenue economics (98% renewal, $28.2 billion year-end RPO, continued Q1 2026 subscription and RPO growth) and a real, currently expanding AI-product customer cohort (>130% YoY growth in customers spending over $1 million ACV on Now Assist). Held at Medium rather than higher because material elements of the AI-monetization and acquisition-integration thesis remain undisclosed at the claim level this record relies on: total Now Assist revenue and gross margin are not separately reported, and Moveworks' ~$2.4 billion acquisition (with substantial recorded goodwill) has not yet demonstrated integration success in the inspected sources. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0030-ws0005-milestone3-batch8-enterprise-software-cybersecurity.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior ServiceNow Company Intelligence record existed). Portfolio HQ's WS-0005
+        Milestone 3 Batch 8, alongside IBM, CRM, ORCL, CRWD, and PANW ("Enterprise Software and
+        Cybersecurity"). This session's own WebFetch attempts on 2026-07-28 were tested and
+        confirmed blocked (HTTP 403) on SEC EDGAR, multiple company investor-relations domains,
+        and a neutral non-target control domain (en.wikipedia.org), confirming a session-wide
+        network-policy denial -- per governance/decisions/OPS-0008-research-wave-protocol-v1.md
+        Section 2's stop-before-drafting gate, this session then used the principal-supplied,
+        frozen, independently-authored evidence bundle
+        BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml (SHA-256
+        4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c; 1612 lines, 8139 words,
+        78577 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte against
+        the uploaded copy and its external .sha256 manifest by this session before use, and
+        retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md.
+        Every fact in this record is attributed to that bundle's own directly-inspected primary
+        sources (NOW-S1 through NOW-S3), not to this Claude session's own document inspection --
+        see NOW.md's Source-access disclosure. Known, disclosed, non-blocking bundle
+        characteristic: the source-manifest's claims_supported reverse index is not fully
+        reciprocal with claim-level source_ids (e.g. NOW-C5 cites NOW-S3 in its own source_ids,
+        but NOW-S3's claims_supported list omits NOW-C5); claim-level source_ids control and are
+        what this record's claims are drawn from.
+    - date: "2026-07-28"
+      note: >
+        Bounded correction addressing PR #177's formal independent exact-head review
+        (GitHub review 4797499925, reviewed head 56291cb79090595292e24561b812ce9dafff6dcb,
+        verdict CHANGES REQUIRED): (1) MATERIAL finding 6 (financial-quality/margin-relevance
+        evidence absent) is partially addressed with directly reported acquisition-financing
+        facts -- ServiceNow's $4.0 billion unsecured term loan for the Armis acquisition, Q2
+        2026 filed cash-flow figures of $3.991 billion of term-loan proceeds net of issuance
+        costs and $4.000 billion of term-loan repayments (the repayment is stated as a directly
+        reported fact, not unresolved), and a separate $4.0 billion multi-tranche notes issuance
+        -- while preserving uncertainty only around the precise funding bridge, use of notes
+        proceeds, final debt-component composition, and Armis purchase-accounting details; this
+        correction does not add ServiceNow's general cash/securities/margin picture (NOW-SUP-C1/
+        C2), so finding 6 is not fully closed by this correction alone. (2) MINOR finding 8
+        (unsupported 2026-10-22 catalyst date) is resolved: the exact date is removed and
+        replaced with an event-based catalyst pending an official ServiceNow announcement, per
+        independently inspected official sources establishing no confirmed Q3 2026 date existed
+        as of the cutoff. Correction authority: principal-supplied, frozen supplemental evidence
+        bundle BATCH8_supplemental_evidence_recovery_20260728_v2.yaml (SHA-256
+        e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32; 1019 lines, 6828 words,
+        60545 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte by this
+        session against the uploaded copy and its external .sha256 manifest, and independently
+        confirmed to have exact (not merely partial) claim-level/reverse-index reciprocity across
+        its 16 sources and 16 claims before use. Facts drawn from claims NOW-SUP-C3 and
+        NOW-SUP-C4, sourced from NOW-SUP-S1 through NOW-SUP-S4 (added below). The original v1
+        bundle and its own already-cited sources (NOW-S1 through NOW-S3) are unchanged and
+        remain controlling for every claim they support; this supplement controls only its own
+        new claims, per its own required-provenance-handling instruction. This correction does
+        not add Now Assist standalone revenue/margin disclosure, does not change ServiceNow's
+        governed tier/target, and does not constitute principal acceptance -- a fresh exact-head
+        independent review remains required before this PR may be considered ready.
+    - date: "2026-07-28"
+      note: >
+        Second bounded correction addressing PR #177's formal exact-head reassessment (GitHub
+        review 4798513926, reviewed head e2ecda34f5c6b87946b1e422bad77fc56e3abdf4, verdict
+        CHANGES REQUIRED), which found MATERIAL finding 6's general cash/securities/margin
+        picture still open, plus one new MINOR finding (13): the prior correction's "Acquisition
+        financing" section contained one uncited sentence ("ServiceNow continued to generate
+        positive operating cash flow and held substantial cash and securities in the same
+        period") inconsistent with this record's own citation convention. This session's own
+        WebFetch access was re-tested this same day and reconfirmed blocked session-wide (HTTP
+        403 on SEC EDGAR and on a neutral non-target control domain, en.wikipedia.org), so this
+        correction resumes using previously unused claims from the already-verified supplemental
+        bundle BATCH8_supplemental_evidence_recovery_20260728_v2.yaml (SHA-256
+        e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32; independently
+        re-verified exact claim-level/reverse-index reciprocity across its 16 sources and 16
+        claims in this same session), per OPS-0008 Section 2's standing evidence-recovery
+        pre-authorization -- not fresh primary-source inspection performed by this session.
+        Closes finding 6: cash and cash equivalents ($2.503 billion), current marketable
+        securities ($2.161 billion), long-term marketable securities ($2.043 billion),
+        short-term debt ($2.082 billion), long-term debt ($5.435 billion), Q2 2026 GAAP operating
+        income ($162 million, 4% margin), operating cash flow ($587 million), and issuer-defined
+        free cash flow ($634 million, 16% margin), per NOW-SUP-C1/C2, sourced from NOW-SUP-S1
+        (already cited). This also supersedes and properly sources the prior correction's uncited
+        reassurance sentence, replacing it with the quantified balance-sheet figures above and
+        their own disconfirming caveats (finding 13 resolved). This correction does not change
+        ServiceNow's governed tier/target and does not constitute principal acceptance -- a fresh
+        exact-head independent review remains required before this PR may be considered ready.
+        One reviewer observation (finding 14, ServiceNow's own 424B2 notes-offering prospectus
+        possibly disclosing an explicit use-of-proceeds for the term-loan repayment) is
+        deliberately not acted on in this correction: that document is outside the independently
+        verified v2 supplemental bundle's own source-access manifest, and this session's own
+        WebFetch access remains blocked, so incorporating it now would not meet this record's own
+        direct-inspection standard -- it remains an open item for a future correction with actual
+        primary-source access or a further principal-supplied evidence bundle.
+sources:
+  - note: "ServiceNow, Inc. Form 10-K for the year ended 2025-12-31 (SEC accession 0001373715-26-000007), filed 2026-01-29. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports platform-breadth, renewal-rate definition, remaining-performance-obligation, and Moveworks acquisition content."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000007/now-20251231.htm"
+    date: "2026-01-29"
+  - note: "ServiceNow, Inc. Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001373715-26-000056), filed 2026-04-23. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 financial-statement, customer, subscription, and RPO content."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000056/now-20260331.htm"
+    date: "2026-04-23"
+  - note: "ServiceNow Reports First Quarter 2026 Financial Results (Form 8-K Exhibit 99.1, SEC accession 0001373715-26-000054), furnished 2026-04-22. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports headline subscription/cRPO/RPO metrics and the Now Assist customer-spend cohort figure; contains non-GAAP and constant-currency measures separated in this record from filed GAAP figures."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000054/erq1fy26.htm"
+    date: "2026-04-22"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 primary-source evidence bundle (BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml), SHA-256 4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c, principal-supplied implementation input under PI-0030/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the three sources above into claim-level extracts (NOW-C1 through NOW-C5) with source-ID-level provenance and fact/inference/judgment labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1612/8139/78577) against the uploaded copy and its external manifest before use; also retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"
+  - note: "ServiceNow Reports Second Quarter 2026 Financial Results (official investor-relations earnings release), published 2026-07-22. Directly inspected by the independent evidence-recovery researcher who authored the supplemental correction bundle, not by this Claude session. Supports the Q2 2026 term-loan proceeds ($3.991 billion net of issuance costs) and term-loan repayments ($4.000 billion) cash-flow figures added by this record's 2026-07-28 correction; not used for renewal, RPO, or Now Assist cohort metrics."
+    url: "https://newsroom.servicenow.com/press-releases/details/2026/ServiceNow-Reports-Second-Quarter-2026-Financial-Results/default.aspx"
+    date: "2026-07-22"
+  - note: "ServiceNow Form 8-K, Item 1.01 -- $4.0 billion unsecured term loan for the Armis acquisition (SEC accession 0001373715-26-000054), filed 2026-04-22. Directly inspected by the evidence-recovery researcher, not by this Claude session. Establishes the term loan's original amount, October 16, 2026 maturity, and Armis-acquisition purpose; does not by itself establish the exact balance outstanding at every later date."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000054/now-20260417.htm"
+    date: "2026-04-22"
+  - note: "ServiceNow Form 8-K, Items 1.01 and 2.03 -- $4.0 billion multi-tranche senior notes offering (SEC accession 0001193125-26-226644), filed 2026-05-15. Directly inspected by the evidence-recovery researcher, not by this Claude session. Establishes issuance terms (five tranches, 2028-2056 maturities); does not by itself establish how proceeds were allocated among acquisition funding, term-loan repayment, or general corporate purposes."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000119312526226644/d60522d8k.htm"
+    date: "2026-05-15"
+  - note: "ServiceNow to Announce Second Quarter 2026 Financial Results on July 22 (official earnings-date announcement), published 2026-07-01. Directly inspected by the evidence-recovery researcher, not by this Claude session. Establishes only the already-completed July 22, 2026 Q2 2026 date; supports this record's 2026-07-28 correction removing the unsupported 2026-10-22 catalyst date, since no equivalent official Q3 2026 announcement was located."
+    url: "https://newsroom.servicenow.com/press-releases/details/2026/ServiceNow-to-Announce-Second-Quarter-2026-Financial-Results-on-July-22/default.aspx"
+    date: "2026-07-01"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 supplemental primary-source evidence-recovery bundle (BATCH8_supplemental_evidence_recovery_20260728_v2.yaml), SHA-256 e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32, principal-supplied correction input addressing PR #177's formal review 4797499925 -- not committed to this repository, matching the original v1 bundle's own precedent. Supplies claims NOW-SUP-C3 (acquisition-financing and refinancing-risk evidence) and NOW-SUP-C4 (next-earnings-date disposition). This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1019/6828/60545) against the uploaded copy and its external manifest, and independently confirmed exact claim-level/reverse-index reciprocity across all 16 sources and 16 claims, before use."
+    url: null
+    date: "2026-07-28"
+  - note: "ServiceNow Reports Second Quarter 2026 Financial Results (official investor-relations earnings release), published 2026-07-22 -- re-inspected for this record's second 2026-07-28 correction (addressing GitHub review 4798513926). Directly inspected by the independent evidence-recovery researcher who authored the supplemental correction bundle, not by this Claude session. Supports the Q2 2026 cash/marketable-securities/debt balance-sheet figures and the GAAP/non-GAAP operating-income and cash-flow figures (NOW-SUP-C1/C2)."
+    url: "https://newsroom.servicenow.com/press-releases/details/2026/ServiceNow-Reports-Second-Quarter-2026-Financial-Results/default.aspx"
+    date: "2026-07-22"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 supplemental primary-source evidence-recovery bundle (BATCH8_supplemental_evidence_recovery_20260728_v2.yaml), SHA-256 e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32, re-cited for this record's second 2026-07-28 correction addressing GitHub review 4798513926 -- not committed to this repository. Supplies claims NOW-SUP-C1 (general cash/securities/debt balance-sheet picture) and NOW-SUP-C2 (profitability and cash-flow evidence). Independently re-verified in this session: SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1019/6828/60545) against the uploaded copy and its external manifest, and exact claim-level/reverse-index reciprocity across all 16 sources and 16 claims."
+    url: null
+    date: "2026-07-28"

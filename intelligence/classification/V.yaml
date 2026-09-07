@@ -1,0 +1,45 @@
+schema_version: '1.0'
+ticker: V
+economic_role:
+  economic_system_ref: Financial Infrastructure
+  company_role: payment network
+  role_basis: Visa operates VisaNet, providing authorization, clearing, and settlement, and explicitly
+    states it is not a financial institution and does not issue cards or extend credit, distinguishing
+    its network-toll-road role from a bank's credit/deposit business; FY2025 net revenue was $40.0B across
+    service, data-processing, international-transaction, and other categories.
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - MA
+  - AXP
+  - PYPL
+  - FIS
+  rationale: 'Visa''s evidence shows continued double-digit growth (fiscal Q2 2026 net revenue +17% YoY,
+    cross-border volume +12%) alongside already-known, ongoing risk categories: the DOJ debit-network
+    monopolization case (filed 2024, motion to dismiss denied mid-2025 -- an unresolved but not newly-arising
+    procedural status), disclosed interchange litigation/escrow, and client-incentive cost pressure now
+    corrected to roughly 28% of pre-incentive gross revenue. A newly disclosed 7% workforce reduction
+    and $563M restructuring charge is a real but ordinary cost-realignment action reallocating investment
+    toward existing growth priorities, not a structural change to Visa''s network-toll-road business model.
+    Nothing here rises above Visa''s own established, ongoing risk profile.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    an adverse outcome in the active DOJ monopolization litigation over debit-network services, whose
+    motion to dismiss has already been denied.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-A
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#V
+content_sha256: 88d971f98a6c5fad2ac61a8a97a02858e894e0077adb7ffc369f7f761d5e6f51

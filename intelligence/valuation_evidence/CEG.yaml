@@ -1,0 +1,241 @@
+schema_version: '1.0'
+ticker: CEG
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 24440
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: CEG was spun off from Exelon Corporation on Feb 1 2022 -- FY2022 mixes ~1 month
+            of standalone-public-company results with Exelon-carve-out predecessor-basis results for the
+            rest of the year, so this is not a clean standalone fiscal year.
+    - item_category: earnings
+      value: -160
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG FY2022 GAAP net loss (approximate)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 24918
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG FY2023 revenue -- first clean full standalone calendar year
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 1620
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG FY2023 GAAP net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 23568
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 3750
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG FY2024 GAAP net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 25530
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG FY2025 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 2320
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG FY2025 GAAP net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: GAAP net income swung materially year to year (loss in 2022, then $1.62B, $3.75B,
+            $2.32B); utilities like CEG typically have GAAP earnings affected by mark-to-market hedging
+            and nuclear decommissioning trust fund gains/losses, a plausible but not independently-verified
+            explanation for this pattern.
+    - item_category: cash
+      value: 3640
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG cash, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 8900
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: CEG total debt (short-term $1.65B plus long-term $7.25B), Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_debt
+      value: 5260
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total debt $8.90B minus cash $3.64B equals ~$5.26B net debt.'
+      provenance:
+        sources:
+        - source_identifier: CEG balance sheet, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments: []
+  abstention_reason: Only a qualitative description of CEG's generation portfolio (nuclear, wind, solar,
+    natural gas, hydroelectric) was found -- no quantitative FY2025 generation-mix or segment-operating-profit
+    breakdown was located.
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 269.54
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: 'Aug 7 2026. Shares outstanding 357.10M includes 50M shares issued for the Calpine
+          acquisition (closed Jan 7 2026) -- not directly comparable to the FY2025 weighted-average share
+          count implicit in the EPS figures above. Market cap derived: 357.10M x $269.54 = ~$96.3B.'
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: VST
+    comparability_rationale: Vistra -- independent power producer with a large nuclear/gas fleet and similar
+      AI-data-center power-demand exposure narrative.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: NRG
+    comparability_rationale: NRG Energy -- independent power producer, comparable business model (not
+      individually fundamentals-checked this session; named on business-model similarity).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Crane Clean Energy Center restart
+    variables:
+    - variable_name: crane_clean_energy_center_restart
+      evidence_basis: Three Mile Island Unit 1 restart, renamed the Crane Clean Energy Center, backed
+        by a 20-year, 835MW power purchase agreement with Microsoft to supply mid-Atlantic AI data centers.
+        Targeted online 2028; NRC licensing-basis review expected complete 2027.
+      provenance_label: historically_observed
+  - scenario_name: Calpine acquisition
+    variables:
+    - variable_name: calpine_acquisition
+      evidence_basis: Closed Jan 7 2026, total consideration ~$22B (50M newly issued CEG shares plus $4.5B
+        cash; originally announced Jan 10 2025 at ~$16.4B equity value) -- materially expands CEG's generation
+        fleet with Calpine's natural-gas and geothermal assets, not reflected in any FY2025 figure above.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  CEG has only ~3 clean standalone fiscal years (2023-2025) plus a partial, non-comparable 2022 -- spun
+  off from Exelon Feb 1 2022 -- disclosed as the shortened-history exception under VALUATION-0005 SS C.1
+  for a genuine structural (spin-off) limitation, not forced into a misleading 5-year comparison. GAAP
+  net-income swings across years are disclosed as a real pattern with only a plausible, unverified explanation.
+  No quantitative generation-mix/segment breakdown was found. The Calpine acquisition, closed Jan 2026,
+  will materially reshape CEG's FY2026-forward financials and is not reflected in any figure above.
+abstention_index:
+- domain: segment_evidence
+  reason: Only a qualitative description of CEG's generation portfolio (nuclear, wind, solar, natural
+    gas, hydroelectric) was found -- no quantitative FY2025 generation-mix or segment-operating-profit
+    breakdown was located.
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: CEG
+content_sha256: 160e6163c3d47cd1c02bbf9130845fec459b75fdebe8b943fbd1b2aa140a6782

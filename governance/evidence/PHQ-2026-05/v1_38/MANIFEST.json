@@ -1,0 +1,31 @@
+{
+  "version": "1.38",
+  "created_at": "2026-07-31T20:38:49.019631+00:00",
+  "files": [
+    {
+      "path": "Portfolio_HQ_Final_Account_Summary_Correction_v1_38.json",
+      "bytes": 1447,
+      "sha256": "506f8b8d33b4dd247fd2ebff4583032065bf85f919c638380aa1b50d8bf84012"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1104,
+      "sha256": "4718aa8bd38d269d7daadbfbce0be34b3579850f37ceaeaa2cb3fe346fccdfb6"
+    },
+    {
+      "path": "evidence/account_home_1613.png",
+      "bytes": 632127,
+      "sha256": "afa879ecf996b49a53962f8c50213e2736a1d0ddd2b6ec42adf7688f1ab8447a"
+    },
+    {
+      "path": "evidence/buying_power_cash_1613.png",
+      "bytes": 358514,
+      "sha256": "f843ae852aa268b12860843635fb43d413e2dd0bf6edcd3ff0e94a8eac1be4a1"
+    },
+    {
+      "path": "evidence/margin_state_1613.png",
+      "bytes": 376274,
+      "sha256": "14647c2b2b69af1df079fd440f4118b0c0ee9e4be840d6982ed13a066893f928"
+    }
+  ]
+}

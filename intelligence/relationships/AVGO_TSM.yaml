@@ -1,0 +1,103 @@
+tickers: [AVGO, TSM]
+relationship_type: manufacturing_dependency
+symmetric: false
+subject: AVGO
+object: TSM
+direction: >
+  AVGO (subject) is manufacturing-dependent on TSM (object): AVGO's own
+  Company Intelligence record carries a dedicated risk entry ("Foundry and
+  advanced-packaging dependency") stating that Broadcom's semiconductor
+  products (merchant chips and custom AI silicon) rely on external foundry
+  and advanced-packaging capacity, and that industry-wide reporting places
+  TSMC as the dominant advanced-node/advanced-packaging supplier to the
+  AI-accelerator industry broadly. No TSM-side dependency on AVGO is
+  asserted by this record.
+relationship_status: current
+decision_served:
+  - duplicate_exposure_detection
+  - stress_testing
+evidence:
+  - claim: >
+      AVGO's own Company Intelligence record carries a dedicated risk entry,
+      "Foundry and advanced-packaging dependency": "Broadcom's semiconductor
+      products (both merchant chips and custom AI silicon) rely on external
+      foundry and advanced-packaging capacity -- industry-wide reporting
+      places TSMC as the dominant advanced-node/advanced-packaging supplier
+      to the AI-accelerator industry broadly, and this record's own TSM
+      Company Intelligence record... independently documents TSMC
+      management's statement that advanced-packaging capacity is currently
+      tight enough to constrain customer growth industry-wide. No
+      Broadcom-specific, named-foundry-percentage disclosure was located in
+      this research pass; the dependency is inferred from Broadcom's role as
+      a fabless/hybrid semiconductor company and industry-wide foundry
+      concentration, not from a Broadcom-specific primary disclosure this
+      session opened." This repository's own comparison-artifact research
+      (`BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md` §5) independently
+      reaches the same conclusion: "AVGO, AMD, and MRVL all depend on
+      external foundry capacity, and public reporting... places TSMC as the
+      dominant advanced-node/advanced-packaging supplier to this class of
+      product industry-wide," with no company-specific, named-percentage
+      TSMC dependence disclosure located for any of the three fabless
+      companies examined, AVGO included.
+    source: >
+      intelligence/companies/AVGO.yaml (risk entry, "Foundry and
+      advanced-packaging dependency") and AVGO.md §"Foundry and
+      advanced-packaging dependencies"; intelligence/BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md
+      §5 ("TSMC and advanced-packaging dependence") and §16 ("Cross-batch
+      structural and correlated-risk overlap with Batch 1"); intelligence/companies/TSM.yaml
+      and TSM.md (customer-concentration disclosure: largest customer 19% of
+      2025 revenue, second-largest 17%, top ten 78%, "the filing does not
+      name these customers" — independently grepped this session and
+      confirmed TSM's own record does not name AVGO or Broadcom) — all
+      independently re-inspected this session.
+    inspected_source_type: secondary
+    source_date: "2026-07-26"
+    effective_date: "2026-08-04"
+    evidence_classification: inferred
+    confidence: moderate
+    materiality: high
+    uncertainty: >
+      AVGO's own record already labels this a research-pass inference, not a
+      Broadcom-specific primary disclosure: "No Broadcom-specific,
+      named-foundry-percentage disclosure was located" — that same source
+      further discloses its own underlying research was WebSearch-sourced
+      throughout, with direct WebFetch attempts against SEC EDGAR and
+      investors.broadcom.com returning HTTP 403 (a tool/proxy-level block,
+      independently re-verified by that record's own session). TSM's own
+      Form 20-F customer-concentration disclosure (19%/17%/78% top-ten)
+      likewise does not name its customers — independently confirmed by this
+      session's direct grep of TSM.yaml/TSM.md for "AVGO"/"Broadcom," which
+      returned zero matches. Broadcom is explicitly a "fabless/hybrid"
+      semiconductor company per its own record (not purely fabless like
+      NVDA) — a nuance this claim preserves rather than flattens. No new
+      external research was performed to locate a more specific figure;
+      this record relies exclusively on evidence already present in the
+      repository at this unit's own preflight.
+    disconfirming_evidence: null
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-04"
+  next_due: "2026-11-02"
+  log:
+    - date: "2026-08-04"
+      note: >
+        Record created under governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+        (frozen schema/taxonomy/evidence standard) and
+        governance/decisions/REL-0005-ws0005-milestone4-third-relationship-content-batch-semis-tsm.md
+        (this batch's own authorization), following the semiconductor-
+        manufacturing-dependency classification in
+        governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+        §4.1 (AVGO row). Uses only evidence already identified in that
+        inventory and in intelligence/companies/AVGO.yaml/.md,
+        intelligence/companies/TSM.yaml/.md, and
+        intelligence/BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md — no
+        external research was performed. This is the fourth pair in this
+        batch, added on explicit separate principal authorization alongside
+        NVDA_TSM/ASML_TSM/KLAC_TSM, independently re-verified this session
+        against AVGO's own dedicated foundry-dependency risk entry (a
+        stronger, more directly on-point disclosure than NVDA's own generic
+        foundry-risk language) before being accepted. One-sided sourcing
+        (neither AVGO's nor TSM's own record names the other specifically)
+        is disclosed explicitly in this entry's own evidence[0].uncertainty
+        and in AVGO_TSM.md. No correlation of any kind was computed. Neither
+        AVGO.yaml/AVGO.md nor TSM.yaml/TSM.md was modified by this unit.

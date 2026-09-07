@@ -1,0 +1,37 @@
+schema_version: '1.0'
+ticker: PWR
+primary_archetype: B
+secondary_archetype: null
+rationale: 'Quanta is fundamentally a labor/contract-services business whose revenue is directly tied
+  to multi-year grid, data-center, and utility capital-spending buildouts (the AEP $72B 2026-2030 capital
+  plan, record backlog growing from $34.5B to $48.5B+), which is the defining trait of the infrastructure/industrial
+  archetype even though its capital intensity is expressed through labor/backlog rather than owned heavy
+  assets. It also carries a genuine, growing secondary manufacturing capability (power transformers, modular
+  electrical systems via CEI) that reinforces rather than displaces this framing, since that manufacturing
+  directly supports the same buildout-driven demand curve. Working-capital dynamics typical of a scaling
+  percentage-of-completion contractor (unbilled receivables growing faster than earnings) and fixed-price
+  execution risk further argue for reinvestment/backlog-sensitive valuation framing over a simple blended-multiple
+  approach. Archetype-F test: F was considered given Quanta''s 2025 segment-reporting split into Electric
+  Infrastructure Solutions and Underground Utility and Infrastructure Solutions, which carry materially
+  different margins (Q1 2026: 8.7% vs. 7.5%; Q4 2025: 10.8% vs. 7.7%). It was not selected as primary
+  because both segments share the same underlying economic mechanism -- labor-intensive, fixed-price/MSA
+  infrastructure construction and maintenance contracting with roughly 80% recurring base work -- rather
+  than fundamentally distinct business models, so a single reinvestment/backlog-driven framing is more
+  defensible than treating them as economically separate entities.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: Full-year 2025 adjusted EBITDA could not be reliably confirmed from available
+    sources, and the most recent quarter's results (Q2 2026) are secondary-sourced only, with no primary
+    document opened to verify them.
+disclosed_evidence_conflicts:
+- FY2025 adjusted EBITDA was cited inconsistently across sources as either $3.34B or $3.50B, and a separately-sourced
+  $35.3B renewable-energy backlog figure appears inconsistent with total/segment backlog figures and is
+  treated as a likely secondary-source error.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-4
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#PWR
+content_sha256: c481cf0d5a9b6522a4e79f3017f12a144e25d58aac508ecd350c3fadfd905dc0

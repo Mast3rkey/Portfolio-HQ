@@ -1,0 +1,421 @@
+# Portfolio HQ — manual-allocation advisor
+
+A **recommendation-only** portfolio allocation and risk-management tool. It
+reads your holdings and target tiers, pulls read-only market data from
+Alpaca, applies your gates/caps/doctrine, and prints a BUY / TRIM / BLOCKED
+table plus a risk summary (margin, concentration, crypto sleeve). **It never
+places, modifies, or cancels an order — anywhere.** You execute manually on
+Robinhood, then sync the fill back in.
+
+> Safety by construction: `alpaca_client.py` has had all order-placement
+> methods **removed**. The project contains no order code. Do not re-add it.
+
+The full reasoning behind every rule below — why each cap exists, what was
+tested and rejected, what's a doctrine decision vs. a backtest verdict — lives
+in `CLAUDE.md`. That file is the source of truth for *why*; this README is
+the source of truth for *how*.
+
+## Repository structure
+
+```
+allocate.py        entry point: CLI, allocation/trim logic, rendering, state I/O
+levels.py           secondary entry point (--levels): buy-rung staging report
+alpaca_client.py    read-only Alpaca paper-account HTTP client
+indicators.py        SMA/RSI/ATR/swing-low (pure functions)
+earnings.py          yfinance earnings-date lookup, graceful "unavailable" fallback
+crypto.py            crypto sleeve pricing (Alpaca majors + CoinGecko fallback)
+regime_gate.py        200-day EMA regime check (informational only, see below)
+margin_state.py        leverage-cap/buffer-floor math, concentration risk scoring (imported by allocate.py)
+
+targets.yaml          tier structure, weights, caps, gates, margin doctrine (config truth)
+holdings.yaml          position state: shares, crypto_shares, cash, margin (rewritten by update-* commands)
+level1_policy_summary.py  read-only whole-portfolio sleeve view of accepted targets
+CLAUDE.md               doctrine: Decisions Log, Open Items, Guardrails, workflow
+decision_log.yaml       historical decision record, PI-000N / MARGIN-000N series (pre-dates the
+                        governance/decisions/ layer below; new decisions are not appended here)
+constitution/INVESTMENT_CONSTITUTION.md   immutable investment philosophy (rarely amended)
+governance/decisions/   structured decision records (ADR-style), one file per decision;
+                        every new decision since GOV-0001 (2026-07-18) is filed here
+
+intelligence/companies/     Company Intelligence: per-company research records (implemented, opt-in, advisory-only)
+intelligence/themes/        Theme Intelligence: theme-level research records (implemented, opt-in, advisory-only)
+intelligence/reports/       generated, tracked staleness output only (staleness_report.md; overwritten in place, PI-0011)
+intelligence_validator.py   read-only schema validator for intelligence/ (zero coupling with allocate.py/margin_state.py)
+intelligence_report.py      source-read-only staleness/role-drift/coverage reporting over intelligence/ (zero coupling with allocate.py/margin_state.py; PI-0011)
+
+backtest_*.py          one-shot backtests, each testing exactly one doctrine question
+verify_rungs.py         verification charts for the rung backtest
+reports/                backtest verdicts (reports/*.md) + verification charts
+data/backtest/           cached daily bars the backtest scripts read (not live data)
+
+test_*.py                unit tests (margin math, cluster/T1T2 trims, live pricing, indicators)
+performance_log.csv       daily net-equity-vs-QQQ/VOO snapshot, one row per day
+logs/                    per-run Markdown output (gitignored — see "Performance logging" below)
+```
+
+## Advisory-only philosophy
+
+This tool computes what a disciplined allocator *would* do — it never acts.
+Every gate, cap, and trim rule is mechanical and explainable: given the same
+holdings and market data, it always produces the same recommendation, and
+every number in the output traces back to a rule you can point to in
+`targets.yaml` or `CLAUDE.md`. There is no discretionary judgment, no price
+targets, no predictive research baked into the tool itself — see `CLAUDE.md`'s
+Guardrails for what's explicitly out of scope and why (several backtests this
+system ran on itself showed that added "smart" layers subtract return, not
+add it).
+
+### Accepted Level-1 policy snapshot
+
+`level1_policy_summary.py` turns the canonical per-instrument destinations in
+`targets.yaml` into an exact whole-book sleeve view. It does not invent a new
+allocation, read holdings or market data, call a broker, or change policy.
+
+```bash
+python level1_policy_summary.py          # human-readable sleeve summary
+python level1_policy_summary.py --json   # machine-readable, exact-decimal strings
+```
+
+The report keeps direct equities and broad-market funds separate, also shows
+their combined share, distinguishes GLD from broad-market funds, and preserves
+cash/reserve plus any unallocated remainder so the result always reconciles to
+exactly 100%.
+
+## Company & Theme Intelligence (advisory-only)
+
+`intelligence/companies/` holds human-authored, per-company research records
+(thesis, risks, catalysts, a conviction rating) — one YAML + one Markdown
+file per covered company, validated by `intelligence_validator.py` against
+the schema frozen in `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`. Coverage is
+opt-in; a company with no file is not an error. The current set of covered
+companies is whatever files exist under `intelligence/companies/` — this
+README does not restate it as a fixed roster. (As of this writing: COST,
+GEV, ISRG, NVDA, TMO, TSM, XOM — a snapshot, not a ceiling or a target.)
+
+`intelligence/themes/` holds theme records — shared narrative, evidence,
+risks, catalysts, and a closed `lifecycle` vocabulary (no conviction rating,
+no numeric score) — one YAML + one Markdown file per theme, frozen by
+`decision_log.yaml` PI-0006 and reconciled into the specification by
+`governance/decisions/PI-0010-theme-intelligence-spec-reconciliation.md`. A
+company references zero or more themes via its own `themes:` field;
+authority runs one way only, company → theme (a theme file never lists its
+member companies). The current set of themes is whatever files exist under
+`intelligence/themes/`. (As of this writing: `ai_infrastructure`, referenced
+by GEV, NVDA, and TSM; `life_sciences_tools_medtech`, referenced by ISRG and
+TMO — again a snapshot, not a ceiling.)
+
+**Company and Theme Intelligence have zero authority over allocator
+recommendations, targets, tiers, or weights.** `intelligence_validator.py`
+has no import relationship with `allocate.py` or `margin_state.py` in
+either direction — verified by dedicated isolation tests, not just asserted
+in doctrine. Nothing in this repository reads a company's or theme's
+thesis, risks, evidence, or conviction/lifecycle value to decide what to
+buy, trim, or block.
+
+**Portfolio Intelligence aggregation** — and any theme-level scoring,
+ranking, weighting, or allocator-visible integration — remains deferred and
+unauthorized. Neither Theme Intelligence nor Portfolio Intelligence
+aggregation currently affects allocator behavior.
+
+## Intelligence Operations (source-read-only, PI-0011)
+
+`intelligence_report.py` is a separate, source-read-only reporting/checking
+layer over `intelligence/companies/` and `intelligence/themes/`, authorized
+by `governance/decisions/PI-0011-intelligence-operations-v1.md`. Like
+`intelligence_validator.py`, it has no import relationship with
+`allocate.py` or `margin_state.py` in either direction. `run_portfolio_check.sh`
+never invokes it as an operational reporting command and never regenerates
+the tracked staleness report — it's run manually, on demand. (Its full
+`pytest -q` run does import and exercise this module's mechanics via
+`test_intelligence_report.py`, same as any other module's tests; no test
+there treats an advisory finding as a failure — see below.)
+
+```bash
+python intelligence_report.py --staleness            # regenerate intelligence/reports/staleness_report.md
+python intelligence_report.py --role-drift           # stdout only — portfolio_role_ref vs. targets.yaml, this run only
+python intelligence_report.py --coverage             # stdout only — filesystem-derived counts and company→theme references
+python intelligence_report.py --all                  # all three in one run
+python intelligence_report.py --staleness --as-of 2026-08-01   # deterministic as-of date, for review or testing
+```
+
+- **Source-read-only**: this module can never rewrite `holdings.yaml`,
+  `targets.yaml`, or any Company/Theme Intelligence source record. It is
+  permitted to overwrite exactly one generated artifact —
+  `intelligence/reports/staleness_report.md` — and no other file.
+- **Staleness report** evaluates `intelligence/companies/*.yaml` only: a
+  company's `review.next_due`, and any catalyst whose `expected` date has
+  passed while its `status` is still exactly `"pending"` (a narrow
+  reporting heuristic, not a closed schema vocabulary). **Theme
+  Intelligence staleness is out of scope for V1.**
+- **Role drift is advisory human-review output only, stdout-only.** It
+  compares each company's `portfolio_role_ref` against its ticker's actual
+  tier membership in `targets.yaml` (internal repository-key comparison —
+  no symbol-normalization map) and reports `MATCH` / `MISMATCH` /
+  `NOT_IN_TARGETS` / `AMBIGUOUS_TARGET_MEMBERSHIP`. A mismatch never
+  rewrites either source and is never treated as invalidating the
+  Intelligence record — `targets.yaml` remains authoritative for current
+  allocator policy, and the company record stays exactly as a human
+  authored it until separately reviewed.
+- **Theme-reference integrity and coverage** reuse
+  `intelligence_validator.py`'s **public** API only — `validate_company_file`
+  and `validate_themes_directory` are the two functions actually called
+  directly; `validate_themes_directory` internally performs the existing
+  per-file `validate_theme_file` checks (schema, closed vocabularies, and
+  reverse-membership-key rejection) for every theme file it scans. No
+  second validator, no `intelligence/index.yaml`, no cached relationship
+  edges. Stdout-only.
+- **Role-drift and coverage-rollup findings never gate anything** — not the
+  allocator, not this repository's test suite, and not the phone workflow.
+  They are source-read-only *collection* operations (they read repository
+  files and return results for stdout rendering; only the report-rendering
+  stage is pure, with no filesystem I/O at all) — see
+  `governance/decisions/PI-0011-intelligence-operations-v1.md` for the full
+  advisory-boundary rationale.
+- **No ontology integration**: this layer does not read or apply
+  `docs/INVESTMENT_ONTOLOGY.md`.
+
+## Allocation workflow
+
+1. **Sync the current total cash balance.** Cash is *tracked state*, not a
+   runtime argument (`PHQ-2026-07`). Record the **new total**, never a deposit
+   delta — a deposit is recorded by re-syncing the new total:
+   ```bash
+   python allocate.py update-cash 2000    # TOTAL account cash balance
+   ```
+   The retired `--cash` flag is refused with a migration message: adding a
+   deposit on top of a tracked balance would double-count it.
+2. **Run the allocator:**
+   ```bash
+   python allocate.py --review         # the allocation check — underweights,
+                                        # trim candidates, protected-capital
+                                        # accounting, buys funded from the cash
+                                        # surplus above the protected floor
+   python allocate.py --margin 1000    # margin capacity is still reported and
+                                        # still clipped to the leverage cap and
+                                        # blocked below the buffer floor, but
+                                        # margin-funded BUYS fail closed
+   python allocate.py --levels         # buy-rung staging report (see below)
+   python allocate.py --health         # read-only risk/health snapshot (see below)
+   ```
+   A cash or margin sync older than two days — or missing, malformed, or
+   future-dated — makes the run **NON-ACTIONABLE**: it still prints, but every
+   dollar figure is withheld rather than estimated, and buys and trims are
+   withdrawn.
+3. **Execute manually on Robinhood.**
+4. **Sync fills back** (see "Updating holdings" below).
+
+### How a run computes recommendations
+
+1. Book = live-priced holdings + tracked cash − margin debt, cash counted once.
+   Per-ticker target dollars come from that name's tier weight × book.
+2. Pull last price, 200-SMA, 50-SMA, RSI(14), ATR(14) per roster ticker via
+   Alpaca (free IEX feed); QQQ daily bars for the regime signal.
+3. Rank underweight names by dollar gap, then gate in order:
+   - **trend** — skip an add on a name below its 200-SMA, unless RSI(14) < 30
+     (oversold override).
+   - **earnings** — skip an add within 7 calendar days of the next earnings
+     date (flagged `earnings:unavailable` if the date can't be resolved).
+   - **caps** — correlated-cluster caps (semis ≤25% of book, power_infra
+     ≤20%, oil ≤20% — see `targets.yaml`'s `caps.clusters`), band ≤1.25×
+     target, spec fixed at target.
+4. Greedy-allocate cash to the largest passing gaps, $25 minimum lot.
+5. **Trims** (mechanical, no market-timing discretion once triggered):
+   - band/spec positions above their cap, opportunistically, only when
+     RSI(14) > 60 (trim into strength).
+   - a cluster-cap breach, or a **T1/T2 name above 1.5× its own target**
+     (the "concentration ceiling") — both mechanical, no RSI gate, floored
+     at the name's own tier target.
+
+**Regime status (QQQ vs. its 200-day EMA) is computed and shown every run,
+but is informational only — it never blocks or gates a decision.** A 2026
+backtest (`reports/regime_backtest.md`) found gating deployment on it cost
+2.56pp/yr; the gate was removed from production. `--levels`' stance
+computation follows the same rule.
+
+### `--levels` — buy-rung staging
+
+A separate, simpler report: for each roster ticker and the crypto sleeve,
+computes three ATR-anchored buy levels below the 50-SMA (L1 shallow → L3 deep,
+floored at the 200-SMA) as staging points for manual limit orders. Stamps a
+one-word stance (`BUYABLE` / `WAIT` / `BLOCKED` / `NO-DATA`) per name. Same
+regime-is-informational-only rule as the main allocator. This tool places no
+orders here either — it's staging guidance, not execution.
+
+### `--health` — read-only portfolio risk/health snapshot
+
+A read-only view of risk state that the standard report doesn't surface for
+anything not currently actionable — e.g. a cluster comfortably under its cap,
+or a T1/T2 name over its own target but still under the 1.5× ceiling, appear
+nowhere in `--review`'s buy/trim/block rows today. `--health` shows all of it
+at once: book, leverage vs. cap, buffer (last synced) vs. floor, the full
+margin risk-state explanation, every cluster's %-of-book and ratio-to-cap,
+crypto-sleeve drift from target, and every T1/T2 name's ratio-to-target and
+ratio-to-ceiling. Every figure is read straight from `plan()`'s and
+`margin_state.py`'s own existing computations — nothing is recomputed a
+second way, and no new threshold is introduced.
+
+`--health` is observational only, same pattern as `--review`: it requests no
+new cash and no margin, so it can never add deployable buying power. (It no
+longer "forces cash and margin to zero" — under `PHQ-2026-07` a fabricated zero
+is exactly what must never stand in for an observation. Tracked cash is read
+from `holdings.yaml` like any other run, and when it is stale or unknown the
+dollar figures are reported UNAVAILABLE rather than as `$0`.) It **does not place an order, does not change any buy/trim/
+block decision, and does not write `holdings.yaml`, `targets.yaml`, or any
+other file** — it only prints a snapshot. There is no composite health score
+or overall healthy/unhealthy verdict; every metric is shown individually,
+labeled with its own unit and comparison point, exactly as the underlying
+system already computes it.
+
+## Updating holdings
+
+State lives in `holdings.yaml`, in three tracked position blocks plus a cash
+block and a margin block:
+
+```bash
+python allocate.py update-cash <total_balance>         # TOTAL account cash —
+                                           # never a deposit delta; a deposit is
+                                           # recorded by re-syncing the new total
+python allocate.py update-shares          # paste "TICKER qty" lines, Ctrl-D
+                                           # (stocks/ETFs — live-priced every
+                                           # run via qty × latest Alpaca price)
+python allocate.py update-crypto-shares   # paste "COIN qty" lines, Ctrl-D
+                                           # (BTC/ETH/SOL — same live-pricing)
+python allocate.py update-holdings        # paste "TICKER value" lines, Ctrl-D
+                                           # (manual $ fallback — only needed
+                                           # for a ticker with no live-price
+                                           # coverage, e.g. a very recent listing)
+python allocate.py update-margin <debt> <buffer_pct> [note]  # sync from
+                                           # Robinhood's own displayed margin
+                                           # screen and append a debt/buffer event
+```
+
+`update-shares`/`update-crypto-shares`/`update-holdings` **merge** into the
+existing state by default — a ticker not mentioned in your paste is left
+untouched. Pass `--replace` to instead treat the paste as the complete new
+state. **Only `update-holdings` has a safety check** — it aborts and asks for
+`--confirm` if the resulting book value would move more than 30% (usually a
+sign of a partial-paste wipe rather than an intentional change).
+`update-shares --replace` / `update-crypto-shares --replace` have no such
+guard — a partial paste there really does wipe every unmentioned position, no
+confirmation asked. Use `--replace` on those two with care.
+
+**Margin sync is manual and must use Robinhood's own displayed buffer %** —
+`allocate.py`'s own comment in `write_state()` explains why a naive
+`(value − maintenance) / value` calculation doesn't reconcile with Robinhood's
+real figure (checked twice against live screens). Never derive it.
+
+Every `update-*` command automatically writes a same-day snapshot to
+`performance_log.csv` (see below), so state and performance history stay in
+sync without a separate step.
+
+## Margin synchronization
+
+Doctrine (from `CLAUDE.md`, enforced in `targets.yaml`'s `margin:` block and
+`allocate.py`'s `margin_capacity()`):
+- **1.8x fixed structural leverage cap** on gross-position-value / net-equity.
+  No discretionary lever-up on a market view — margin is fuel within a fixed
+  ceiling, not a timing tool.
+- **30% margin-buffer floor**, hard cutoff. Before any margin-funded buy, the
+  tool checks the *most recently synced* buffer against the 30% floor; if that
+  synced buffer is already below 30%, the buy is blocked outright (no partial
+  taper) and it's treated as a forced de-lever signal. Independently, the
+  requested margin amount is clipped to the 1.8x leverage cap. **The tool
+  cannot calculate Robinhood's exact projected post-trade buffer** — no such
+  formula exists in this codebase; only the currently-synced figure is ever
+  checked, so margin data must be freshly synced before relying on it for a
+  margin-funded decision, and synced again after execution.
+- Buffer % is **synced from Robinhood, never derived** (see above). Every run
+  shows the buffer's sync date and warns if it's gone stale
+  (`STALE_MARGIN_DAYS`, currently 2 days).
+
+## Performance logging
+
+```bash
+python allocate.py --performance        # show the net-equity-vs-QQQ/VOO log
+python allocate.py log-performance [note]   # add a snapshot manually (rarely
+                                             # needed — every update-* command
+                                             # and every allocate.py run already
+                                             # auto-snapshots)
+python allocate.py log-cashflow <deposit|withdrawal> <amount> \
+                   <book_before> <book_after> [note]
+                                      # external flows only; bracketing whole-book
+                                      # values are required for exact TWR
+python allocate.py log-interest <amount> <period_start> <period_end> [note]
+                                      # actual broker charge from a statement;
+                                      # estimates are refused by policy
+```
+
+`performance_log.csv` records timestamped whole-book snapshots. Historical rows
+predating the timestamp/book schema remain blank rather than being reconstructed.
+`cashflow_log.csv` records external deposits and withdrawals only, including
+immediately-before and immediately-after whole-book values. When at least two
+complete snapshots and every intervening flow reconcile, `--performance` links
+the exact subperiod returns and displays cash-flow-adjusted TWR. Otherwise exact
+TWR is explicitly unavailable; the older net-equity/QQQ/VOO percentages remain
+rough directional comparisons.
+
+`margin_log.csv` is appended by every `update-margin` call. It classifies the
+debt delta as an initial sync, draw, paydown, or unchanged resync and preserves
+Robinhood's displayed buffer. `interest_log.csv` records actual statement
+charges. Margin draws/paydowns never enter `cashflow_log.csv`: financing is not
+an external contribution and backing it out would corrupt investment return.
+
+See `docs/MEASUREMENT_FOUNDATION.md` for the evidence rules and limitations.
+
+## Backtesting framework
+
+Six one-shot scripts (`backtest_regime.py`, `backtest_trend.py`,
+`backtest_trims.py`, `backtest_weights.py`, `backtest_rungs.py`,
+`backtest_t1t2_trim.py`), each testing exactly one doctrine question against
+cached historical bars in `data/backtest/` (not live data — this is a
+separate flow from the live allocator and never touches `holdings.yaml`).
+Every backtest follows the same discipline:
+
+- **Pre-committed decision rule**, fixed *before* results are computed —
+  usually "adopt the alternative only if it beats current by more than
+  1.0 percentage point annualized TWR."
+- **One test, one verdict.** No variant mining, no re-running with tweaked
+  parameters after seeing a result.
+- **Verdicts are never auto-applied.** A backtest's output is a report
+  (`reports/*_backtest.md`); adopting its finding into production always
+  means a human reads the report, hand-edits `targets.yaml`, and writes a
+  `CLAUDE.md` Decisions Log entry explaining why. This extra step has already
+  caught real drift once (a rule shipped slightly different from what was
+  tested) — see the Decisions Log's T1/T2 concentration-ceiling entry.
+- **Closed questions stay closed.** Every verdict in `CLAUDE.md`'s Decisions
+  Log is marked "no re-runs without a new regime in the data" — a small edge
+  in one backtested window is noise, not a standing invitation to keep
+  testing until a result you like shows up.
+
+Shared math (`twr_annualized`, `max_drawdown`, `rsi_series`, `universe`,
+`load_bars`) lives in `backtest_regime.py` and is imported by the others
+where the logic is genuinely identical — a couple of scripts keep their own
+version of a same-named function where the behavior is deliberately
+different (e.g. `backtest_rungs.py`'s `load_bars` can fetch+cache live from
+Alpaca on a miss; the shared version only reads an existing cache).
+
+`verify_rungs.py` isn't a backtest itself — it replays `backtest_rungs.py`'s
+exact mechanics and renders `reports/verification/*.png` + `*_table.md` so
+that backtest's results can be eyeballed against reality.
+
+## Tests
+
+```bash
+python3 -m pytest -q
+```
+Covers the financially consequential code paths — margin math (leverage cap
+clipping, buffer-floor hard cutoff), cluster-cap and T1/T2 concentration-
+ceiling trims (multi-cluster membership, floor-at-target behavior),
+live-holdings price resolution, and the indicator functions (including a
+couple of non-obvious verified edge cases, e.g. RSI of a perfectly flat
+series is 100.0, not the textbook-intuitive 50) — plus the backtest
+libraries, buy-level staging, and Company Intelligence's schema validator
+and allocator-isolation guarantees. Run the whole suite rather than naming
+individual files here; the file list changes too often to keep in sync.
+
+## Known limitation
+
+Live bars use the **IEX free feed** → volume figures are IEX-only and
+under-represent true market volume. The advisor relies entirely on
+**price-based** indicators (SMA/RSI/ATR), so this does not affect any gate
+or trim decision — nothing in this system reads volume.

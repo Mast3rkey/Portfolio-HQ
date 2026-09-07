@@ -1,0 +1,46 @@
+schema_version: '1.0'
+ticker: AMZN
+economic_role:
+  economic_system_ref: Digital Platforms & Enterprise Software
+  company_role: e-commerce marketplace and cloud computing platform (AWS)
+  role_basis: Q1 2026 segment data shows AWS generated $14.161B of operating income -- more than the combined
+    North America and International retail segments ($9.691B) -- on $37.587B of AWS revenue growing 28%
+    YoY, making cloud infrastructure the dominant profit driver layered on top of the online-retail/marketplace/advertising
+    business.
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - MSFT
+  - GOOGL
+  - META
+  - WMT
+  rationale: Q1/Q2 2026 evidence shows AWS as a disproportionate and accelerating profit engine (Q2 AWS
+    revenue +36.7% YoY, described as its fastest pace in 18 quarters) alongside diversified retail/advertising
+    revenue, near-doubled capex funded partly by new senior-note issuance, and ordinary-course FTC antitrust
+    litigation plus a preliminary EU DMA gatekeeper finding. None of these developments represents a marked
+    change from Amazon's already-established profile as a capital-intensive, AWS-driven business operating
+    under standing antitrust scrutiny; each is consistent with the company's ordinary, disclosed risk/opportunity
+    profile rather than a distinctive break from it.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: true
+  relationship_record_coverage:
+  - AMZN_GOOGL
+  - AMZN_MSFT
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a disclosed AI-lab counterparty (OpenAI, Anthropic) failing to convert committed capacity into realized
+    revenue against AWS capex that has already nearly doubled year-over-year.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-C
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#AMZN
+content_sha256: b11f536799fd64db9a494cf852277705f4e23a8e6f33ee922ab8f3b28d128b37

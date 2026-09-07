@@ -1,0 +1,285 @@
+schema_version: '1.0'
+ticker: ETN
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 19630
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 2146
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 20750
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 2465
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 23200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 3223
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 24880
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 3798
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 27450
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2025 revenue, record, +10% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 4087
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      abstention_reason: Only an unclear, unverified 'in the 21-23% range' snippet was found for FY2025
+        operating margin (unclear whether GAAP or adjusted, unclear period) -- not reliable enough to
+        report as a fact.
+    - item_category: free_cash_flow
+      value: 3600
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN FY2025 free cash flow, record, +1% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 803.0
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN cash & short-term investments (recent)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: An earlier snippet cited $398M cash + $186M short-term investments as of Jun 30
+            2025, a different (and smaller) figure at a different date -- not reconciled with this $803.0M
+            figure; both disclosed.
+    - item_category: debt
+      value: 10680
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ETN total debt (date unclear, likely recent quarter)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 391.1
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $4,087M divided by diluted EPS $10.45
+        equals ~391.1M diluted shares.'
+      provenance:
+        sources:
+        - source_identifier: ETN FY2025 net income and diluted EPS ($10.45 GAAP) figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments: []
+  abstention_reason: Only Q4 2025 quarterly segment figures were located (Electrical Americas, Electrical
+    Global, Aerospace, Vehicle, eMobility) -- a full-year segment revenue/operating-profit table was not
+    retrieved despite multiple targeted searches, a genuine gap.
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 452.67
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Aug 6 2026 (market cap ~$175.63B).
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: EMR
+    comparability_rationale: Emerson Electric -- industrial automation/electrification overlap, direct
+      multiples comparison used by analysts.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: ROK
+    comparability_rationale: Rockwell Automation -- industrial/electrical automation peer.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: VRT
+    comparability_rationale: Vertiv -- direct data-center power-infrastructure overlap (also a fellow
+      member of Portfolio-HQ's own power_infra correlated cluster).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Data-center power demand surge
+    variables:
+    - variable_name: data-center_power_demand_surge
+      evidence_basis: Q4 2025 data-center orders reportedly surged ~200% YoY; electrical backlog +48%
+        YoY in Q1 2026; total backlog grew from $2.8B (2019) to $15.3B (2025).
+      provenance_label: historically_observed
+  - scenario_name: Mobility segment spin-off
+    variables:
+    - variable_name: mobility_segment_spin-off
+      evidence_basis: Announced planned spin-off of the Mobility (vehicle electrical) business, targeted
+        completion by end of Q1 2027.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced (WebFetch blocked for every finance
+  domain attempted); no primary document directly opened. FY2025 operating margin is abstained -- the
+  only figure found was unclear as to basis and period. Two inconsistent cash figures at different dates
+  were found and both disclosed rather than one silently chosen. Full-year segment detail was not obtained
+  despite repeated attempts. Eaton is Ireland-domiciled ('Eaton Corp plc') and announced a planned Mobility
+  spin-off targeted for completion by end of Q1 2027 -- a real future comparability event, not reflected
+  in the history above.
+abstention_index:
+- domain: segment_evidence
+  reason: Only Q4 2025 quarterly segment figures were located (Electrical Americas, Electrical Global,
+    Aerospace, Vehicle, eMobility) -- a full-year segment revenue/operating-profit table was not retrieved
+    despite multiple targeted searches, a genuine gap.
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: ETN
+content_sha256: 8e6e585eea9ba59095969f04edb82c2beb5abad8e8e351bdb5e487f05e64efb7

@@ -1,0 +1,77 @@
+tickers: [CEG, MSFT]
+relationship_type: customer_dependency
+symmetric: false
+subject: CEG
+object: MSFT
+direction: >
+  CEG (subject) is customer-dependent on MSFT (object): Microsoft is
+  disclosed as the named, contracted long-duration offtake counterparty
+  under the Crane Clean Energy Center Power Purchase Agreement — a source
+  of contracted demand/revenue for CEG, not the reverse. No MSFT-side
+  dependency on CEG is asserted by this record.
+relationship_status: current
+decision_served:
+  - thesis_monitoring
+  - stress_testing
+evidence:
+  - claim: >
+      Constellation Energy Corporation (CEG) is party to a disclosed
+      20-year Power Purchase Agreement (PPA) with Microsoft Corporation
+      (MSFT), under which Microsoft is named as the offtake counterparty
+      supporting the planned restart of CEG's 835 MW Crane Clean Energy
+      Center nuclear generating asset, subject to regulatory and execution
+      conditions.
+    source: >
+      intelligence/companies/CEG.yaml, claim CEG-C05 ("A 20-year power
+      purchase agreement with Microsoft supports the planned restart of the
+      835 MW Crane Clean Energy Center..."), itself citing Constellation
+      Energy Corporation's 2025 Form 10-K (SEC accession
+      0001868275-26-000032), Item 1, nuclear facilities, page 14.
+    inspected_source_type: secondary
+    source_date: "2026-02-24"
+    effective_date: "2026-08-04"
+    evidence_classification: inferred
+    confidence: moderate
+    materiality: high
+    uncertainty: >
+      This unit did not itself open Constellation's Form 10-K or any
+      Microsoft-side primary source — it cites CEG.yaml's own already-vetted
+      claim only, per this unit's explicit no-external-research boundary.
+      The relationship is disclosed from CEG's side only: MSFT's own
+      Company Intelligence record (intelligence/companies/MSFT.yaml and
+      MSFT.md) does not independently name Constellation Energy, the Crane
+      Clean Energy Center, or this PPA anywhere — confirmed by direct grep
+      of both files during this unit's own preflight (2026-08-04). No named
+      contract dollar value or percent-of-CEG-revenue figure was located in
+      the existing evidence base. The underlying Crane restart is itself
+      disclosed as subject to regulatory and execution conditions (CEG's
+      own risk disclosure) — it is a planned restart, not an operating
+      asset, so the demand this PPA represents is not yet realized as
+      delivered power or recognized revenue. Per REL-0001 §E, this
+      evidence_classification is deliberately kept at `inferred` rather
+      than upgraded to `observed` specifically because independent
+      confirmation from the counterparty's own record could not be located
+      without new research this unit is not authorized to perform — this
+      is a one-sided-sourcing discipline choice, not a claim that CEG's own
+      disclosure is itself unreliable.
+    disconfirming_evidence: null
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-04"
+  next_due: "2026-11-02"
+  log:
+    - date: "2026-08-04"
+      note: >
+        Record created under governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+        (frozen schema/taxonomy/evidence standard) and
+        governance/decisions/REL-0002-ws0005-milestone4-first-relationship-content-batch-ceg-msft.md
+        (this batch's own authorization), following the first-candidate
+        recommendation in
+        governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+        §9. Uses only evidence already identified in that inventory and in
+        intelligence/companies/CEG.yaml — no external research was
+        performed. One-sided sourcing (CEG's side only; MSFT's own record
+        does not independently corroborate) is disclosed explicitly in this
+        entry's own evidence[0].uncertainty and in CEG_MSFT.md. No
+        correlation of any kind was computed. Neither CEG.yaml/CEG.md nor
+        MSFT.yaml/MSFT.md was modified by this unit.

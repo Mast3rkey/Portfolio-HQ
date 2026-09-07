@@ -1,0 +1,358 @@
+schema_version: '1.0'
+ticker: AVGO
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-10-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 27450
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2021 (ended Oct 31 2021) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 6437
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: Derived from a reported FY2021 net margin figure (secondary aggregator), not a
+        directly reported dollar figure.
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2021 net margin (secondary aggregator)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-10-30'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 33203
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 11223
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: Derived from a reported FY2022 net margin figure (secondary aggregator); a second
+        metric on the same source ('income from continuing operations') showed $11,495M, a small unresolved
+        gap.
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2022 net margin (secondary aggregator)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-10-29'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 35819
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 14082
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.4525
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2023 operating margin (operating income $16,207M / revenue $35,819M
+            = 45.25%, matches an independent aggregator figure exactly)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-11-03'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 51574
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2024 (ended ~Nov 3 2024) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: VMware acquisition closed Nov 22 2023; FY2024 is the first full fiscal year of consolidation.
+            A 10-for-1 forward stock split also took effect Jul 15 2024, mid-way through this fiscal year,
+            so even within-FY2024 per-share figures are not on a single consistent share basis without
+            adjustment.
+    - item_category: earnings
+      value: 5895
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: GAAP net income cratered from FY2023's $14,082M largely due to VMware acquisition-related
+            intangible amortization and restructuring charges, not underlying operating deterioration
+            (operating income only fell from $16,207M to $13,463M over the same period).
+    - item_category: operating_margin
+      value: 0.261
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2024 operating margin (operating income $13,463M / revenue $51,574M
+            = 26.10%, matches an independent aggregator figure exactly)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-11-02'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 64000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2025 (ended Nov 2 2025) revenue (rounded; one snippet cited '$63,887M,'
+            unconfirmed to the exact million)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 23130
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2025 net income (secondary aggregator)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      abstention_reason: Two aggregator figures for FY2025 operating margin disagree by ~1 percentage
+        point (39.89% vs. 40.75%) and were not reconciled -- not reported as a single confident figure.
+    - item_category: free_cash_flow
+      value: 26900
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2025 free cash flow
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 637
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): operating cash flow ~$27,537M (summed from four quarters)
+        minus free cash flow $26,900M equals ~$637M; a separate sum of quarterly capex disclosures (~$623M)
+        is reasonably consistent.'
+      provenance:
+        sources:
+        - source_identifier: AVGO quarterly cash-flow disclosures, FY2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 16178
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO cash & equivalents, Nov 2 2025 (FY2025 fiscal year-end)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 37621
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO long-term debt, cited to the FY2025 10-K (Nov 2 2025)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A separate, much larger total-debt figure (~$64.9-66.1B) was found, but appears
+            to be dated to Feb 1 2026 (Q1 FY2026), i.e. a subsequent quarter after this fiscal year-end
+            -- not used as a FY2025 fiscal-year-end figure; disclosed as a later data point only, not
+            reconciled.
+    - item_category: share_count_diluted
+      value: 4850
+      unit: shares_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO diluted weighted-average shares, FY2025 (post-split)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: Semiconductor Solutions
+    revenue:
+      item_category: revenue
+      value: 37000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2025 Semiconductor Solutions segment revenue (approximate; AI semiconductor
+            revenue reported at ~$20B within this, +65% YoY)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Infrastructure Software
+    revenue:
+      item_category: revenue
+      value: 27000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AVGO FY2025 Infrastructure Software segment revenue (approximate; includes
+            VMware)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 426.29
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Aug 8 2026 (day range $421.61-$430.82); market cap ~$2.18T; trailing P/E cited at
+          65.30.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: NVDA
+    comparability_rationale: Dominant AI accelerator/GPU peer, though a different business model (merchant
+      GPU vs. Broadcom's custom ASIC/XPU model).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: MRVL
+    comparability_rationale: Marvell -- closest direct peer in custom AI silicon (ASIC) and networking/optical
+      interconnect.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: QCOM
+    comparability_rationale: Qualcomm -- comparable large diversified semiconductor peer with meaningful
+      connectivity/IP-licensing exposure.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Custom AI accelerator (XPU) customer concentration
+    variables:
+    - variable_name: custom_ai_accelerator_(xpu)_customer_concentration
+      evidence_basis: Broadcom has disclosed deep collaboration with six hyperscale customers on custom
+        AI XPUs (reportedly including Google, Meta, OpenAI, Anthropic, and possibly Apple per one unconfirmed
+        source). Secured a ~$11B order from Anthropic for late-2026 delivery; management cited 'line of
+        sight' to over $100B of AI-chip revenue in 2027 -- customer concentration in a small hyperscaler
+        set is a disclosed risk factor in secondary commentary.
+      provenance_label: historically_observed
+  - scenario_name: VMware integration
+    variables:
+    - variable_name: vmware_integration
+      evidence_basis: Management has targeted more than doubling VMware's EBITDA to $8.5B within three
+        years of the November 2023 close, framed as enabling a full-stack silicon-to-virtualization offering.
+      provenance_label: historically_observed
+uncertainty_summary: 'All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  Two structural discontinuities affect this whole record: the VMware acquisition (closed Nov 22 2023,
+  purchase price reported inconsistently as ~$61B vs. ''$69 billion'' in a separate headline, not reconciled)
+  and a 10-for-1 forward stock split effective Jul 15 2024, which falls mid-way through FY2024 itself.
+  FY2021/FY2022 net income are derived from margin percentages rather than directly reported dollar figures
+  and are lower-confidence as a result; FY2021/FY2022 diluted EPS were not reported at all given unresolved
+  uncertainty about the underlying split-adjustment. FY2025 total debt carries a large, unresolved, disclosed
+  discrepancy between a FY2025-fiscal-year-end figure and a later, materially larger figure from an early-2026
+  quarter -- only the FY2025-dated figure is used here. Segment operating income (as opposed to revenue)
+  was not found for either segment.'
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: AVGO
+content_sha256: 9274a4d163b21410b19d213aa978db9ee59a968ad28b9f8c63845e960f90ff09

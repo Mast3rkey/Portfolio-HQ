@@ -1,0 +1,43 @@
+schema_version: '1.0'
+ticker: ICE
+primary_archetype: C
+secondary_archetype: F
+rationale: 'ICE operates CFTC-designated derivatives clearing organizations (ICE Clear Credit, ICE Clear
+  U.S., ICE Clear Europe) and the SEC-regulated NYSE national securities exchange -- regulated financial-market
+  infrastructure explicitly named as a defining example of archetype C, where capital-structure and regulatory-capital
+  considerations make a standard FCFF-DCF theoretically inappropriate and sector-specific multiples/excess-return
+  framing are favored instead. The Fixed Income & Data Services segment adds a growing subscription-like
+  annuity (recurring revenue $531M in Q2 2026, +10% YoY), while Mortgage Technology -- from the 2023-closed
+  Black Knight acquisition -- has shown GAAP operating losses in recent periods (Q1 2026: -$13M GAAP operating
+  income) attributed to acquisition-related debt service and amortization, a materially different economic
+  profile from the regulated-exchange core. This segment divergence supports F as a secondary, sum-of-the-parts
+  lens without displacing C as the governing archetype for the company''s largest, most structurally distinctive
+  segment. Archetype-F test: F was considered given ICE''s three segments (Exchanges, Fixed Income & Data
+  Services, Mortgage Technology) showing materially different economics -- regulated derivatives clearing/exchange
+  infrastructure, a growing subscription-like data annuity, and a software segment still absorbing acquisition-related
+  integration losses (Mortgage Technology posted -$13M GAAP operating income in Q1 2026) -- supporting
+  a secondary sum-of-the-parts view; however, the core, largest-revenue segment (Exchanges, including
+  CFTC-designated clearing organizations and the SEC-regulated NYSE) is a textbook financial-market-infrastructure
+  business, so C was selected as primary.'
+evidence_quality:
+  primary_source_coverage: limited
+  uncertainty_statement: This session's primary-source access (WebFetch) was confirmed blocked on every
+    domain attempted (including SEC EDGAR and ICE's own investor-relations site), so every fact traces
+    to WebSearch-returned snippets one layer removed from primary text, with several figures flagged as
+    internally inconsistent and unreconciled.
+disclosed_evidence_conflicts:
+- Black Knight segment synergy-target figures were reported inconsistently across secondary sources this
+  session ($230 million vs. '$275 million+'), and the FY2024 revenue mix percentages themselves are sourced
+  from a secondary, not independently verified, breakdown.
+evidence_gap_statement: null
+portfolio_context:
+  gate_exists: true
+  next_gate_references_valuation: false
+  disclosure_note: Sanitized, mechanically-derived fact only -- never used as archetype-determining evidence
+    (VALUATION-0003 SS D/SS E).
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-2
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#ICE
+content_sha256: 4d530b110d36075ce43482936454a9253545360cb6237d8046d0c7dc4f770af1

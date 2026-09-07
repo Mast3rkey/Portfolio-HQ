@@ -1,0 +1,25 @@
+theme_id: ai_infrastructure
+description: "The buildout of physical infrastructure -- compute hardware and electrical power -- required to run large-scale AI workloads. Two coupled but distinct demand drivers: (1) accelerated-computing hardware for training and inference, and (2) the electricity generation, transmission, and grid-connection capacity needed to power the data centers that hardware runs in."
+evidence:
+  - "NVIDIA FY2026 (ended 2026-01-25) total revenue was $215.938 billion, up 65% year-over-year; Data Center segment revenue was $193.7 billion, up 68% year-over-year."
+  - "GE Vernova FY2025 orders were $59.3 billion (+34% organic); total backlog reached $150 billion (+$31.2 billion year-over-year); revenue was $38.1 billion; net income was $4.9 billion, including a $2.9 billion tax benefit."
+  - "GE Vernova's Electrification segment booked $2.4 billion in equipment orders supporting data centers in Q1 2026 alone, more than all of 2025 combined; total company backlog grew more than $13 billion quarter-over-quarter to $163 billion."
+  - "The U.S. EIA's Annual Energy Outlook 2026 (released 2026-04-08) projects data-center-server electricity consumption reaching between 446 and 818 billion kilowatt-hours by 2050; the 818 billion kWh figure is the High Electricity Demand case, more than 16 times the 2020 level."
+  - "Microsoft's own FY2026 Q3 earnings call (CFO Amy Hood, 2026-04-29) guided approximately $190 billion of calendar-2026 capital expenditures, with approximately $25 billion attributed to higher component pricing."
+risks:
+  - "Demand concentration in a small number of hyperscaler customers."
+  - "Long-cycle power-infrastructure execution risk."
+  - "Export-control and geopolitical policy risk on the compute side."
+  - "Guidance figures (including Microsoft's capex guidance and the broader hyperscaler aggregate) are revisable estimates, not commitments; this applies less to realized-results figures such as NVIDIA's and GE Vernova's reported revenue, orders, and backlog, which describe what already happened."
+catalysts:
+  - "Continued or decelerating hyperscaler capex guidance disclosed quarterly."
+  - "GE Vernova's backlog-to-revenue conversion pace, including management's stated target of approximately $200 billion of total backlog by year-end 2028."
+  - "NVIDIA's next-generation architecture execution."
+lifecycle: Established
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-18"
+  next_due: "2026-10-16"
+  log:
+    - date: "2026-07-18"
+      note: "Theme record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0007. Portfolio HQ's first Theme Intelligence record."

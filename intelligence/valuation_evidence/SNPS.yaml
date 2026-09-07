@@ -1,0 +1,299 @@
+schema_version: '1.0'
+ticker: SNPS
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-10-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 4204
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2021 (ended late Oct 2021) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 757.5
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-10-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 4615.7
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      abstention_reason: The FY2022 net income figure returned by search ($757.5M) is identical to the
+        independently-reported FY2021 figure, which is implausible for two different fiscal years to the
+        tenth of a million -- treated as a likely data-extraction error and not reported as fact.
+  - period_type: annual
+    fiscal_period_end_date: '2023-10-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 5318.0
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 984.6
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-10-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 6127
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 1442
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-10-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 7054
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2025 revenue, includes $756.6M from the newly-acquired Ansys
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 1336
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.13
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2025 operating income $914.9M divided by revenue $7,054M equals 13.0
+        percent -- notably below the 18.9% implied net margin, an unusual pattern likely reflecting a
+        below-the-line gain (plausibly related to the Sept 30 2024 Software Integrity Group divestiture
+        and/or Ansys-deal items), but the specific gain amount was not confirmed this session.'
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2025 operating income $914.9M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 1420
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2025 free cash flow
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A derived cross-check (OCF $1.74B minus capex $169M = $1.571B) does not cleanly
+            match the stated $1.42B FCF; a minor unresolved inconsistency in the underlying search snippets.
+    - item_category: capex
+      value: 169
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2025 capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 1420
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS cash, Oct 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 13500
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SNPS total debt, end of FY2025 (Oct 2025)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A later, post-paydown snapshot (Q2 FY2026, ~Apr 2026) showed total debt of $10.0B
+            -- both figures disclosed, different dates; debt was raised specifically to fund the ~$35B
+            Ansys acquisition.
+    - item_category: share_count_diluted
+      value: 165.6
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $1,336M divided by diluted EPS $8.07
+        equals ~165.6M diluted shares. Not a directly reported figure.'
+      provenance:
+        sources:
+        - source_identifier: SNPS FY2025 net income and diluted EPS figures above
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments: []
+  abstention_reason: Segment (Design Automation vs. Design IP, and post-Ansys potentially a simulation/systems-design
+    category) revenue breakdown for FY2025 was not obtained -- the research session's search budget was
+    exhausted before this could be located. A genuine gap, not filled with an estimate.
+market_observed_evidence:
+  inputs: []
+  abstention_reason: Current SNPS stock price and market capitalization were not obtained this session
+    -- the research session's search budget was exhausted before a reliable figure could be retrieved.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: CDNS
+    comparability_rationale: Cadence Design Systems -- the closest direct peer, the other dominant player
+      in electronic design automation (EDA) software.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: KEYS
+    comparability_rationale: Keysight Technologies -- electronic design/test/measurement software and
+      instruments, adjacent to SNPS's chip-design tooling.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: PTC
+    comparability_rationale: PTC Inc -- engineering/product-lifecycle design software, less direct than
+      CDNS but a reasonable comparable given SNPS's expanded post-Ansys simulation/systems-design footprint.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Ansys acquisition
+    variables:
+    - variable_name: ansys_acquisition
+      evidence_basis: ~$35B deal, closed Q3 FY2025; materially reshapes SNPS's revenue base, debt load,
+        and competitive positioning (moving from pure EDA into simulation/'Silicon to Systems' design).
+        Ansys contributed $756.6M of FY2025 revenue ($667.7M in Q4 FY2025 alone).
+      provenance_label: historically_observed
+  - scenario_name: Software Integrity Group divestiture
+    variables:
+    - variable_name: software_integrity_group_divestiture
+      evidence_basis: Sold to Clearlake Capital and Francisco Partners for $1.65B total consideration
+        ($1.48B upfront cash plus deferred/earnout payments), transaction completed Sept 30 2024.
+      provenance_label: historically_observed
+uncertainty_summary: 'All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  FY2022 net income is abstained as an apparent data-extraction error (identical to FY2021''s figure).
+  Current stock price, market cap, and full-year segment revenue were not obtained -- genuine gaps, not
+  estimated. This is the most significant comparability case in this research pass: Synopsys underwent
+  two major structural events within ~18 months of FY2025 (the Sept 2024 Software Integrity Group divestiture,
+  reclassified as discontinued operations, and the ~$35B Ansys acquisition, closed Q3 FY2025) -- only
+  FY2021-FY2023 (three years) can be considered clean, pre-transformation comparable history; FY2024 reflects
+  the divestiture transition and FY2025 reflects partial-year Ansys consolidation. This is the disclosed
+  IPO/restructuring shortened-history exception under VALUATION-0005 SS C.1, applied here for a genuine
+  structural limitation rather than forcing a misleading 5-year like-for-like comparison.'
+abstention_index:
+- domain: segment_evidence
+  reason: Segment (Design Automation vs. Design IP, and post-Ansys potentially a simulation/systems-design
+    category) revenue breakdown for FY2025 was not obtained -- the research session's search budget was
+    exhausted before this could be located. A genuine gap, not filled with an estimate.
+- domain: market_observed_evidence
+  reason: Current SNPS stock price and market capitalization were not obtained this session -- the research
+    session's search budget was exhausted before a reliable figure could be retrieved.
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: SNPS
+content_sha256: e5a12e1298d8de51ca803bf929994ab37a4a8504e9c3407d179dec9876112265

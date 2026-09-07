@@ -1,0 +1,35 @@
+schema_version: '1.0'
+ticker: GNRC
+primary_archetype: D
+secondary_archetype: null
+rationale: 'Generac''s own disclosed history shows severe, demonstrated boom-bust cyclicality tied to
+  power-outage/storm activity -- net sales up over 50% in 2021, down roughly 12% in 2023, diluted EPS
+  falling from $8.51 to $3.31, and operating margin nearly halving from 19.9% to 9.6%, with FY2025 Residential-segment
+  sales explicitly attributed to weak outage activity -- making a trailing or current-year figure unrepresentative
+  and a normalized/mid-cycle basis the standard approach (archetype D). No secondary archetype is retained:
+  the disclosed manufacturing-capacity buildout (Enercon acquisition, Belvidere and Sussex/Oshkosh expansion)
+  is a growth-leg capex story for a single, still-developing C&I data-center product line, not evidence
+  that Generac''s own core economics are those of a long-lived-asset infrastructure operator with a utility-like
+  recurring demand curve -- archetype B''s actual defining mechanism (protocol §5). Generac remains fundamentally
+  a cyclical durable-goods equipment manufacturer selling discrete hardware through an independent dealer
+  network, not an infrastructure operator, so B does not fit as a genuine dual-lens beyond the primary
+  D classification. Archetype-F test: F was considered given Generac''s 2026 segment reorganization into
+  Residential and Commercial & Industrial (C&I), which carry different demand drivers (storm/outage-driven
+  residential demand vs. secular data-center/hyperscale C&I growth), but the packet discloses only revenue
+  splits, not materially different segment margin/economics, so F was not selected as primary or secondary
+  either; the dominant, evidence-grounded driver of both segments remains cyclical, event-driven equipment
+  demand.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: Most SEC-filing-sourced facts in this record trace to WebSearch-returned snippets
+    rather than this session's own direct reading of the underlying filings, since primary-source access
+    (SEC EDGAR, investor-relations pages) was confirmed blocked this session.
+disclosed_evidence_conflicts: null
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-2
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#GNRC
+content_sha256: 3679c6aa9947999e2b7439b40459ebe373302772e173e3a045f9b34163af6f22

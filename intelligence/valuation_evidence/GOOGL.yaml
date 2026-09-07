@@ -1,0 +1,387 @@
+schema_version: '1.0'
+ticker: GOOGL
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 257637
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 76033
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.306
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2021 operating income $78,714M divided by revenue $257,637M equals
+        30.6 percent.'
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2021 operating income $78,714M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 282836
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 59972
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.265
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2022 operating margin (Alphabet's own cited rounded figure of 26%,
+            consistent with derived $74,842M/$282,836M=26.5%)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 307394
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 73795
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.274
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2023 operating margin (Alphabet's own cited rounded figure of 27%,
+            consistent with derived $84,293M/$307,394M=27.4%)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 350018
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 100118
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.321
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2024 operating margin (Alphabet's own cited rounded figure of 32%,
+            consistent with derived $112,390M/$350,018M=32.1%)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 402836
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2025 revenue -- first time Alphabet's annual revenue exceeded $400B
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 132170
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Net income growth (32%) notably outpaced revenue growth (15%); the exact composition
+            of that gap (margin expansion vs. other income/gains) was not independently verified this
+            session.
+    - item_category: operating_margin
+      value: 0.32
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2025 operating margin (Alphabet's own cited rounded figure of 32%,
+            consistent with derived $129,039M/$402,836M=32.0%)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 73266
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: 'GOOGL FY2025 free cash flow (ties exactly: OCF $164,713M minus capex $91,447M
+            = $73,266M)'
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 91447
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2025 capital expenditures (purchases of property and equipment)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 30708
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL cash and cash equivalents, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 126843
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: cash $30,708M plus marketable securities $96,135M equals $126,843M combined.'
+      provenance:
+        sources:
+        - source_identifier: GOOGL balance sheet, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 46547
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL long-term debt, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: This is specifically long-term debt; a total-debt-including-current-portion figure
+            was not found, so net debt/net cash is not confidently derivable (though Alphabet is very
+            likely in a large net-cash position given >$126B in cash/securities vs. ~$46.5B long-term
+            debt).
+    - item_category: share_count_diluted
+      value: 12227
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $132,170M divided by diluted EPS $10.81
+        equals ~12,227M diluted shares. (Total shares outstanding, a different figure, was separately
+        reported at 12,088M across Class A/B/C.)'
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2025 net income and diluted EPS figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: Google Search & Other
+    revenue:
+      item_category: revenue
+      value: 224530
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2025 Google Search & Other segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Google Cloud
+    revenue:
+      item_category: revenue
+      value: 58710
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2025 Google Cloud segment revenue, up from $43.23B in 2024, +35.8%
+            reported growth
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Other Bets
+    revenue:
+      item_category: revenue
+      value: 1540
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GOOGL FY2025 Other Bets segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs: []
+  abstention_reason: Genuinely conflicting figures were found for GOOGL's current price/market cap ($356.72
+    vs. 'trading near $375-378'; market cap reported as both '$4.32T' and '$4.271T' from different sources,
+    with mention of a GOOGL/GOOG class distinction and a stock decline tied to an AI-leadership departure)
+    -- not resolved to a single confident figure, so abstained rather than picking one arbitrarily.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: MSFT
+    comparability_rationale: Cloud infrastructure (Azure vs. Google Cloud) and enterprise AI comparator.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: AMZN
+    comparability_rationale: Cloud infrastructure (AWS vs. Google Cloud) and, secondarily, digital advertising
+      comparator.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: META
+    comparability_rationale: Direct digital-advertising duopoly peer.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: DOJ Google Search antitrust remedies
+    variables:
+    - variable_name: doj_google_search_antitrust_remedies
+      evidence_basis: Final judgment entered December 2025 imposing behavioral remedies (data-sharing/syndication
+        requirements, restrictions on distribution deals); Google appealed January 2026, DOJ and state
+        AGs cross-appealed February 2026. Morgan Stanley estimated mandatory choice-screen remedies could
+        cost Google 5-8% of search traffic over three years, translating to an estimated $15-25B in annual
+        ad revenue at risk.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  Current stock price and market cap could not be resolved to one confident figure (genuine conflict between
+  sources) and are abstained. Full-year Google Cloud and Other Bets operating income were not obtained
+  (only Q4-2025-alone figures were found) -- a genuine segment-evidence gap, so only segment revenue (not
+  profit) is reported here. Net debt is not confidently derivable given only a long-term-debt figure (no
+  total-debt-including-current-portion). Alphabet's three-segment structure has been used consistently
+  2021-2025, though full segment-boundary consistency across all five years was not independently verified.
+abstention_index:
+- domain: market_observed_evidence
+  reason: Genuinely conflicting figures were found for GOOGL's current price/market cap ($356.72 vs. 'trading
+    near $375-378'; market cap reported as both '$4.32T' and '$4.271T' from different sources, with mention
+    of a GOOGL/GOOG class distinction and a stock decline tied to an AI-leadership departure) -- not resolved
+    to a single confident figure, so abstained rather than picking one arbitrarily.
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: GOOGL
+content_sha256: 009a3db81d7029429c519713bc853001e0ee1e90c0b7d18fe2cc53c4b2d2ad4d

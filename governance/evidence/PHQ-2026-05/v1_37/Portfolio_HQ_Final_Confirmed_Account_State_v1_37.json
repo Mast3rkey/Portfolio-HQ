@@ -1,0 +1,273 @@
+{
+  "version": "1.37",
+  "status": "final confirmed post-buy account and quantity snapshot",
+  "source": "Three principal-supplied Robinhood mobile screenshots after all seven buy fills",
+  "account_summary": {
+    "effective_time": "2026-07-31 approximately 16:13 ET",
+    "portfolio_value": 6234.86,
+    "cash": 845.84,
+    "stocks_and_etfs": 5071.39,
+    "crypto": 317.62,
+    "margin_used": 0.0,
+    "buying_power": 5076.78,
+    "today_change_dollars": 68.39,
+    "today_change_percent": 1.11
+  },
+  "reconciliation": {
+    "position_count": 34,
+    "equity_and_fund_count": 27,
+    "crypto_count": 7,
+    "component_sum": 6234.85,
+    "component_gap_vs_portfolio_value": -0.01,
+    "interpretation": "One-cent difference is displayed rounding; no forced adjustment."
+  },
+  "positions": [
+    {
+      "symbol": "AMZN",
+      "asset_class": "equity",
+      "quantity": "1.146551",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "ASML",
+      "asset_class": "equity",
+      "quantity": "0.083505",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "AVGO",
+      "asset_class": "equity",
+      "quantity": "0.375702",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "CEG",
+      "asset_class": "equity",
+      "quantity": "0.425616",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "COST",
+      "asset_class": "equity",
+      "quantity": "0.081544",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "ETN",
+      "asset_class": "equity",
+      "quantity": "0.262049",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "GEV",
+      "asset_class": "equity",
+      "quantity": "0.208382",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "GLD",
+      "asset_class": "fund",
+      "quantity": "0.61757",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "GNRC",
+      "asset_class": "equity",
+      "quantity": "0.320007",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "GOOGL",
+      "asset_class": "equity",
+      "quantity": "0.602817",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "ISRG",
+      "asset_class": "equity",
+      "quantity": "0.300031",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "KLAC",
+      "asset_class": "equity",
+      "quantity": "0.304258",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "LLY",
+      "asset_class": "equity",
+      "quantity": "0.179485",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "META",
+      "asset_class": "equity",
+      "quantity": "0.332674",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "MSFT",
+      "asset_class": "equity",
+      "quantity": "0.742767",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "NVDA",
+      "asset_class": "equity",
+      "quantity": "1.858992",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "PANW",
+      "asset_class": "equity",
+      "quantity": "0.137346",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "PWR",
+      "asset_class": "equity",
+      "quantity": "0.116807",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "RTX",
+      "asset_class": "equity",
+      "quantity": "0.240403",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "SKHY",
+      "asset_class": "equity",
+      "quantity": "0.278473",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": "unresolved; no silent target or sell instruction"
+    },
+    {
+      "symbol": "SPCX",
+      "asset_class": "private/other",
+      "quantity": "0.502727",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": "hold/no-add"
+    },
+    {
+      "symbol": "SPY",
+      "asset_class": "fund",
+      "quantity": "1.250856",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "TMO",
+      "asset_class": "equity",
+      "quantity": "0.325606",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "TSM",
+      "asset_class": "equity",
+      "quantity": "0.520584",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "V",
+      "asset_class": "equity",
+      "quantity": "0.343424",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "VEA",
+      "asset_class": "fund",
+      "quantity": "6.186296",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "VWO",
+      "asset_class": "fund",
+      "quantity": "0.476555",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "BONK",
+      "asset_class": "crypto",
+      "quantity": "0.81",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "BTC",
+      "asset_class": "crypto",
+      "quantity": "0.00180473",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "ETH",
+      "asset_class": "crypto",
+      "quantity": "0.04574",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "PEPE",
+      "asset_class": "crypto",
+      "quantity": "0.80712835",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "SOL",
+      "asset_class": "crypto",
+      "quantity": "1.59509",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "WIF",
+      "asset_class": "crypto",
+      "quantity": "0.000084",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    },
+    {
+      "symbol": "ZORA",
+      "asset_class": "crypto",
+      "quantity": "0.07090354",
+      "quantity_status": "confirmed in post-buy mobile holdings screenshot",
+      "policy_note": ""
+    }
+  ],
+  "authority_boundaries": [
+    "This snapshot may support holdings.yaml reconciliation only through a controlled repository PR.",
+    "Do not query Robinhood.",
+    "Do not infer tax lots or holding periods.",
+    "Do not place or submit orders.",
+    "SPCX remains hold/no-add.",
+    "SKHY remains unresolved.",
+    "Manual Robinhood execution remains controlling."
+  ]
+}

@@ -1,0 +1,271 @@
+# ENDPOINT-0001 concrete construction universe — closure determination
+#
+# Authorized by XASSET-0028. Read-only research-design artifact. Contains no endpoint, bound,
+# point, range, percentage, target, weight, score, or sleeve preference, and executes nothing.
+#
+# Every count and hash below is RECOMPUTED from the deterministic generator by
+# level1_construction_universe_closure_validator; none is hand-authored.
+
+determination_id: ENDPOINT-0001-CONSTRUCTION-UNIVERSE-CLOSURE-V1
+authorizing_decision: XASSET-0028
+status: CLOSED
+
+closure_basis: >-
+  XASSET-0027 SSI.1 records that a provenance family is a classification of provenance, not a
+  hypothesis, and names the dimensions that can inhabit one family. Five of those are exactly the
+  already-closed (route, NUM-0001 class) families. Evidence form is representation, preserved as a
+  downstream gate. Source ARCHITECTURE is frozen into construction identity, as
+  frozen_provenance_requirements -- addressed by name to this unit and binding on any future Stage
+  1 -- requires. That leaves comparator architecture, and accepted authority already closes it:
+  XASSET-0020 SSH fixes exactly six unordered sleeve-sleeve pair records and additionally requires
+  each of the four sleeves to be compared directly with UNSIZED_UNASSIGNED_CAPITAL. Crossing that
+  closed contract with the canonical driver_class_scope partition fixes every DRIVER class's
+  comparator architecture set exactly. No comparator rule is supplied; SSH's own mandated
+  comparisons are enumerated.
+
+closed_dimensions:
+  sleeves:
+  - equity
+  - fund_broad_market
+  - fund_gld_defensive
+  - crypto
+  bounds:
+  - LOWER
+  - UPPER
+  driver_classes:
+  - portfolio_function
+  - valuation_opportunity_cost
+  - downside_path_risk
+  - recovery
+  - diversification_cobehavior
+  - sleeve_deployability
+  provenance_families:
+  - R1_C1
+  - R1_C3
+  - R1_C4
+  - R1_C5
+  - R2_C2
+
+comparator_contract:
+  enumerates_xasset_0020_section_h_only: true
+  supplies_a_new_comparator_rule: false
+  unassigned_capital_is_a_diversification_cobehavior_comparator: false
+  unassigned_capital_exclusion_reason: >-
+    XASSET-0020 SSH's UNSIZED_UNASSIGNED_CAPITAL comparison is not a pair record and carries its
+    own separate conclusion vocabulary, and diversification_cobehavior's canonical scope is
+    ONE_UNORDERED_PAIR. Registering a comparator the accepted contract does not admit would be
+    inventing a construction rather than enumerating one. The alternative -- registering it as a
+    NOT_APPLICABLE row for grid symmetry -- was considered and declined for that reason.
+  driver_class_scope:
+    portfolio_function: ONE_SLEEVE
+    valuation_opportunity_cost: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    downside_path_risk: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    recovery: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    diversification_cobehavior: ONE_UNORDERED_PAIR
+    sleeve_deployability: ONE_SLEEVE
+  architectures_per_driver_class:
+    portfolio_function: 1
+    valuation_opportunity_cost: 4
+    downside_path_risk: 4
+    recovery: 4
+    diversification_cobehavior: 3
+    sleeve_deployability: 1
+
+source_architecture_contract:
+  frozen_source_architecture: HYPOTHETICAL_SOURCE_ARCHITECTURE
+  source_architecture_is_frozen_construction_identity: true
+  source_architecture_selectable_at_result_time: false
+  hypothetical_source_requirements_frozen_before_execution: true
+  hypothetical_source_requirements_generated_from_closed_identity_only: true
+  result_author_may_author_or_alter_requirements: false
+  source_path_and_sha256_present: false
+  source_path_and_sha256_absent_reason: >-
+    source_architecture_vocabulary.hypothetical_forbids bars source_path and source_sha256 on a
+    HYPOTHETICAL construction. They are therefore absent from every registered identity.
+  existing_source_architecture_disposition: RESOLVED_BY_XASSET_0025_OUTCOME_C_OVER_THE_XASSET_0021_FROZEN_SNAPSHOT
+  existing_source_architecture_reason: >-
+    The existing-source half is not silently omitted. XASSET-0027 SSI.1.1 records that the
+    existing-source corpus is exactly XASSET-0021's frozen snapshot, that XASSET-0025 Outcome C
+    already searched precisely that corpus exhaustively and found no qualifying source, that a
+    Stage 1 restricted to it would re-run an accepted determination and add nothing, and that the
+    remaining space is constructions whose sources do not yet exist. The source-architecture
+    dimension therefore resolves to exactly ONE lawful value rather than two.
+  no_source_identity_enumeration: true
+  no_unbounded_source_search: true
+  no_unbounded_source_search_reason: >-
+    A frozen requirement specification names no institution, vendor, jurisdiction, or document.
+    Stage 1 evaluates whether the frozen specification is lawfully satisfiable under the twelve
+    gates. Two independent executors handed the same construction_id are handed the same frozen
+    requirement set byte for byte, so a negative means the registered specification was evaluated
+    and blocked, never that an executor failed to find something.
+  consumable_by_validate_stage1_results: true
+  frozen_universe_adapter: level1_construction_universe_closure_validator.frozen_construction_universe
+  frozen_result_identity_fields:
+  - cell_id
+  - sleeve
+  - bound
+  - driver_class
+  - family_id
+  - route
+  - num_0001_class
+  - governing_authority_refs
+  - source_architecture
+  - hypothetical_source_requirements
+  frozen_result_identity_note: >-
+    Every immutable identity field a Stage-1 candidate result row duplicates must EQUAL the frozen
+    construction exactly. Review 4946154405 MAJOR 2 found that verifying construction-id membership
+    and source provenance alone let a row name a valid registered id while mislabeling its sleeve,
+    bound, DRIVER class, family, route, NUM-0001 class, cell, or authority trace, which would corrupt
+    the cell roll-up even though the id itself is registered.
+  public_stage_1_validator_is_unconditionally_fail_closed: true
+  public_stage_1_validator_note: >-
+    Review 4946154405 BLOCKING 1 found the public Stage-1 results validator consulted operational
+    authorization only when no construction_universe argument was supplied, so any caller passing one
+    bypassed the gate. The public parameter is REMOVED: validate_stage1_results(results) always
+    enforces authorization and always obtains the canonical universe internally. Structural machinery
+    is exercised through the private _validate_stage1_results_against_universe, which is explicitly
+    not an authorization path.
+
+universe_identity:
+  registered_construction_count: 680
+  derived_cardinality: 680
+  derived_expression: 4_SLEEVES_X_2_BOUNDS_X_5_PROVENANCE_FAMILIES_X_17_ARCHITECTURES_X_1_SOURCE_ARCHITECTURE
+  aggregate_sha256: 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224
+  generator: level1_construction_universe_closure_validator.generate_construction_universe
+  frozen_source_architecture: HYPOTHETICAL_SOURCE_ARCHITECTURE
+  existing_source_architecture_disposition: RESOLVED_BY_XASSET_0025_OUTCOME_C_OVER_THE_XASSET_0021_FROZEN_SNAPSHOT
+  source_architecture_selectable_at_result_time: false
+  canonical_serialization: JSON_SORT_KEYS_TRUE_SEPARATORS_COMMA_COLON_ENSURE_ASCII_TRUE
+  deterministic: true
+  byte_identically_reproducible: true
+  frozen_before_stage_1_outcomes: true
+  executor_may_add_or_omit_a_construction: false
+  ordering: SLEEVE_THEN_BOUND_THEN_DRIVER_CLASS_THEN_FAMILY_THEN_COMPARATOR_ARCHITECTURE
+  ordering_is_binding: true
+  universe_level_contract:
+    admitted_input_classes: ADMITTED_DRIVER_INPUTS_ONLY_PER_XASSET_0023_SECTION_H_1
+    prohibited_input_classes: >-
+      Any non-DRIVER input, any arithmetic outside XASSET-0020 SSM's closed set, any RISK-0001
+      substantive reuse, and any executor-composed derivation.
+    applicable_gate_ids_note: >-
+      All twelve XASSET-0027 SSI.3 gates apply to every registered construction, so gate identity
+      and input classes are constant across the universe and are recorded here at universe level
+      rather than duplicated into each construction's identity. They discriminate no hypothesis,
+      which is why the smallest sufficient per-construction identity omits them.
+    applicable_gate_ids:
+    - G1_DRIVER_SUBJECT_MATTER
+    - G2_MAGNITUDE_INTRINSICALITY
+    - G3_NORMALIZATION
+    - G4_ORIGIN
+    - G5_CONSTRAINT_SHAPE
+    - G6_ROUTE_COMPLIANCE
+    - G7_DISCRETION_AND_PROVENANCE
+    - G8_UNIQUENESS
+    - G9_REPRESENTATION
+    - G10_PAIR_INDEPENDENCE
+    - G11_EXACTNESS_AND_DETERMINISM
+    - G12_SNAPSHOT_ADMISSIBILITY_PATH
+
+per_cell_cardinality:
+  'crypto::LOWER::diversification_cobehavior': 15
+  'crypto::LOWER::downside_path_risk': 20
+  'crypto::LOWER::portfolio_function': 5
+  'crypto::LOWER::recovery': 20
+  'crypto::LOWER::sleeve_deployability': 5
+  'crypto::LOWER::valuation_opportunity_cost': 20
+  'crypto::UPPER::diversification_cobehavior': 15
+  'crypto::UPPER::downside_path_risk': 20
+  'crypto::UPPER::portfolio_function': 5
+  'crypto::UPPER::recovery': 20
+  'crypto::UPPER::sleeve_deployability': 5
+  'crypto::UPPER::valuation_opportunity_cost': 20
+  'equity::LOWER::diversification_cobehavior': 15
+  'equity::LOWER::downside_path_risk': 20
+  'equity::LOWER::portfolio_function': 5
+  'equity::LOWER::recovery': 20
+  'equity::LOWER::sleeve_deployability': 5
+  'equity::LOWER::valuation_opportunity_cost': 20
+  'equity::UPPER::diversification_cobehavior': 15
+  'equity::UPPER::downside_path_risk': 20
+  'equity::UPPER::portfolio_function': 5
+  'equity::UPPER::recovery': 20
+  'equity::UPPER::sleeve_deployability': 5
+  'equity::UPPER::valuation_opportunity_cost': 20
+  'fund_broad_market::LOWER::diversification_cobehavior': 15
+  'fund_broad_market::LOWER::downside_path_risk': 20
+  'fund_broad_market::LOWER::portfolio_function': 5
+  'fund_broad_market::LOWER::recovery': 20
+  'fund_broad_market::LOWER::sleeve_deployability': 5
+  'fund_broad_market::LOWER::valuation_opportunity_cost': 20
+  'fund_broad_market::UPPER::diversification_cobehavior': 15
+  'fund_broad_market::UPPER::downside_path_risk': 20
+  'fund_broad_market::UPPER::portfolio_function': 5
+  'fund_broad_market::UPPER::recovery': 20
+  'fund_broad_market::UPPER::sleeve_deployability': 5
+  'fund_broad_market::UPPER::valuation_opportunity_cost': 20
+  'fund_gld_defensive::LOWER::diversification_cobehavior': 15
+  'fund_gld_defensive::LOWER::downside_path_risk': 20
+  'fund_gld_defensive::LOWER::portfolio_function': 5
+  'fund_gld_defensive::LOWER::recovery': 20
+  'fund_gld_defensive::LOWER::sleeve_deployability': 5
+  'fund_gld_defensive::LOWER::valuation_opportunity_cost': 20
+  'fund_gld_defensive::UPPER::diversification_cobehavior': 15
+  'fund_gld_defensive::UPPER::downside_path_risk': 20
+  'fund_gld_defensive::UPPER::portfolio_function': 5
+  'fund_gld_defensive::UPPER::recovery': 20
+  'fund_gld_defensive::UPPER::sleeve_deployability': 5
+  'fund_gld_defensive::UPPER::valuation_opportunity_cost': 20
+
+canonical_amendment:
+  predecessor_authority: XASSET-0027
+  successor_authority: XASSET-0028
+  historical_predecessor_identity_preserved: true
+  rewrites_accepted_history: false
+  predecessor_pins:
+    research/level1_endpoint_evidence/PROTOCOL_V1.md: 1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b
+    research/level1_endpoint_evidence/pre_registration.yaml: bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f
+  successor_pins:
+    research/level1_endpoint_evidence/PROTOCOL_V1.md: c02b4d519267b96ddb12500e6d1d55a47aeafd9437de8e41014c8871f631618c
+    research/level1_endpoint_evidence/pre_registration.yaml: ffde86c1585050b2bf89e58033f37777a903ace86e97be46b6440a217c78ec4a
+  corrected_stale_text: >-
+    pre_registration.yaml zero_parameter_declaration.design_consequence previously asserted a
+    closed candidate universe while the same file recorded NOT_CLOSED. That contradiction was
+    disclosed by PR #327 independent review 4945473310 as MAJOR 2 and left uncorrected because the
+    file was hash-pinned. XASSET-0028 is the separately accepted amendment the pin rule requires,
+    and the sentence is now true rather than merely tolerated.
+  unified_stage_1_execution_precondition: >-
+    Review 4946087943 MAJOR 1 found lifecycle_effectivity.stage_1_execution_may_begin_only_after
+    and stages.stage_1.executable_only_after still naming the spent XASSET-0027 precondition. Both
+    now name the single XASSET-0028 six-gate successor condition; the XASSET-0027 value is retained
+    only in explicitly historical predecessor fields.
+
+stage_1:
+  construction_universe_structurally_closed: true
+  operationally_authorized: false
+  executed_by_this_unit: false
+  no_merge_to_execution_gap: true
+  structurally_consumable_but_fails_closed: true
+  fail_closed_mechanism: level1_endpoint_evidence_preregistration_validator.stage_1_operational_authorization_is_effective
+  effectivity_gates:
+  - INDEPENDENT_FULL_EXACT_HEAD_REVIEW
+  - PRINCIPAL_EXACT_HEAD_ACCEPTANCE
+  - MERGE
+  - POST_MERGE_VERIFICATION
+  - MERGE_COMMIT_CI_SUCCESS
+  - MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+
+preserved_postures:
+  xasset_0024_section_k1: UNRESOLVED_BOTH_READINGS_PRESERVED
+  section_j12: DEFERRED
+  representation: SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED
+  stage_2: NOT_AUTHORIZED
+  application_authority: WITHHELD
+  risk_0001_reuse: PROHIBITED_NOT_ACCESSED
+
+prohibited_scope:
+- STAGE_1_EXECUTION
+- STAGE_2_AUTHORIZATION
+- ENDPOINT_VALUE_OF_ANY_KIND
+- SLEEVE_PREFERENCE_OR_RANKING
+- APPLICATION_AUTHORITY
+- RISK_0001_REUSE

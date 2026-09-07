@@ -1,0 +1,36 @@
+schema_version: '1.0'
+ticker: SPGI
+economic_role:
+  economic_system_ref: Financial Infrastructure
+  company_role: Credit-ratings and market-benchmark/index-licensing infrastructure provider embedded in
+    global capital markets
+  role_basis: Evidence identifies S&P Global Ratings as a Big Three credit-rating-agency oligopoly member
+    with a regulatory-license-driven moat (NRSRO/ESMA designations) reinforced by bond-covenant and regulatory-capital
+    reliance, plus an S&P Dow Jones Indices franchise with ETF assets linked to S&P indices reaching a
+    record $6.35 trillion.
+capital_priority:
+  status: no_assessment
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: limited
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine confidence in this
+    assessment is that most of this record's own risk disclosure was excluded from the evidence available
+    for this review (four of seven risk entries and the full thesis narrative), leaving too thin a visible
+    basis to identify the specific risk that would most undermine a full assessment; the visible SEC self-reported
+    conflict-of-interest history in the Ratings business is the most concrete residual risk fact available
+    in the evidence actually reviewed.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-C
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#SPGI
+content_sha256: 689d4d17d78f8c01692b1f6b9ba0185a1b67ba472649a674bab144e17d5bace9

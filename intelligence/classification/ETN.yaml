@@ -1,0 +1,53 @@
+schema_version: '1.0'
+ticker: ETN
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: Electrical-equipment and power-management supplier providing switchgear, transformers,
+    and electrical distribution infrastructure -- including data-center liquid cooling -- that forms the
+    physical power/electrification layer for utility, industrial, and AI-driven data-center demand.
+  role_basis: Eaton's Electrical Americas and Electrical Global segments manufacture switchgear and transformers
+    subject to UL 891/IEC 61439 certification, with lead times reflecting acute grid/electrification capacity
+    constraints, and the FY2025-agreed, 2026-03-12-completed Boyd Thermal acquisition (~$9.5B, concentrated
+    in liquid-cooling equipment for hyperscale/AI data centers) directly extends this electrification
+    role into data-center thermal/power infrastructure, per Eaton's FY2025 Form 10-K and Q1 2026 results
+    release.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - VRT
+  - PWR
+  - HUBB
+  - ABB
+  - EMR
+  rationale: 'Eaton''s evidence discloses two concrete, fundamental structural developments: a definitive
+    Reverse Morris Trust combination of its Vehicle+eMobility Mobility Group with Dana Incorporated (a
+    materially more complex transaction than a standalone spin-off, carrying cross-company integration,
+    governance, and shareholder-approval/regulatory-clearance contingency), and the approximately $9.5B
+    Boyd Thermal acquisition -- Eaton''s largest deal since 2012, concentrated entirely in a single data-center-liquid-cooling
+    thesis. A named analyst (UBS) has also publicly disputed management''s characterization of Q1 2026
+    margin contraction as temporary, downgrading the stock. These are concrete, dated, structural events
+    distinct from Eaton''s ordinary industrial-cyclicality risk profile and warrant a reviewer''s fresh
+    look.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - power_infra
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - ETN_GNRC
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the corrected Reverse Morris Trust separation of the Vehicle/eMobility businesses proving more complex
+    or costly to execute than currently disclosed.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-A
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ETN
+content_sha256: 6b63ecd01930bbfef73e21589f0035a2c80e7b7fa7de10d003c494497e343687

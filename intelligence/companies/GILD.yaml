@@ -1,0 +1,84 @@
+sector: Health Care
+industry: Pharmaceuticals
+portfolio_role_ref: band
+competitive_advantages:
+  - "Large, durable HIV franchise generating the majority of company revenue: Q1 2026 HIV product sales were $5.0 billion, including $3.4 billion from Biktarvy, making HIV roughly 72% of total quarterly revenue of $7.0 billion (product sales excluding Veklury were $6.8 billion, up 8%). Per Gilead's Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0000882095-26-000024) and Gilead's Q1 2026 earnings release, both directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 7 evidence bundle (see Source-access disclosure in GILD.md) -- not directly inspected by this Claude session."
+  - "Regulatory conversion of liver-disease and oncology assets in 2026: the FDA approved Hepcludex for chronic hepatitis delta, described by the FDA as the first U.S.-approved treatment for chronic hepatitis delta virus infection (F-5-scoped wording; this record does not assert it was the first approval worldwide), and expanded Trodelvy into first-line triple-negative breast cancer settings (monotherapy and in combination with pembrolizumab). Per FDA approval announcements, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Meaningful balance-sheet and capital-return capacity: at Q1 2026 end Gilead reported $8.6 billion of cash, equivalents, and marketable securities; during the quarter it repaid $2.8 billion of debt, paid $1.0 billion of dividends, and repurchased $419 million of stock. Per Gilead's Q1 2026 earnings release, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Trodelvy growth as an oncology diversification data point: Q1 2026 Trodelvy sales grew 37% to $402 million, even as total cell-therapy sales (including Yescarta) declined -- a mixed but not uniformly negative oncology picture. Per Gilead's Form 10-Q for the quarter ended 2026-03-31, directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "Extreme concentration in a single therapeutic franchise: HIV products were approximately 72% of Q1 2026 total revenue, with Biktarvy alone at $3.4 billion. Loss of HIV franchise durability without an offsetting launch would have an outsized effect on total company results."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Cell-therapy sales declined 12% to $407 million in Q1 2026, including a 14% decline in Yescarta -- a disclosed, current contraction in one of Gilead's named oncology diversification engines, even as Trodelvy grew."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Gilead reduced 2026 EPS guidance by approximately $9.50 for anticipated $11.5 billion of acquired IPR&D and financing costs related to Arcellx, Ouro, and Tubulis -- a very large, disclosed near-term earnings and capital burden tied to acquisition-driven diversification, whose eventual clinical and economic return is not established in this record's evidence base."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Whether oncology and cell therapy will become durable second engines relative to HIV is not established in this record's evidence base (unresolved question B7-U006) -- Trodelvy is growing, but cell therapy declined and acquired-pipeline outcomes remain uncertain."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "This session's own primary-source access (WebFetch) was tested and confirmed blocked on 2026-07-27 (SEC EDGAR, and a neutral non-target control domain, both returned HTTP 403) -- every fact in this record is attributed to the governed v2 evidence bundle's own directly-inspected sources, not to this Claude session's independent document inspection. See GILD.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+catalysts:
+  - catalyst: "Gilead's Q2 2026 full financial results -- not available as of this record's 2026-07-27 evidence cutoff per the governing evidence bundle. This record requires refresh once those results are published."
+    expected: "2026-08-07"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which HIV franchise durability, cell-therapy trajectory versus Trodelvy growth, and the Arcellx/Ouro/Tubulis acquired-asset integration and IPR&D charge realization will next be actively re-checked."
+    expected: "2026-10-25"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). Gilead shows a large, currently-growing HIV franchise (product sales excluding Veklury up 8% in Q1 2026), meaningful balance-sheet strength and active capital return (debt repayment, dividends, and buybacks in the same quarter), and real 2026 regulatory conversion (Hepcludex, expanded Trodelvy indications). Held at Medium rather than High because of concrete, disclosed tensions this record does not discount: extreme concentration in HIV (~72% of Q1 2026 revenue); a real, current cell-therapy contraction (Yescarta down 14%) alongside Trodelvy's growth, making oncology diversification uneven rather than uniformly successful; a very large near-term EPS and capital burden (~$9.50 EPS reduction, ~$11.5 billion of anticipated acquired-IPR&D/financing costs) tied to acquisitions whose return is not yet established; and an unresolved, batch-relevant question about whether oncology/cell therapy will become a durable second engine (B7-U006). This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-27"
+  next_due: "2026-10-25"
+  log:
+    - date: "2026-07-27"
+      note: >
+        Record created under governance/decisions/PI-0029-ws0005-milestone3-batch7-biopharmaceuticals.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior Gilead Sciences Company Intelligence record existed). Portfolio HQ's WS-0005
+        Milestone 3 Batch 7, alongside LLY, ABBV, MRK, and JNJ ("Biopharmaceuticals"). This
+        implementation used the principal-accepted, independently corrective-validated evidence
+        bundle BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml (SHA-256
+        cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826; 1227 lines, 5659 words,
+        56667 bytes; research cutoff 2026-07-27), independently re-verified byte-for-byte against
+        both uploaded copies by this session before use. This Claude Code session's own WebFetch
+        attempts on 2026-07-27 were blocked (HTTP 403) on SEC EDGAR and on a neutral non-target
+        control domain (example.com), confirming a session-wide network-policy denial. Every fact
+        in this record is attributed to the v2 evidence bundle's own directly-inspected primary
+        sources (GILD-S01 through GILD-S05), not to this Claude session's own document inspection
+        -- see GILD.md's Source-access disclosure.
+        F-5 disposition: every reference in this record to Hepcludex's FDA approval is scoped as
+        "first U.S.-approved treatment" (per the FDA's own announcement title, "FDA Approves First
+        Treatment for Chronic Hepatitis Delta Virus Infection," which this record reads and cites
+        as a U.S.-regulatory-approval claim only) -- this record does not state or imply Hepcludex
+        was the first approval worldwide.
+sources:
+  - note: "Gilead Sciences, Inc. 2025 Form 10-K (SEC accession 0000882095-26-000006), filed 2026-02-24. Directly inspected by the evidence-recovery researcher who authored the governed v2 evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports franchise, patent, acquisition, intangible, and risk-factor content used in this record's thesis-break conditions."
+    url: "https://www.sec.gov/Archives/edgar/data/882095/000088209526000006/gild-20251231.htm"
+    date: "2026-02-24"
+  - note: "Gilead Sciences, Inc. Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0000882095-26-000024). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 product-sales trends, cash, debt, and acquisition/capital-resources content."
+    url: "https://www.sec.gov/Archives/edgar/data/882095/000088209526000024/gild-20260331.htm"
+    date: "2026-05-07"
+  - note: "Gilead Sciences Announces First Quarter Financial Results (earnings release). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 results, product sales, capital allocation, acquisition charges, and guidance."
+    url: "https://investors.gilead.com/news/news-details/2026/Gilead-Sciences-Announces-First-Quarter-Financial-Results/default.aspx"
+    date: "2026-05-07"
+  - note: "FDA Approves First Treatment for Chronic Hepatitis Delta Virus (HDV) Infection (Hepcludex). Directly inspected by the evidence-recovery researcher, not by this Claude session. This record cites the announcement's own title as a U.S.-regulatory-approval claim only (F-5 disposition) and does not extend it to a worldwide-first claim."
+    url: "https://www.fda.gov/news-events/press-announcements/fda-approves-first-treatment-chronic-hepatitis-delta-virus-hdv-infection"
+    date: "2026-05-22"
+  - note: "FDA approves sacituzumab govitecan-hziy (Trodelvy) as monotherapy and in combination with pembrolizumab for first-line treatment of triple-negative breast cancer. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports the Trodelvy first-line TNBC indication expansion."
+    url: "https://www.fda.gov/drugs/resources-information-approved-drugs/fda-approves-sacituzumab-govitecan-hziy-monotherapy-and-combination-pembrolizumab-first-line"
+    date: "2026-06-24"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 7 primary-source evidence bundle, v2 (BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml), SHA-256 cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826, principal-custodied implementation input under PI-0029/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the five sources above into claim-level extracts (GILD-C001 through GILD-C007) with source-ID-level provenance and fact/inference labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1227/5659/56667) against both uploaded copies before use."
+    url: null
+    date: "2026-07-27"

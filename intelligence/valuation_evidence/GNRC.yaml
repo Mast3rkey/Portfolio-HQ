@@ -1,0 +1,262 @@
+schema_version: '1.0'
+ticker: GNRC
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 3740
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      abstention_reason: The only FY2021 diluted EPS figure found (~$8.23) was itself derived by a search
+        aggregator working backward from a cited '-34.7% decline to 2022' statistic, not independently
+        confirmed -- not reported as fact.
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 4560
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 4020
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 4300
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 4210
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC FY2025 revenue, -2% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Decline attributed (per company commentary in search results) to weaker residential/home-standby
+            generator demand following a lower-outage environment vs. a strong hurricane-driven 2024 comparison
+            -- a real, disclosed demand-cyclicality factor for this business.
+    - item_category: earnings
+      value: 160
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC FY2025 GAAP net income (adjusted non-GAAP net income separately reported
+            at $376M)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.11
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2025 operating income $465.04M divided by revenue $4,210M equals 11.0
+        percent.'
+      provenance:
+        sources:
+        - source_identifier: GNRC FY2025 operating income $465.04M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 268.13
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC trailing-twelve-month free cash flow (basis/period ambiguous, may not
+            equal clean FY2025)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A separate, more recent snippet cited $331M FCF for the trailing-twelve-months through
+            March 2026 -- these don't fully reconcile, likely reflecting different trailing windows rather
+            than a contradiction, but the exact FY2025-standalone figure could not be confirmed.
+    - item_category: capex
+      value: 169.85
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC trailing-twelve-month capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: FY2024 capex was separately cited at $137M, a different period, not reconciled.
+    - item_category: cash
+      value: 341.4
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC cash (recent)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 1200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GNRC total debt (recent; a range of $1.2-1.38B was found across sources)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 59.5
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $160M divided by diluted EPS $2.69 equals
+        ~59.5M diluted shares.'
+      provenance:
+        sources:
+        - source_identifier: GNRC FY2025 net income and diluted EPS figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments: []
+  abstention_reason: The only segment figures found ('Domestic revenue $1.07B +20% YoY, International
+    revenue $187.5M -1% YoY') appear to be a single quarter's results mislabeled as full-year -- $1.07B
+    + $187.5M is far short of the $4.21B FY2025 total. Flagged as likely bad/mislabeled data and not used,
+    rather than reported as fact.
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 202.01
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Recent observation (~Aug 2026 context); market cap ~$11.89B; 52-week range $134.80-$296.44,
+          a wide range consistent with 2025's demand-driven volatility.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: CMI
+    comparability_rationale: Cummins -- engine/power-generation equipment maker, partial overlap in stationary/standby
+      power (much larger scale).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: CAT
+    comparability_rationale: Caterpillar -- has a power-generation/electric-power division; broader industrial
+      equipment peer, weaker pure-play match given its vastly larger scale.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Hyperscale data-center backup power deal
+    variables:
+    - variable_name: hyperscale_data-center_backup_power_deal
+      evidence_basis: Generac announced (Jun 2026) a global supply agreement with a major/unnamed hyperscale
+        data-center operator to supply backup power generators -- a real, disclosed new demand vector
+        distinct from its traditional residential/storm-driven business. Also raised 2026 net sales growth
+        guidance to 'mid-to-high teens %' from a prior 'mid-teens' guidance, partly citing data-center/C&I
+        demand.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  FY2021 diluted EPS is abstained as an unreliable, aggregator-derived figure. FY2025 free cash flow and
+  capex are trailing-twelve-month figures with an ambiguous exact period basis, not confirmed as clean
+  FY2025-standalone numbers, disclosed as such. Segment revenue is abstained entirely -- the only figures
+  found appear to be a mislabeled single quarter, not a genuine full-year breakdown, and using them would
+  risk presenting bad data as fact. Note that Briggs & Stratton, a candidate peer named in the original
+  research brief, is not a current public comparable (acquired by KPS Capital Partners and delisted) and
+  is correctly excluded from the peer list above.
+abstention_index:
+- domain: segment_evidence
+  reason: The only segment figures found ('Domestic revenue $1.07B +20% YoY, International revenue $187.5M
+    -1% YoY') appear to be a single quarter's results mislabeled as full-year -- $1.07B + $187.5M is far
+    short of the $4.21B FY2025 total. Flagged as likely bad/mislabeled data and not used, rather than
+    reported as fact.
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: GNRC
+content_sha256: 4abf338a0f43ec71a44fb51e0d5175456bba22992661b883d588afe351aead33

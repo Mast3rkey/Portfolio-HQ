@@ -1,0 +1,102 @@
+capital_use_type: CASH
+schema_version: '1.0'
+functional_role:
+  role_category: operational_liquidity_float
+hard_constraint_status:
+  binding: true
+  constraint_source: 'CLAUDE.md Guardrails: "Cash tight (recent withdrawals, sub-$500 buffer) -> recommend
+    inaction. Pausing is the system working."'
+economic_assessment_readiness:
+  status: assessment_required
+  rationale: No governed methodology exists anywhere in this repository to compare CASH's opportunity
+    cost against another capital-use type, sleeve, or instrument -- XASSET-0001 SS E/SS F's future cross-asset
+    opportunity-cost synthesis, and XASSET-0005 SS5 step 2's future asset-appropriate valuation/economic-assessment
+    step, are both undesigned as of this record. This record states that absence plainly rather than inventing
+    a figure, mirroring TIER-0009's SS G.4/SS G.5 forced equity valuation_required design and XASSET-0002's
+    SS6.3 identical carry-forward for the ETF/crypto sleeves.
+liquidity_character:
+  liquidity_category: immediately_liquid
+capital_preservation_character:
+  capital_preservation_category: principal_stable_no_market_risk
+freshness_state:
+  status: stale_needs_refresh
+  as_of_reference: PHQ-2026-06 (accepted 2026-08-01) -- the most recent governed, accepted cash-state
+    factual-synchronization decision in this repository; no persisted, dated cash field exists in holdings.yaml's
+    own schema
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: No CLAUDE.md passage narrates a purpose for CASH beyond the mechanical
+    allocator fact ('RESERVE/CASH -- never an allocator purchase candidate, definitionally satisfied')
+    and the guardrail citation above; functional_role is nonetheless determined here (not abstained) because
+    'CASH' is a near-tautological label requiring no interpretive choice, unlike RESERVE's own genuinely
+    ambiguous label (see the companion RESERVE record). No dated, governed sync artifact exists specifically
+    for a CASH dollar figure at the resolution this record's freshness_state axis would need -- the most
+    recent governed cash-state decision (PHQ-2026-06, accepted 2026-08-01) is cited as the reference point,
+    and freshness_state is marked stale_needs_refresh rather than current given account-state facts of
+    this kind can move daily.
+provenance:
+  sources:
+  - source_identifier: CLAUDE.md Portfolio Doctrine section (this repository's own governing operational-synthesis
+      document)
+    source_type: primary
+    as_of_date: '2026-08-09'
+    access_status: directly_inspected
+  - source_identifier: CLAUDE.md Guardrails section ('enforce on me' rules), including the cash-tight
+      guardrail and the margin-buffer-floor guardrail
+    source_type: primary
+    as_of_date: '2026-08-09'
+    access_status: directly_inspected
+  - source_identifier: 'targets.yaml destination: list rows for CASH, RESERVE, and GLD (symbol/asset_class
+      identity only, per XASSET-0005 SS3.2''s contamination boundary -- target_pct values were read but
+      are never cited as evidence for any judgment axis)'
+    source_type: primary
+    as_of_date: '2026-08-09'
+    access_status: directly_inspected
+evidence_quality_status: partial
+uncertainty_summary: No CLAUDE.md passage narrates a purpose for CASH beyond the mechanical allocator
+  fact ('RESERVE/CASH -- never an allocator purchase candidate, definitionally satisfied') and the guardrail
+  citation above; functional_role is nonetheless determined here (not abstained) because 'CASH' is a near-tautological
+  label requiring no interpretive choice, unlike RESERVE's own genuinely ambiguous label (see the companion
+  RESERVE record). No dated, governed sync artifact exists specifically for a CASH dollar figure at the
+  resolution this record's freshness_state axis would need -- the most recent governed cash-state decision
+  (PHQ-2026-06, accepted 2026-08-01) is cited as the reference point, and freshness_state is marked stale_needs_refresh
+  rather than current given account-state facts of this kind can move daily.
+structural_risk_flags:
+  binding: true
+  capital_preservation_category: principal_stable_no_market_risk
+record_status: sealed
+later_governance_action: None required by this record itself. A future, separately authorized opportunity-cost/economic-assessment
+  methodology (XASSET-0001 SS E/SS F) would supersede this record's forced economic_assessment_readiness
+  value; a future, separately authorized functional-doctrine content refresh would be needed once a fresher
+  governed cash-state sync exists (see freshness_state).
+abstention_index: []
+cross_asset_handoff:
+  role_summary: operational_liquidity_float
+  evidence_quality_summary: partial
+  uncertainty_summary: No CLAUDE.md passage narrates a purpose for CASH beyond the mechanical allocator
+    fact ('RESERVE/CASH -- never an allocator purchase candidate, definitionally satisfied') and the guardrail
+    citation above; functional_role is nonetheless determined here (not abstained) because 'CASH' is a
+    near-tautological label requiring no interpretive choice, unlike RESERVE's own genuinely ambiguous
+    label (see the companion RESERVE record). No dated, governed sync artifact exists specifically for
+    a CASH dollar figure at the resolution this record's freshness_state axis would need -- the most recent
+    governed cash-state decision (PHQ-2026-06, accepted 2026-08-01) is cited as the reference point, and
+    freshness_state is marked stale_needs_refresh rather than current given account-state facts of this
+    kind can move daily.
+  liquidity_risk_summary: immediately_liquid
+  hard_constraint_signal:
+    binding: true
+    constraint_source: 'CLAUDE.md Guardrails: "Cash tight (recent withdrawals, sub-$500 buffer) -> recommend
+      inaction. Pausing is the system working."'
+  economic_assessment_readiness_summary:
+    status: assessment_required
+    rationale: No governed methodology exists anywhere in this repository to compare CASH's opportunity
+      cost against another capital-use type, sleeve, or instrument -- XASSET-0001 SS E/SS F's future cross-asset
+      opportunity-cost synthesis, and XASSET-0005 SS5 step 2's future asset-appropriate valuation/economic-assessment
+      step, are both undesigned as of this record. This record states that absence plainly rather than
+      inventing a figure, mirroring TIER-0009's SS G.4/SS G.5 forced equity valuation_required design
+      and XASSET-0002's SS6.3 identical carry-forward for the ETF/crypto sleeves.
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: XASSET-0006
+drafting_session_or_shard_id: single-pass-functional-doctrine-implementation
+content_sha256: 165e2de8bba5017b2619b3a6affd2d22babb65adef68970981d85c2a367c20a7
+cohort_manifest_entry: intelligence/functional_doctrine/COHORT_MANIFEST.yaml#CASH

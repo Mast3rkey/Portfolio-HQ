@@ -1,0 +1,35 @@
+schema_version: '1.0'
+ticker: AMZN
+primary_archetype: F
+secondary_archetype: B
+rationale: 'Amazon reports three distinct segments -- North America, International, and AWS -- with materially
+  different profitability: AWS generated more operating income ($14.161B) than the combined North America
+  and International retail segments ($9.691B) in Q1 2026 despite being the smallest segment by revenue,
+  while retail operates on thin margins at massive scale. AWS is itself increasingly capital-intensive,
+  with Q1 2026 cash capex nearly doubling YoY to $43.2B and technology infrastructure spend up 29% YoY
+  to fund AI-driven buildout, alongside large multi-year AI-lab commitments (OpenAI, Anthropic) carrying
+  delivery obligations. This mix of a low-margin logistics-heavy retail business and a capital-intensive,
+  high-margin infrastructure segment supports sum-of-the-parts (F) as primary, with capital-intensive
+  infrastructure (B) as a secondary lens on AWS''s accelerating reinvestment intensity. Archetype-F test:
+  F was considered and selected as primary: North America/International retail (thin-margin, high-volume,
+  logistics-heavy) and AWS (high-margin cloud infrastructure that alone generated more Q1 2026 operating
+  income than both retail segments combined) have materially different, separately disclosed segment economics,
+  making a sum-of-the-parts framing more appropriate than a single blended valuation.'
+evidence_quality:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: Q1 2026 segment/operating-income data underlying the F/B call was directly inspected
+    by an independent evidence-recovery researcher (GPT-5.6 Thinking) from Amazon's own Form 10-Q; only
+    the most recent quarter (Q2 2026 revenue/EPS/Anthropic-gain figures) is secondary-sourced and explicitly
+    disclosed as such, and does not change the segment-structure-driven archetype call.
+disclosed_evidence_conflicts:
+- A reported Q2 2026 EPS figure ($5.75 vs. a cited $1.81 estimate) shows an internal inconsistency across
+  secondary outlets and is not adopted as fact; a ~$53B Anthropic-related gain is reported across multiple
+  outlets but not primary-source-verified.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-1
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#AMZN
+content_sha256: 0c2a682b6b0ceaabfc36cd90c319b760e62abe16c55e79f1780ae4c23d078b98

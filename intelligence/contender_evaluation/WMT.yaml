@@ -1,0 +1,94 @@
+schema_version: "1.0"
+contender_symbol: WMT
+canonical_comparator_symbol: COST
+provenance:
+  sources:
+    - source_identifier: intelligence/companies/WMT.yaml
+      source_type: secondary
+      as_of_date: "2026-07-28"
+      access_status: directly_inspected
+    - source_identifier: intelligence/companies/WMT.md
+      source_type: secondary
+      as_of_date: "2026-07-28"
+      access_status: directly_inspected
+    - source_identifier: governance/decisions/PI-0021-cost-committee-review-authorization.md
+      source_type: secondary
+      as_of_date: "2026-07-23"
+      access_status: directly_inspected
+      limitation: >-
+        Cited for process-only comparator context (WMT named alongside AMZN/BRK.B/V as a
+        named comparator in COST's own committee review) -- not itself a capital-priority
+        finding about WMT.
+    - source_identifier: governance/decisions/PI-0022-cost-intelligence-refresh-authorization.md
+      source_type: secondary
+      as_of_date: "2026-07-23"
+      access_status: directly_inspected
+      limitation: >-
+        Cited for process-only comparator context, not a capital-priority finding about WMT.
+comparator_structural_reference:
+  source_schema: valuation_archetype
+  source_file: intelligence/valuation_archetype/COST.yaml
+  referenced_content_sha256: bba6726d02f0cbbce08571509293c8f176539e8682bcdfca183092d06ee9bce1
+archetype_assessment:
+  primary_archetype: G
+  secondary_archetype: A
+  rationale: >-
+    Walmart operates a large-scale, stable, geographically diversified retail business
+    generating consistent comparable-sales growth across every reported operating segment,
+    well covered by public comparables -- the literature's default mature,
+    diversified-revenue compounder profile, for which standard discounted-cash-flow and
+    multiples-based methods are typically both applicable and mutually corroborating.
+    Walmart's own disclosed expansion into higher-margin ecosystem businesses -- digital
+    advertising, marketplace and fulfillment, health and wellness, and financial services --
+    alongside its core everyday-low-price retail model constitutes a distinct, asset-light,
+    recurring-revenue economic layer building on top of a structurally thin-margin core
+    business, supporting a secondary archetype-A lens in addition to the primary
+    mature-compounder characterization. A sum-of-the-parts secondary lens was considered
+    given Walmart's multiple reported operating segments, but the evidence base does not
+    disclose materially divergent segment-level profitability profiles the way a
+    sum-of-the-parts framing would require -- each segment shows continued comparable-sales
+    growth rather than a disclosed profit-versus-loss divergence -- so that lens is not
+    supported here.
+evidence_quality_assessment:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: >-
+    This assessment's underlying Walmart evidence traces to a checksum-verified evidence
+    package whose external author directly inspected Walmart's own official annual and
+    quarterly regulatory filings, with claim-level citation identifiers reconciled by this
+    repository's own prior research session -- a materially deeper sourcing chain than a
+    WebSearch-only synthesis. This evaluation session did not itself open either underlying
+    filing. A real completeness gap remains: the evidence package supplies no margin,
+    cash-flow, dividend, buyback, or balance-sheet-leverage figures for Walmart of any kind,
+    leaving this record unable to characterize Walmart's financial-quality depth the way it
+    can for a company whose own evidence base discloses such figures.
+methodology_applicability_reference:
+  archetype: G
+  family_1_asset_based_sotp: prohibited
+  family_2_fcff_dcf: primary_candidate
+  family_3_fcfe_dcf: primary_candidate
+  family_4_earnings_fcf_yield: secondary_corroborative
+  family_5_relative_valuation: secondary_corroborative
+  family_6_roic_reinvestment: secondary_corroborative
+  family_7_scenario_probability_weighted: adjustment_required
+evidence_parity_finding:
+  finding: contender_evidence_gap
+  rationale: >-
+    Walmart's own evidence package traces to directly-inspected regulatory filings and
+    carries strong claim-level citation, but it supplies no margin, cash-flow, dividend,
+    buyback, or balance-sheet-leverage figures of any kind -- an entire category of
+    financial-quality evidence the comparator's own sealed archetype record does carry (a
+    stated free-cash-flow proxy figure, membership-economics detail, and
+    operating-cash-flow-versus-capital-expenditure characterization). This is a genuine,
+    disclosed completeness gap in the contender's own evidence base relative to the
+    comparator's, specific to financial-quality depth rather than to sourcing reliability --
+    both evidence bases trace to directly-inspected primary filings, but the comparator's
+    own sealed record captures a fuller financial-quality picture than the contender's
+    currently does.
+abstention_index: []
+lifecycle_status: sealed
+sealed_at: "2026-08-10T23:00:00Z"
+governing_decisions:
+  - CONTENDER-0003
+drafting_session_or_shard_id: contender-0003-pilot-session
+cohort_manifest_entry: intelligence/contender_evaluation/COHORT_MANIFEST.yaml#WMT
+content_sha256: 1197de473d694c360c44781c3e15cfa5acd23c7951b040222e5b9ca9b0ac19ca

@@ -1,0 +1,59 @@
+# withholding_register.yaml — MARGIN-0005 G1 (principal direction D-2).
+# The PRIMARY dividend ledger (dividend_ledger.json) carries GROSS DECLARED
+# pre-tax cash per share.  Everything below is a SEPARATE, source-backed
+# deduction/sensitivity layer — never silently netted into the declared amount.
+# Broker-specific (Robinhood) net-cash treatment per name remains UNVERIFIED
+# pending account evidence (G1 blocker B3); until then these are sensitivities.
+
+recorded: "2026-07-24"
+primary_convention: gross_declared_pre_tax_split_adjusted
+vendor_net_note: >
+  Alpaca corporate-actions amounts were measured against Yahoo gross declared
+  events across the full roster (G1 validation). For most issuers the vendor
+  amount IS the gross declared amount (corroborated). For the issuers below the
+  vendor feed carries a net/fee-adjusted convention; the measured vendor-to-
+  gross ratio is recorded per issuer, the ledger stores gross (from Yahoo
+  declared) as primary with the vendor amount retained as vendor_net.
+
+issuers:
+  TSM:
+    security_type: "ADR (1 ADR = 5 TWSE ordinary shares)"
+    declared_currency: "TWD (converted to USD per ADR by depositary)"
+    statutory_withholding: "Taiwan 21% nonresident dividend withholding"
+    withholding_source: "public Taiwan tax-regime fact, hand-recorded; consistent with depositary distribution notices"
+    depositary_fee: "depositary services fee applies per ADS on distributions"
+    measured_vendor_to_gross_ratio: "~0.78 across 17 events (21% withholding + fees)"
+    vendor_convention: net_of_withholding_and_fees
+    us_holder_reality: "US retail holders receive net; withholding may be partially creditable (account/tax dependent)"
+  ASML:
+    security_type: "NY registry shares, 1:1 with Euronext ordinary"
+    declared_currency: "EUR (converted to USD)"
+    statutory_withholding: "Netherlands 15% dividend withholding (US treaty rate)"
+    withholding_source: "public NL tax-regime fact, hand-recorded"
+    depositary_fee: "none material observed"
+    measured_vendor_to_gross_ratio: "0.850 across 15 events (exactly 15%)"
+    vendor_convention: net_of_withholding
+    us_holder_reality: "US retail holders receive net of 15%; typically creditable"
+  ETN:
+    security_type: "Irish-domiciled plc, US-listed common (not an ADR)"
+    declared_currency: "USD"
+    statutory_withholding: "Ireland 25% DWT; US residents are generally EXEMPT via residency forms; broker handling varies"
+    withholding_source: "public Irish DWT regime fact, hand-recorded"
+    depositary_fee: "n/a"
+    measured_vendor_to_gross_ratio: "0.750 across 9 events (exactly 25% — vendor models full DWT)"
+    vendor_convention: net_of_full_dwt
+    us_holder_reality: "UNRESOLVED for this account — most US brokers deliver gross under exemption; actual Robinhood treatment pending account evidence (B3)"
+  BABA:
+    security_type: "ADS (1 ADS = 8 HKEX ordinary shares); Cayman-incorporated issuer"
+    declared_currency: "USD per ADS"
+    statutory_withholding: "none at issuer level for ADS holders"
+    depositary_fee: "ADS depositary distribution fee (~$0.02/ADS observed)"
+    measured_vendor_to_gross_ratio: "0.988 (2023, $0.02 fee) / 0.988 combined 2024 / same-ex-date regular+special rows prorated (see ledger meta)"
+    vendor_convention: net_of_depositary_fee
+    us_holder_reality: "US retail holders receive gross minus depositary fee"
+
+sensitivity_status: >
+  No simulation consumes these values at G1. When the engine (G2+) models
+  net-cash realism or the R2 dividends-repay-first family, the gross ledger is
+  primary and any net treatment must cite this register plus account-level
+  evidence, per NUM-0001 provenance discipline (assumptions A-13/A-19).

@@ -1,0 +1,99 @@
+sector: Health Care
+industry: Pharmaceuticals
+portfolio_role_ref: band
+competitive_advantages:
+  - "Diversified two-segment structure post-Kenvue separation: Johnson & Johnson operates two reportable segments, Innovative Medicine and MedTech. Q2 2026 sales were $16.384 billion in Innovative Medicine and $8.926 billion in MedTech, roughly 65% and 35% of company sales, with operational growth of 6.8% in Innovative Medicine and 3.6% in MedTech -- two segments with different product and procedure drivers, not one undifferentiated pharmaceutical business. Per Johnson & Johnson's Form 10-K for FY2025, Form 10-Q for Q1 2026 (SEC accession 0000200406-26-000087), and Johnson & Johnson's Q2 2026 earnings release and earnings presentation, all directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 7 evidence bundle (see Source-access disclosure in JNJ.md) -- not directly inspected by this Claude session."
+  - "Confirmed post-Kenvue structural boundary (F-1 resolution): following completion of the Kenvue separation in August 2023, Johnson & Johnson presented its former Consumer Health business as discontinued operations and described the continuing company as focused on Pharmaceutical (the company's own then-current term; current company reporting uses 'Innovative Medicine' for the same continuing segment) and MedTech. This directly substantiates why current J&J analysis in this record centers on Innovative Medicine and MedTech rather than Consumer Health, and is not a claim of any change in the company's economics since separation. Per Johnson & Johnson's 2023 corporate-action release announcing updated post-separation financials, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Active Innovative Medicine pipeline replacement: Q2 2026 growth included Darzalex, Carvykti, Tecvayli, Rybrevant/Lazcluze, Tremfya, Spravato, and Caplyta -- a broad set of newer products contributing to growth even as Stelara biosimilar competition created an approximately 760-basis-point operational headwind in the same period. Per Johnson & Johnson's Q2 2026 earnings release and earnings presentation, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Disclosed balance-sheet and cash-generation capacity: the Q2 2026 presentation reported $20.8 billion of cash and marketable securities, $49.0 billion of debt, approximately $8.7 billion of year-to-date free cash flow (a non-GAAP measure, estimated as of 2026-07-15), and $6.4 billion of year-to-date dividends. Per Johnson & Johnson's Q2 2026 earnings presentation, directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "Material product-liability litigation, including talc-related matters, is disclosed as a real and current risk. This record does not quote or reproduce the filings' specific accrual or loss-estimation language (F-4 disposition, below) -- this session's own attempt to independently re-verify the exact litigation/accrual wording against the primary sources (JNJ-S01, JNJ-S02) was blocked by a confirmed network-policy denial. The general fact that this litigation is material and not fully estimable beyond disclosed accruals is preserved as a disclosed risk regardless of the unverified exact wording."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Stelara biosimilar competition created an approximately 760-basis-point operational growth headwind in Q2 2026 -- a large, currently-realized exclusivity-erosion effect on Innovative Medicine, not a hypothetical future risk."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "The diversified two-segment structure can obscure that Innovative Medicine and MedTech have different risk and return drivers (different growth rates in Q2 2026: 6.8% versus 3.6% operational) -- treating J&J as a single undifferentiated pharmaceutical peer, or assuming its MedTech segment behaves like a pure device company, risks conflating two distinct businesses."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "The financially plausible range of talc and other product-liability outcomes is not established from a reliable bounded total-outcome figure in this record's evidence base (unresolved question B7-U005)."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "This session's own primary-source access (WebFetch) was tested and confirmed blocked on 2026-07-27 (SEC EDGAR, and a neutral non-target control domain, both returned HTTP 403) -- every fact in this record is attributed to the governed v2 evidence bundle's own directly-inspected sources, not to this Claude session's independent document inspection. See JNJ.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+catalysts:
+  - catalyst: "Johnson & Johnson's Q2 2026 Form 10-Q filing, if and when it adds material information beyond the already-inspected Q2 2026 earnings release and presentation -- the governing evidence bundle disclosed that this filing was not located as filed by the 2026-07-27 cutoff (the latest filed 10-Q inspected was Q1 2026). No source inspected establishes an exact filing date, so this is treated as a pending, near-term refresh trigger rather than a confirmed date."
+    expected: "2026-08-14"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which Innovative Medicine pipeline-replacement progress against Stelara erosion, MedTech segment performance, and any material talc-litigation development will next be actively re-checked."
+    expected: "2026-10-25"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). Johnson & Johnson shows real segment diversification (Innovative Medicine and MedTech, both growing, with different drivers), an active and broad Innovative Medicine pipeline-replacement effort (Darzalex, Carvykti, Tecvayli, Rybrevant/Lazcluze, Tremfya, Spravato, Caplyta) that is currently offsetting a large disclosed Stelara biosimilar headwind, and a disclosed balance sheet with meaningful cash, free cash flow, and capital-return capacity. Held at Medium rather than High because of concrete, disclosed tensions this record does not discount: material, not-fully-estimable product-liability litigation whose financially plausible outcome range is unresolved in this record's evidence base (B7-U005); a large, currently-realized Stelara exclusivity-erosion headwind (~760 basis points) partly offsetting pipeline replacement rather than replacement running ahead of erosion; and a structurally diversified business (Innovative Medicine plus MedTech) whose two segments this record explicitly does not treat as interchangeable with each other or with Portfolio-HQ's existing life_sciences_tools_medtech theme (ISRG, TMO) -- see the MedTech-boundary discussion in JNJ.md. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-27"
+  next_due: "2026-10-25"
+  log:
+    - date: "2026-07-27"
+      note: >
+        Record created under governance/decisions/PI-0029-ws0005-milestone3-batch7-biopharmaceuticals.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior Johnson & Johnson Company Intelligence record existed). Portfolio HQ's WS-0005
+        Milestone 3 Batch 7, alongside LLY, ABBV, MRK, and GILD ("Biopharmaceuticals"). This
+        implementation used the principal-accepted, independently corrective-validated evidence
+        bundle BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml (SHA-256
+        cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826; 1227 lines, 5659 words,
+        56667 bytes; research cutoff 2026-07-27), independently re-verified byte-for-byte against
+        both uploaded copies by this session before use. This Claude Code session's own WebFetch
+        attempts on 2026-07-27 were blocked (HTTP 403) on SEC EDGAR and on a neutral non-target
+        control domain (example.com), confirming a session-wide network-policy denial. Every fact
+        in this record is attributed to the v2 evidence bundle's own directly-inspected primary
+        sources (JNJ-S01 through JNJ-S06), not to this Claude session's own document inspection --
+        see JNJ.md's Source-access disclosure.
+        F-1 resolution: the v2 bundle added JNJ-S06 (Johnson & Johnson's 2023 corporate-action
+        release confirming completion of the Kenvue separation and the post-separation
+        Pharmaceutical/MedTech structure) and claim JNJ-C008, directly substantiating the
+        post-Kenvue structure this record relies on. This record uses that evidence exactly as
+        supplied, noting the source's own then-current use of "Pharmaceutical" versus current
+        company reporting's "Innovative Medicine" for the same continuing segment.
+        F-4 disposition: this session's own attempt to re-verify the cited litigation/accrual
+        language in JNJ-S01 and JNJ-S02 was blocked by the same network-policy denial; per the
+        bundle's own bounded-abstention instruction, this record does not quote or overstate the
+        estimation language and instead preserves only the general, disclosed fact that material
+        product-liability litigation is a risk, with the verification limitation disclosed here
+        and in JNJ.md.
+        JNJ MedTech boundary: this record explicitly does not assume J&J MedTech is interchangeable
+        with Portfolio-HQ's existing `intelligence/themes/life_sciences_tools_medtech.yaml` theme
+        (ISRG, TMO) -- see the dedicated discussion in JNJ.md. No `themes:` field is set on this
+        record; adding JNJ to that theme, or any theme, is outside this authorization's scope and
+        is not performed here.
+sources:
+  - note: "Johnson & Johnson 2025 Form 10-K (SEC accession 0000200406-26-000016), filed 2026-02-11. Directly inspected by the evidence-recovery researcher who authored the governed v2 evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). This record's exact-figure litigation/accrual-language claim from this source was not independently re-verified by this session -- see F-4 disposition above -- and is therefore not quoted or reproduced with specific wording in this record."
+    url: "https://www.sec.gov/Archives/edgar/data/200406/000020040626000016/jnj-20251228.htm"
+    date: "2026-02-11"
+  - note: "Johnson & Johnson Form 10-Q for the quarter ended 2026-03-29 (SEC accession 0000200406-26-000087). Directly inspected by the evidence-recovery researcher, not by this Claude session. Same F-4 limitation applies to this source's litigation-note content as JNJ-S01 above."
+    url: "https://www.sec.gov/Archives/edgar/data/200406/000020040626000087/jnj-20260329.htm"
+    date: "2026-04-22"
+  - note: "Johnson & Johnson reports Q2 2026 results, raises 2026 outlook (earnings release). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q2 2026 segment sales, segment commentary, and guidance."
+    url: "https://www.investor.jnj.com/investor-news/news-details/2026/Johnson--Johnson-reports-Q2-2026-results-raises-2026-outlook/default.aspx"
+    date: "2026-07-15"
+  - note: "Johnson & Johnson Second Quarter 2026 Earnings Presentation. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports segment drivers, margins, capital allocation, and pipeline-milestone content."
+    url: "https://s203.q4cdn.com/636242992/files/doc_financials/2026/q2/JNJ-Earnings-Presentation-Q2-2026-Final-V2.pdf"
+    date: "2026-07-15"
+  - note: "FDA approves teclistamab in combination with daratumumab hyaluronidase-fihj (Tecvayli plus Darzalex Faspro) for relapsed or refractory multiple myeloma. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Innovative Medicine pipeline-conversion evidence."
+    url: "https://www.fda.gov/drugs/resources-information-approved-drugs/fda-approves-teclistamab-combination-daratumumab-hyaluronidase-fihj-relapsed-or-refractory-multiple"
+    date: "2026-03-05"
+  - note: "Johnson & Johnson Announces Updated Financials and 2023 Guidance Following Completion of the Kenvue Separation (corporate-action release). Directly inspected by the evidence-recovery researcher, not by this Claude session. Resolves F-1: substantiates the post-Kenvue Pharmaceutical/MedTech structure this record analyzes, including the source's own then-current 'Pharmaceutical' terminology versus current 'Innovative Medicine' reporting for the same continuing segment. Historical primary source (2023); the completed corporate-action fact remained applicable as of the 2026-07-27 research cutoff. Does not establish subsequent changes in any retained Kenvue stake."
+    url: "https://www.investor.jnj.com/investor-news/news-details/2023/Johnson--Johnson-Announces-Updated-Financials-and-2023-Guidance-Following-Completion-of-the-Kenvue-Separation/default.aspx"
+    date: "2023-08-30"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 7 primary-source evidence bundle, v2 (BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml), SHA-256 cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826, principal-custodied implementation input under PI-0029/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the six sources above into claim-level extracts (JNJ-C001 through JNJ-C008) with source-ID-level provenance and fact/inference labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1227/5659/56667) against both uploaded copies before use."
+    url: null
+    date: "2026-07-27"

@@ -1,0 +1,1913 @@
+# Level-1 endpoint-evidence program — canonical pre-registration
+#
+# Authorized by governance/decisions/XASSET-0027-level1-endpoint-authority-and-all-four-sleeve-evidence-program-charter.md
+#
+# This YAML is canonical for every closed identity, candidate, gate, ordering, vocabulary, and count.
+# research/level1_endpoint_evidence/PROTOCOL_V1.md explains the design but cannot enlarge or override it.
+#
+# This file preregisters a research design. It contains no endpoint, no bound, no percentage, no
+# sleeve share, and no study result. It is not a DRIVER source and is not admissible as
+# endpoint-supporting evidence.
+
+schema_version: '2.0'
+study_id: ENDPOINT-0001
+
+identifier_note:
+  statement: >-
+    ENDPOINT-0001 is a study identifier only. It is not a governance decision prefix, and no
+    ENDPOINT-#### decision series is created, implied, or reserved by it. The authorizing decision is
+    XASSET-0027.
+
+authority:
+  authorizing_decision: XASSET-0027
+  authorizing_decision_path: governance/decisions/XASSET-0027-level1-endpoint-authority-and-all-four-sleeve-evidence-program-charter.md
+  lane: OPS-0009_LANE_G
+  program_shape: ALL_FOUR_SLEEVE_SELECTION_FREE_PROGRAM
+  program_shape_source: XASSET-0026
+  governing_research_question_source: XASSET-0025_SECTION_K
+  endpoint_quantity_source: XASSET-0024_SECTION_C
+  admissibility_checklist_source: XASSET-0024_SECTION_J_1_THROUGH_J_12
+  prohibited_input_firewall_source: XASSET-0025_SECTION_F
+  authority_constituted_by_same_decision: true
+  authority_exercised_by_this_program: false
+  authority_exercise_note: >-
+    XASSET-0027 constitutes LEVEL1_ENDPOINT_AUTHORITY and does not exercise it. This program does not
+    exercise it either. Executing Stage 1 states no endpoint and selects no value.
+
+lifecycle_effectivity:
+  charter_effective_only_after_all_of:
+  - ACCEPTED_INDEPENDENT_EXACT_HEAD_REVIEW
+  - PRINCIPAL_EXACT_HEAD_ACCEPTANCE
+  - MERGE
+  - IMMEDIATE_POST_MERGE_VERIFICATION
+  - SUCCESSFUL_MERGE_COMMIT_CI
+  stage_1_execution_may_begin_only_after: XASSET_0044_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  predecessor_stage_1_execution_may_begin_only_after_xasset_0037: XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  predecessor_stage_1_execution_may_begin_only_after_xasset_0029: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  predecessor_stage_1_execution_may_begin_only_after_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+  stage_1_execution_precondition_amended_by: XASSET-0044
+  predecessor_stage_1_execution_precondition_amended_by_xasset_0037: XASSET-0037
+  predecessor_stage_1_execution_precondition_amended_by_xasset_0029: XASSET-0029
+  predecessor_stage_1_execution_precondition_amended_by_xasset_0028: XASSET-0028
+  predecessor_stage_1_execution_may_begin_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
+  predecessor_precondition_is_spent_note: >-
+    HISTORICAL ONLY, AND THERE ARE NOW FOUR SPENT PREDECESSORS. XASSET-0027's own lifecycle is
+    complete and XASSET-0028 closed the construction universe, so the XASSET-0027 condition reads
+    as already satisfied. XASSET-0028's own six-gate lifecycle has since closed in full, so that
+    condition is spent as well. XASSET-0029's six-gate lifecycle also closed in full and its
+    condition was operative until the XASSET-0036 executable package changed the load-bearing bytes
+    XASSET-0029 bound; XASSET-0037 then rebound them under XASSET-0030 SS-G.B step 8. XASSET-0037's
+    own condition was in turn operative until the XASSET-0042 correction lawfully changed the
+    load-bearing bytes XASSET-0037 bound, so XASSET-0044 rebound them under XASSET-0030 SS-D's
+    reconciliation clause, authorized by XASSET-0043. None of the four is operative. THE SINGLE
+    OPERATIVE CONDITION IS stage_1_execution_may_begin_only_after
+    ABOVE: the XASSET-0044 lifecycle plus an authenticated external one-shot preexecution
+    attestation plus a one-shot execution claim. A SPENT PREDECESSOR IS NOT AN INVALIDATED ONE -
+    XASSET-0029 remains valid accepted history and is retained verbatim in the explicitly
+    predecessor-named fields above.
+  merge_alone_is_sufficient: false
+  note: >-
+    Merge alone does not make this charter operationally effective and does not open a Stage 1
+    execution lane. The full lifecycle above must close first, and the merged canonical hashes must
+    verify from the merged commit. This removes any window between merge and lifecycle closure in
+    which a second mutation lane could claim authority. AMENDED BY XASSET-0029, WHICH IS THE SINGLE
+    CURRENT STATE: the construction universe IS closed (see construction_universe_closure) and
+    XASSET-0028's own lifecycle IS closed, so both predecessor conditions are historical and are
+    retained only in the explicitly predecessor-named fields above. Stage 1 is NOT EXECUTABLE until
+    the complete XASSET-0029 lifecycle is effective AND an authenticated external one-shot
+    preexecution attestation exists AND that attestation has been atomically claimed. Lifecycle
+    closure alone does not make Stage 1 executable, and no committed value in this repository does
+    either.
+
+stage_1_executability:
+  # AMENDED BY XASSET-0029. `executable` stays false PERMANENTLY and keeps its enforced-false
+  # check. Its meaning is now explicit and load-bearing: NO COMMITTED VALUE IN THIS REPOSITORY
+  # AUTHORIZES STAGE-1 EXECUTION. XASSET-0028 already enforced `_false(executable)` in the
+  # validator while the authorization gate simultaneously required `executable is True`, so the
+  # canonical file could never be both valid and self-authorizing. XASSET-0029 preserves that
+  # lock rather than unpicking it, and relocates authorization to an external, one-shot,
+  # post-lifecycle attestation. See `stage_1_operational_authorization` below.
+  executable: false
+  executable_is_never_the_authorization_source: true
+  status: STRUCTURALLY_CLOSED_NOT_OPERATIONALLY_AUTHORIZED
+  blocking_prerequisite: XASSET_0044_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  authorized_by_xasset_0027: false
+  authorized_by_xasset_0028: false
+  authorized_by_xasset_0029: false
+  authorized_by_xasset_0036: false
+  authorized_by_xasset_0037: false
+  authorized_by_xasset_0044: false
+  construction_universe_structurally_closed: true
+  amended_by: XASSET-0044
+  predecessor_amended_by_xasset_0037: XASSET-0037
+  predecessor_blocking_prerequisite_xasset_0037: XASSET_0037_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  predecessor_amended_by_xasset_0029: XASSET-0029
+  predecessor_blocking_prerequisite_xasset_0029: XASSET_0029_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  predecessor_amended_by_xasset_0028: XASSET-0028
+  predecessor_status_xasset_0027: NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED
+  predecessor_blocking_prerequisite_xasset_0027: CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE
+  predecessor_blocking_prerequisite_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE
+  statement: >-
+    XASSET-0027 charters this programme's architecture — its families, gates, disposition rules,
+    reading map, deferrals, provenance requirements, and firewall — and does NOT authorize Stage 1
+    execution. XASSET-0027's own blocking prerequisite was that a concrete construction universe did
+    not exist. XASSET-0028 closed that universe structurally, retiring that blocker. XASSET-0028's
+    own lifecycle has since closed in full, which retires the XASSET-0028 blocker in turn.
+    XASSET-0029 does NOT thereby declare Stage 1 executable. It establishes the mechanism by which
+    exactly one Stage-1 attempt may become authorized, and that mechanism is deliberately NOT a
+    committed value: authorization is an external, one-shot preexecution attestation that cannot
+    exist until after XASSET-0029 has itself been reviewed, accepted, merged, post-merge verified,
+    and confirmed green by merge-commit CI. Structural closure is not operational authorization, and
+    no reader may treat the two as the same fact.
+  operational_authorization_requires_all_of:
+  - INDEPENDENT_FULL_EXACT_HEAD_REVIEW
+  - PRINCIPAL_EXACT_HEAD_ACCEPTANCE
+  - MERGE
+  - POST_MERGE_VERIFICATION
+  - MERGE_COMMIT_CI_SUCCESS
+  - MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+  no_merge_to_execution_gap: true
+  no_merge_to_execution_gap_note: >-
+    Every gate above must be satisfied and verified against the merged bytes before any Stage-1 lane
+    opens. A validator that can structurally read the closed universe must still fail closed on
+    lifecycle authorization until every gate is met.
+
+# ESTABLISHED BY XASSET-0029. This block specifies WHAT a valid Stage-1 authorization must prove
+# and WHICH exact identities it must bind. It is inert: it never asserts that authorization has
+# been granted, and nothing a reader can edit here grants it.
+stage_1_operational_authorization:
+  mechanism: EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  established_by: XASSET-0029
+  established_by_note: >-
+    The MECHANISM was established by XASSET-0029 and that fact is historical truth, so this field is
+    deliberately NOT rewritten. What XASSET-0037 changed is not who established the mechanism but
+    which merged tree the mechanism proves its load-bearing identity against, and XASSET-0044 has
+    since rebound that tree again after the XASSET-0042 correction. See rebound_by.
+  rebound_by: XASSET-0044
+  predecessor_rebound_by_xasset_0037: XASSET-0037
+  effective_structural_authorization_source: XASSET-0044
+  predecessor_effective_structural_authorization_source_xasset_0037: XASSET-0037
+  currently_effective: false
+  currently_effective_note: >-
+    False here is not a switch awaiting a flip. Effectivity is not readable from this file at all:
+    it is decided at runtime by validating an external attestation that does not exist yet. A future
+    edit setting this true would change nothing, because no validator consults it for authorization.
+  authorization_is_committed_state: false
+  authorization_is_external_runtime_evidence: true
+  implementing_module: level1_stage1_execution_authorization.py
+  execution_attempt_id: ENDPOINT-0001::STAGE_1::ATTEMPT_1
+  one_shot: true
+  one_shot_note: >-
+    XASSET-0027 SSP.1 permits exactly ONE later Stage-1 evaluation/results PR. The attestation, the
+    execution claim, and the completion record are each created with O_EXCL and mirrored into an
+    append-only ledger, so a second claim always fails and an authorization naming one attempt can
+    never authorize another. A rerun after completion requires new governance authority.
+  lifecycle_actor_authentication:
+    principal_acceptance_author_must_be: Mast3rkey
+    post_merge_verification_author_must_be: Mast3rkey
+    same_account_disclosure: >-
+      This repository's principal, merge, and lifecycle-operator account is the SAME GitHub login
+      throughout its recorded history. That is stated plainly rather than implying separate
+      accounts exist. Verifying the author is still load-bearing: it prevents any other account
+      able to comment on the pull request from impersonating the acceptance or post-merge gate,
+      which was previously possible because only comment location and body text were checked.
+    formal_disposition_parsed_exactly: true
+    formal_disposition_note: >-
+      The review verdict is parsed from the FIRST "FORMAL DISPOSITION:" line and must equal the
+      approving value EXACTLY. A substring test previously let an adverse review pass whenever its
+      explanatory text quoted the approval phrase.
+    selected_review_must_be_final: true
+    selected_review_finality_note: >-
+      A later NON-DISMISSED adverse review on the EXACT accepted head, submitted after the
+      certified review and before the merge, invalidates the lifecycle. Reviews on older heads are
+      history and do not invalidate the current head; dismissed later reviews are not live
+      findings; adverse reviews preceding the final clean pass are legitimate history.
+  review_independence_position:
+    account_level_independence_observable: false
+    account_level_independence_note: >-
+      This repository uses a single GitHub account for both authoring and reviewing sessions, a
+      pre-existing platform limitation recorded repeatedly in its own history. GitHub login
+      inequality therefore CANNOT prove independent session authorship, and the mechanism does not
+      pretend otherwise. An earlier fail-closed condition asserting that a self-authored review is
+      mechanically refused was removed rather than left as an unenforced promise.
+    what_is_actually_verified: DURABLE_PRINCIPAL_CERTIFICATION_OF_THE_INDEPENDENT_REVIEW
+    what_is_actually_verified_note: >-
+      The principal's own durable acceptance record must NAME the exact independent review pass it
+      relies upon. The mechanism then verifies that review exists on the authorizing pull request,
+      was submitted against the exact accepted head, carries the approving formal disposition, is
+      not dismissed, and precedes the acceptance, which in turn precedes the merge. That is a real,
+      mechanically checkable certification chain; it is not a claim about session identity.
+    reviewer_identity_is_derived_not_declared: true
+    author_identity_is_authorizing: false
+    author_identity_note: >-
+      author_identity is caller-supplied informational metadata only. It is recorded for audit and
+      is deliberately NOT used to establish independence or any other authorization fact.
+  result_identity:
+    mechanism: SHA256_OF_CANONICAL_JSON
+    is_artifact_byte_hash: false
+    semantics_note: >-
+      This is a SEMANTIC identity, NOT the SHA-256 of the stage1_results.yaml file bytes. It hashes
+      the canonical JSON serialization of the parsed result mapping, so key ordering and
+      insignificant whitespace do not change identity while any content change does. The canonical
+      field name says SEMANTIC precisely so no reader mistakes it for an artifact byte hash.
+    derived_by_completion_not_supplied: true
+    derived_by_completion_note: >-
+      complete_execution() receives the actual result and computes the identity itself. There is no
+      public completion API that accepts a precomputed digest, so completion cannot bind a value
+      unrelated to the artifact produced.
+    single_shared_function: stage1_result_identity
+    shared_by:
+    - FUTURE_STAGE_1_RESULT_WRITER
+    - COMPLETION_RECORD
+    - PUBLIC_RESULT_VALIDATION
+    note: >-
+      Exactly one deterministic identity, so "is this the artifact the lawful execution completed"
+      is mechanically decidable. Key order and insignificant whitespace do not change identity; any
+      content change does. Completing result A therefore prevents publishing result B.
+  lifecycle_truth_sources:
+    principle: >-
+      A recorded lifecycle value is never accepted because its text is well-formed. Every value is
+      re-derived from a durable source and compared, and an unreachable source FAILS CLOSED. An
+      entirely fictional but internally consistent review/acceptance/merge/CI chain must be refused.
+    git_object_store: >-
+      Content-addressed and offline. Supplies the merge SHA, both real parents, current ancestry, and
+      the byte identity of load-bearing files AS THEY EXIST IN THE MERGED TREE.
+    github_governance_metadata: >-
+      Supplies the review and its exact reviewed commit and formal disposition, the reviewer login
+      (DERIVED, never self-declared), the principal acceptance comment, the post-merge verification
+      comment, and the merge-commit CI run and job. GOVERNANCE METADATA ONLY - never market, price,
+      fundamental, or any other economic data, and never a Stage-1 data-acquisition path.
+  execution_state_machine:
+    states:
+    - ABSENT
+    - READY
+    - CLAIMED
+    - COMPLETED
+    new_execution_permitted_in: READY
+    result_validation_permitted_in:
+    - CLAIMED
+    - COMPLETED
+    separation_note: >-
+      "May a NEW execution start?" and "did THIS result come from the one lawful execution?" are
+      different questions and are answered by different predicates. Conflating them made consuming
+      the authorization reject the very execution that consumed it, while deferring consumption left
+      a replay and concurrency window. The claim is taken atomically immediately before the first
+      real Stage-1 work.
+    mirrored_records_are_a_consistency_check: true
+    mirrored_records_note: >-
+      claim.json/completion.json and their append-only ledger mirrors are a CONSISTENCY CHECK, never
+      interchangeable alternatives. Both present must agree as the same canonical record; a missing
+      file recovers only from exactly one unique uncorrupted ledger event; conflicting, duplicated,
+      malformed, or corrupt entries FAIL CLOSED. A missing ledger event with a surviving file is the
+      one permitted single-record-loss case the durability model already discloses.
+    claimed_state_never_implies_lawful_provenance: true
+    claimed_state_note: >-
+      State DETECTION and authorization VALIDITY are different questions. A surviving claim record
+      or ledger entry may establish that the lane is CLAIMED, but lawful provenance additionally
+      requires that the exact attestation still exists, still hashes to what the claim bound, and
+      still validates against durable git and GitHub truth. A missing, invalid, or drifted
+      attestation fails closed even while the lane reports CLAIMED.
+    final_publication_requires_completion: true
+    final_publication_note: >-
+      Public result validation requires a COMPLETED record whose attempt, attestation, claim, and
+      RESULT identity all match, the last computed from the supplied artifact. Structural
+      validation of a candidate result before completion uses the private precompletion seam and
+      never weakens this final public boundary.
+    claim_binds:
+    - EXECUTION_ATTEMPT_ID
+    - EXACT_ATTESTATION_SHA256
+    completion_binds:
+    - EXECUTION_ATTEMPT_ID
+    - EXACT_ATTESTATION_SHA256
+    - EXACT_CLAIM_SHA256
+    - EXACT_STAGE1_RESULT_SEMANTIC_IDENTITY_SHA256
+  durability_boundary:
+    claim_recorded_in_two_places: true
+    single_record_loss_reopens_lane: false
+    total_directory_loss_state: ABSENT
+    total_directory_loss_is_ready: false
+    crash_after_claim_reopens_lane: false
+    statement: >-
+      O_EXCL prevents a second creation only while the path exists, so "can never be replayed" would
+      be an overclaim. What is enforced: the claim is recorded in both claim.json and an append-only
+      ledger, and EITHER establishes CLAIMED, so losing one alone does not reopen the lane;
+      destroying the whole directory also destroys the attestation, so the lane becomes ABSENT, which
+      is not READY and requires passing the full authenticated lifecycle verification again; and a
+      crash after claiming leaves the lane CLAIMED, recoverable only by a governed act. A privileged
+      operator deleting the entire directory is outside any filesystem-based enforcement boundary,
+      and that limit is disclosed rather than papered over.
+  trust_boundary:
+    repository_state_says: WHAT_IS_STRUCTURALLY_AUTHORIZED
+    external_attestation_says: WHETHER_THIS_EXECUTION_IS_AUTHORIZED
+    results_document_says: NOTHING_ABOUT_AUTHORIZATION
+    results_cannot_self_authorize: true
+    private_structural_seams_are_non_authorizing: true
+  # ESTABLISHED BY XASSET-0037 under XASSET-0030 SS-G.B step 8. FOUR structurally distinct
+  # identities, each with its own attestation block and its own git-derived verification. They are
+  # deliberately NOT folded into one "predecessor" notion: overloading a single field across four
+  # different relationships is how a rebinding silently starts binding the wrong tree.
+  successor_operational_rebinding:
+    rebinding_decision: XASSET-0044
+    rebinding_authority: XASSET-0030_SS_D_RECONCILIATION_LIFECYCLE_AUTHORIZED_BY_XASSET_0043
+    predecessor_rebinding_decision_xasset_0037: XASSET-0037
+    predecessor_rebinding_authority_xasset_0037: XASSET-0030_SS_G_B_STEP_8
+    correction_authorization_decision: XASSET-0041
+    correction_decision: XASSET-0042
+    rebinding_authorization_decision: XASSET-0043
+    package_authorization_decision: XASSET-0036
+    is_an_activation_step: false
+    is_an_attestation: false
+    adds_activation_authorizations: 0
+    no_infinite_authorization_regress_preserved: true
+    no_infinite_authorization_regress_note: >-
+      XASSET-0029 SS-E terminates the activation regress on a step that CHANGES NO REPOSITORY STATE
+      - the runtime attestation. A rebinding changes repository state extensively, so it is
+      categorically outside the step SS-E terminates, and XASSET-0030 SS-D and SS-G.B step 8, both
+      accepted after XASSET-0029, expressly require exactly one such successor lifecycle. This adds
+      ZERO activation authorizations: final activation remains the external one-shot runtime
+      attestation and the operator's act, never another merged activation PR.
+    distinct_identities:
+      structural_closure_predecessor: XASSET-0028
+      historical_operational_authorization: XASSET-0029
+      package_authority: XASSET-0036
+      executable_package: PULL_REQUEST_336
+    historical_operational_authorization_is_invalidated: false
+    historical_operational_authorization_note: >-
+      XASSET-0029's own six-gate lifecycle really closed and remains valid accepted history. It
+      stopped being the EFFECTIVE structural authorization source only because the XASSET-0036
+      executable package changed the load-bearing bytes it bound. It is still verified against the
+      git object store, so the successor cannot quietly disown the predecessor it inherits from.
+    enforcement_drift_recorded_in_advance: true
+    enforcement_drift_note: >-
+      XASSET-0030 SS-D recorded before the fact that a lawful correction of the SS-C defect would
+      deliberately create enforcement drift, leaving Stage 1 non-armable until a successor lifecycle
+      rebound the new load-bearing implementation. That drift was reproduced against the XASSET-0029
+      merged tree before it was corrected: three load-bearing paths absent and four in byte drift.
+      An obsolete authorization that cannot authorize a changed package is the mechanism working.
+    outcome_producing_paths_must_be_byte_identical_to_the_accepted_package: true
+    outcome_producing_paths_note: >-
+      SS-G.B's invariant is that no outcome-producing executable code may be created, changed, or
+      left outside the bound execution identity after the final rebinding and before ATTEMPT_1. The
+      rebinding therefore proves the runner and the result validator are byte-identical at the
+      package's reviewed head, the package's merge, the successor's reviewed head, the successor's
+      merge, and the working tree. A silent runner edit inside the rebinding fails closed.
+    load_bearing_paths_removed: 0
+    exact_byte_checking_weakened: false
+  must_bind_exactly:
+  - REPOSITORY_IDENTITY
+  - EXACT_REVIEWED_BASE_SHA
+  - EXACT_MERGE_PARENTS_REVIEWED_BASE_THEN_ACCEPTED_HEAD
+  - MERGE_TREE_EQUALS_ACCEPTED_HEAD_TREE
+  - PRINCIPAL_CERTIFIED_INDEPENDENT_REVIEW_ID
+  - EXACT_COMPLETED_RESULT_SEMANTIC_IDENTITY
+  - STUDY_ID
+  - AUTHORIZING_DECISION_XASSET_0044
+  - AUTHORIZING_PULL_REQUEST_NUMBER
+  - PREDECESSOR_XASSET_0028_MERGE_SHA
+  - PREDECESSOR_XASSET_0028_ACCEPTED_HEAD
+  - PREDECESSOR_XASSET_0028_MERGE_BASE
+  - HISTORICAL_OPERATIONAL_AUTHORIZATION_XASSET_0029_IDENTITY
+  - PACKAGE_AUTHORIZATION_XASSET_0036_IDENTITY
+  - EXECUTABLE_PACKAGE_PULL_REQUEST_336_MERGE_ACCEPTED_HEAD_AND_BASE
+  - EXECUTABLE_PACKAGE_MERGE_TREE_EQUALS_ITS_ACCEPTED_HEAD_TREE
+  - EXECUTABLE_PACKAGE_MERGE_IS_AN_ANCESTOR_OF_THE_SUCCESSOR_MERGE
+  - PRIOR_SUCCESSOR_REBINDING_XASSET_0037_PULL_REQUEST_337_IDENTITY
+  - CORRECTION_AUTHORIZATION_XASSET_0041_IDENTITY
+  - CORRECTED_MODULE_XASSET_0042_PULL_REQUEST_342_MERGE_ACCEPTED_HEAD_AND_BASE
+  - CORRECTED_MODULE_MERGE_TREE_EQUALS_ITS_ACCEPTED_HEAD_TREE
+  - REBINDING_AUTHORIZATION_XASSET_0043_PULL_REQUEST_343_IDENTITY
+  - EVERY_INHERITED_MERGE_IS_AN_ANCESTOR_OF_THE_REBINDING_MERGE
+  - OUTCOME_PRODUCING_BYTES_IDENTICAL_TO_THE_ACCEPTED_EXECUTABLE_PACKAGE
+  - LOAD_BEARING_IMPLEMENTATION_IDENTITY_FROM_MERGED_TREE
+  - CURRENT_GIT_ANCESTRY_OF_THE_AUTHORIZING_MERGE
+  - CANONICAL_PROTOCOL_SHA256
+  - CANONICAL_PREREGISTRATION_SHA256
+  - CONSTRUCTION_UNIVERSE_SHA256
+  - CONSTRUCTION_COUNT_680
+  - EXECUTION_ATTEMPT_ID
+  - INDEPENDENT_REVIEW_IDENTITY_AND_REVIEWED_SHA
+  - PRINCIPAL_ACCEPTANCE_IDENTITY_AND_ACCEPTED_HEAD
+  - MERGE_SHA_AND_BOTH_PARENTS
+  - POST_MERGE_VERIFICATION_IDENTITY
+  - MERGE_COMMIT_CI_RUN_JOB_AND_SUCCESS_CONCLUSION
+  must_fail_closed_on:
+  - NO_ATTESTATION_PRESENT
+  - MALFORMED_OR_DUPLICATE_KEYED_ATTESTATION
+  - WRONG_REPOSITORY_OR_STUDY_OR_DECISION
+  - WRONG_OR_STALE_AUTHORIZATION_HEAD
+  - WRONG_CANONICAL_OR_UNIVERSE_HASH
+  - WRONG_CONSTRUCTION_COUNT
+  - ABSENT_OR_ADVERSE_INDEPENDENT_REVIEW
+  - ABSENT_ACCEPTANCE_OR_ACCEPTANCE_FOR_ANOTHER_HEAD
+  - ABSENT_MERGE_OR_WRONG_MERGE_PARENTS
+  - ABSENT_POST_MERGE_VERIFICATION
+  - ABSENT_OR_UNSUCCESSFUL_MERGE_COMMIT_CI
+  - POST_ACCEPTANCE_OR_POST_MERGE_DRIFT
+  - REPLAYED_OR_ALREADY_CONSUMED_AUTHORIZATION
+  - AUTHORIZATION_FOR_A_DIFFERENT_EXECUTION_ATTEMPT
+  - UNVERIFIABLE_OR_UNREACHABLE_GOVERNANCE_TRUTH_SOURCE
+  - NONEXISTENT_BUT_WELL_FORMED_REVIEW_ACCEPTANCE_VERIFICATION_OR_CI_IDENTIFIER
+  - SELF_DECLARED_REVIEWER_IDENTITY
+  - PRINCIPAL_CERTIFICATION_OF_THE_INDEPENDENT_REVIEW_ABSENT_OR_MISMATCHED
+  - LIFECYCLE_RECORD_BELONGING_TO_ANOTHER_PULL_REQUEST
+  - LIFECYCLE_CHRONOLOGY_VIOLATION
+  - DISMISSED_OR_NON_FINAL_SELECTED_REVIEW
+  - MERGE_FIRST_PARENT_NOT_THE_EXACT_REVIEWED_BASE
+  - MERGE_TREE_DIFFERS_FROM_THE_ACCEPTED_HEAD_TREE
+  - CLAIMED_OR_COMPLETED_LANE_WITHOUT_A_STILL_VALID_ATTESTATION
+  - SUPPLIED_RESULT_NOT_THE_COMPLETED_RESULT_IDENTITY
+  - LOAD_BEARING_ENFORCEMENT_CODE_DRIFT
+  - AUTHORIZING_MERGE_NOT_IN_CURRENT_ANCESTRY
+  - SUPERSEDED_PREDECESSOR_AUTHORIZATION_DECISION_OR_PULL_REQUEST
+  - EXECUTABLE_PACKAGE_IDENTITY_ABSENT_MISMATCHED_OR_DRIFTED
+  - EXECUTABLE_PACKAGE_NOT_AN_ANCESTOR_OF_THE_SUCCESSOR_MERGE
+  - PRIOR_SUCCESSOR_REBINDING_OR_CORRECTION_IDENTITY_ABSENT_MISMATCHED_OR_DRIFTED
+  - INHERITED_MERGE_NOT_AN_ANCESTOR_OF_THE_REBINDING_MERGE
+  - DERIVATION_SURFACE_NOT_REACHED_THROUGH_EXACTLY_THE_REVIEWED_CLOSED_TRANSITIONS
+  - OUTCOME_PRODUCING_CODE_CHANGED_INSIDE_THE_REBINDING_THAT_BINDS_IT
+  no_merge_to_execution_gap: true
+  no_merge_to_execution_gap_mechanism: >-
+    Merging XASSET-0037 authorizes nothing, exactly as merging XASSET-0029 authorized nothing. The
+    attestation cannot be pre-staged, because generating it requires evidence that does not exist
+    until after the merge: the merge SHA, a post-merge verification record, and a merge-commit CI
+    run that has CONCLUDED success at that exact merge SHA. CI cannot have concluded at the instant
+    of merge, so a strictly positive interval between merge and authorizability is enforced by
+    evidence rather than by convention.
+  no_infinite_authorization_regress: true
+  no_infinite_authorization_regress_mechanism: >-
+    Arming is a runtime operator act, not a further merged governance PR. After the effective
+    structural authorization lifecycle merges and verifies, the generator is run once and no
+    additional ACTIVATION pull request is ever required. The regress terminates because the final
+    step changes no repository state. AMENDED BY XASSET-0037: a successor operational REBINDING is
+    not an activation step and does not reopen that regress. It changes repository state, so it is
+    categorically outside the step this rule terminates, and XASSET-0030 SS-D and SS-G.B step 8 -
+    both accepted after XASSET-0029 - expressly require exactly one such lifecycle once the
+    load-bearing bytes change. XASSET-0037 adds ZERO activation authorizations, and so does
+    XASSET-0044, which rebinds again under XASSET-0030 SS-D's reconciliation clause after the
+    XASSET-0042 correction, authorized by XASSET-0043.
+
+stages:
+  stage_1:
+    stage_id: STAGE_1_CONSTRUCTION_FEASIBILITY
+    authorized_by_xasset_0027: false
+    executable_only_after: XASSET_0044_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+    executable_only_after_amended_by: XASSET-0044
+    predecessor_executable_only_after_xasset_0037: XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+    predecessor_executable_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
+    predecessor_executable_only_after_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+    predecessor_executable_only_after_xasset_0029: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+    acquires_data: false
+    fits_or_estimates_anything: false
+    produces_endpoint: false
+    produces_admissible_evidence: false
+    unit_of_work: ONE_CANDIDATE_EVALUATION
+    description: >-
+      A deterministic, per-candidate evaluation of whether a lawful endpoint-supporting evidence
+      construction is identifiable for that candidate under accepted authority, recording every
+      blocking gate. Stage 1 evaluates constructibility over the Stage-1-testable subset of
+      XASSET-0024 SSJ. It does not build, acquire, estimate, or admit anything.
+  stage_2:
+    stage_id: STAGE_2_EMPIRICAL_EVIDENCE_PRODUCTION
+    authorized_by_xasset_0027: false
+    eligibility_condition: AT_LEAST_ONE_STAGE_1_CANDIDATE_CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+    authorization_requirement: SEPARATE_LATER_EXPLICITLY_ACCEPTED_GOVERNANCE_DECISION
+    note: >-
+      Stage 2 is neither authorized, commissioned, scheduled, nor partially granted by XASSET-0027.
+      Satisfying the eligibility condition creates no entitlement to Stage 2 and does not authorize
+      data acquisition, estimation, or any empirical run.
+
+# --------------------------------------------------------------------------------------------------
+# Governing research question
+# --------------------------------------------------------------------------------------------------
+
+research_question:
+  source: XASSET-0025_SECTION_K
+  reproduced_verbatim: >-
+    For one named Level-1 sleeve, is there directly evidenced, question-matched economic content —
+    admissible as a DRIVER under exactly one of XASSET-0020 SSE.1's six classes on its own subject
+    matter — that intrinsically establishes a LOWER or an UPPER limit on that sleeve's share of one
+    normalized unit of prospective unlevered asset-side capital, at exact precision, from a single
+    origin, with no step whose coefficient, ordering, tolerance, cutoff, or selection could have been
+    chosen differently?
+  instantiation: PER_CANDIDATE_TEMPLATE
+  instantiation_note: >-
+    The question form is sleeve-agnostic and is instantiated identically for every candidate. Evidence
+    is sleeve-specific or comparison-scoped, per XASSET-0025 SSJ and XASSET-0026 SSD.
+  null_answer_is_complete_outcome: true
+  null_answer_source: XASSET-0020_SECTION_J_3
+
+# --------------------------------------------------------------------------------------------------
+# Closed population
+# --------------------------------------------------------------------------------------------------
+
+sleeves:
+- equity
+- fund_broad_market
+- fund_gld_defensive
+- crypto
+
+bounds:
+- LOWER
+- UPPER
+
+driver_classes:
+- portfolio_function
+- valuation_opportunity_cost
+- downside_path_risk
+- recovery
+- diversification_cobehavior
+- sleeve_deployability
+
+driver_class_scope:
+  record_keys:
+  - driver_class
+  - section_e1_scope_language
+  - minimum_evidence_item_scope
+  source: XASSET-0026_SECTION_D
+  scope_note: >-
+    Records evidence-item subject-matter scope only. Per XASSET-0026 SSD, evidence-item scope and
+    program endpoint/output coverage are different questions, and no DRIVER class is closed to a
+    program by its output coverage alone. Comparators are not fixed to a second sleeve by SSE.1 and
+    are not fixed here.
+  classes:
+    portfolio_function:
+      driver_class: portfolio_function
+      section_e1_scope_language: THE_SLEEVES_DIRECTLY_EVIDENCED_JOB_IN_THE_PROSPECTIVE_PORTFOLIO
+      minimum_evidence_item_scope: ONE_SLEEVE
+    valuation_opportunity_cost:
+      driver_class: valuation_opportunity_cost
+      section_e1_scope_language: MARGINAL_DOLLAR_HERE_RATHER_THAN_TO_THE_DIRECT_ALTERNATIVE
+      minimum_evidence_item_scope: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    downside_path_risk:
+      driver_class: downside_path_risk
+      section_e1_scope_language: DIRECTLY_COMPARABLE_LOSS_SHAPE_DEPTH_OR_PATH_EVIDENCE
+      minimum_evidence_item_scope: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    recovery:
+      driver_class: recovery
+      section_e1_scope_language: DIRECTLY_COMPARABLE_RECOVERY_OR_TIME_UNDERWATER_EVIDENCE
+      minimum_evidence_item_scope: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    diversification_cobehavior:
+      driver_class: diversification_cobehavior
+      section_e1_scope_language: DIRECT_PAIR_EVIDENCE_DUPLICATION_SHARED_LOSS_OFFSET
+      minimum_evidence_item_scope: ONE_UNORDERED_PAIR
+    sleeve_deployability:
+      driver_class: sleeve_deployability
+      section_e1_scope_language: SLEEVE_LEVEL_CONVERTIBILITY_LOCKUP_OR_IMPLEMENTATION_FRICTION
+      minimum_evidence_item_scope: ONE_SLEEVE
+
+# --------------------------------------------------------------------------------------------------
+# Construction families — closed by accepted authority, not invented here
+# --------------------------------------------------------------------------------------------------
+
+construction_families:
+  what_this_vocabulary_is: CLOSED_PROVENANCE_ORIGINATION_FAMILY_CLASSIFICATION
+  what_this_vocabulary_is_not: AN_EXHAUSTIVE_ENUMERATION_OF_CONCRETE_CONSTRUCTIONS
+  closure_basis:
+    route_set_closed_by: XASSET-0023_SECTION_H_THERE_IS_NO_THIRD_ROUTE
+    route_class_coherence_closed_by: XASSET-0023_SECTION_H_4_ITEM_3
+    class_set_closed_by: NUM_0001_SECTION_1_CLASSES_1_THROUGH_6_WITH_CLASS_6_DISQUALIFYING
+    statement: >-
+      XASSET-0023 SSH states of the two origination routes that "There is no third route," and SSH.4
+      item 3 fixes route-class coherence exactly: a SSH.3 derivation is NUM-0001 class 2, and a SSH.2
+      statement may carry class 1, 3, 4, or 5. Class 6 is disqualifying under SSH.4 item 2. The lawful
+      set of (route, NUM-0001 class) provenance families is therefore closed by already-accepted
+      authority at exactly five members. This program enumerates them; it does not select among them,
+      rank them, invent one, or exclude one.
+    what_closure_does_not_establish: >-
+      Closing the family vocabulary does NOT close the set of concrete constructions. XASSET-0023
+      SSH.2 states the conditions under which an endpoint is "uniquely stated" and SSH.3 the
+      conditions for a source-prescribed derivation; both are constraint sets, and satisfying a
+      constraint set does not enumerate the objects that satisfy it. Many distinct source
+      identities, source architectures, comparator architectures, evidence forms, external
+      impositions, calibrations, governance selections, provisional guardrails, and prescribed
+      derivations can inhabit the same family. A family is a classification of provenance, not a
+      hypothesis.
+  record_keys:
+  - family_id
+  - route
+  - num_0001_class
+  - class_name
+  - originates_or_clips
+  - authority_ref
+  families:
+  - family_id: R1_C1
+    route: R1
+    num_0001_class: 1
+    class_name: EXTERNALLY_IMPOSED
+    originates_or_clips: ORIGINATE
+    authority_ref: XASSET-0023_SECTION_H_4_ITEM_3
+  - family_id: R1_C3
+    route: R1
+    num_0001_class: 3
+    class_name: EMPIRICALLY_CALIBRATED
+    originates_or_clips: ORIGINATE
+    authority_ref: XASSET-0023_SECTION_H_4_ITEM_3
+  - family_id: R1_C4
+    route: R1
+    num_0001_class: 4
+    class_name: EVIDENCE_BOUNDED_GOVERNANCE_SELECTION
+    originates_or_clips: ORIGINATE
+    authority_ref: XASSET-0023_SECTION_H_4_ITEM_3
+  - family_id: R1_C5
+    route: R1
+    num_0001_class: 5
+    class_name: PROVISIONAL_GOVERNANCE_GUARDRAIL
+    originates_or_clips: ORIGINATE
+    authority_ref: XASSET-0023_SECTION_H_4_ITEM_3
+  - family_id: R2_C2
+    route: R2
+    num_0001_class: 2
+    class_name: MATHEMATICALLY_DERIVED
+    originates_or_clips: ORIGINATE
+    authority_ref: XASSET-0023_SECTION_H_4_ITEM_3
+  excluded_class:
+    num_0001_class: 6
+    class_name: UNSUPPORTED_UNCLASSIFIED
+    reason: DISQUALIFYING_UNDER_XASSET_0023_SECTION_H_4_ITEM_2
+  excluded_non_routes:
+    reason: >-
+      XASSET-0024 SSD's non-routes N1 through N8 are barred origination mechanisms, not construction
+      families. A candidate outside the five families above would necessarily be a non-route and is
+      barred before evaluation rather than enumerated as a candidate.
+    non_routes:
+    - N1_CONSTRAINT_APPLICATION_OR_BOUND_INTERSECTION
+    - N2_DISCLOSURE_CLASSIFIED_CONTENT
+    - N3_CROSS_REPRESENTATION_SELECTION_ABSENT_A_RULE
+    - N4_MIDPOINT_SYMMETRY_DEFAULT_OR_MINIMUM_RANGE_WIDTH
+    - N5_RESIDUAL_PLUG_OR_COMPLEMENT
+    - N6_REUSING_A_STUDY_INTERNAL_THRESHOLD_OR_ITS_PATTERN
+    - N7_HISTORICAL_TARGET_OUTPUT_ALLOCATION_WEIGHT_TIER_OR_GATE
+    - N8_AUTHOR_OR_REVIEWER_SELECTION_OR_A_DECISION_PROSE_VALUE
+
+# --------------------------------------------------------------------------------------------------
+# Candidate universe — deterministic generator, closed before execution
+# --------------------------------------------------------------------------------------------------
+
+family_slot_grid:
+  what_this_is: A_CLASSIFICATION_GRID_OF_SLEEVE_BOUND_DRIVER_CLASS_AND_PROVENANCE_FAMILY
+  what_this_is_not: A_TRIAL_CEILING_OR_AN_EXHAUSTIVE_CANDIDATE_ENUMERATION
+  generation_rule: CARTESIAN_PRODUCT_OF_SLEEVES_BOUNDS_DRIVER_CLASSES_AND_CONSTRUCTION_FAMILIES
+  generation_order:
+  - sleeves
+  - bounds
+  - driver_classes
+  - construction_families
+  generation_order_note: >-
+    The generation order fixes slot-id assignment and iteration determinism only. It carries no
+    economic meaning, no priority, and no sleeve preference.
+  slot_id_format: '{sleeve}::{bound}::{driver_class}::{family_id}'
+  cell_id_format: '{sleeve}::{bound}::{driver_class}'
+  slot_count: 240
+  deterministic: true
+  byte_identically_reproducible: true
+  slot_addition_or_removal: PROHIBITED
+  exhaustive_over_families: true
+  exhaustive_over_constructions: false
+  closed_construction_universe_exists: true
+  closed_construction_universe_closed_by: XASSET-0028
+  closed_construction_universe_note: >-
+    UNCHANGED BY XASSET-0028. The 240-slot grid is still exhaustive over provenance families and
+    still NOT exhaustive over constructions; it remains a classification scaffold and is still not a
+    trial ceiling. What changed is that the construction universe the scaffold classified now exists
+    and is closed separately, at 680 registered constructions. A slot still does not name a
+    hypothesis; a registered construction does.
+  exhaustiveness_statement: >-
+    This grid is exhaustive over the four closed dimensions — sleeve, bound, DRIVER class, and
+    provenance family — and is NOT exhaustive over concrete constructions. A slot names a lawful
+    provenance shape for a sleeve and bound; it does not name a hypothesis. Two analysts could occupy
+    the same slot while evaluating materially different source architectures. The grid is therefore a
+    classification scaffold for a future construction universe, not that universe.
+
+construction_universe_closure:
+  # AMENDED BY XASSET-0028 under successor authority. The XASSET-0027 record is preserved verbatim
+  # below as historical predecessor identity and is never rewritten.
+  status: CLOSED
+  amended_by: XASSET-0028
+  predecessor_authority: XASSET-0027
+  successor_authority: XASSET-0028
+  predecessor_status: NOT_CLOSED
+  stage_1_executable: false
+  stage_1_structurally_closed: true
+  stage_1_operationally_authorized: false
+  closure_basis: XASSET_0020_SECTION_H_COMPARISON_CONTRACT_CROSSED_WITH_CANONICAL_DRIVER_CLASS_SCOPE
+  closure_basis_statement: >-
+    XASSET-0027 SS-I.1 records that a provenance family is a classification of provenance, not a
+    hypothesis, and names the dimensions that can inhabit one family. Of those, external impositions,
+    calibrations, governance selections, provisional guardrails, and prescribed derivations are
+    exactly the five already-closed (route, NUM-0001 class) families; evidence form is representation,
+    preserved as a downstream gate rather than an identity dimension; and source identity is what
+    Stage 1 searches for rather than something a registry could fix without enumerating every
+    institution in existence. That leaves comparator architecture as the one open identity dimension,
+    and it is NOT open in accepted authority: XASSET-0020 SS-H already closes the direct-comparison
+    contract at exactly six unordered sleeve-sleeve pair records plus a mandated direct comparison of
+    each of the four sleeves with UNSIZED_UNASSIGNED_CAPITAL. Crossing that closed contract with this
+    file's own driver_class_scope partition fixes each DRIVER class's comparator architecture set
+    exactly, supplying no new comparator rule and enumerating only what SS-H already mandates.
+  closure_basis_properties:
+    stated: true
+    non_outcome_aware: true
+    non_economic: true
+    deterministic: true
+    byte_identically_reproducible: true
+    frozen_before_stage_1_outcomes: true
+    contains_no_endpoint_value: true
+    selects_ranks_or_prefers_any_sleeve_or_comparator: false
+  registered_construction_count: 680
+  derived_construction_expression: 4_SLEEVES_X_2_BOUNDS_X_5_PROVENANCE_FAMILIES_X_17_ARCHITECTURES
+  architectures_per_sleeve_bound_family: 17
+  construction_universe_sha256: 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224
+  generator: level1_construction_universe_closure_validator.generate_construction_universe
+  generator_is_canonical_source_of_construction_identity: true
+  frozen_source_architecture: HYPOTHETICAL_SOURCE_ARCHITECTURE
+  source_architecture_is_frozen_construction_identity: true
+  source_architecture_selectable_at_result_time: false
+  existing_source_architecture_disposition: RESOLVED_BY_XASSET_0025_OUTCOME_C_OVER_THE_XASSET_0021_FROZEN_SNAPSHOT
+  source_architecture_note: >-
+    frozen_provenance_requirements is addressed by name to THE_FUTURE_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT
+    and is binding_on_any_future_stage_1, so source architecture is frozen INTO construction identity
+    rather than left open. Every registered construction is HYPOTHETICAL_SOURCE_ARCHITECTURE and
+    carries frozen, deterministically generated hypothetical_source_requirements; source_path and
+    source_sha256 are absent, as hypothetical_forbids requires. The existing-source half is not
+    silently omitted: XASSET-0027 SSI.1.1 records that the existing corpus is exactly XASSET-0021's
+    frozen snapshot, that XASSET-0025 Outcome C already searched it exhaustively and found no
+    qualifying source, that a Stage 1 restricted to it "would re-run an accepted determination and add
+    nothing", and that "the remaining space is constructions whose sources do not yet exist". The
+    source-architecture dimension therefore resolves to exactly ONE lawful value, not two, and the
+    cardinality is unchanged by that resolution rather than preserved by it.
+  no_source_identity_search: true
+  no_source_identity_note: >-
+    A frozen requirement specification names no institution, vendor, jurisdiction, or document. Stage 1
+    evaluates whether the frozen specification is lawfully satisfiable under the twelve gates; it does
+    not search the world for an organisation. A negative therefore means the registered specification
+    was evaluated and blocked, never "no source this executor happened to find".
+  executor_may_add_omit_substitute_or_mutate_a_construction: false
+  what_closure_means: >-
+    The registered study universe is complete under the stated closure basis. It is not, and does not
+    claim to be, an enumeration of every conceivable future source architecture in existence; that
+    standard is not what XASSET-0027 SS-I.2 sets, which ties a categorical cell negative to every
+    REGISTERED construction for that cell.
+  xasset_0027_predecessor_record:
+    preserved_verbatim: true
+    note: >-
+      Historical predecessor identity. These are the facts XASSET-0027 recorded from its own
+      authority and they remain true of XASSET-0027. They are retained unedited for audit and are
+      superseded as OPERATIVE state by the successor fields above.
+    status: NOT_CLOSED
+    stage_1_executable: false
+    route_taken: HONEST_PREREQUISITE
+    routes_considered_and_unavailable_to_this_filing:
+    - route: CONCRETE_FINITE_REGISTRY
+      unavailable_to_this_filing_because: >-
+        A concrete registry cannot be closed by XASSET-0027 from the currently accepted corpus alone. The
+        set of existing admitted sources is exactly XASSET-0021's frozen snapshot, and XASSET-0025
+        Outcome C already searched precisely that corpus exhaustively and found no qualifying source, so
+        a Stage 1 restricted to it would re-run an accepted determination and add nothing. The remaining
+        space is constructions whose sources do not yet exist, and accepted authority does not enumerate
+        the concrete hypothetical source or construction architectures such a registry would need.
+        Designing and freezing those hypothetical architectures would itself be substantive
+        research-design work, reserved to the separately authorized construction-universe closure unit.
+        This filing therefore does not determine whether that future unit can or cannot successfully
+        preregister a finite hypothetical-architecture registry.
+    - route: DETERMINISTIC_CONSTRUCTION_GRAMMAR
+      unavailable_to_this_filing_because: >-
+        XASSET-0023 SSH.2 and SSH.3 state the conditions a qualifying statement or derivation must meet.
+        They are constraint sets, not generators, and satisfying a constraint set does not enumerate the
+        objects satisfying it. No accepted decision supplies a finite grammar producing concrete source
+        or derivation architectures, and the (route, class) product is a provenance classification
+        rather than a construction grammar. Whether a lawful grammar could be designed is likewise left
+        to the future closure unit and is not determined here.
+    routes_are_unavailable_now_not_permanently_foreclosed: true
+    routes_note: >-
+      Both entries record what XASSET-0027 cannot do from present authority. Neither is a determination
+      that the route is permanently unavailable, and neither may be cited as having foreclosed any option
+      for the future closure unit.
+    verified_this_session:
+    - NO_ACCEPTED_DECISION_ENUMERATES_CONCRETE_SOURCE_OR_CONSTRUCTION_ARCHITECTURES
+    - XASSET_0023_H_2_AND_H_3_ARE_CONSTRAINT_SETS_NOT_GENERATORS
+    - XASSET_0025_OUTCOME_C_ALREADY_EXHAUSTED_THE_FROZEN_EXISTING_SOURCE_CORPUS
+    consequence: >-
+      Stage 1 is NOT EXECUTABLE. No 240-slot run may be performed, and no such run could establish
+      exhaustive non-constructibility, because the slots bound provenance families rather than
+      hypotheses. A negative slot result would mean only that no construction the executor considered
+      within that family qualified.
+    next_required_prerequisite: CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION
+    next_required_prerequisite_note: >-
+      The smallest separately authorized next step is one governance unit whose scope is to determine
+      whether a concrete construction universe can be closed at all and, if so, to freeze it. That unit
+      must confront the open-hypothetical problem directly and must state its own answer; this charter
+      does not pre-decide it, does not choose among the possibilities that unit may consider, and does
+      not schedule it.
+    authorized_by_xasset_0027: false
+    invented_completeness: PROHIBITED
+    invented_completeness_note: >-
+      Honestly recording that this filing cannot close the universe is preferable to manufacturing a
+      registry. This charter records that the universe is not closed NOW and that XASSET-0027 cannot
+      close it, rather than asserting a completeness it cannot support — and equally, rather than
+      asserting an impossibility it has no authority to determine.
+  predecessor_prerequisite_satisfied_by: XASSET-0028
+  invented_completeness: PROHIBITED
+  invented_completeness_note: >-
+    The successor closure is complete over the GOVERNED REGISTERED study universe under its stated
+    basis. It does not assert, and may never be cited as asserting, an enumeration of every
+    conceivable future source architecture. Overstating that would be the invented completeness this
+    programme prohibits, in the opposite direction from the overclaim XASSET-0027 guarded against.
+
+completeness_rule:
+  applies_only_after_construction_universe_closure: true
+  construction_universe_closure_now_exists: true
+  closed_by: XASSET-0028
+  cell_negative_requires_all_registered_constructions_evaluated: true
+  statement: >-
+    Once — and only once — a concrete construction universe is closed by its own separately authorized
+    unit, a cell may be recorded BLOCKED_CATEGORICALLY only if every registered construction for that
+    cell was evaluated and every one returned BLOCKED_CATEGORICALLY. XASSET-0028 closes that universe
+    at exactly 680 registered constructions across the 48 cells, so this rule now has a registered set
+    to range over. It becomes operative only when XASSET-0028's own lifecycle closes in full.
+  family_slot_negative_does_not_establish_non_constructibility: true
+  family_slot_negative_note: >-
+    A negative on a family slot means no construction the executor considered within that provenance
+    family qualified. It does not establish that no construction within that family could qualify, and
+    it may never be reported as exhaustive non-constructibility.
+  unevaluated_construction_permitted: false
+  partial_cell_outcome_permitted: false
+
+trial_inventory:
+  status: DEFINED
+  amended_by: XASSET-0028
+  predecessor_status_xasset_0027: NOT_YET_DEFINABLE
+  reason: >-
+    A trial ceiling bounds hypotheses. XASSET-0028 closes the construction universe, so the number of
+    constructions is now defined and an honest ceiling can be stated. The 240 family slots remain a
+    classification grid and are still expressly not a trial ceiling; the ceiling is the registered
+    construction count.
+  defined_by: XASSET-0028
+  registered_constructions: 680
+  derived_construction_expression: 4_SLEEVES_X_2_BOUNDS_X_5_PROVENANCE_FAMILIES_X_17_ARCHITECTURES
+  unit_of_trial: ONE_CONSTRUCTION_EVALUATION
+  unit_of_trial_once_defined: ONE_CONSTRUCTION_EVALUATION
+  derived_cell_expression: 4_SLEEVES_X_2_BOUNDS_X_6_DRIVER_CLASSES
+  derived_cells: 48
+  derived_family_slot_expression: 4_SLEEVES_X_2_BOUNDS_X_6_DRIVER_CLASSES_X_5_CONSTRUCTION_FAMILIES
+  derived_family_slots: 240
+  family_slots_per_cell: 5
+  result_aware_constructions: PROHIBITED
+  every_registered_construction_must_be_recorded: true
+  construction_may_not_be_dropped_or_omitted: true
+
+roll_up_units:
+  derived_expression: 4_SLEEVES_X_2_BOUNDS
+  derived_count: 8
+  computed_only_from_own_six_cells: true
+  cross_bound_reference: PROHIBITED
+  cross_sleeve_reference: PROHIBITED
+
+# --------------------------------------------------------------------------------------------------
+# Gate sequence
+# --------------------------------------------------------------------------------------------------
+
+gate_sequence:
+  evaluation_requirement: EVALUATE_EVERY_APPLICABLE_GATE_BEFORE_CLASSIFYING
+  record_first_failing_gate_only: false
+  first_failing_gate_is_diagnostic_only: true
+  first_failing_gate_note: >-
+    first_failing_gate_id is a reporting convenience computed after the disposition is already fixed.
+    It never participates in classification, and changing it cannot change any disposition.
+  gates_may_not_be_added_removed_reordered_or_reinterpreted_after_any_outcome_observed: true
+  record_keys:
+  - gate_id
+  - gate_index
+  - question
+  - controlling_authority
+  - failure_disposition
+  gates:
+  - gate_id: G1_DRIVER_SUBJECT_MATTER
+    gate_index: 1
+    question: >-
+      Can evidence about this sleeve be admissible as a DRIVER under this cell's DRIVER class on the
+      evidence's own subject matter?
+    controlling_authority: XASSET-0024_J_3
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G2_MAGNITUDE_INTRINSICALITY
+    gate_index: 2
+    question: >-
+      Would the quantitative statement be intrinsic to that evidence rather than a share figure
+      appended to it, evaluated separately under each of XASSET-0024 SSK.1's two open readings?
+    controlling_authority: XASSET-0024_SECTION_D_AND_J_4_AND_SECTION_K_1
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G3_NORMALIZATION
+    gate_index: 3
+    question: >-
+      Would the candidate state the XASSET-0024 SSC quantity — a share of one normalized unit of
+      prospective unlevered asset-side capital — rather than a quantity in the sleeve's own,
+      within-instrument, market, per-share, or leverage-bearing denominator?
+    controlling_authority: XASSET-0024_SECTION_C_AND_SECTION_F_LIMB_1
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G4_ORIGIN
+    gate_index: 4
+    question: >-
+      Is every input free of barred origin, including barred historical values, equal division,
+      symmetry, residual, complement, and any reconstruction of a barred value?
+    controlling_authority: XASSET-0024_SECTION_F_LIMB_2_AND_NON_ROUTES_N4_N5_N7
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G5_CONSTRAINT_SHAPE
+    gate_index: 5
+    question: >-
+      Would the candidate originate a bound, rather than only cap, clip, block, or intersect one that
+      already exists?
+    controlling_authority: XASSET-0024_SECTION_F_LIMB_4_AND_NON_ROUTE_N1
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G6_ROUTE_COMPLIANCE
+    gate_index: 6
+    question: >-
+      Would the candidate satisfy its own family's route in full — R1 per XASSET-0023 SSH.2 items 1-6
+      including competent stating authority, or R2 per SSH.3 items 1-7 with the derivation
+      source-prescribed and containing no step whose coefficient, ordering, tolerance, cutoff, or
+      selection could have been chosen differently?
+    controlling_authority: XASSET-0024_J_5_AND_J_6_AND_XASSET_0023_H_2_AND_H_3
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G7_DISCRETION_AND_PROVENANCE
+    gate_index: 7
+    question: >-
+      Would the candidate carry its own family's NUM-0001 class coherently, with class 4 satisfying
+      the eight-item anti-discretion test and class 5 satisfying NUM-0001 SS6's provisional label and
+      stated review condition?
+    controlling_authority: XASSET-0024_SECTION_E_3_AND_J_7_AND_NUM_0001_SECTIONS_6_7_8
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G8_UNIQUENESS
+    gate_index: 8
+    question: >-
+      Would exactly one lawful value exist for this endpoint quantity across the admitted set, with no
+      second candidate value resolvable by any midpoint, average, precedence, or conservatism rule?
+    controlling_authority: XASSET-0024_J_8
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G9_REPRESENTATION
+    gate_index: 9
+    question: >-
+      Would the candidate be self-contained under XASSET-0024 SSG path 1, or covered by a separately
+      accepted Level-1 aggregation or selection rule under path 2?
+    controlling_authority: XASSET-0024_SECTION_G_AND_J_9
+    failure_disposition: BLOCKED_PENDING_SEPARATE_PREREQUISITE
+  - gate_id: G10_PAIR_INDEPENDENCE
+    gate_index: 10
+    question: >-
+      Would the candidate avoid consuming any unresolved pair as an input at all, establishing
+      direction-invariance by independence rather than direction-robustness by inspection?
+    controlling_authority: XASSET-0024_SECTION_H_4_AND_J_10
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G11_EXACTNESS_AND_DETERMINISM
+    gate_index: 11
+    question: >-
+      Would the candidate carry exact source precision or an exact rational derivation, with no
+      ungoverned rounding and byte-identical reproduction from the same frozen inputs?
+    controlling_authority: XASSET-0024_J_11_AND_XASSET_0021_SECTION_G
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G12_SNAPSHOT_ADMISSIBILITY_PATH
+    gate_index: 12
+    question: >-
+      Is a lawful XASSET-0021 snapshot successor identifiable that could admit the candidate, noting
+      that no snapshot successor is created, extended, or authorized by this program?
+    controlling_authority: XASSET-0024_J_1_AND_J_2_AND_XASSET_0026_G_2_CONSTRAINT_3
+    failure_disposition: BLOCKED_PENDING_SEPARATE_PREREQUISITE
+
+categorical_definition:
+  term: BLOCKED_CATEGORICALLY
+  means: NOT_CLOSEABLE_BY_A_NAMED_PREREQUISITE_UNDER_THE_CURRENTLY_ACCEPTED_METHODOLOGY
+  does_not_mean: PERMANENTLY_IMPOSSIBLE_UNDER_ALL_FUTURE_GOVERNANCE
+  amendment_note: >-
+    A later accepted methodology amendment can change a currently categorical rule, and such an
+    amendment is already a XASSET-0027 reopen trigger. This charter therefore records a bar against
+    the methodology as it currently stands, and does not declare permanent impossibility across all
+    future authority.
+
+prerequisite_definition:
+  term: BLOCKED_PENDING_SEPARATE_PREREQUISITE
+  means: CLOSEABLE_BY_A_NAMED_SEPARATELY_AUTHORIZED_PREREQUISITE_WITHOUT_METHODOLOGY_AMENDMENT
+  requires_named_dependency: true
+
+# --------------------------------------------------------------------------------------------------
+# Disposition rules — deterministic and order-independent
+# --------------------------------------------------------------------------------------------------
+
+disposition_rules:
+  order_independent: true
+  order_independence_statement: >-
+    No disposition at any level depends on gate order, candidate order, or cell order. Candidate
+    disposition is a universal test over that candidate's own gate results; cell outcome is an
+    existential test over that cell's own five candidate dispositions; roll-up is an existential test
+    over its own six cell outcomes. Permuting any input sequence cannot change any output.
+  candidate_disposition:
+    quantifier: UNIVERSAL_OVER_ITS_OWN_GATE_RESULTS
+    categorical_dominates_prerequisite: true
+    uncertainty_dominates_prerequisite: true
+    precedence:
+    - condition: ANY_CATEGORICAL_GATE_FAILURE
+      outcome: BLOCKED_CATEGORICALLY
+    - condition: ANY_GATE_UNABLE_TO_DETERMINE
+      outcome: UNABLE_TO_DETERMINE
+    - condition: ANY_PREREQUISITE_GATE_FAILURE
+      outcome: BLOCKED_PENDING_SEPARATE_PREREQUISITE
+    - condition: ALL_GATES_PASS
+      outcome: CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+    compound_failure_note: >-
+      A candidate failing both a prerequisite gate and any categorical gate is BLOCKED_CATEGORICALLY,
+      never BLOCKED_PENDING_SEPARATE_PREREQUISITE. Closing the named prerequisite would leave the
+      categorical defect standing, so recording it as a closeable to-do would misstate what the
+      evidence shows. Every applicable gate is evaluated before classification precisely so this
+      cannot depend on which gate happens to be reached first.
+    uncertainty_precedence_note: >-
+      UNABLE_TO_DETERMINE outranks a prerequisite failure, and the ordering is logical rather than
+      stylistic. A categorical bar may dominate uncertainty because the candidate is barred whatever
+      the uncertainty resolves to. A prerequisite failure may not, because closing the named
+      prerequisite cannot resolve the uncertainty: a candidate whose G2 is UNABLE_TO_DETERMINE
+      because XASSET-0024 SSK.1 is unresolved, and whose G9 representation also fails, is not merely
+      waiting on a representation rule — supplying that rule would leave SSK.1 exactly as unresolved.
+      Recording such a candidate as prerequisite-blocked would convert an open methodology question
+      into a closeable to-do. Absent a categorical bar, uncertainty is never downgraded.
+    applies_at: CANDIDATE_LEVEL_ONLY
+    applies_at_note: >-
+      This ordering governs a single candidate's own gate results. Cell and roll-up precedence are
+      unchanged existential tests, because a different candidate that is determinately
+      prerequisite-blocked can legitimately keep a cell open even while another candidate is
+      uncertain.
+  cell_outcome:
+    quantifier: EXISTENTIAL_OVER_ITS_OWN_FIVE_CANDIDATE_DISPOSITIONS
+    precedence:
+    - condition: ANY_CANDIDATE_CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+      outcome: CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+    - condition: ANY_CANDIDATE_BLOCKED_PENDING_SEPARATE_PREREQUISITE
+      outcome: BLOCKED_PENDING_SEPARATE_PREREQUISITE
+    - condition: ANY_CANDIDATE_UNABLE_TO_DETERMINE
+      outcome: UNABLE_TO_DETERMINE
+    - condition: ALL_CANDIDATES_BLOCKED_CATEGORICALLY
+      outcome: BLOCKED_CATEGORICALLY
+    quantifier_asymmetry_note: >-
+      Candidate disposition is universal over gates while cell outcome is existential over candidates,
+      and the two are deliberately different. A candidate is blocked if any one of its gates blocks it;
+      a cell is open if any one of its lawful construction families survives. Both are existence or
+      universality tests over a closed set, and neither weights, counts, averages, ranks, or votes.
+  roll_up_outcome:
+    quantifier: EXISTENTIAL_OVER_ITS_OWN_SIX_CELL_OUTCOMES
+    precedence:
+    - condition: ANY_CELL_CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+      outcome: CANDIDATE_CONSTRUCTION_IDENTIFIED
+    - condition: ANY_CELL_BLOCKED_PENDING_SEPARATE_PREREQUISITE
+      outcome: PREREQUISITE_REQUIRED
+    - condition: ANY_CELL_UNABLE_TO_DETERMINE
+      outcome: UNABLE_TO_DETERMINE
+    - condition: ALL_CELLS_BLOCKED_CATEGORICALLY
+      outcome: NO_CONSTRUCTIBLE_CANDIDATE
+
+# --------------------------------------------------------------------------------------------------
+# The XASSET-0024 SSK.1 open reading — evaluated, mapped, never resolved
+# --------------------------------------------------------------------------------------------------
+
+open_reading_handling:
+  open_question_source: XASSET-0024_SECTION_K_1
+  question: >-
+    Whether XASSET-0020 SSE.1's six DRIVER classes are subject-matter classes capable of housing a
+    magnitude statement, or preference-only classes that cannot.
+  resolved_by_this_program: false
+  relied_upon_by_this_program: false
+  handling: EVALUATE_G2_UNDER_BOTH_READINGS_AND_MAP_DETERMINISTICALLY
+  required_recorded_fields:
+  - g2_outcome_under_subject_matter_reading
+  - g2_outcome_under_preference_only_reading
+  - g2_outcome_is_reading_dependent
+  per_reading_vocabulary:
+  - PASSES
+  - FAILS
+  - UNABLE_TO_DETERMINE
+  consequence_if_preference_only_reading_later_established: ALL_CELLS_ABSTAIN
+  note: >-
+    Mapping both readings deterministically preserves XASSET-0024 SSK.1, XASSET-0025 SSO.1, and
+    XASSET-0026 SSK.2, each of which leaves the reading open. An unresolved methodology reading is not
+    a categorical impossibility, so a candidate that passes only under the subject-matter reading is
+    governed as UNABLE_TO_DETERMINE while SSK.1 stands, never as BLOCKED_CATEGORICALLY.
+
+g2_reading_mapping:
+  closed_table: true
+  coupled_to_g2_gate_result: true
+  coupling_statement: >-
+    The two reading fields determine the recorded G2 gate result. This is an enforced identity, not an
+    informational annotation: a results record whose G2 gate result disagrees with the mapping is
+    rejected. Without this coupling the table would be decorative, and a record could carry a
+    reading-dependent pair while recording G2 as PASS and deriving a constructible candidate.
+  record_keys:
+  - subject_matter_reading
+  - preference_only_reading
+  - g2_effective_outcome
+  - required_g2_gate_result
+  - reading_dependent
+  rows:
+  - subject_matter_reading: PASSES
+    preference_only_reading: PASSES
+    g2_effective_outcome: PASSES
+    required_g2_gate_result: PASS
+    reading_dependent: false
+  - subject_matter_reading: FAILS
+    preference_only_reading: FAILS
+    g2_effective_outcome: FAILS_CATEGORICALLY
+    required_g2_gate_result: FAIL
+    reading_dependent: false
+  - subject_matter_reading: PASSES
+    preference_only_reading: FAILS
+    g2_effective_outcome: UNABLE_TO_DETERMINE
+    required_g2_gate_result: UNABLE_TO_DETERMINE
+    reading_dependent: true
+  - subject_matter_reading: FAILS
+    preference_only_reading: PASSES
+    g2_effective_outcome: INCOHERENT_REJECTED
+    required_g2_gate_result: RECORD_REJECTED
+    reading_dependent: false
+  - subject_matter_reading: UNABLE_TO_DETERMINE
+    preference_only_reading: ANY
+    g2_effective_outcome: UNABLE_TO_DETERMINE
+    required_g2_gate_result: UNABLE_TO_DETERMINE
+    reading_dependent: false
+  - subject_matter_reading: ANY
+    preference_only_reading: UNABLE_TO_DETERMINE
+    g2_effective_outcome: UNABLE_TO_DETERMINE
+    required_g2_gate_result: UNABLE_TO_DETERMINE
+    reading_dependent: false
+  incoherence_note: >-
+    The preference-only reading is strictly narrower than the subject-matter reading: anything
+    admissible under it is admissible under the subject-matter reading too. A candidate recorded as
+    failing the subject-matter reading while passing the preference-only reading is therefore a
+    recording defect, rejected rather than mapped to an outcome.
+  reading_dependent_maps_to_candidate_outcome: UNABLE_TO_DETERMINE
+  reading_dependent_end_to_end_note: >-
+    With the coupling above and the candidate precedence in disposition_rules, a reading-dependent
+    candidate necessarily records G2 as UNABLE_TO_DETERMINE and therefore necessarily disposes to
+    UNABLE_TO_DETERMINE unless some categorical gate independently fails — including when a
+    prerequisite gate also fails. That is the end-to-end guarantee the closed table promises.
+
+# --------------------------------------------------------------------------------------------------
+# Accepted residual gate semantics — XASSET-0035 SSE/SSF/SSG, transcribed under XASSET-0036 SSE.1
+#
+# These three blocks are the canonical transcription of XASSET-0035's B1, B2 and B3 determinations.
+# They fix gate SEMANTICS before any outcome is observed, which canonical
+# gates_may_not_be_added_removed_reordered_or_reinterpreted_after_any_outcome_observed makes the
+# lawful window. None of them records a gate RESULT for any construction, and none closes any gate
+# on satisfaction.
+# --------------------------------------------------------------------------------------------------
+
+g12_modal_register:
+  authority: XASSET-0035_SECTION_E
+  route: CONSTITUTIVE
+  scope: G12_ONLY
+  applies_to_gate: G12_SNAPSHOT_ADMISSIBILITY_PATH
+  register: LAWFUL_SATISFIABILITY_OF_THE_FROZEN_CONSTRUCTION_SPECIFICATION
+  rejected_register: EXECUTION_TIME_WORLD_STATE
+  statement: >-
+    G12's embedded modal "could admit" is evaluated against the lawful satisfiability of the frozen
+    construction specification, not against execution-time world state. A lawful XASSET-0021 snapshot
+    successor "could admit the candidate" if, under accepted authority and the ordering that authority
+    fixes, that successor would be capable of admitting a source conforming to the construction's own
+    frozen specification. The present nonexistence of a conforming source is not, by itself, a ground
+    for concluding that no such successor could admit it.
+  successor_nonexistence_alone_is_never_a_fail_ground: true
+  identifiability_only: true
+  identifiability_only_note: >-
+    G12 tests identifiability only. It may not absorb XASSET-0024 SSJ.1's hash-match, validator-pass,
+    or governed-freshness conditions. stage_1_testable_subset keeps J_2_SNAPSHOT_POSITION at
+    G12_IDENTIFIABILITY_ONLY_NO_SUCCESSOR_CREATED.
+  could_admit_clause_remains_operative: true
+  could_admit_clause_note: >-
+    "that could admit the candidate" remains an operative conjunct of G12's question. It may not be
+    dropped on the strength of PROTOCOL_V1.md SS6/SS6.1's shorter restatements.
+  is_program_wide_gate_modal_rule: false
+  creates_snapshot_successor: false
+  records_a_gate_result: false
+
+pair_consumption_rule:
+  authority: XASSET-0035_SECTION_F
+  route: INTERPRETIVE
+  bears_on_gate: G10_PAIR_INDEPENDENCE
+  statement: >-
+    A construction consumes a canonical XASSET-0020 SSH unordered pair if and only if both of its own
+    two frozen named comparison endpoints are members of the four-sleeve set — that is, its
+    comparison_subject_kind is UNORDERED_PAIR, or it is DIRECT_ALTERNATIVE whose counterpart is
+    another sleeve. The pair consumed is the single unordered pair those two endpoints form.
+  determined_by: FROZEN_COMPARISON_IDENTITY
+  never_determined_by: UNORDERED_PAIR_ID_LABEL
+  label_absence_is_not_evidence_of_non_consumption: true
+  transitive_consumption_permitted: false
+  relabelling_permitted: false
+  relabelling_note: >-
+    comparison_subject_kind and unordered_pair_id are not changed for any construction. The 360
+    DIRECT_ALTERNATIVE constructions carrying a sleeve counterpart remain DIRECT_ALTERNATIVE with
+    unordered_pair_id absent. Consumption is not identity: this rule creates no UNORDERED_PAIR
+    construction, no seventh pair, and no change to the frozen universe or its hash.
+  structural_inventory:
+    record_keys:
+    - group
+    - comparison_subject_kind
+    - count
+    - consumes_canonical_pair
+    rows:
+    - group: PAIR
+      comparison_subject_kind: UNORDERED_PAIR
+      count: 120
+      consumes_canonical_pair: true
+    - group: ALT_SLEEVE_COUNTERPART
+      comparison_subject_kind: DIRECT_ALTERNATIVE
+      count: 360
+      consumes_canonical_pair: true
+    - group: ALT_UNSIZED_UNASSIGNED_CAPITAL
+      comparison_subject_kind: DIRECT_ALTERNATIVE
+      count: 120
+      consumes_canonical_pair: false
+    - group: SELF
+      comparison_subject_kind: SLEEVE_SELF
+      count: 80
+      consumes_canonical_pair: false
+    consuming_total: 480
+    non_consuming_total: 200
+    universe_total: 680
+  determines_g10_result: false
+  determines_g10_result_note: >-
+    This rule determines only WHETHER a canonical pair is consumed. G10's result additionally turns on
+    whether the consumed pair is unresolved at evaluation time, which remains an execution-ready
+    satisfaction residue and is not closed here. The 200 non-consuming constructions are not thereby
+    recorded G10 PASS.
+
+reserved_gate_recording_posture:
+  authority: XASSET-0035_SECTION_G
+  route: INTERPRETIVE
+  recorded_value: UNABLE_TO_DETERMINE
+  statement: >-
+    Where a gate's satisfaction is expressly reserved by accepted authority, and the frozen
+    construction is HYPOTHETICAL_SOURCE_ARCHITECTURE so the reserved question cannot be answered from
+    the specification, the executor records UNABLE_TO_DETERMINE for that gate.
+  applies_to:
+  - gate: G3_NORMALIZATION
+    gate_class: categorical
+    reservation_authority: XASSET-0027_SECTION_M_3
+    condition: ALWAYS_UNDER_HYPOTHETICAL_SOURCE_ARCHITECTURE
+  - gate: G5_CONSTRAINT_SHAPE
+    gate_class: categorical
+    reservation_authority: XASSET-0027_SECTION_M_4
+    condition: ALWAYS_UNDER_HYPOTHETICAL_SOURCE_ARCHITECTURE
+  - gate: G9_REPRESENTATION
+    gate_class: prerequisite
+    reservation_authority: XASSET-0032_SECTION_F_3
+    condition: PATH_1_SELF_CONTAINMENT_UNDETERMINED
+  does_not_apply_to:
+  - G8_UNIQUENESS
+  - G10_PAIR_INDEPENDENCE
+  - G12_SNAPSHOT_ADMISSIBILITY_PATH
+  scope_limit_note: >-
+    Stated as an operative limit. A broader posture would silently decide the G12 modal register and
+    the pair-consumption rule. G8's residue is a future snapshot successor's composition; G10's is
+    pair status under a successor snapshot, with consumption governed by pair_consumption_rule; G12 is
+    governed by g12_modal_register. None of the three is reached.
+  determined_g9_path_1_failure_remains_prerequisite_blocked: true
+  determined_g9_path_1_failure_note: >-
+    Where a candidate's construction would require cross-representation combination, canonical
+    non_self_contained_handling governs unchanged: it records the exact dependency and fails G9 as a
+    prerequisite. This posture applies only to the undetermined case and does not convert that
+    determined case into UNABLE_TO_DETERMINE.
+  generalizes_g2_reading_mapping: false
+  changes_any_gate_class: false
+  is_a_negative_portfolio_judgment: false
+  is_a_specification_satisfaction_pass: false
+
+# --------------------------------------------------------------------------------------------------
+# Stage-1-testable subset of XASSET-0024 SSJ, and deferred requirements
+# --------------------------------------------------------------------------------------------------
+
+stage_1_testable_subset:
+  statement: >-
+    Stage 1 tests the Stage-1-testable subset of XASSET-0024 SSJ.1 through SSJ.12. A
+    CONSTRUCTIBLE_CANDIDATE_IDENTIFIED disposition therefore means "a construction candidate
+    satisfying the Stage-1-testable subset," and never that full SSJ.1-SSJ.12 admissibility has been
+    established.
+  record_keys:
+  - j_item
+  - stage_1_status
+  - gate_or_basis
+  items:
+  - j_item: J_1_ADMISSION
+    stage_1_status: PARTIALLY_TESTABLE
+    gate_or_basis: G12_PLUS_SOURCE_CURRENTNESS_RULE
+  - j_item: J_2_SNAPSHOT_POSITION
+    stage_1_status: PARTIALLY_TESTABLE
+    gate_or_basis: G12_IDENTIFIABILITY_ONLY_NO_SUCCESSOR_CREATED
+  - j_item: J_3_DRIVER_CLASSIFICATION
+    stage_1_status: TESTABLE
+    gate_or_basis: G1
+  - j_item: J_4_QUESTION_IDENTITY
+    stage_1_status: TESTABLE
+    gate_or_basis: G2_G3_G4_G5
+  - j_item: J_5_COMPETENT_AUTHORITY
+    stage_1_status: TESTABLE
+    gate_or_basis: G6
+  - j_item: J_6_ROUTE_COMPLIANCE
+    stage_1_status: TESTABLE
+    gate_or_basis: G6
+  - j_item: J_7_PROVENANCE
+    stage_1_status: TESTABLE
+    gate_or_basis: G7
+  - j_item: J_8_UNIQUENESS
+    stage_1_status: TESTABLE
+    gate_or_basis: G8
+  - j_item: J_9_REPRESENTATION_CLOSURE
+    stage_1_status: TESTABLE
+    gate_or_basis: G9
+  - j_item: J_10_PAIR_INDEPENDENCE
+    stage_1_status: TESTABLE
+    gate_or_basis: G10
+  - j_item: J_11_EXACTNESS_AND_DETERMINISM
+    stage_1_status: TESTABLE
+    gate_or_basis: G11
+  - j_item: J_12_RECONCILIATION_FEASIBILITY
+    stage_1_status: NOT_YET_DETERMINABLE_DEFERRED
+    gate_or_basis: DEFERRED_WHOLE_CANDIDATE_PREREQUISITE
+
+deferred_admissibility_requirements:
+  record_keys:
+  - requirement_id
+  - authority
+  - why_not_determinable_in_stage_1
+  - determinable_when
+  - stage_1_may_claim_compliance
+  requirements:
+  - requirement_id: J_12_EXACT_SET_VALUED_RECONCILIATION
+    authority: XASSET-0024_J_12_UNDER_XASSET_0020_SECTION_K
+    why_not_determinable_in_stage_1: >-
+      XASSET-0020 SSK defines reconciliation jointly over the admitted sleeve point vector, or over
+      the exact feasible set of sleeve vectors inside admitted ranges, together with any separately
+      governed liquidity asset, and a negative complement invalidates the candidate. It is inherently
+      a whole-candidate, cross-sleeve condition. Stage 1 produces no endpoint value, prohibits
+      cross-sleeve and cross-bound reference, and forbids any share from appearing in its result, so
+      there is nothing from which an exact reconciliation could be computed. Any Stage-1 verdict on it
+      would require assuming future endpoint values or other sleeves' outcomes.
+    determinable_when: ACTUAL_CANDIDATE_ENDPOINT_VALUES_OR_SETS_COEXIST_AT_A_LATER_SEPARATELY_AUTHORIZED_STAGE
+    stage_1_may_claim_compliance: false
+  cross_sleeve_arithmetic_to_satisfy_a_deferred_requirement: PROHIBITED
+  note: >-
+    Deferring J.12 is the smallest faithful boundary. The alternative — introducing cross-sleeve
+    endpoint arithmetic into Stage 1 so a reconciliation gate could return a verdict — would breach
+    the single-sleeve bound rule, the cross-sleeve prohibition, and the no-endpoint-value rule at once.
+
+# --------------------------------------------------------------------------------------------------
+# Result vocabulary
+# --------------------------------------------------------------------------------------------------
+
+result_vocabulary:
+  candidate_dispositions:
+  - CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+  - BLOCKED_CATEGORICALLY
+  - BLOCKED_PENDING_SEPARATE_PREREQUISITE
+  - UNABLE_TO_DETERMINE
+  cell_outcomes:
+  - CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+  - BLOCKED_CATEGORICALLY
+  - BLOCKED_PENDING_SEPARATE_PREREQUISITE
+  - UNABLE_TO_DETERMINE
+  roll_up_outcomes:
+  - CANDIDATE_CONSTRUCTION_IDENTIFIED
+  - PREREQUISITE_REQUIRED
+  - NO_CONSTRUCTIBLE_CANDIDATE
+  - UNABLE_TO_DETERMINE
+  gate_result_vocabulary:
+  - PASS
+  - FAIL
+  - UNABLE_TO_DETERMINE
+  - NOT_APPLICABLE
+  no_outcome_is_a_score: true
+  mechanism: FIXED_PRECEDENCE_QUANTIFIER_TESTS
+  mechanism_note: >-
+    Every step at every level is an existence or universality quantifier over a closed set. No
+    candidate, cell, or sleeve is weighted, counted, averaged, ranked, or voted, and no numeric
+    threshold participates anywhere.
+  point_or_range_support:
+    recorded_per_candidate: true
+    values:
+    - WOULD_SUPPORT_RANGE_ENDPOINT
+    - WOULD_SUPPORT_POINT_ENDPOINT
+    - WOULD_SUPPORT_NEITHER
+    range_first_posture: CARRIED_FORWARD_UNCHANGED
+    range_first_source: XASSET-0024_SECTION_H_3
+    range_first_note: >-
+      RANGE feasibility is established before POINT feasibility unless a candidate's evidence uniquely
+      supplies a point, in which case the point route remains available on its own terms. This is a
+      sequencing preference and bars nothing.
+
+# --------------------------------------------------------------------------------------------------
+# Prohibited inputs and origins — complete XASSET-0025 SSF firewall
+# --------------------------------------------------------------------------------------------------
+
+prohibited_inputs:
+  may_not_be_used_anchored_to_initialized_from_centered_on_sanity_checked_against_or_reverse_engineered_toward: true
+  barred_historical_values:
+  - HISTORICAL_PROVISIONAL_TARGET_FAMILY
+  - HISTORICAL_RESIDUAL
+  - HISTORICAL_ASSIGNED_SUM
+  - HISTORICAL_SIX_WAY_EQUAL_BASELINE
+  - HISTORICAL_FIXED_ADJUSTMENT_INCREMENT
+  - HISTORICAL_R2_R3_CONSTRUCTS
+  barred_value_note: >-
+    Barred historical values are referenced by name rather than reproduced. Reproducing a barred
+    numeral inside this preregistration would itself introduce the anchor the firewall exists to
+    exclude. XASSET-0025 SSF records their exact locations.
+  barred_constructions:
+  - EQUAL_DIVISION_INCLUDING_FRESHLY_COMPUTED
+  - SYMMETRY_CONVENTION
+  - MIDPOINT
+  - DEFAULT_OR_MINIMUM_RANGE_WIDTH
+  - RESIDUAL_OR_COMPLEMENT_PLUG
+  - RECONSTRUCTION_OF_ANY_BARRED_VALUE
+  barred_current_state:
+  - CURRENT_TARGETS
+  - CURRENT_HOLDINGS
+  - CURRENT_WEIGHTS
+  - CURRENT_TIERS
+  - CURRENT_GATES
+  - CLUSTER_CAPS
+  - ISSUER_AND_COMMON_DRIVER_CEILINGS
+  barred_risk_reuse:
+  - RISK_SCENARIO_MAGNITUDES
+  - ALL_TWENTY_LAPSED_CONSEQUENTIAL_PARAMETERS
+  - GOLD_PARITY_ADMISSION_THRESHOLDS
+  - STUDY_INTERNAL_MATERIALITY_AND_REPRESENTATION_THRESHOLDS
+  - ANY_RISK_DERIVATION_PATTERN_AS_TEMPLATE
+  barred_other:
+  - CHART_OR_TECHNICAL_VALUES
+  - MARGIN_LEVERAGE_OR_BUFFER_STATE
+  - PER_SHARE_VALUATION_AGGREGATED_WITHOUT_AN_ACCEPTED_RULE
+  - WITHIN_FUND_OR_MARKET_COMPOSITION_SHARES
+  - ANY_DECISION_PROSE_VALUE_INCLUDING_XASSET_0027_S_OWN
+  literal_scan_is_a_floor_not_the_boundary: true
+  literal_scan_note: >-
+    XASSET-0024 SSF Limb 2 and XASSET-0023 SSH.2 item 6 both provide that clearing a literal string
+    scan is a floor rather than the boundary. G4 tests origin, not spelling.
+
+risk_lane_boundary:
+  risk_0001_attempt_2: COMPLETE
+  retry: PROHIBITED
+  attempt_3: DOES_NOT_EXIST
+  family_re_question: PROHIBITED
+  parameter_reuse: REQUIRES_SEPARATE_GOVERNANCE_AUTHORITY
+  protected_result_path: /private/tmp/phq-risk0001-results
+  protected_result_path_access: PROHIBITED_NO_READ_WRITE_DELETE_CLEAN_RESET_OR_REPURPOSE
+  accepted_risk_evidence_citation: PERMITTED_ONLY_WITHIN_ITS_ACCEPTED_HISTORICAL_MEANING
+
+# --------------------------------------------------------------------------------------------------
+# Representation
+# --------------------------------------------------------------------------------------------------
+
+representation:
+  disposition: SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED
+  disposition_source: XASSET-0026_SECTION_H
+  self_contained_path_preserved: true
+  self_contained_path_source: XASSET-0024_SECTION_G_PATH_1
+  rule_created_by_this_program: false
+  cm_14_through_cm_17_membership_designated: false
+  non_self_contained_handling: NAME_THE_EXACT_DEPENDENCY_AND_BLOCK_PENDING_SEPARATE_PREREQUISITE
+  non_self_contained_handling_note: >-
+    A candidate whose construction would require cross-representation combination records the exact
+    representation dependency and fails G9 as a prerequisite. The dependency is never silently solved,
+    and no majority, average, weighting, representative selection, or most conservative selection is
+    performed. Where such a candidate also fails any categorical gate, the categorical disposition
+    dominates and the candidate is not recorded as merely prerequisite-blocked.
+
+# --------------------------------------------------------------------------------------------------
+# Consequential parameters
+# --------------------------------------------------------------------------------------------------
+
+consequential_parameter_registry:
+  record_keys:
+  - parameter_id
+  - value
+  - unit
+  - num_0001_class
+  - contextual_class
+  - selection_basis
+  - evidence_status
+  - supporting_evidence
+  - canonical_source
+  - duplicate_locations
+  - fallback_locations
+  - hardcoded_or_config_editable
+  - binding_status
+  - binding_scope
+  - valid_for_study_id
+  - lapse_condition
+  - reuse_rule
+  - calibrated
+  - evidence_bounded
+  parameters: []
+  zero_parameter_declaration:
+    stage_1_introduces_zero_consequential_numeric_parameters: true
+    statement: >-
+      Stage 1 introduces no consequential numeric parameter as NUM-0001 SS18 defines the term. It
+      applies no threshold, tolerance, cutoff, materiality level, window, weight, coefficient, or
+      score. Every gate is a qualitative admissibility test drawn from already-accepted authority, and
+      every count below is derived from the closed population rather than chosen.
+    design_consequence: >-
+      A study with no free numeric parameter cannot be tuned toward a preferred outcome, and there is
+      no parameter for a later sweep, sensitivity variant, or neighboring-value robustness check to
+      perturb. With the construction universe closed by XASSET-0028's deterministic generator, the
+      qualitative search surface is closed as well: the executor selects neither which constructions
+      to try nor when to stop.
+    design_consequence_amendment_note: >-
+      CORRECTED BY XASSET-0028. Under XASSET-0027 this sentence asserted a closed candidate universe
+      while the same file recorded NOT_CLOSED, a contradiction disclosed by the PR #327 independent
+      review 4945473310 (MAJOR 2) and left uncorrected there because the file was hash-pinned.
+      XASSET-0028 is the separately accepted amendment that pin rule requires, and the sentence is now
+      true rather than merely tolerated: the universe IS closed, by a named generator, at a recorded
+      cardinality and integrity hash. Closure here is structural; operational Stage-1 authorization
+      remains gated on XASSET-0028's own lifecycle.
+    verification_requirement: >-
+      The dedicated validator asserts the registry's parameters list is empty. Introducing any
+      parameter requires a separately accepted governance amendment with new hash pins.
+  derived_identities:
+    record_keys:
+    - identity_id
+    - expression
+    - value
+    - contextual_class
+    identities:
+    - identity_id: SLEEVE_COUNT
+      expression: CLOSED_SLEEVE_POPULATION_LENGTH
+      value: 4
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: BOUND_COUNT
+      expression: CLOSED_BOUND_POPULATION_LENGTH
+      value: 2
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: DRIVER_CLASS_COUNT
+      expression: CLOSED_DRIVER_CLASS_POPULATION_LENGTH
+      value: 6
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: CONSTRUCTION_FAMILY_COUNT
+      expression: CLOSED_LAWFUL_ROUTE_CLASS_PAIR_COUNT
+      value: 5
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: CELL_COUNT
+      expression: SLEEVE_COUNT_X_BOUND_COUNT_X_DRIVER_CLASS_COUNT
+      value: 48
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: FAMILY_SLOT_COUNT
+      expression: CELL_COUNT_X_CONSTRUCTION_FAMILY_COUNT
+      value: 240
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: ROLL_UP_UNIT_COUNT
+      expression: SLEEVE_COUNT_X_BOUND_COUNT
+      value: 8
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: GATE_COUNT
+      expression: CLOSED_GATE_SEQUENCE_LENGTH
+      value: 12
+      contextual_class: CALCULATED_OUTPUT
+
+# --------------------------------------------------------------------------------------------------
+# Data, sources, provenance
+# --------------------------------------------------------------------------------------------------
+
+data_and_sources:
+  stage_1_acquires_data: false
+  stage_1_network_access: NOT_REQUIRED_AND_NOT_AUTHORIZED
+  stage_1_data_manifest: NOT_APPLICABLE_NO_DATA_ACQUIRED
+  stage_1_admissible_inputs:
+  - ACCEPTED_GOVERNANCE_DECISIONS_IN_GOVERNANCE_DECISIONS_DIRECTORY
+  - XASSET_0021_FROZEN_SNAPSHOT_INVENTORY_AS_ALREADY_RECORDED
+  - NUM_0001_CLASS_DEFINITIONS
+  stage_1_inadmissible_inputs:
+  - ANY_NEWLY_ACQUIRED_MARKET_OR_FUNDAMENTAL_DATA
+  - ANY_PROHIBITED_INPUT_LISTED_ABOVE
+  - ANY_RISK_0001_EXECUTION_ARTIFACT
+  existing_source_consultation_requires_exact_identity: true
+  source_currentness:
+    universal_age_threshold: PROHIBITED
+    freshness_score_or_penalty: PROHIBITED
+    rule: APPLY_EACH_SOURCE_OWNED_CURRENTNESS_RULE_EXACTLY_AS_WRITTEN_AND_RECORD_OBSERVED_STATE
+    source_without_governed_currentness_rule: REMAINS_HISTORICAL_OR_DISCLOSURE_MAY_NOT_BECOME_A_CURRENT_POSITIVE_DRIVER
+    controlling_authority: XASSET-0020_SECTION_F_1_AND_XASSET_0021_SECTION_H
+
+source_architecture_vocabulary:
+  values:
+  - EXISTING_SOURCE_ARCHITECTURE
+  - HYPOTHETICAL_SOURCE_ARCHITECTURE
+  existing_requires:
+  - source_path
+  - source_sha256
+  hypothetical_requires:
+  - hypothetical_source_requirements
+  hypothetical_forbids:
+  - source_path
+  - source_sha256
+  note: >-
+    A construction that consults an actual admitted source is EXISTING_SOURCE_ARCHITECTURE and must
+    carry that source's exact path and SHA-256. A construction describing the architecture a future
+    source would need is HYPOTHETICAL_SOURCE_ARCHITECTURE and carries a stated requirements
+    description with no path or hash.
+
+frozen_provenance_requirements:
+  applies_to: THE_FUTURE_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT
+  binding_on_any_future_stage_1: true
+  existing_source_architecture:
+    identity_must_be_frozen_before_execution: true
+    frozen_fields:
+    - source_path
+    - source_sha256
+    path_and_hash_must_be_bound_to_a_preregistered_construction_identity: true
+    observed_bytes_must_be_verified_against_the_frozen_hash: true
+    syntactic_validation_is_insufficient: true
+    syntactic_validation_note: >-
+      Accepting a syntactically valid path plus an arbitrary 64-hex string validates shape, not
+      identity. The recorded digest must be recomputed from the observed file bytes and must match,
+      and the path and digest must be the ones frozen in the construction universe rather than chosen
+      at results time.
+  hypothetical_source_architecture:
+    requirements_must_be_frozen_before_execution: true
+    frozen_fields:
+    - hypothetical_source_requirements
+    executor_authored_free_text_at_results_time: PROHIBITED
+    executor_authored_free_text_note: >-
+      A non-empty string authored in the results document is not a preregistration. The exact
+      architecture and its requirements must be frozen in the construction universe before execution,
+      and the results record may report the frozen architecture but may not invent or alter it.
+  result_author_may_alter_a_frozen_architecture: false
+  structurally_satisfied: true
+  operationally_usable: false
+  amended_by: XASSET-0028
+  structural_operational_note: >-
+    AMENDED BY XASSET-0028. These requirements are now STRUCTURALLY SATISFIED: the construction
+    universe is closed at 680 registered constructions, every one freezes source_architecture
+    HYPOTHETICAL_SOURCE_ARCHITECTURE together with deterministically generated
+    hypothetical_source_requirements, and neither may be authored or altered at results time. They
+    are NOT OPERATIONALLY USABLE: no real Stage-1 run may rely on them until the complete XASSET-0028
+    six-gate lifecycle is effective. Structural freeze and operational authorization are separate
+    facts and this file states both rather than conflating them.
+  predecessor_currently_satisfiable_xasset_0027: false
+  predecessor_currently_satisfiable_note_xasset_0027: >-
+    HISTORICAL ONLY, and no longer the current state. Under XASSET-0027 no construction universe
+    existed, so no architecture was frozen and these requirements could not be met by any results
+    document. That was then the direct mechanical reason Stage 1 was not executable. XASSET-0028
+    closes the universe, so the mechanical reason is now lifecycle authorization, not absence.
+
+provenance_manifest:
+  required_fields:
+  - study_id
+  - stage_id
+  - execution_attempt_id
+  - authorizing_decision
+  - authorizing_decision_merge_sha
+  - protocol_path
+  - protocol_sha256_observed
+  - preregistration_path
+  - preregistration_sha256_observed
+  - hash_verification_result
+  - repository_head_sha
+  - execution_date
+  - candidates_evaluated
+  - candidates_expected
+  - cells_evaluated
+  - cells_expected
+  - validator_result
+  candidate_count_semantics: REGISTERED_CONSTRUCTIONS_IN_THE_CLOSED_CONSTRUCTION_UNIVERSE
+  candidate_count_semantics_note: >-
+    candidates_expected counts registered constructions, not family slots, and is expressly not 240.
+    AMENDED BY XASSET-0028, which closes the construction universe and therefore supplies the count:
+    680 registered constructions, with the aggregate identity hash recorded under
+    construction_universe_closure. XASSET-0027 declined to pin a count because pinning one would have
+    asserted a universe it did not close; XASSET-0028 does close it, so the count is now pinned.
+  candidates_expected: 680
+  candidates_expected_supplied_by: XASSET-0028
+  hash_verification_failure_behavior: VOIDS_EXECUTION_AUTHORITY_HALT
+
+# --------------------------------------------------------------------------------------------------
+# Execution identity, stopping, defect governance
+# --------------------------------------------------------------------------------------------------
+
+execution:
+  attempt_identity:
+    record_keys:
+    - execution_attempt_id
+    - protocol_sha256_observed
+    - preregistration_sha256_observed
+    - repository_head_sha
+    unregistered_attempt: PROHIBITED
+  stopping_rules:
+    terminates_when: EVERY_REGISTERED_CONSTRUCTION_IN_THE_CLOSED_CONSTRUCTION_UNIVERSE_CARRIES_A_RECORDED_DISPOSITION
+    stopping_rule_currently_has_no_registered_set: false
+    stopping_rule_amended_by: XASSET-0028
+    stopping_rule_note: >-
+      The registered set is supplied by XASSET-0028's deterministic generator, not by the 240 family
+      slots. It ranges over exactly 680 registered constructions. Under XASSET-0027 this rule ranged
+      over nothing, which was one of the mechanical reasons Stage 1 was not executable; that
+      particular reason is now retired, while Stage 1 remains blocked on XASSET-0028's own lifecycle.
+    early_stop_on_positive_finding: PROHIBITED
+    early_stop_rationale: >-
+      Coverage is all four sleeves and every lawful construction family. Stopping at the first
+      constructible candidate would advantage whichever candidate happened to be evaluated first and
+      would make a negative elsewhere unexhaustive.
+    partial_result_publication: PROHIBITED
+  rerun_rule:
+    after_outcomes_observed: PROHIBITED
+    required_authority: SEPARATELY_ACCEPTED_AMENDMENT_OR_NEW_AUTHORIZED_STUDY
+    allowed_basis:
+    - MATERIAL_NEW_EVIDENCE_REGIME
+    - SEPARATELY_GOVERNED_INTEGRITY_CORRECTION
+    discovered_defect_automatic_rerun: PROHIBITED
+    defect_handling: RECORD_THE_DEFECT_HALT_AND_RETURN_FOR_SEPARATE_GOVERNANCE
+  history_mining_controls:
+    gates_frozen_before_evaluation: true
+    candidates_frozen_before_evaluation: true
+    vocabulary_frozen_before_evaluation: true
+    outcome_aware_gate_change: PROHIBITED
+    outcome_aware_candidate_addition_or_removal: PROHIBITED
+  out_of_sample_discipline:
+    applicable_to_stage_1: false
+    reason: >-
+      Stage 1 acquires no data, estimates nothing, and fits nothing. There is no sample, no held-out
+      period, and no fitted quantity, so an out-of-sample or walk-forward split would be a ritual with
+      no object. Recording this honestly is preferred to performing a vacuous split.
+    required_of_any_future_stage_2: true
+  neighboring_parameter_robustness:
+    applicable_to_stage_1: false
+    reason: >-
+      Stage 1 has no numeric parameter to perturb, per the zero-parameter declaration above.
+    required_of_any_future_stage_2_if_it_introduces_parameters: true
+  negative_result_preservation:
+    all_candidate_dispositions_recorded_regardless_of_direction: true
+    null_is_a_complete_outcome: true
+    suppression_of_any_candidate_disposition: PROHIBITED
+
+# --------------------------------------------------------------------------------------------------
+# Result schema
+# --------------------------------------------------------------------------------------------------
+
+result_schema:
+  results_path: research/level1_endpoint_evidence/stage1_results.yaml
+  results_path_created_by_this_filing: false
+  top_level_keys:
+  - schema_version
+  - study_id
+  - stage_id
+  - provenance_manifest
+  - candidate_results
+  - cell_results
+  - roll_up_results
+  - deferred_requirements
+  - abstention_records
+  - limitations
+  - disposition
+  candidate_result_keys:
+  - construction_id
+  - cell_id
+  - sleeve
+  - bound
+  - driver_class
+  - family_id
+  - route
+  - num_0001_class
+  - source_architecture
+  - source_path
+  - source_sha256
+  - hypothetical_source_requirements
+  - governing_authority_refs
+  - gate_results
+  - categorical_failures
+  - prerequisite_failures
+  - disposition
+  - first_failing_gate_id
+  - g2_outcome_under_subject_matter_reading
+  - g2_outcome_under_preference_only_reading
+  - g2_outcome_is_reading_dependent
+  - point_or_range_support
+  - representation_dependency
+  - uncertainty_statement
+  - g12_basis
+  g12_basis_vocabulary:
+    values:
+    - LAWFUL_SUCCESSOR_IDENTIFIABLE
+    - SUCCESSOR_NONEXISTENCE_ALONE
+    - NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS
+    - UNDETERMINED
+    recorded_per_candidate: true
+    prohibited_with_g12_fail: SUCCESSOR_NONEXISTENCE_ALONE
+    statement: >-
+      Every candidate result records the machine-readable basis on which its G12 result rests. This
+      is what makes g12_modal_register's floor independently enforceable at results time rather than
+      only at input time: without it, a serialized G12 FAIL carries no fact distinguishing the
+      prohibited successor-nonexistence-alone ground from a lawful independent one, and an
+      independent validator has nothing to check.
+    coupling_is_enforced: true
+    coupling_statement: >-
+      A candidate recording G12 as FAIL may not record SUCCESSOR_NONEXISTENCE_ALONE as its basis.
+      XASSET-0035 SSE.5 preserves the floor that successor nonexistence is never BY ITSELF a ground
+      for concluding no lawful successor could admit the candidate. A G12 FAIL resting on
+      independent grounds remains fully representable, and every other result value may carry any
+      basis in the closed vocabulary.
+  cell_result_keys:
+  - cell_id
+  - sleeve
+  - bound
+  - driver_class
+  - outcome
+  - contributing_construction_ids
+  roll_up_result_keys:
+  - sleeve
+  - bound
+  - outcome
+  - contributing_cell_ids
+  forbidden_result_content:
+  - ANY_NUMERIC_SLEEVE_SHARE
+  - ANY_LOWER_OR_UPPER_BOUND_VALUE
+  - ANY_PERCENTAGE_OF_THE_NORMALIZED_UNIT
+  - ANY_TARGET_WEIGHT_OR_ALLOCATION
+  - ANY_COMPOSITE_SCORE_RANK_OR_INDEX
+  - ANY_SLEEVE_PREFERENCE_RANKING_OR_SEQUENCING
+  - ANY_PORTFOLIO_RECONCILIATION_OR_SUM_TO_WHOLE
+  - ANY_CLAIM_OF_FULL_J_1_THROUGH_J_12_COMPLIANCE
+
+result_status_of_stage_1_output:
+  is_a_driver_source: false
+  is_admissible_endpoint_supporting_evidence: false
+  may_be_cited_as_endpoint_supporting_evidence: false
+  may_enter_a_snapshot_as_a_driver: false
+  may_claim_full_j_1_through_j_12_compliance: false
+  statement: >-
+    The Stage 1 result record is a feasibility finding about constructibility over the
+    Stage-1-testable subset of XASSET-0024 SSJ. It states no endpoint, contains no share, and is
+    classified non-DRIVER and non-admissible. It may never be cited, admitted, or relied upon as
+    endpoint-supporting evidence, and a later filing that attempted to do so would be manufacturing
+    the source this program was chartered to determine the feasibility of.
+
+# --------------------------------------------------------------------------------------------------
+# Abstention
+# --------------------------------------------------------------------------------------------------
+
+mandatory_abstention_conditions:
+- condition: REPRESENTATION_PATH_1_FAILS_AND_NO_ACCEPTED_RULE_EXISTS
+  authority: XASSET-0024_SECTION_G_PATH_3
+- condition: ANY_REQUIRED_INPUT_IS_BARRED_BY_ORIGIN
+  authority: XASSET-0024_SECTION_F_LIMB_2
+- condition: ANY_STEP_COULD_HAVE_BEEN_CHOSEN_DIFFERENTLY
+  authority: XASSET-0023_SECTION_H_3_ITEM_7
+- condition: A_SECOND_LAWFUL_VALUE_EXISTS_FOR_THE_SAME_QUANTITY
+  authority: XASSET-0024_J_8
+- condition: AN_UNRESOLVED_PAIR_WOULD_BE_CONSUMED_AS_AN_INPUT
+  authority: XASSET-0024_SECTION_H_4
+- condition: THE_PREFERENCE_ONLY_READING_OF_SECTION_E_1_IS_ESTABLISHED
+  authority: XASSET-0024_SECTION_K_1
+- condition: A_CANDIDATE_WOULD_REQUIRE_INVENTING_A_LEVEL_1_AGGREGATION_OR_REPRESENTATION_RULE
+  authority: XASSET-0023_SECTION_H_5
+- condition: A_CANDIDATES_G2_OUTCOME_IS_READING_DEPENDENT_WHILE_SECTION_K_1_REMAINS_UNRESOLVED
+  authority: XASSET-0024_SECTION_K_1
+abstention_is_a_complete_outcome: true
+
+# --------------------------------------------------------------------------------------------------
+# Prohibited scope
+# --------------------------------------------------------------------------------------------------
+
+prohibited_scope:
+- ENDPOINT_CREATION
+- LOWER_OR_UPPER_BOUND_VALUE
+- POINT_RANGE_PERCENTAGE_OR_WEIGHT
+- SLEEVE_SELECTION_PREFERENCE_RANKING_OR_SEQUENCING
+- PORTFOLIO_RECONCILIATION_OR_SUM_TARGETING
+- CROSS_SLEEVE_OR_CROSS_BOUND_ARITHMETIC
+- OPTIMIZER_WEIGHT_GRID_OR_SWEEP
+- COMPOSITE_SCORE_OR_INDEX
+- RESIDUAL_REDISTRIBUTION
+- FINAL_LEVEL1_TARGETS
+- LEVEL2_MEMBERSHIP_OR_WEIGHTS
+- SNAPSHOT_EXTENSION_OR_REPLACEMENT
+- EVIDENCE_ADMISSION
+- APPLICATION_AUTHORITY_OR_REGISTRY_POPULATION
+- APPLICATION_ARTIFACT_OR_DIRECTORY_CREATION
+- REPRESENTATION_RULE_ADOPTION
+- METHODOLOGY_AMENDMENT
+- LIQUIDITY_DETERMINATION
+- DEBT_MARGIN_OR_LEVERAGE_ANALYSIS
+- CHART_OR_TECHNICAL_SIGNALS
+- LADDER_OR_DEPLOYMENT
+- TRADES_OR_ORDERS
+- ALLOCATOR_MUTATION
+- TARGETS_YAML_MUTATION
+- HOLDINGS_MUTATION
+- GATES_YAML_MUTATION
+- AUTOMATIC_ADOPTION_OF_ANY_RESULT
+- UNREGISTERED_CANDIDATES
+- AUTOMATIC_RERUNS
+- RISK_PARAMETER_REUSE
+- STAGE_2_EXECUTION
+
+protected_paths:
+- targets.yaml
+- holdings.yaml
+- gates.yaml
+- issuer_lookthrough.yaml
+- allocate.py
+- margin_state.py
+- levels.py
+- research/level1_sleeve_robustness/
+- intelligence/level1_sleeve_synthesis/
+- /private/tmp/phq-risk0001-results
+
+hash_version: ENDPOINT-0001-PREREG-V7
+predecessor_hash_version: ENDPOINT-0001-PREREG-V6

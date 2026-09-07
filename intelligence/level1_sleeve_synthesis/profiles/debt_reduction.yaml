@@ -1,0 +1,57 @@
+schema_version: '1.0'
+sleeve_id: debt_reduction
+evidence_layer_references:
+- layer_name: functional_doctrine
+  module: functional_doctrine_validator.py
+  directory: intelligence/functional_doctrine
+  manifest_content_sha256: ea645f10873186d2e456b4f8dda7cdd8474a60bd248c25f3db4247fa0a34512a
+  sleeve_subject_scope:
+    referenced_subject_ids:
+    - DEBT_REDUCTION
+    referenced_record_content_sha256:
+      DEBT_REDUCTION: 5433bd04eab41309845228622957a58d624db6228e071fa35bb115aa5c2e1ae3
+  as_of_note: Reflects functional_doctrine's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+economic_role_summary: The debt-reduction sleeve represents an existing margin-policy lever -- paying
+  down margin debt versus deploying incremental capital elsewhere -- rather than a market-traded instrument,
+  and carries no destination-level row of its own. Its own functional-doctrine record determines a leverage-reduction
+  capital-use role and marks a governing guardrail as currently binding, citing this account's own structural
+  leverage-cap and margin-buffer-floor doctrine, but its own economic-assessment-readiness sub-object
+  is forced to an abstention across its own required sub-fields. Unlike sibling sleeves that pair a functional-doctrine
+  record with a separate, determined economic-assessment record, this sleeve carries no offsetting determined
+  economic layer of any kind -- its entire opportunity-cost evidence base is presently forced-abstained.
+  This summary states that absence plainly rather than treating it as equivalent to a fully computed sleeve.
+evidence_coverage_profile: forced_abstention
+functional_role_note: This sleeve's own functional-doctrine record characterizes its capital-use role
+  as a leverage-reduction function and marks the account's own structural-leverage guardrail as currently
+  binding -- echoed here from that sealed record, never independently re-derived, and never restated as
+  a numeric figure.
+abstention_index:
+- source_layer: functional_doctrine
+  field_path: economic_assessment_readiness.avoided_borrowing_cost_readiness
+  value: assessment_required
+  reason: No governed methodology exists to compare the return foregone or gained by reducing margin debt
+    against deploying the same capital elsewhere -- this record's own governing decision states that absence
+    plainly rather than inventing a figure.
+- source_layer: functional_doctrine
+  field_path: economic_assessment_readiness.survivability_and_buffer_benefit_readiness
+  value: assessment_required
+  reason: No governed methodology exists to assess how a margin-debt change affects the account's own
+    risk posture relative to its structural-leverage guardrails -- kept structurally distinct from the
+    opportunity-cost question above, per this record's own governing decision, never blended into a shared
+    figure.
+- source_layer: functional_doctrine
+  field_path: freshness_state.status
+  value: unable_to_determine_freshness
+  reason: This sleeve's own functional-doctrine record separately abstains on its own freshness_state
+    -- no standalone governed, dated margin-sync artifact currently exists in this repository for this
+    record to cite as its freshness reference point, distinct in kind from the economic_assessment_readiness
+    abstentions above. Echoed here so this sub-field abstention never disappears behind this sleeve's
+    own already-forced evidence_coverage_profile value.
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/profiles/COHORT_MANIFEST.yaml#debt_reduction
+content_sha256: ab706eaa75425882e3e8970bc65c0a0693c9d7871234707fbdc644ce4cc1aa66

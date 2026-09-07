@@ -1,0 +1,100 @@
+sector: Energy
+industry: Integrated Oil & Gas
+portfolio_role_ref: band
+competitive_advantages:
+  - "Integrated two-segment model (Upstream: exploration, development, production, transportation, LNG and gas; Downstream: refining, marketing, transportation, renewable fuels, petrochemicals, additives) with operations dispersed across North America, South America, Europe, Africa, Asia, and Australia. Per Chevron's Form 10-K for the year ended 2025-12-31 (SEC accession 0000093410-26-000078), directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 9 evidence bundle (see Source-access disclosure in CVX.md) -- not directly inspected by this Claude session."
+  - "Post-Hess-acquisition production and reserve scale: 2025 worldwide net oil-equivalent production averaged 3.7 million barrels per day, 12% above 2024, primarily from the Hess acquisition and growth at TCO (Kazakhstan), the Permian Basin, and the Gulf of America; proved reserves reached approximately 10.591 billion BOE at year-end 2025, 8% above 2024 (43% United States, 15% Australia, 11% Kazakhstan). Per the same Form 10-K, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Sustained shareholder-capital-return capacity: a $75 billion repurchase authorization (began April 1, 2023, no fixed expiration, $41.0 billion cumulatively repurchased through Q1 2026) alongside continuing dividends -- $3.526 billion of dividends and $2.5 billion of repurchases in Q1 2026 alone, described by the company as $6.0 billion of total cash returned to shareholders that quarter. Per Chevron's Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0000093410-26-000113) and Q1 2026 earnings release (Form 8-K Exhibit 99.1, SEC accession 0000093410-26-000110), directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "Commodity-price and industry-cycle exposure is structural: Chevron's own return-on-capital-employed fell from 10.1% in 2024 to 6.6% in 2025, and the company discloses that sustained lower commodity prices could cause asset impairments or write-offs and prompt reductions in operating expenses and capital expenditures."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Hess integration risk: the acquisition closed 2025-07-18 for an aggregate purchase price of approximately $48 billion, assumed debt with an aggregate outstanding principal value of $8.8 billion, and was funded partly with 301.25 million newly issued common shares (approximately 15% of post-close shares outstanding). Chevron's own risk factors warn integration may fail to deliver anticipated synergies, production and free-cash-flow growth, or higher long-term shareholder returns, and could create operational challenges, distraction, and unforeseen expense."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Geopolitical and transportation-jurisdiction exposure, per Chevron's own 10-K disclosure: Venezuela, the Caspian Pipeline Consortium export route material to Tengiz (Kazakhstan) production, and regional conflict affecting Israel-area operations. The 10-K states future financial effects of these matters remain uncertain."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Near-term financial strain evident in the most recent completed quarter: Q1 2026 company-defined free cash flow was negative $1.549 billion (capex of $4.063 billion against operating cash flow of $2.514 billion, itself reduced by a $4.625 billion working-capital use); total debt from the two balance-sheet lines rose from $40.758 billion (2025-12-31) to $45.428 billion (2026-03-31); and International Downstream recorded a $1.013 billion segment loss on lower refined-product margins, unfavorable timing effects, and higher operating expenses. A single working-capital-distorted quarter is not itself a thesis break, but the combination is material disconfirming evidence against a simple post-Hess-strength narrative."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Cost-inflation and project-execution risk: Chevron discloses that capital-equipment lead times remain long, offshore vessel and subsea markets remain competitive, and project costs may be affected by inflation, tariffs, supply constraints, and external events."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Disclosed legal and environmental proceedings in the Q1 2026 Form 10-Q include a Renewable Fuel Standard civil penalty (approximately $1.073 million) and a Colorado matter carrying an assessed penalty (approximately $1.535 million) plus a public-project funding obligation. These are disclosed examples, not the full universe of Chevron litigation or environmental exposure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, a company investor-relations domain, and a neutral non-target control domain -- example.com and google.com both returned HTTP 403 identically to every target URL tested) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See CVX.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Chevron's second-quarter 2026 earnings release and conference call, officially scheduled for 2026-07-31 per Chevron's own investor-relations page -- this record's evidence cutoff is 2026-07-28, three days before that release. The earnings release and prepared materials must not be treated as equivalent to the Q2 2026 Form 10-Q; a full refresh requires both, and if this record's implementation PR is already exact-head reviewed by the time Q2 results publish, refresh must not move that reviewed head without a fresh review."
+    expected: "2026-07-31"
+    status: pending
+  - catalyst: "Chevron's Q2 2026 Form 10-Q, which will supersede the Q1 2026 Form 10-Q's balance-sheet, cash-flow, and segment detail -- no source inspected by this record establishes an exact 10-Q filing date; 2026-08-14 is an unconfirmed internal placeholder (the Q1 2026 10-Q filed 37 days after quarter-end), not a forecast the company has made."
+    expected: "2026-08-14"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which Q2 2026 results, updated debt/liquidity position, Hess-integration progress, and any commodity-price-guidance change will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). Chevron shows a large, integrated, geographically diversified Upstream/Downstream franchise with real post-Hess production and reserve scale growth and a sustained multi-year capital-return program ($75B repurchase authorization, continuing dividends). Held at Medium rather than higher because the most recently completed quarter's evidence is materially mixed: return on capital employed nearly halved year-over-year, company-defined free cash flow was negative, total debt rose materially, International Downstream posted a real segment loss, and Hess-integration benefits remain a stated, unresolved risk rather than an established outcome. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from CVX's existing band portfolio-tier placement -- it was reasoned solely from the disclosed operating and financial picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0031-ws0005-milestone3-batch9-cvx-completion-standard.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior CVX Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3
+        Batch 9 -- CVX only, the sole remaining uncovered member of the governed oil
+        correlated-cluster cap (targets.yaml: XOM, CVX, 20% of book); XOM already carries a
+        Company Intelligence record (PI-0005) and is not modified by this batch. This session's
+        own WebFetch attempts on 2026-07-28 were tested and confirmed blocked (HTTP 403) on SEC
+        EDGAR, a Chevron investor-relations URL, and two neutral non-target control domains
+        (example.com, google.com), confirming a session-wide network-policy denial -- per
+        governance/decisions/OPS-0008-research-wave-protocol-v1.md Section 2's stop-before-drafting
+        gate, this session then stopped and reported SOURCE READINESS BLOCKED. The principal
+        subsequently supplied a frozen, independently-authored primary-source evidence bundle
+        (CVX_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v3.yaml, SHA-256
+        8256231340142d35289a5336bc2162c575164fe1df3db39ee4ecb6a20fb75203; 758 lines, 3765 words,
+        31612 bytes; evidence cutoff 2026-07-28), independently re-verified byte-for-byte against
+        the uploaded copy and its external .sha256 manifest by this session before use (checksum,
+        line/word/byte counts, source count, claim count, claim/source-pair count, and zero
+        orphans/unresolved-references all independently recomputed and matched), and retained as
+        governance/audits/CVX_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md. Every fact in
+        this record is attributed to that bundle's own directly-inspected primary sources (CVX-S1
+        through CVX-S7), not to this Claude session's own document inspection -- see CVX.md's
+        Source-access disclosure. The bundle's own unresolved_evidence_gaps are carried forward
+        unresolved, not silently closed: Q2 2026 results were not available at the evidence
+        cutoff, and the July 31 earnings release must not be treated as equivalent to the later
+        Form 10-Q.
+sources:
+  - note: "Chevron Corporation Form 10-K for the year ended 2025-12-31 (SEC accession 0000093410-26-000078), filed 2026-02-24. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports business-segment, geographic-exposure, production, reserves, ROCE, net-debt, risk-factor, and Hess-acquisition (Note 29) content."
+    url: "https://www.sec.gov/Archives/edgar/data/93410/000009341026000078/cvx-20251231.htm"
+    date: "2026-02-24"
+  - note: "Chevron Corporation Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0000093410-26-000113), filed 2026-05-07. Directly inspected by the evidence-recovery researcher, not by this Claude session. Latest completed Form 10-Q at the evidence cutoff; supports Q1 2026 income-statement, balance-sheet, cash-flow, liquidity, Hess-integration (Note 18), and legal-proceedings content."
+    url: "https://www.sec.gov/Archives/edgar/data/93410/000009341026000113/cvx-20260331.htm"
+    date: "2026-05-07"
+  - note: "Chevron Corporation Form 8-K furnishing the Q1 2026 earnings release as Exhibit 99.1 under Item 2.02 (SEC accession 0000093410-26-000110), filed/furnished 2026-05-01; the 8-K itself states the furnished information is not deemed filed for purposes of Exchange Act Section 18. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 headline earnings, segment (US/International Upstream and Downstream), production, cash-flow, and shareholder-distribution content."
+    url: "https://www.sec.gov/Archives/edgar/data/93410/000009341026000110/a03312026ex9918-k.htm"
+    date: "2026-05-01"
+  - note: "Chevron Corporation Form 8-K, Q1 2026 pre-announcement guidance update (SEC accession 0000093410-26-000108), filed 2026-04-09. Directly inspected by the evidence-recovery researcher, not by this Claude session. Discloses estimated timing, working-capital, and upstream commodity-price effects ahead of final Q1 2026 results -- outlook estimates, not final reported amounts."
+    url: "https://www.sec.gov/Archives/edgar/data/93410/000009341026000108/cvx-20260409.htm"
+    date: "2026-04-09"
+  - note: "Chevron's official investor-relations page, inspected as of the 2026-07-28 evidence cutoff. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports the scheduled 2026-07-31 second-quarter-2026 earnings-conference-call date and Q1 2026 highlighted metrics."
+    url: "https://www.chevron.com/investors"
+    date: "2026-07-28"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 9 primary-source evidence bundle (CVX_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v3.yaml), SHA-256 8256231340142d35289a5336bc2162c575164fe1df3db39ee4ecb6a20fb75203, principal-supplied implementation input under PI-0031/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the five sources above into 39 claim-level extracts (CVX-C01 through CVX-C39) with source-ID-level provenance and fact/inference/judgment labeling; 7 unique sources, 53 reciprocal claim/source pairs, zero orphans, zero unresolved references -- independently reconfirmed by this session via direct YAML parsing, not merely by trusting the bundle's own self-report. This session independently verified the bundle's SHA-256 and line/word/byte measurements (758/3765/31612) against the uploaded copy and its external .sha256 manifest before use; also retained as governance/audits/CVX_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"

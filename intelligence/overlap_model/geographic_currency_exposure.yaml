@@ -1,0 +1,34 @@
+dimension_id: geographic_currency_exposure
+schema_version: '1.0'
+dimension_type: interface_placeholder
+source_mechanism:
+- intelligence/etf_classification/<TICKER>.yaml:constituent_exposure.geographic_concentration
+- intelligence/etf_classification/<TICKER>.yaml:constituent_exposure.currency_exposure
+computation_status: not_yet_computable_interface_only
+evidence_or_source_refs:
+- intelligence/etf_classification/SPY.yaml:constituent_exposure.geographic_concentration
+- intelligence/etf_classification/SPY.yaml:constituent_exposure.currency_exposure
+- intelligence/etf_classification/VEA.yaml:constituent_exposure.geographic_concentration
+- intelligence/etf_classification/VEA.yaml:constituent_exposure.currency_exposure
+- intelligence/etf_classification/VWO.yaml:constituent_exposure.geographic_concentration
+- intelligence/etf_classification/VWO.yaml:constituent_exposure.currency_exposure
+- intelligence/etf_classification/GLD.yaml:constituent_exposure.geographic_concentration
+- intelligence/etf_classification/GLD.yaml:constituent_exposure.currency_exposure
+output_shape: A future computed record, once a whole-portfolio geographic/currency aggregation mechanism
+  is separately built, would restate a per-sleeve or whole-portfolio categorical geographic/currency concentration
+  comparison -- never a numeric percentage of book denominated in, or exposed to, any single geography
+  or currency.
+uncertainty_or_gap_disclosure: The four cited ETF records each already carry a populated, per-instrument
+  geographic_concentration and currency_exposure finding -- but no whole-portfolio rollup mechanism exists
+  anywhere in this repository to aggregate those per-instrument facts across sleeves, and none of the
+  27 canonical equities or 3 crypto instruments carries a comparable geographic/currency axis of their
+  own at all. This is a genuine two-layer evidence gap, not a simple pointer.
+later_governance_action: Building a whole-portfolio geographic/currency aggregation mechanism, and/or
+  extending the equity and crypto schemas with their own geographic/currency axis, each requires its own
+  separate future authorization -- not proposed, designed, or begun by this record.
+record_status: sealed
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0007
+drafting_session_or_shard_id: single-pass-overlap-model-implementation
+content_sha256: 19044b07cb55c6b4f381f496d33542086364d4a639226a1212ba56f22c504a13
+cohort_manifest_entry: intelligence/overlap_model/COHORT_MANIFEST.yaml#geographic_currency_exposure

@@ -1,0 +1,32 @@
+dimension_id: issuer_overlap_etf_lookthrough
+schema_version: '1.0'
+dimension_type: mechanical_rollup
+source_mechanism:
+- issuer_lookthrough.yaml
+computation_status: computed_from_existing_mechanism
+evidence_or_source_refs:
+- issuer_lookthrough.yaml:issuer_ceiling_pct
+- issuer_lookthrough.yaml:common_driver_ceiling_pct
+- issuer_lookthrough.yaml:issuers[].funds[].fund_holding_weight (11 AI/platform common-driver issuers,
+  embedded via SPY/VEA/VWO)
+- issuer_lookthrough.yaml:retained_common_driver_measurement (point-in-time snapshot, PHQ-2026-01 due
+  diligence evidence package)
+output_shape: A future computed record would restate, per issuer, whether that issuer's own effective
+  look-through weight (direct plus fund-embedded, already computed and clipped at runtime by allocate.py's
+  own plan()) sits within the governed issuer ceiling, near it, or past it, and likewise for the aggregate
+  common-driver ceiling -- a categorical comparison against issuer_lookthrough.yaml's own two ceiling
+  constants, never a duplicated copy of the runtime-computed numeric figure itself.
+uncertainty_or_gap_disclosure: issuer_lookthrough.yaml's own constituent-weight snapshot is a point-in-time,
+  hand-maintained transcription from a single due-diligence evidence package, not a live constituent fetch
+  -- this repository's Alpaca client has no ETF-constituent-lookthrough capability, per issuer_lookthrough.yaml's
+  own header comment -- and that header states it must be refreshed at each quarterly review. This dimension
+  inherits that disclosed staleness risk rather than independently re-verifying it.
+later_governance_action: None required by this record itself. A future cross-asset synthesis unit consuming
+  this dimension must independently re-check issuer_lookthrough.yaml's own freshness before relying on
+  it, per that file's own quarterly-refresh requirement.
+record_status: sealed
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0007
+drafting_session_or_shard_id: single-pass-overlap-model-implementation
+content_sha256: 246bc77aaf831db1478884eb3eea831d3a1731ecf281b0ca20e0616643f81c12
+cohort_manifest_entry: intelligence/overlap_model/COHORT_MANIFEST.yaml#issuer_overlap_etf_lookthrough

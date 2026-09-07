@@ -1,0 +1,30 @@
+schema_version: '1.0'
+ticker: CEG
+primary_archetype: B
+secondary_archetype: D
+rationale: 'Constellation operates a large, high-utilization nuclear fleet (94.7% 2025 capacity factor)
+  supported by long-duration contracted demand (a 20-year Microsoft PPA tied to the planned Crane Clean
+  Energy Center restart) and recently added roughly 23 GW through the Calpine acquisition -- a capital-intensive
+  asset base with long asset lives and revenue tied to multi-year buildout and utility-scale demand, consistent
+  with B as primary. The evidence also discloses that power and fuel price sensitivity and merchant/contracted
+  generation economics remain exposed to power-market conditions outside management''s control, and a
+  single quarter showed a large divergence between GAAP ($4.49/share) and adjusted operating EPS ($2.74/share)
+  -- supporting a secondary D lens reflecting demand/price-cycle sensitivity layered on the underlying
+  infrastructure base. Archetype-F test: F was not selected: the evidence describes CEG as an integrated
+  power-generation company (nuclear fleet plus, post-Calpine, gas and battery-storage assets) without
+  a reportable-segment breakdown showing materially distinct economics, so no disclosed basis for a sum-of-the-parts
+  framing exists.'
+evidence_quality:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: The evidence bundle provides no specific capital-expenditure or balance-sheet
+    leverage figure for CEG beyond the disclosed share-repurchase activity, leaving the capital-structure
+    and reinvestment picture incomplete.
+disclosed_evidence_conflicts: null
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-1
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#CEG
+content_sha256: 025be45b95c651d948f69b7cfd6e46e615e64cf35a4da24f397e9b478a6fe054

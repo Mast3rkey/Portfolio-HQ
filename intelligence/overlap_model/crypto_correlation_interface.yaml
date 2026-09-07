@@ -1,0 +1,27 @@
+dimension_id: crypto_correlation_interface
+schema_version: '1.0'
+dimension_type: interface_placeholder
+source_mechanism:
+- intelligence/crypto_classification/<TICKER>.yaml:correlation_and_volatility.cross_coin_correlation_status
+computation_status: not_yet_computable_interface_only
+evidence_or_source_refs:
+- intelligence/crypto_classification/BTC.yaml:correlation_and_volatility.cross_coin_correlation_status
+- intelligence/crypto_classification/ETH.yaml:correlation_and_volatility.cross_coin_correlation_status
+- intelligence/crypto_classification/SOL.yaml:correlation_and_volatility.cross_coin_correlation_status
+output_shape: A future computed record, once a cross-coin correlation study is separately authorized and
+  its own governed output exists, would restate each coin pair's own governed correlation_and_volatility.cross_coin_correlation_status
+  finding here as a pass-through pointer -- never a new coefficient computed by this dimension itself.
+uncertainty_or_gap_disclosure: 'All three sealed crypto classification records carry cross_coin_correlation_status:
+  not_yet_measured -- a determined, closed-vocabulary abstention, not a missing field -- because no cross-coin
+  correlation study has ever been authorized in this repository. This dimension has nothing to compute
+  from yet; it is a pointer to where a future study''s own governed output would be read from, not itself
+  an attempt at measurement.'
+later_governance_action: A future cross-coin correlation study requires its own separate, bounded, evidence-gated
+  charter, matching this repository's own precedent for bounded backtest/research charters -- structural
+  evidence and measured correlation stay separate governance questions.
+record_status: sealed
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0007
+drafting_session_or_shard_id: single-pass-overlap-model-implementation
+content_sha256: 90553348b0f23f2f20caab718e10db5da979b2e86b36a144a666ca6831646108
+cohort_manifest_entry: intelligence/overlap_model/COHORT_MANIFEST.yaml#crypto_correlation_interface

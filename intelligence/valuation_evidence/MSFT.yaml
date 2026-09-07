@@ -1,0 +1,421 @@
+schema_version: '1.0'
+ticker: MSFT
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2022-06-30'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 198270
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2022 (ended Jun 30 2022) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 72700
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Approximate/rounded figure from search aggregation.
+    - item_category: operating_margin
+      value: 0.421
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2022 operating income $83,383M divided by revenue $198,270M equals
+        42.1 percent.'
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2022 operating income $83,383M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-06-30'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 211915
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 72361
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.418
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2023 operating income $88,523M divided by revenue $211,915M equals
+        41.8 percent.'
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2023 operating income $88,523M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-06-30'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 245122
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 88136
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.446
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2024 operating income $109,433M divided by revenue $245,122M equals
+        44.6 percent.'
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2024 operating income $109,433M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-06-30'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 281700
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2025 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Rounded figure from search aggregation, not exact-to-the-million.
+    - item_category: earnings
+      value: 101800
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Rounded figure from search aggregation.
+    - item_category: operating_margin
+      value: 0.456
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2025 operating income ~$128,500M divided by revenue ~$281,700M equals
+        ~45.6 percent (both approximate).'
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2025 operating income ~$128,500M (approximate)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2026-06-30'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 331800
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 (ended Jun 30 2026) revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 133700
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 net income (GAAP)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Includes effects of OpenAI-investment-related items and one-time discrete items
+            (Microsoft's own Q4 non-GAAP reconciliation disclosed several discrete items benefited Q4
+            EPS by $0.27) not fully itemized in what was found.
+    - item_category: operating_margin
+      value: 0.468
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2026 operating income $155,200M divided by revenue $331,800M equals
+        46.8 percent; consistent with Microsoft''s own ''operating income increased 21%'' framing.'
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 operating income $155,200M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 67000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 free cash flow (ties to OCF $182,900M minus capex $115,900M =
+            $67,000M, consistent)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 115900
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 capital expenditures (reported actual)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A separate source cited '~$175B in capex plus finance leases combined' for FY2026
+            guidance, which is inconsistent with this $115.9B actual figure; not reconciled, disclosed
+            as a conflict.
+    - item_category: debt
+      value: 125400
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT total debt (single source, notably higher than MSFT's historical debt
+            load, plausibly new debt issuance funding AI capex in 2026, not independently corroborated)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 7445
+      unit: shares_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT diluted shares outstanding, Q3 FY2026 quarter
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Full-year weighted-average diluted shares implied by net income/EPS ($133,700M /
+            $17.95 = ~7,449M) is consistent with this quarterly figure.
+segment_evidence:
+  segments:
+  - segment_name: Productivity and Business Processes
+    revenue:
+      item_category: revenue
+      value: 139996
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 Productivity and Business Processes segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: 83879
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 Productivity and Business Processes segment operating income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Intelligent Cloud
+    revenue:
+      item_category: revenue
+      value: 137791
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 Intelligent Cloud segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: 56972
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 Intelligent Cloud segment operating income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: More Personal Computing
+    revenue:
+      item_category: revenue
+      value: 54013
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total FY2026 revenue $331,800M minus Productivity and Business Processes
+        $139,996M minus Intelligent Cloud $137,791M equals $54,013M.'
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 total, PBP, and Intelligent Cloud segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: 14349
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total FY2026 operating income $155,200M minus PBP $83,879M minus Intelligent
+        Cloud $56,972M equals $14,349M.'
+      provenance:
+        sources:
+        - source_identifier: MSFT FY2026 total, PBP, and Intelligent Cloud segment operating income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 499.99
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Observed Aug 8 2026 (day range $498.73-$505.18, 52-week range $349.20-$553.72).
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: AMZN
+    comparability_rationale: Direct hyperscale cloud-infrastructure peer (AWS vs. Azure).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: GOOGL
+    comparability_rationale: Cloud + enterprise AI comparator (Google Cloud vs. Azure), also overlapping
+      in productivity software (Workspace vs. Microsoft 365).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: ORCL
+    comparability_rationale: Oracle -- enterprise software/database and increasingly cloud-infrastructure
+      peer with a similarly aggressive AI-datacenter capex ramp.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: OpenAI partnership and Azure commitment
+    variables:
+    - variable_name: openai_partnership_and_azure_commitment
+      evidence_basis: MSFT holds a 27% equity stake in OpenAI (reported value ~$135B), restructured to
+        a non-exclusive commercial partnership through 2032; on Oct 28 2025 OpenAI signed a definitive
+        agreement to purchase an incremental $250B of Azure services beyond existing commitments.
+      provenance_label: historically_observed
+  - scenario_name: AI capex trajectory and disclosure litigation
+    variables:
+    - variable_name: ai_capex_trajectory_and_disclosure_litigation
+      evidence_basis: FY2026 capex is running well above one cited analyst-consensus figure (a ~$35B beat,
+        ~$25B attributed to component price inflation per one source, though this conflicts with the $115.9B
+        actual capex figure above and is not reconciled); a Michigan pension fund sued MSFT in Seattle
+        federal court (June 2026) alleging misleading disclosures about Azure growth deceleration and
+        AI infrastructure spending pressure.
+      provenance_label: historically_observed
+uncertainty_summary: 'All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  FY2022 and FY2025 net income and FY2025 revenue/operating-income figures are rounded/approximate rather
+  than exact-to-the-million. Balance sheet cash is the weakest-sourced item: one source''s pure-cash figure
+  ($32,105M, unclear date) was not reconciled against a separate combined cash+short-term-investments
+  figure ($78.272B); total debt ($125.4B) traces to a single, uncorroborated source. FY2026 capex ($115.9B
+  actual, reported) conflicts with a separate, larger guidance-based figure found elsewhere; both are
+  disclosed rather than one being silently chosen. Microsoft has reported under the same three-segment
+  structure for the entire FY2022-FY2026 window shown, so the data should be comparable across all five
+  years.'
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: MSFT
+content_sha256: cdfaba4efe4e09315e2d31f7c9d5f04a3930a6299c5d5502078cb11c7cbe8b30

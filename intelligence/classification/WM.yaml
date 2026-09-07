@@ -1,0 +1,45 @@
+schema_version: '1.0'
+ticker: WM
+economic_role:
+  economic_system_ref: 'other: Waste & Environmental Infrastructure Services'
+  company_role: Largest North American waste collection, disposal, and recycling network operator
+  role_basis: Evidence shows WM operating the largest landfill, transfer-station, and recycling network
+    in North America (~262 landfills, 339 transfer stations, 105 recycling facilities) serving 20M+ customers,
+    with landfill permitting scarcity cited as making the existing network a structurally difficult-to-replicate
+    asset base.
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - RSG
+  - WCN
+  - CWST
+  rationale: Waste Management's evidence shows a diversified, growing operating business (record FY2025
+    revenue, strong free cash flow, 23rd consecutive year of dividend increases) with Stericycle integration
+    friction from 2025 that management now characterizes as substantially resolved, alongside ordinary
+    industry-wide risks (commodity-price exposure in recycling, general industry PFAS regulatory exposure
+    with no WM-specific litigation identified, and a modest FY2026 revenue-guidance trim not yet flowing
+    through to profitability guidance). None of these developments rises above WM's own ordinary, disclosed
+    risk/opportunity profile -- there is no unresolved acute shock, confirmed litigation, or structural
+    change comparable to distinctive situations found elsewhere in this batch. This is the expected, default
+    operating picture for this holding.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: limited
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the Stericycle (Healthcare Solutions) integration friction, disclosed across multiple 2025 trade-press
+    articles, proving less resolved in practice than management's Q2 2026 characterization suggests.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-E
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#WM
+content_sha256: 677623eb4c6597e52e16a8ee8c4c222e7d3c87105e783fa01d1d5e1a9c6c2906

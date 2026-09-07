@@ -1,0 +1,50 @@
+schema_version: '1.0'
+ticker: AVGO
+economic_role:
+  economic_system_ref: AI & Compute Infrastructure
+  company_role: custom AI accelerator (XPU) design/co-production plus AI networking silicon, with a separate
+    recurring enterprise-software segment
+  role_basis: Q2 FY2026 AI semiconductor revenue was $10.8B (+143% YoY, a reported record) driven by custom
+    XPU design-services work for Google, Meta, OpenAI, Anthropic and Apple, with one secondary source
+    placing Broadcom's share of the custom AI accelerator design-services market at 70%+; this sits alongside
+    a distinct Infrastructure Software segment ($7.18B, +9% YoY) built around VMware Cloud Foundation.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - NVDA
+  - MRVL
+  - AMD
+  - QCOM
+  rationale: Q2 FY2026 results show a marked, recently-realized acceleration in AI-semiconductor revenue
+    (+143% YoY, guided to +200%+ YoY for Q3), a reaffirmed FY2027 >$100B AI-semiconductor target newly
+    backed by a disclosed $73B customer backlog, and a credit-rating trajectory (S&P 'A-' positive outlook,
+    Fitch 'BBB+') that at least one source explicitly ties to the AI-semiconductor opportunity specifically.
+    This combination of a concrete, primary-sourced inflection in the AI growth trajectory plus an externally-validated
+    rating-agency confirmation of that shift is a distinctive, recently-realized development rather than
+    routine disclosed risk or catalyst, even though several supporting figures (backlog, credit metrics)
+    remain secondary-sourced and unverified against primary filings.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - semis
+  issuer_lookthrough_membership: true
+  relationship_record_coverage:
+  - AVGO_GOOGL
+  - AVGO_META
+  - AVGO_TSM
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a pullback in AI-accelerator orders from the small, named group of hyperscaler/frontier-lab customers
+    this segment's revenue is reported to concentrate in.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-D
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#AVGO
+content_sha256: 96b077e59971239306fe19abf72fb5f1e714ef7bf939b9c98dfc9f6760b9a7ae
