@@ -14,6 +14,7 @@ import ssl
 import time
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -22,6 +23,34 @@ import certifi
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_BASE = "https://data.alpaca.markets/v2/stocks"
 CRYPTO_BASE = "https://data.alpaca.markets/v1beta3/crypto/us"
+PAPER_BASE = "https://paper-api.alpaca.markets/v2"
+TRUSTED_ALPACA_HOSTS = frozenset({"paper-api.alpaca.markets", "data.alpaca.markets"})
+
+
+def _trusted_https_url(url: str, *, hosts: frozenset[str] = TRUSTED_ALPACA_HOSTS):
+    """Return parsed *url* only when credentials may safely be sent to it."""
+    try:
+        parsed = urlsplit(url)
+        port = parsed.port
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError(f"refusing malformed Alpaca endpoint {url!r}") from exc
+    if (
+        parsed.scheme != "https"
+        or parsed.hostname not in hosts
+        or parsed.username is not None
+        or parsed.password is not None
+        or port not in (None, 443)
+        or parsed.fragment
+    ):
+        raise RuntimeError(f"refusing untrusted Alpaca endpoint {url!r}")
+    return parsed
+
+
+class _RejectRedirects(urllib.request.HTTPRedirectHandler):
+    """Never forward credential-bearing requests across an HTTP redirect."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise RuntimeError(f"refusing redirected Alpaca request to {newurl!r}")
 
 
 def load_credentials() -> dict:
@@ -48,22 +77,33 @@ def load_credentials() -> dict:
 class AlpacaPaperClient:
     def __init__(self):
         creds = load_credentials()
-        self.base = creds["ALPACA_BASE_URL"].rstrip("/")
-        if "paper-api" not in self.base:
-            raise RuntimeError(f"PAPER_ONLY guard: refusing non-paper endpoint {self.base!r}")
+        configured_base = creds["ALPACA_BASE_URL"].rstrip("/")
+        parsed = _trusted_https_url(configured_base, hosts=frozenset({"paper-api.alpaca.markets"}))
+        if parsed.path != "/v2" or parsed.query:
+            raise RuntimeError(
+                f"PAPER_ONLY guard: expected exact paper API base {PAPER_BASE!r}, "
+                f"got {configured_base!r}"
+            )
+        self.base = PAPER_BASE
         self._headers = {"APCA-API-KEY-ID": creds["ALPACA_API_KEY"],
                          "APCA-API-SECRET-KEY": creds["ALPACA_API_SECRET"],
                          "Content-Type": "application/json"}
         self._ctx = ssl.create_default_context(cafile=certifi.where())
+        self._opener = urllib.request.build_opener(
+            urllib.request.HTTPSHandler(context=self._ctx),
+            _RejectRedirects(),
+        )
 
     def _req(self, method: str, url: str, body: dict | None = None,
              retries: int = 3) -> dict | list:
-        data = json.dumps(body).encode() if body is not None else None
-        req = urllib.request.Request(url, data=data, method=method, headers=self._headers)
+        if method != "GET" or body is not None:
+            raise RuntimeError("advisory-only Alpaca client permits GET requests without a body only")
+        _trusted_https_url(url)
+        req = urllib.request.Request(url, method="GET", headers=self._headers)
         last = None
         for attempt in range(retries):
             try:
-                with urllib.request.urlopen(req, timeout=30, context=self._ctx) as r:
+                with self._opener.open(req, timeout=30) as r:
                     txt = r.read().decode()
                     return json.loads(txt) if txt else {}
             except urllib.error.HTTPError as e:
