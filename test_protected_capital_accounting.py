@@ -650,6 +650,7 @@ class TestStatePreservation:
             "shares:\n  AAA: 1.5\n"
             "crypto_shares:\n  BTC: 0.25\n")
         monkeypatch.setattr(A, "HOLDINGS_FILE", f)
+        monkeypatch.setattr(A, "MARGIN_LOG_FILE", tmp_path / "margin_log.csv")
         monkeypatch.setattr(A, "log_performance", lambda *a, **k: None)
         return f
 
@@ -662,7 +663,17 @@ class TestStatePreservation:
     def test_every_update_path_preserves_the_cash_block(self, sandbox, cmd, monkeypatch):
         before = self._all_blocks(sandbox)
         if cmd == "margin":
+            canonical_margin_log = pathlib.Path(__file__).with_name("margin_log.csv")
+            canonical_before = canonical_margin_log.read_bytes()
             A.update_margin(2.0, 40.0)
+            import csv as _csv
+            rows = list(_csv.DictReader(A.MARGIN_LOG_FILE.open(encoding="utf-8")))
+            assert len(rows) == 1
+            assert rows[0]["event_type"] == "draw"
+            assert rows[0]["amount"] == "1.00"
+            assert rows[0]["resulting_debt"] == "2.00"
+            assert rows[0]["resulting_buffer_pct"] == "40.00"
+            assert canonical_margin_log.read_bytes() == canonical_before
         else:
             prior = A.load_yaml(sandbox)
             if cmd == "holdings":
