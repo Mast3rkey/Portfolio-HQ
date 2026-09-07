@@ -59,7 +59,7 @@ earnings.
 
 ## Business evidence
 
-Vehicle deliveries reached a quarterly record and energy storage deployment
+Vehicle deliveries reached a second-quarter record and energy storage deployment
 grew materially. Services and other revenue grew faster than the product
 segments. These scale results are real, but aggregate gross margin declined to
 16.8%, operating margin was only 1.4%, and heavy investment drove negative Q2
