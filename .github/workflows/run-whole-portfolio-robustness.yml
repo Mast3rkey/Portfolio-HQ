@@ -15,13 +15,12 @@ on:
       - "gates.yaml"
       - "issuer_lookthrough.yaml"
       - "requirements.txt"
-  workflow_dispatch:
-
 permissions:
   contents: read
+  actions: read
 
 concurrency:
-  group: whole-portfolio-robustness-${{ github.sha }}
+  group: whole-portfolio-robustness-PORTFOLIO-ROBUSTNESS-0001
   cancel-in-progress: false
 
 jobs:
@@ -52,6 +51,43 @@ jobs:
             echo "PORTFOLIO-ROBUSTNESS-0001 already has retained results; use a new study ID." >&2
             exit 1
           fi
+
+      - name: Refuse a new run after the persistent execution lock exists
+        id: execution_lock
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_LOCK: whole-portfolio-execution-lock-PORTFOLIO-ROBUSTNESS-0001-${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          locks="$(gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.expired == false) | .name | select(startswith("whole-portfolio-execution-lock-PORTFOLIO-ROBUSTNESS-0001-"))')"
+          prior="$(printf '%s\n' "$locks" | grep -Fvx "$CURRENT_LOCK" || true)"
+          if [ -n "$prior" ]; then
+            echo "PORTFOLIO-ROBUSTNESS-0001 already has a persistent execution lock; use a new study ID." >&2
+            exit 1
+          fi
+          if printf '%s\n' "$locks" | grep -Fxq "$CURRENT_LOCK"; then
+            echo "current_lock_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current_lock_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create immutable execution-lock receipt
+        if: steps.execution_lock.outputs.current_lock_exists != 'true'
+        run: |
+          mkdir -p artifacts/execution-lock
+          printf '{"study_id":"PORTFOLIO-ROBUSTNESS-0001","run_id":"%s","head_sha":"%s"}\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_SHA" > artifacts/execution-lock/receipt.json
+
+      - name: Persist once-only execution lock before holdout access
+        if: steps.execution_lock.outputs.current_lock_exists != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: whole-portfolio-execution-lock-PORTFOLIO-ROBUSTNESS-0001-${{ github.run_id }}
+          path: artifacts/execution-lock/receipt.json
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Reacquire exact frozen SOL evidence
         run: >-
@@ -166,7 +202,6 @@ jobs:
         run: python whole_portfolio_robustness_result_validator.py artifacts/results
 
       - name: Retain complete governed results
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: whole-portfolio-results-${{ github.sha }}

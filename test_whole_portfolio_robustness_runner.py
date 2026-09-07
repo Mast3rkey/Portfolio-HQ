@@ -154,8 +154,13 @@ def test_workflow_limits_manual_execution_and_refuses_retained_result_rerun():
         encoding="utf-8"
     )
     assert "if: github.ref == 'refs/heads/main'" in workflow
+    assert "workflow_dispatch:" not in workflow
+    assert "actions: read" in workflow
+    assert "group: whole-portfolio-robustness-PORTFOLIO-ROBUSTNESS-0001" in workflow
     assert "Refuse execution after governed results are retained" in workflow
     assert "research/whole_portfolio_robustness/execution/output_manifest.json" in workflow
+    assert "whole-portfolio-execution-lock-PORTFOLIO-ROBUSTNESS-0001-${{ github.run_id }}" in workflow
+    assert workflow.count("if: always()") == 1
 
 
 def test_stationary_bootstrap_is_paired_and_deterministic():
@@ -174,6 +179,20 @@ def test_stationary_bootstrap_is_paired_and_deterministic():
     second = runner._bootstrap_once(base, variant, random.Random(7), 1 / 21)
     assert first == second
     assert all(math.isfinite(value) for value in first)
+
+
+def test_recovery_days_use_actual_pre_drawdown_peak_not_post_cost_value():
+    result = runner.SimulationResult(
+        "BASELINE", "W", "QUARTERLY", "10", "TAXABLE_MID",
+        ["2024-01-02", "2024-01-03", "2024-01-04"],
+        [90.0, 95.0, 100.0], [-0.10, 95 / 90 - 1, 100 / 95 - 1],
+        [0.0, 0.0, 0.0], [{"X": 0.0}] * 3,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        facts={"starting_value": 100.0},
+    )
+    metric = runner.metric_record(result, _config())
+    assert metric["MAX_DRAWDOWN"] == pytest.approx(-0.10)
+    assert metric["RECOVERY_DAYS"] == 2
 
 
 def test_sensitivity_matrix_covers_every_registered_window(monkeypatch):
@@ -209,6 +228,30 @@ def test_sensitivity_matrix_covers_every_registered_window(monkeypatch):
 def test_result_validator_fails_closed_on_incomplete_directory(tmp_path: Path):
     with pytest.raises(result_validator.ResultValidationError, match="exactly"):
         result_validator.validate(tmp_path)
+
+
+def test_path_validator_binds_identity_fields_to_cell_id():
+    cell = "BASELINE|W|QUARTERLY|10|TAXABLE_MID"
+    document = {
+        "schema_version": "1.0",
+        "study_id": "PORTFOLIO-ROBUSTNESS-0001",
+        "scope": "DECISION_CELL_ONLY_ALL_REGISTERED_WINDOWS",
+        "records": [{
+            "cell_id": cell,
+            "variant": "OTHER",
+            "window": "W",
+            "cadence": "QUARTERLY",
+            "one_way_cost_bps": "10",
+            "tax_profile": "TAXABLE_MID",
+            "dates": ["2024-01-02", "2024-01-03"],
+            "index": [1.0, 1.0],
+            "daily_net_returns": [0.0, 0.0],
+            "daily_lagged_dff_returns": [0.0, 0.0],
+        }],
+    }
+    with pytest.raises(result_validator.ResultValidationError,
+                       match="identity fields disagree"):
+        result_validator._validate_paths(document, {cell})
 
 
 def test_json_boundary_rejects_nonfinite_tokens(tmp_path: Path):

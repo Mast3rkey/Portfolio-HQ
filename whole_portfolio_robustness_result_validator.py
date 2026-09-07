@@ -181,7 +181,7 @@ def _validate_metrics(document: Mapping[str, Any], expected: set[str]) -> list[d
     return records
 
 
-def _validate_paths(document: Mapping[str, Any], expected: set[str]) -> None:
+def _validate_paths(document: Mapping[str, Any], expected: set[str]) -> list[dict[str, Any]]:
     _require_identity(document, "portfolio_paths.json")
     if document.get("scope") != "DECISION_CELL_ONLY_ALL_REGISTERED_WINDOWS":
         raise ResultValidationError("portfolio_paths.json: scope drift")
@@ -200,6 +200,15 @@ def _validate_paths(document: Mapping[str, Any], expected: set[str]) -> None:
                   record.get("daily_lagged_dff_returns")]
         if not isinstance(cell, str) or cell in found:
             raise ResultValidationError("portfolio_paths.json: duplicate or missing cell")
+        derived_cell = runner._cell_id(
+            str(record.get("variant")), str(record.get("window")),
+            str(record.get("cadence")), str(record.get("one_way_cost_bps")),
+            str(record.get("tax_profile")),
+        )
+        if cell != derived_cell:
+            raise ResultValidationError(
+                f"portfolio_paths.json[{index}]: cell identity fields disagree"
+            )
         if not isinstance(dates, list) or len(dates) < 2 or dates != sorted(set(dates)):
             raise ResultValidationError(f"portfolio_paths.json[{index}]: invalid dates")
         if any(not isinstance(values, list) or len(values) != len(dates) for values in series):
@@ -210,6 +219,7 @@ def _validate_paths(document: Mapping[str, Any], expected: set[str]) -> None:
         found.add(cell)
     if found != expected:
         raise ResultValidationError("portfolio_paths.json: decision-path registry mismatch")
+    return records
 
 
 def _validate_bootstrap(document: Mapping[str, Any], variants: Sequence[str], prereg: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -239,7 +249,9 @@ def _validate_bootstrap(document: Mapping[str, Any], variants: Sequence[str], pr
     return records
 
 
-def _validate_sensitivity(document: Mapping[str, Any], variants: Sequence[str], windows: Sequence[str], prereg: Mapping[str, Any]) -> None:
+def _validate_sensitivity(document: Mapping[str, Any], variants: Sequence[str],
+                          windows: Sequence[str], prereg: Mapping[str, Any],
+                          metrics: Sequence[Mapping[str, Any]]) -> None:
     _require_identity(document, "sensitivity_matrix.json")
     if document.get("facts_inference_separation") != "FACTS_ONLY":
         raise ResultValidationError("sensitivity_matrix.json: facts boundary missing")
@@ -263,6 +275,30 @@ def _validate_sensitivity(document: Mapping[str, Any], variants: Sequence[str], 
         found.add(key)
     if found != expected:
         raise ResultValidationError("sensitivity_matrix.json: registry mismatch")
+    recomputed = runner.build_sensitivity(metrics, prereg, runner.load_config())
+    if document != recomputed:
+        raise ResultValidationError("sensitivity_matrix.json: values do not reproduce from metrics")
+
+
+def _recompute_bootstrap(paths: Sequence[Mapping[str, Any]],
+                         prereg: Mapping[str, Any]) -> list[dict[str, Any]]:
+    starting_value = float(prereg["portfolio_mechanics"]["starting_value"])
+    simulations: dict[str, runner.SimulationResult] = {}
+    for record in paths:
+        result = runner.SimulationResult(
+            variant=str(record["variant"]), window=str(record["window"]),
+            cadence=str(record["cadence"]), cost_bps=str(record["one_way_cost_bps"]),
+            tax_profile=str(record["tax_profile"]), dates=list(record["dates"]),
+            values=[float(value) * starting_value for value in record["index"]],
+            returns=[float(value) for value in record["daily_net_returns"]],
+            risk_free_returns=[float(value) for value in record["daily_lagged_dff_returns"]],
+            concentrations=[], transaction_cost=0.0, tax_paid=0.0,
+            dividend_tax_paid=0.0, realized_gain_tax_paid=0.0,
+            taxable_realized_gain=0.0, one_way_notional=0.0,
+            rebalance_count=0, final_cash=0.0,
+        )
+        simulations[f"{result.variant}|{result.window}"] = result
+    return runner.bootstrap_records(simulations, prereg, runner.load_config())
 
 
 def validate(root: Path) -> dict[str, Any]:
@@ -275,10 +311,12 @@ def validate(root: Path) -> dict[str, Any]:
     prereg = _yaml(gate.PREREG_PATH)
     expected_cells, expected_paths, variants, windows = _expected_registry(prereg)
     metrics = _validate_metrics(_json(root / "metrics.json"), expected_cells)
-    _validate_paths(_json(root / "portfolio_paths.json"), expected_paths)
+    paths = _validate_paths(_json(root / "portfolio_paths.json"), expected_paths)
     bootstraps = _validate_bootstrap(_json(root / "bootstrap.json"), variants, prereg)
+    if bootstraps != _recompute_bootstrap(paths, prereg):
+        raise ResultValidationError("bootstrap.json: values do not reproduce from retained paths")
     sensitivity = _json(root / "sensitivity_matrix.json")
-    _validate_sensitivity(sensitivity, variants, windows, prereg)
+    _validate_sensitivity(sensitivity, variants, windows, prereg, metrics)
     disposition = _yaml(root / "disposition.yaml")
     _require_identity(disposition, "disposition.yaml")
     if disposition.get("disposition") not in prereg["review_thresholds"]["disposition_values"]:

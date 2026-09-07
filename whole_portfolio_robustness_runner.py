@@ -610,16 +610,16 @@ def metric_record(result: SimulationResult, config: Mapping[str, Any], *,
     peak_date = result.dates[0]
     trough_date = result.dates[0]
     deepest_peak_date = peak_date
+    deepest_peak_value = peak
     for day, value in zip(result.dates, result.values):
         if value > peak:
             peak, peak_date = value, day
         dd = value / peak - 1.0
         if dd < max_dd:
             max_dd, trough_date, deepest_peak_date = dd, day, peak_date
+            deepest_peak_value = peak
     recovery = next((day for day, value in zip(result.dates, result.values)
-                     if day > trough_date and value >= max(
-                         value2 for day2, value2 in zip(result.dates, result.values)
-                         if day2 == deepest_peak_date)), None) if max_dd < 0 else result.dates[0]
+                     if day > trough_date and value >= deepest_peak_value), None) if max_dd < 0 else result.dates[0]
     recovery_days = ((date.fromisoformat(recovery) - date.fromisoformat(deepest_peak_date)).days
                      if recovery else None)
     ordered = sorted(result.returns)
