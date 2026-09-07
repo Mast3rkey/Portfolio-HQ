@@ -1,0 +1,172 @@
+schema_version: "2.0"
+study_id: PORTFOLIO-ROBUSTNESS-V2-0001
+status: PREREGISTERED_NOT_EXECUTED
+registered_at: "2026-09-07"
+predecessor:
+  study_id: PORTFOLIO-ROBUSTNESS-0001
+  disposition: EVIDENCE_LIMITED_NOT_DECISION_GRADE
+  authority: governance/decisions/RISK-0005-whole-portfolio-evidence-disposition.md
+  historical_holdout_exposure: EXPOSED_CORRECTION_REPLICATION_NOT_FRESH_HOLDOUT
+
+decision:
+  question: >-
+    Does a fixed bounded allocation alternative robustly improve risk-adjusted
+    performance and tail survivability without unacceptable return sacrifice?
+  baseline_rule: CURRENT_ACCEPTED_TARGETS_REMAIN_POLICY
+  automatic_adoption: PROHIBITED
+  result_authority: RECOMMEND_SEPARATE_POLICY_REVIEW_ONLY
+
+frozen_inputs:
+  base_commit: fffb352d577b3c755bd4a24c4fcd909eb56d8259
+  files:
+    targets.yaml: 69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d
+    gates.yaml: e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86
+    issuer_lookthrough.yaml: 6cf4e417e747d9a1ae9621e57d238c685ab593fb65539d561a5d136c7027b0b9
+    research/buy_ladder_backtest/inputs/input_disposition.json: 05a86b0f42df6b055532076d2e84e7ac7a460799012402904afe1fcb1e72ab2e
+    research/buy_ladder_backtest/inputs/corporate_actions.json: 79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1
+    research/buy_ladder_backtest/inputs/price_anomaly_overrides.json: 9f0a9513b769e036f4d1b209f5d63b6b32893fdc375a319252b5b89dc953c13f
+    research/level1_sleeve_robustness/data/transformed/selected/DFF.json: a4610d02a33fc4e72eff5c54ba8499b7d0f85e5d828dd054e4158f967b530b5b
+    research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json: 365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe
+  drift_rule: ANY_PIN_MISMATCH_HALTS_BEFORE_RESULTS
+  equities_funds_gold: RECONSTRUCT_FROM_LADDER_0003_ACCEPTED_INPUT_DISPOSITION
+  crypto: NEW_SUCCESSOR_DISPOSITION_REQUIRED_BEFORE_EXECUTION
+  crypto_required: [BTC, ETH, SOL]
+  crypto_fail_closed: UNABLE_TO_DETERMINE_NO_DROP_NO_CASH_SUBSTITUTION
+
+baseline:
+  construction: DERIVE_FROM_TARGETS_AND_GATES_NO_RENORMALIZATION
+  target_assigned_pct: "99.25"
+  unallocated_cash_pct: "0.75"
+  gated_tickers: [SNPS, ICE, SPGI, WM, RKLB, TSLA]
+  gated_target_cash_pct: "6.75"
+  sleeves_pct:
+    eligible_direct_equity: "56.50"
+    broad_market_funds: "23.00"
+    gold: "4.00"
+    crypto: "4.00"
+    cash_and_protected_capital: "12.50"
+  reconciliation_total_pct: "100.00"
+
+variants:
+  selection_rule: FIXED_BEFORE_ANY_V2_RESULT
+  optimization: PROHIBITED
+  definitions:
+    - id: BASELINE
+      transforms: []
+      expected_sleeves_pct: {eligible_direct_equity: "56.50", broad_market_funds: "23.00", gold: "4.00", crypto: "4.00", cash_and_protected_capital: "12.50"}
+    - id: BROAD_PLUS_5
+      transforms: [{from: eligible_direct_equity, to: broad_market_funds, percentage_points: "5.00", within_sleeve_rule: PRO_RATA}]
+      expected_sleeves_pct: {eligible_direct_equity: "51.50", broad_market_funds: "28.00", gold: "4.00", crypto: "4.00", cash_and_protected_capital: "12.50"}
+    - id: DEFENSIVE_PLUS_5
+      transforms: [{from: eligible_direct_equity, to: cash_and_protected_capital, percentage_points: "5.00", within_sleeve_rule: PRO_RATA}]
+      expected_sleeves_pct: {eligible_direct_equity: "51.50", broad_market_funds: "23.00", gold: "4.00", crypto: "4.00", cash_and_protected_capital: "17.50"}
+    - id: CRYPTO_HALF
+      transforms: [{from: crypto, to: cash_and_protected_capital, percentage_points: "2.00", within_sleeve_rule: PRO_RATA}]
+      expected_sleeves_pct: {eligible_direct_equity: "56.50", broad_market_funds: "23.00", gold: "4.00", crypto: "2.00", cash_and_protected_capital: "14.50"}
+    - id: GOLD_PLUS_2
+      transforms: [{from: eligible_direct_equity, to: gold, percentage_points: "2.00", within_sleeve_rule: PRO_RATA}]
+      expected_sleeves_pct: {eligible_direct_equity: "54.50", broad_market_funds: "23.00", gold: "6.00", crypto: "4.00", cash_and_protected_capital: "12.50"}
+    - id: DIVERSIFIED_BALANCE
+      transforms:
+        - {from: eligible_direct_equity, to: broad_market_funds, percentage_points: "3.00", within_sleeve_rule: PRO_RATA}
+        - {from: eligible_direct_equity, to: gold, percentage_points: "1.00", within_sleeve_rule: PRO_RATA}
+        - {from: eligible_direct_equity, to: cash_and_protected_capital, percentage_points: "1.00", within_sleeve_rule: PRO_RATA}
+        - {from: crypto, to: cash_and_protected_capital, percentage_points: "2.00", within_sleeve_rule: PRO_RATA}
+      expected_sleeves_pct: {eligible_direct_equity: "51.50", broad_market_funds: "26.00", gold: "5.00", crypto: "2.00", cash_and_protected_capital: "15.50"}
+
+portfolio_mechanics:
+  starting_value: "100000.00"
+  leverage: "1.00"
+  external_cash_flows: NONE
+  performance_method: DAILY_CHAIN_LINKED_TWR
+  primary_rebalance: QUARTERLY_FIRST_AVAILABLE_XNYS_CLOSE
+  cadence_sensitivity: ANNUAL_FIRST_AVAILABLE_XNYS_CLOSE
+  unavailable_weight: CASH_UNTIL_NEXT_SCHEDULED_REBALANCE_AFTER_LAWFUL_AVAILABILITY
+  gated_weight: ALWAYS_CASH_NEVER_REDISTRIBUTED
+  dividends: SPLIT_ADJUSTED_PRICES_PLUS_EXPLICIT_EX_DATE_CASH_CREDIT_ONCE
+  cash_return: LAGGED_DFF_ACTUAL_360_MINUS_25_BPS_ANNUAL_DRAG
+  borrowing: PROHIBITED
+
+windows:
+  common_start: "2021-06-01"
+  evaluation_end: "2026-07-31"
+  context: {start: "2021-06-01", end: "2023-12-29", voting: false}
+  correction_replication: {start: "2024-04-02", end: "2026-07-31", voting: true, exposure: PREVIOUSLY_EXPOSED}
+  walk_forward: {method: EXPANDING_ORIGIN_FIXED_POLICY_NO_REFIT, evaluation_years: [2022, 2023, 2024, 2025, 2026]}
+  fixed_regimes:
+    - {id: RATE_INFLATION_2022, start: "2022-01-03", end: "2022-12-30"}
+    - {id: CALENDAR_2023, start: "2023-01-03", end: "2023-12-29"}
+    - {id: CALENDAR_2024, start: "2024-01-02", end: "2024-12-31"}
+    - {id: CALENDAR_2025, start: "2025-01-02", end: "2025-12-31"}
+    - {id: CALENDAR_2026_PARTIAL, start: "2026-01-02", end: "2026-07-31"}
+  asset_selected_peak_trough_windows: PROHIBITED
+
+frictions:
+  one_way_cost_bps: ["0", "10", "25"]
+  tax_profiles: [TAX_DEFERRED, TAXABLE_MID, TAXABLE_HIGH]
+  tax_profile_parameters:
+    TAX_DEFERRED: {qualified_dividend_rate: "0.00", ordinary_income_rate: "0.00", short_gain_rate: "0.00", long_gain_rate: "0.00", gold_gain_rate: "0.00", qualified_dividend_fraction: "0.00"}
+    TAXABLE_MID: {qualified_dividend_rate: "0.15", ordinary_income_rate: "0.24", short_gain_rate: "0.24", long_gain_rate: "0.15", gold_gain_rate: "0.28", qualified_dividend_fraction: "0.80"}
+    TAXABLE_HIGH: {qualified_dividend_rate: "0.20", ordinary_income_rate: "0.32", short_gain_rate: "0.32", long_gain_rate: "0.20", gold_gain_rate: "0.28", qualified_dividend_fraction: "0.00"}
+  tax_lot_method: HIFO_WITH_ACQUISITION_DATE_TRACKING
+  realized_loss_credit: PROHIBITED
+  wash_sale_benefit: PROHIBITED
+  final_unrealized_gain_tax: NONE
+
+metrics:
+  return: [NET_TWR_CAGR, CUMULATIVE_TWR, CASH_DRAG, COST_DRAG, TAX_DRAG]
+  risk_adjusted: [ANNUALIZED_VOLATILITY, DOWNSIDE_DEVIATION, SHARPE_VS_LAGGED_DFF, SORTINO_VS_LAGGED_DFF, CALMAR]
+  tail: [MAX_DRAWDOWN, RECOVERY_DAYS, WORST_MONTH, WORST_QUARTER, WORST_YEAR, DAILY_CVAR_95]
+  concentration: [DIRECT_HHI, MAX_DIRECT_NAME, EFFECTIVE_ISSUER_MAX, AI_PLATFORM_COMMON_DRIVER, SEMIS_CLUSTER, POWER_INFRA_CLUSTER]
+  operations: [ONE_WAY_TURNOVER, REBALANCE_COUNT, TAXABLE_REALIZED_GAIN]
+
+bootstrap:
+  method: PAIRED_STATIONARY_BLOCK_BOOTSTRAP_OF_DAILY_PORTFOLIO_RETURNS
+  mean_block_sessions: 21
+  resamples: 2000
+  seed: 20260907
+  windows: [context, correction_replication]
+  statistics: [NET_TWR_CAGR_DELTA, SHARPE_DELTA, MAX_DRAWDOWN_DELTA, DAILY_CVAR_95_DELTA]
+
+review_thresholds:
+  disposition_values: [RETAIN_BASELINE, RECOMMEND_POLICY_REVIEW, UNABLE_TO_DETERMINE]
+  default: RETAIN_BASELINE
+  required_for_recommend_policy_review:
+    correction_net_cagr_floor_delta_pp_per_year: "-0.50"
+    correction_sharpe_min_delta: "0.05"
+    correction_sortino_min_delta: "0.05"
+    tail_improvement_either: {max_drawdown_min_improvement_pp: "2.00", daily_cvar_95_min_improvement_pp: "0.10"}
+    context_direction_must_match_correction: true
+    regime_max_drawdown_max_worsening_pp: "1.00"
+    friction_tax_cadence_cells_min_fraction_same_direction: "0.80"
+    bootstrap_min_probability_sharpe_positive: "0.75"
+    bootstrap_min_probability_tail_metric_positive: "0.75"
+    concentration_controls_must_pass: true
+    data_and_integrity_gates_must_pass: true
+  multiple_comparison_rule: NO_WINNER_PICKING_IF_NO_VARIANT_PASSES_ALL_GATES
+  close_call_rule: RETAIN_BASELINE
+  target_change_rule: SEPARATE_EXPLICIT_REVIEWED_DECISION_REQUIRED
+
+integrity:
+  fail_closed_on: [PIN_DRIFT, WEIGHT_MISMATCH, UNRECONCILED_TOTAL, MISSING_SERIES, MISSING_CRYPTO_DISPOSITION, INCOMPLETE_DAILY_CRYPTO, UNRESOLVED_ACTION, LOOKAHEAD, SILENT_ASSET_DROP, NONDETERMINISTIC_OUTPUT]
+  no_interpolation: true
+  no_forward_fill_prices: true
+  no_zero_return_substitution: true
+  execution_before_preregistration_merge: PROHIBITED
+  code_or_config_change_after_result_inspection: NEW_STUDY_ID_REQUIRED
+
+safety:
+  advisory_only: true
+  uses_holdings: false
+  uses_brokerage_or_credentials: false
+  places_orders_or_trades: false
+  changes_targets_or_gates: false
+  changes_margin_policy: false
+  arms_or_executes_stage1: false
+  stage1_state: UNARMED_AND_NOT_EXECUTABLE
+
+deliverables:
+  next_unit: CRYPTO_INPUT_DISPOSITION_ENGINE_AND_RESULTS
+  required_outputs: [input_freeze.json, portfolio_paths.json, metrics.json, bootstrap.json, sensitivity_matrix.json, limitations.md, results.md, disposition.yaml]
+  chart_input_required: false
+  account_input_required: false
