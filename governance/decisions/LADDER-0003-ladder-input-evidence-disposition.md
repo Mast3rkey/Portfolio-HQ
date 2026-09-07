@@ -36,7 +36,11 @@ Accept the input disposition and action ledger under these exact conditions:
    69.005, and the retained NVDA split-date row for 2024-06-10 contains a malformed
    195.95 high. Apply the exact, separately pinned 689.42 and 123.10 corrections
    only after raw-byte reconstruction and before any ladder calculation. Two
-   independent retrievals corroborate each corrected OHLC tuple.
+   independent retained Yahoo Finance and Nasdaq charting responses corroborate
+   each corrected OHLC tuple. The builder must authenticate their exact request,
+   status, transport-byte hash and size, retained-file hash and size, symbol, date,
+   provider independence, and reconstructed two-decimal OHLC agreement. The one
+   repository LF terminator is excluded before the exact transport hash is checked.
    All other unexplained or implausible OHLC rows are fatal.
 2. Use `corporate_actions.json`, which contains 381 unique in-window ex-date events.
    It preserves later payment dates as receivables, adds COST on 2026-07-24 using
@@ -84,9 +88,11 @@ already exposed.
 | Artifact | SHA-256 |
 |---|---|
 | `research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md` | `6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f` |
-| `research/buy_ladder_backtest/inputs/price_anomaly_overrides.json` | `17220ead32f7e85c30034b529b886a4b95bb1853b8692644265b4eb453aebd53` |
-| `research/buy_ladder_backtest/build_input_disposition.py` | `8e4b8ebf2c6adaeabf9670d60305ebd2af848caa530b60714bff771205fcab98` |
-| `research/buy_ladder_backtest/inputs/input_disposition.json` | `57e57bfa445082b9bff707ead8daa53966cb41d2efa761455f66128447ce81db` |
+| `research/buy_ladder_backtest/inputs/price_anomaly_overrides.json` | `9f0a9513b769e036f4d1b209f5d63b6b32893fdc375a319252b5b89dc953c13f` |
+| `research/buy_ladder_backtest/inputs/price_correction_receipts.json` | `d770e0d8ea07ae345bde8d4499b2c4db72dc1f531892b1a1c5c60ea027df6004` |
+| Price-correction retained-response aggregate (4 files) | `3684b81c6bc0ada674bc180afd5cd12e6a776d311c4b8d94e3672c637d3b5794` |
+| `research/buy_ladder_backtest/build_input_disposition.py` | `01a664c1c5bc623b5026cb3137a6694f0a55c3ee730eaad39dc7b82f7508bd7f` |
+| `research/buy_ladder_backtest/inputs/input_disposition.json` | `05a86b0f42df6b055532076d2e84e7ac7a460799012402904afe1fcb1e72ab2e` |
 | `research/buy_ladder_backtest/inputs/corporate_actions.json` | `79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1` |
 | `research/buy_ladder_backtest/inputs/yahoo_action_crosscheck.json` | `0c154aa9e88d495f23b4d08e82e079b8054524bed5e3921cbaf1bf56f199deb4` |
 | `research/buy_ladder_backtest/inputs/yahoo_raw_receipts.json` | `d69c0841fec6416a751a4ff02bac56900ade81f2278d548a5c3b0724f02bfabf` |

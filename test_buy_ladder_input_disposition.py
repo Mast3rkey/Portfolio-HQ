@@ -23,14 +23,17 @@ YAHOO_RAW = INPUTS / "yahoo_raw"
 YAHOO_RECEIPTS = INPUTS / "yahoo_raw_receipts.json"
 AMENDMENT = STUDY / "PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md"
 PRICE_ANOMALIES = INPUTS / "price_anomaly_overrides.json"
+PRICE_CORRECTION_RAW = INPUTS / "price_correction_raw"
+PRICE_CORRECTION_RECEIPTS = INPUTS / "price_correction_receipts.json"
 BUILDER = STUDY / "build_input_disposition.py"
 DECISION = ROOT / "governance/decisions/LADDER-0003-ladder-input-evidence-disposition.md"
 
 PINS = {
     AMENDMENT: "6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f",
-    PRICE_ANOMALIES: "17220ead32f7e85c30034b529b886a4b95bb1853b8692644265b4eb453aebd53",
-    BUILDER: "8e4b8ebf2c6adaeabf9670d60305ebd2af848caa530b60714bff771205fcab98",
-    DISPOSITION: "57e57bfa445082b9bff707ead8daa53966cb41d2efa761455f66128447ce81db",
+    PRICE_ANOMALIES: "9f0a9513b769e036f4d1b209f5d63b6b32893fdc375a319252b5b89dc953c13f",
+    PRICE_CORRECTION_RECEIPTS: "d770e0d8ea07ae345bde8d4499b2c4db72dc1f531892b1a1c5c60ea027df6004",
+    BUILDER: "01a664c1c5bc623b5026cb3137a6694f0a55c3ee730eaad39dc7b82f7508bd7f",
+    DISPOSITION: "05a86b0f42df6b055532076d2e84e7ac7a460799012402904afe1fcb1e72ab2e",
     ACTIONS: "79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1",
     YAHOO: "0c154aa9e88d495f23b4d08e82e079b8054524bed5e3921cbaf1bf56f199deb4",
     YAHOO_RECEIPTS: "d69c0841fec6416a751a4ff02bac56900ade81f2278d548a5c3b0724f02bfabf",
@@ -103,41 +106,77 @@ def test_price_roster_paths_and_hashes_fail_closed() -> None:
 def test_bad_ticks_are_corrected_before_ladder_use() -> None:
     module = _load_builder()
     anomaly_rows = _json(PRICE_ANOMALIES)["corrections"]
+    verified_evidence = module.verify_price_correction_evidence(anomaly_rows)
     raw_spy = _json(ROOT / "research/level1_sleeve_robustness/data/transformed/candidates/alpaca/SPY.json")
     source = next(row for row in raw_spy["rows"] if row["date"] == "2026-02-02")
     assert source["low"] == 69.005
-    corrected = module.apply_price_anomalies("SPY", raw_spy["rows"], anomaly_rows)
+    corrected = module.apply_price_anomalies(
+        "SPY", raw_spy["rows"], anomaly_rows, verified_evidence
+    )
     row = next(item for item in corrected if item["date"] == "2026-02-02")
     assert row == {
         "date": "2026-02-02", "open": 689.58, "high": 696.93,
         "low": 689.42, "close": 695.41, "volume": 79286521.0,
     }
-    evidence = next(row for row in anomaly_rows if row["ticker"] == "SPY")["evidence"]
-    assert len(evidence) == 2
-    assert {item["low"] for item in evidence} == {689.42}
+    assert verified_evidence[("SPY", "2026-02-02", "low")] == {
+        "open": 689.58, "high": 696.93, "low": 689.42, "close": 695.41,
+    }
     raw_nvda = _json(ROOT / "research/level1_sleeve_robustness/data/transformed/candidates/alpaca/NVDA.json")
     source = next(row for row in raw_nvda["rows"] if row["date"] == "2024-06-10")
     assert source["high"] == 195.95
-    corrected = module.apply_price_anomalies("NVDA", raw_nvda["rows"], anomaly_rows)
+    corrected = module.apply_price_anomalies(
+        "NVDA", raw_nvda["rows"], anomaly_rows, verified_evidence
+    )
     row = next(item for item in corrected if item["date"] == "2024-06-10")
     assert row == {
         "date": "2024-06-10", "open": 120.37, "high": 123.10,
         "low": 117.01, "close": 121.79, "volume": 314162666.0,
     }
-    nvda_evidence = next(row for row in anomaly_rows if row["ticker"] == "NVDA")["evidence"]
-    assert len(nvda_evidence) == 2
-    assert {item["high"] for item in nvda_evidence} == {123.10}
+    assert verified_evidence[("NVDA", "2024-06-10", "high")] == {
+        "open": 120.37, "high": 123.10, "low": 117.01, "close": 121.79,
+    }
     disposition = _json(DISPOSITION)
     assert disposition["price_anomaly_corrections"]["sha256"] == PINS[PRICE_ANOMALIES]
 
 
-def test_builder_fails_closed_when_amendment_or_anomaly_evidence_drifts(
+def test_price_corrections_reconstruct_from_exact_independent_responses() -> None:
+    receipts = _json(PRICE_CORRECTION_RECEIPTS)["records"]
+    assert len(receipts) == 4
+    assert len({row["receipt_id"] for row in receipts}) == 4
+    assert {row["provider"] for row in receipts} == {
+        "NASDAQ_CHARTING", "YAHOO_FINANCE_CHART",
+    }
+    assert _aggregate(
+        ROOT, [path for path in PRICE_CORRECTION_RAW.rglob("*") if path.is_file()]
+    ) == ("3684b81c6bc0ada674bc180afd5cd12e6a776d311c4b8d94e3672c637d3b5794", 4)
+    for receipt in receipts:
+        stored = (ROOT / receipt["raw_path"]).read_bytes()
+        assert _sha(ROOT / receipt["raw_path"]) == receipt["stored_sha256"]
+        assert len(stored) == receipt["stored_byte_count"]
+        assert stored.endswith(b"\n") and not stored[:-1].endswith(b"\n")
+        transport = stored[:-1]
+        assert hashlib.sha256(transport).hexdigest() == receipt["raw_sha256"]
+        assert len(transport) == receipt["raw_byte_count"]
+
+    disposition = _json(DISPOSITION)["price_anomaly_corrections"]
+    assert disposition["receipt_manifest_sha256"] == PINS[PRICE_CORRECTION_RECEIPTS]
+    assert disposition["raw_file_count"] == 4
+    assert disposition["raw_aggregate_sha256"] == (
+        "3684b81c6bc0ada674bc180afd5cd12e6a776d311c4b8d94e3672c637d3b5794"
+    )
+    assert disposition["evidence_reconstruction"] == (
+        "TWO_INDEPENDENT_RESPONSES_PER_CORRECTION_EXACT_TRANSPORT_BYTES_VERIFIED"
+    )
+
+
+def test_builder_fails_closed_when_pinned_amendment_or_correction_evidence_drifts(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     source = BUILDER.read_text(encoding="utf-8")
     assert "sha(AMENDMENT) == EXPECTED_AMENDMENT_SHA256" in source
     assert "sha(PRICE_ANOMALIES) == EXPECTED_PRICE_ANOMALIES_SHA256" in source
+    assert "sha(PRICE_CORRECTION_RECEIPTS) == EXPECTED_PRICE_CORRECTION_RECEIPTS_SHA256" in source
     assert _sha(AMENDMENT) == PINS[AMENDMENT]
     assert _sha(PRICE_ANOMALIES) == PINS[PRICE_ANOMALIES]
 
@@ -162,6 +201,17 @@ def test_builder_fails_closed_when_amendment_or_anomaly_evidence_drifts(
         assert str(exc) == "price anomaly evidence hash drift"
     else:
         raise AssertionError("builder accepted drifted price-anomaly evidence")
+
+    module = _load_builder()
+    drifted_receipts = tmp_path / PRICE_CORRECTION_RECEIPTS.name
+    drifted_receipts.write_bytes(PRICE_CORRECTION_RECEIPTS.read_bytes() + b" ")
+    monkeypatch.setattr(module, "PRICE_CORRECTION_RECEIPTS", drifted_receipts)
+    try:
+        module.main()
+    except module.InputIntegrityError as exc:
+        assert str(exc) == "price-correction receipt manifest hash drift"
+    else:
+        raise AssertionError("builder accepted a drifted price-correction receipt manifest")
 
 
 def test_selected_transforms_reconstruct_from_pinned_raw_bytes_and_receipts() -> None:

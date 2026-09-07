@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 from datetime import datetime, timezone
+from decimal import Decimal, ROUND_HALF_EVEN
 from pathlib import Path
 from typing import Iterable
 
@@ -28,13 +29,17 @@ YAHOO_RAW = OUT / "yahoo_raw"
 YAHOO_RECEIPTS = OUT / "yahoo_raw_receipts.json"
 AMENDMENT = ROOT / "research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md"
 PRICE_ANOMALIES = OUT / "price_anomaly_overrides.json"
+PRICE_CORRECTION_RAW = OUT / "price_correction_raw"
+PRICE_CORRECTION_RECEIPTS = OUT / "price_correction_receipts.json"
 
 EXPECTED_ACTIONS_SHA256 = "a75341f1279665423722074fbc3c89eed2a0c4708e8aefcd658220c3e7bc83b2"
 EXPECTED_YAHOO_SHA256 = "0c154aa9e88d495f23b4d08e82e079b8054524bed5e3921cbaf1bf56f199deb4"
 EXPECTED_YAHOO_RECEIPTS_SHA256 = "d69c0841fec6416a751a4ff02bac56900ade81f2278d548a5c3b0724f02bfabf"
 EXPECTED_YAHOO_RAW_AGGREGATE_SHA256 = "7f046a416b28b1fbf3392fe5ab449e0ae850f0937690429c7d3cab8d72a6ca78"
 EXPECTED_AMENDMENT_SHA256 = "6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f"
-EXPECTED_PRICE_ANOMALIES_SHA256 = "17220ead32f7e85c30034b529b886a4b95bb1853b8692644265b4eb453aebd53"
+EXPECTED_PRICE_ANOMALIES_SHA256 = "9f0a9513b769e036f4d1b209f5d63b6b32893fdc375a319252b5b89dc953c13f"
+EXPECTED_PRICE_CORRECTION_RECEIPTS_SHA256 = "d770e0d8ea07ae345bde8d4499b2c4db72dc1f531892b1a1c5c60ea027df6004"
+EXPECTED_PRICE_CORRECTION_RAW_AGGREGATE_SHA256 = "3684b81c6bc0ada674bc180afd5cd12e6a776d311c4b8d94e3672c637d3b5794"
 EXPECTED_RECEIPT_INVENTORY_SHA256 = "260095460e120a1ab222d48846f45fd1b246a634c04d900d966db64662d31a95"
 EXPECTED_RAW_AGGREGATE_SHA256 = "76b9a429d15280b9b16624e66cc80129d2a7359cb12bcc948ed126ad2c19bfb7"
 EXPECTED_RECEIPT_AGGREGATE_SHA256 = "abf6f603d71f388288a4c3e691e810f683f36fbec2c5d696ef9448551a677ce7"
@@ -119,6 +124,10 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def sha_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
 def aggregate(root: Path, files: Iterable[Path]) -> tuple[str, int]:
     ordered = sorted(files, key=lambda path: path.relative_to(root).as_posix())
     rows = "".join(
@@ -157,10 +166,123 @@ def ohlc_problem(row: dict[str, object]) -> str | None:
     return None
 
 
+def _quote_precision(value: object) -> float:
+    number = finite_number(value)
+    require(number is not None, "price-correction response contains a non-finite OHLC value")
+    return float(Decimal(str(number)).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN))
+
+
+def _price_correction_row(receipt: dict[str, object], raw_bytes: bytes) -> dict[str, float]:
+    """Extract one requested daily OHLC row from an authenticated response body."""
+    symbol = str(receipt["symbol"])
+    date = str(receipt["date"])
+    payload = json.loads(raw_bytes.decode("utf-8"))
+    if receipt["provider"] == "YAHOO_FINANCE_CHART":
+        chart = payload.get("chart")
+        require(isinstance(chart, dict) and chart.get("error") is None, f"Yahoo correction response malformed: {symbol}")
+        results = chart.get("result")
+        require(isinstance(results, list) and len(results) == 1, f"Yahoo correction result count drift: {symbol}")
+        result = results[0]
+        require(isinstance(result, dict), f"Yahoo correction result malformed: {symbol}")
+        meta = result.get("meta")
+        require(isinstance(meta, dict) and meta.get("symbol") == symbol, f"Yahoo correction symbol drift: {symbol}")
+        timestamps = result.get("timestamp")
+        indicators = result.get("indicators")
+        require(isinstance(timestamps, list) and isinstance(indicators, dict), f"Yahoo correction series malformed: {symbol}")
+        quotes = indicators.get("quote")
+        require(isinstance(quotes, list) and len(quotes) == 1 and isinstance(quotes[0], dict), f"Yahoo correction quotes malformed: {symbol}")
+        matches = [
+            index for index, timestamp in enumerate(timestamps)
+            if datetime.fromtimestamp(float(timestamp), timezone.utc).date().isoformat() == date
+        ]
+        require(len(matches) == 1, f"Yahoo correction date missing or duplicated: {symbol} {date}")
+        index = matches[0]
+        return {key: _quote_precision(quotes[0][key][index]) for key in ("open", "high", "low", "close")}
+
+    require(receipt["provider"] == "NASDAQ_CHARTING", f"unsupported correction provider: {receipt['provider']}")
+    rows = payload.get("marketData")
+    require(isinstance(rows, list), f"Nasdaq correction series malformed: {symbol}")
+    matches = [row for row in rows if isinstance(row, dict) and str(row.get("Date", "")).split(" ", 1)[0] == date]
+    require(len(matches) == 1, f"Nasdaq correction date missing or duplicated: {symbol} {date}")
+    source = matches[0]
+    return {key.lower(): _quote_precision(source[key]) for key in ("Open", "High", "Low", "Close")}
+
+
+def verify_price_correction_evidence(
+    anomaly_rows: list[dict[str, object]],
+) -> dict[tuple[str, str, str], dict[str, float]]:
+    """Authenticate and reconstruct both independent sources for each correction."""
+    require(
+        sha(PRICE_CORRECTION_RECEIPTS) == EXPECTED_PRICE_CORRECTION_RECEIPTS_SHA256,
+        "price-correction receipt manifest hash drift",
+    )
+    raw_aggregate, raw_count = aggregate(
+        ROOT, (path for path in PRICE_CORRECTION_RAW.rglob("*") if path.is_file())
+    )
+    require(
+        (raw_count, raw_aggregate) == (4, EXPECTED_PRICE_CORRECTION_RAW_AGGREGATE_SHA256),
+        "price-correction raw-evidence aggregate drift",
+    )
+    payload = json.loads(PRICE_CORRECTION_RECEIPTS.read_text(encoding="utf-8"))
+    records = payload.get("records")
+    require(isinstance(records, list) and len(records) == 4, "price-correction receipt count drift")
+    receipts = {
+        str(record.get("receipt_id")): record
+        for record in records if isinstance(record, dict) and isinstance(record.get("receipt_id"), str)
+    }
+    require(len(receipts) == len(records), "price-correction receipt identities are not unique")
+    expected_urls = {
+        "nasdaq-NVDA-2024-06-10": "https://charting.nasdaq.com/data/charting/historical?symbol=NVDA&date=2024-06-09~2024-06-11&",
+        "nasdaq-SPY-2026-02-02": "https://charting.nasdaq.com/data/charting/historical?symbol=SPY&date=2026-02-01~2026-02-03&",
+        "yahoo-NVDA-2024-06-10": "https://query1.finance.yahoo.com/v8/finance/chart/NVDA?period1=1717977600&period2=1718150400&interval=1d&events=history",
+        "yahoo-SPY-2026-02-02": "https://query1.finance.yahoo.com/v8/finance/chart/SPY?period1=1769983200&period2=1770156000&interval=1d&events=history",
+    }
+    require(set(receipts) == set(expected_urls), "price-correction receipt inventory drift")
+    extracted: dict[str, dict[str, float]] = {}
+    for receipt_id, receipt in receipts.items():
+        require(receipt.get("request_url") == expected_urls[receipt_id], f"price-correction request drift: {receipt_id}")
+        require(receipt.get("response_status") == 200, f"price-correction response unsuccessful: {receipt_id}")
+        raw_relative = receipt.get("raw_path")
+        require(isinstance(raw_relative, str) and raw_relative, f"price-correction raw path missing: {receipt_id}")
+        raw_path = ROOT / raw_relative
+        require(raw_path.is_file() and raw_path.is_relative_to(PRICE_CORRECTION_RAW), f"price-correction raw path invalid: {receipt_id}")
+        stored = raw_path.read_bytes()
+        require(sha_bytes(stored) == receipt.get("stored_sha256"), f"price-correction stored hash drift: {receipt_id}")
+        require(len(stored) == receipt.get("stored_byte_count"), f"price-correction stored size drift: {receipt_id}")
+        require(stored.endswith(b"\n") and not stored[:-1].endswith(b"\n"), f"price-correction storage framing drift: {receipt_id}")
+        raw_bytes = stored[:-1]
+        require(sha_bytes(raw_bytes) == receipt.get("raw_sha256"), f"price-correction transport hash drift: {receipt_id}")
+        require(len(raw_bytes) == receipt.get("raw_byte_count"), f"price-correction transport size drift: {receipt_id}")
+        extracted[receipt_id] = _price_correction_row(receipt, raw_bytes)
+
+    verified: dict[tuple[str, str, str], dict[str, float]] = {}
+    used_receipts: set[str] = set()
+    for correction in anomaly_rows:
+        key = (str(correction.get("ticker")), str(correction.get("date")), str(correction.get("field")))
+        receipt_ids = correction.get("evidence_receipt_ids")
+        require(isinstance(receipt_ids, list) and len(receipt_ids) == len(set(receipt_ids)) == 2, f"{key[0]} correction must cite two receipts")
+        rows = []
+        providers = set()
+        for receipt_id in receipt_ids:
+            require(isinstance(receipt_id, str) and receipt_id in receipts, f"{key[0]} correction receipt missing")
+            receipt = receipts[receipt_id]
+            require((receipt.get("symbol"), receipt.get("date")) == key[:2], f"{key[0]} correction receipt scope drift")
+            providers.add(str(receipt.get("provider")))
+            rows.append(extracted[receipt_id])
+            used_receipts.add(receipt_id)
+        require(providers == {"NASDAQ_CHARTING", "YAHOO_FINANCE_CHART"}, f"{key[0]} correction sources are not independent")
+        require(rows[0] == rows[1], f"{key[0]} correction sources disagree after quote-precision normalization")
+        require(rows[0].get(key[2]) == correction.get("accepted_value"), f"{key[0]} corrected field disagrees with retained evidence")
+        verified[key] = rows[0]
+    require(used_receipts == set(receipts), "unused or uncited price-correction receipt")
+    return verified
+
+
 def apply_price_anomalies(
     ticker: str,
     rows: list[dict[str, object]],
     anomaly_rows: list[dict[str, object]],
+    verified_evidence: dict[tuple[str, str, str], dict[str, float]],
 ) -> list[dict[str, object]]:
     """Apply only exact, independently corroborated corrections to invalid rows."""
     corrections = {
@@ -180,10 +302,14 @@ def apply_price_anomalies(
             correction = corrections[key]
             field = key[2]
             require(row.get(field) == correction.get("observed_value"), f"{ticker} anomaly observed value drift")
-            evidence = correction.get("evidence")
-            require(isinstance(evidence, list) and len(evidence) >= 2, f"{ticker} anomaly lacks independent corroboration")
+            require(key in verified_evidence, f"{ticker} anomaly lacks authenticated retained evidence")
+            evidence = verified_evidence[key]
             accepted = correction.get("accepted_value")
-            require(all(item.get(field) == accepted for item in evidence), f"{ticker} anomaly sources disagree")
+            require(evidence.get(field) == accepted, f"{ticker} anomaly source evidence disagrees")
+            require(
+                all(row.get(name) == evidence[name] for name in ("open", "high", "low", "close") if name != field),
+                f"{ticker} anomaly unchanged OHLC fields disagree with retained evidence",
+            )
             row[field] = accepted
             require(ohlc_problem(row) is None, f"{ticker} anomaly correction remains invalid")
             applied.add(key)
@@ -385,6 +511,7 @@ def reconstruct_price(
     action_rows: list[dict[str, object]],
     inventory: dict[str, dict[str, object]],
     anomaly_rows: list[dict[str, object]],
+    verified_anomaly_evidence: dict[tuple[str, str, str], dict[str, float]],
 ) -> tuple[dict[str, object], dict[str, str]]:
     receipt_path = RECEIPTS / f"stock_{ticker}_alpaca.page-0000.final.json"
     raw_path = verify_receipt(
@@ -417,7 +544,9 @@ def reconstruct_price(
     transformed = ALPACA / f"{ticker}.json"
     require(encoded(source_document) == transformed.read_bytes(), f"{ticker} transform does not reconstruct from frozen raw evidence")
     document = dict(source_document)
-    document["rows"] = apply_price_anomalies(ticker, rows, anomaly_rows)
+    document["rows"] = apply_price_anomalies(
+        ticker, rows, anomaly_rows, verified_anomaly_evidence
+    )
     return document, {
         "raw_path": raw_path.relative_to(ROOT).as_posix(),
         "raw_sha256": sha(raw_path),
@@ -500,12 +629,16 @@ def main() -> None:
     anomaly_payload = json.loads(PRICE_ANOMALIES.read_text(encoding="utf-8"))
     anomaly_rows = anomaly_payload.get("corrections")
     require(isinstance(anomaly_rows, list) and anomaly_rows, "price anomaly corrections malformed")
+    verified_anomaly_evidence = verify_price_correction_evidence(anomaly_rows)
 
     price_files = []
     for ticker in ROSTER:
         path = ALPACA / f"{ticker}.json"
         require(sha(path) == EXPECTED_OHLC_SHA256[ticker], f"{ticker} transformed OHLC hash drift")
-        payload, provenance = reconstruct_price(ticker, action_rows, receipt_inventory, anomaly_rows)
+        payload, provenance = reconstruct_price(
+            ticker, action_rows, receipt_inventory, anomaly_rows,
+            verified_anomaly_evidence,
+        )
         rows = payload["rows"]
         price_files.append({
             "ticker": ticker,
@@ -666,6 +799,11 @@ def main() -> None:
             "sha256": EXPECTED_PRICE_ANOMALIES_SHA256,
             "count": len(anomaly_rows),
             "application": "AFTER_EXACT_RAW_TRANSFORM_RECONSTRUCTION_BEFORE_ANY_LADDER_CALCULATION",
+            "receipt_manifest_path": str(PRICE_CORRECTION_RECEIPTS.relative_to(ROOT)),
+            "receipt_manifest_sha256": EXPECTED_PRICE_CORRECTION_RECEIPTS_SHA256,
+            "raw_file_count": 4,
+            "raw_aggregate_sha256": EXPECTED_PRICE_CORRECTION_RAW_AGGREGATE_SHA256,
+            "evidence_reconstruction": "TWO_INDEPENDENT_RESPONSES_PER_CORRECTION_EXACT_TRANSPORT_BYTES_VERIFIED",
         },
         "price_files": price_files,
         "corporate_actions": {"path": str(action_path.relative_to(ROOT)), "sha256": sha(action_path), "event_count": len(events)},
