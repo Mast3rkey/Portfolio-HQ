@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+import allocate
 from research.buy_ladder_backtest import ladder_v2 as engine
 
 
@@ -124,6 +125,83 @@ def test_selector_protected_cash_binds_before_ladder_branches():
     assert events == []
 
 
+@pytest.mark.parametrize(
+    "issuer_ceiling,common_ceiling",
+    [(30.0, 25.0), (25.0, 100.0)],
+)
+def test_selector_matches_frozen_production_greedy_fixture(
+    monkeypatch, issuer_ceiling, common_ceiling,
+):
+    """Differential fixture for protection, clusters, and look-through caps."""
+    monkeypatch.setattr(allocate, "days_until_earnings", lambda _ticker: None)
+    targets_doc = {
+        "destination": [
+            {"ticker": "NVDA", "target_pct": 60.0, "asset_class": "equity"},
+            {"ticker": "SPY", "target_pct": 23.5, "asset_class": "fund"},
+            {"ticker": "CASH", "target_pct": 16.5, "asset_class": "cash"},
+        ],
+        "caps": {"clusters": [{"name": "semis", "pct": 25.0, "tickers": ["NVDA"]}]},
+        "gates": {
+            "min_lot_dollars": 25.0,
+            "trend_rsi_override": 30.0,
+            "earnings_blackout_days": 7,
+        },
+        "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+    }
+    roster = allocate.build_roster(targets_doc)
+    lookthrough = {
+        "issuer_ceiling_pct": issuer_ceiling,
+        "common_driver_ceiling_pct": common_ceiling,
+        "issuers": [{"ticker": "NVDA", "funds": [{"fund": "SPY", "fund_holding_weight": 0.1}]}],
+    }
+    metrics = {
+        ticker: {"price": 1.0, "sma200": 1.0, "rsi14": 50.0}
+        for ticker in ("NVDA", "SPY")
+    }
+    production = allocate.plan(
+        targets_doc, {}, roster, metrics, True, True, 2000.0,
+        gates_cfg={}, lookthrough=lookthrough,
+    )
+
+    shadow = engine.Account(cash=2000.0)
+    comparison_accounts = [engine.Account(cash=2000.0) for _ in range(9)]
+    allocations, remaining, _events = engine.select_allocations(
+        shadow, comparison_accounts, {"NVDA": 1.0, "SPY": 1.0},
+        {"NVDA": 0.60, "SPY": 0.235}, {"NVDA": 0, "SPY": 1},
+        {
+            "NVDA": (1.0, 1.0, 0.1, 50.0),
+            "SPY": (1.0, 1.0, 0.1, 50.0),
+        },
+        targets_doc["caps"]["clusters"], lookthrough,
+        2000.0, 0.165, 25.0,
+    )
+    actual = [(row["ticker"], row["budget"]) for row in allocations]
+    expected = [(row["ticker"], row["dollars"]) for row in production["buys"]]
+    assert [ticker for ticker, _value in actual] == [ticker for ticker, _value in expected]
+    assert [value for _ticker, value in actual] == pytest.approx([value for _ticker, value in expected])
+    assert remaining == pytest.approx(production["protection"]["cash_surplus_dollars"] - sum(value for _, value in expected))
+
+
+def test_selector_counts_only_final_binding_constraints():
+    shadow = engine.Account(cash=2000.0)
+    allocations, _remaining, events = engine.select_allocations(
+        shadow, [engine.Account(cash=2000.0)], {"NVDA": 1.0},
+        {"NVDA": 1.0}, {"NVDA": 0},
+        {"NVDA": (1.0, 1.0, 0.1, 50.0)},
+        [{"name": "broad", "pct": 50.0, "tickers": ["NVDA"]}],
+        {
+            "issuer_ceiling_pct": 25.0,
+            "common_driver_ceiling_pct": 100.0,
+            "issuers": [{"ticker": "NVDA", "funds": []}],
+        },
+        2000.0, 0.0, 25.0,
+    )
+    assert allocations[0]["budget"] == pytest.approx(500.0)
+    assert [(event["constraint"], event["subject"]) for event in events] == [
+        ("effective_issuer", "NVDA")
+    ]
+
+
 def test_fill_refuses_negative_cash_and_retains_event():
     order = {"arm": "A_ATR", "bps": 10, "ticker": "SPY", "budget": 100.0, "selection_date": "2023-01-03", "segment": "broad_funds"}
     with pytest.raises(engine.StudyError, match="negative cash"):
@@ -179,6 +257,23 @@ def test_retained_events_and_paths_recompute_metric_matrix():
     assert len(engine.metrics(reconstructed, cfg)) == 108
 
 
+def test_target_deviation_includes_zero_weight_eligible_names():
+    result = _synthetic_result()
+    cfg = {"friction_bps": [0, 10, 25]}
+    whole = engine._metric_row(result, cfg, "A_ATR", 10, "whole", "context", "2021-06-01", "2023-12-29")
+    equity = engine._metric_row(result, cfg, "A_ATR", 10, "equity", "context", "2021-06-01", "2023-12-29")
+    assert whole["max_target_deviation"] == pytest.approx(0.15)
+    assert equity["max_target_deviation"] == pytest.approx(0.06)
+
+
+def test_every_consumed_support_input_is_pinned_in_manifest():
+    cfg = engine.config()
+    manifest = engine.bundle(cfg, False)
+    assert set(cfg["configuration_hashes"]).issubset(manifest["files"])
+    assert set(cfg["support_hashes"]).issubset(manifest["files"])
+    assert str(engine.ANOMALIES.relative_to(engine.ROOT)) in manifest["files"]
+
+
 def test_retained_result_refuses_missing_event_cell():
     original = _synthetic_result()
     paths_doc = {f"{arm}|{bps}|{scope}": rows for (arm, bps, scope), rows in original["paths"].items()}
@@ -208,6 +303,16 @@ def test_canonical_json_rejects_nonfinite_numbers():
 
 def test_config_keeps_advisory_and_stage1_boundaries():
     cfg = engine.config()
+    assert cfg["schema_version"] == "2.0"
+    assert cfg["study_id"] == "LADDER-V2-0001"
+    assert cfg["window"] == {
+        "simulation_start": engine.date(2021, 6, 1), "context_end": engine.date(2023, 12, 29),
+        "holdout_start": engine.date(2024, 4, 2), "end": engine.date(2026, 7, 31),
+    }
+    assert cfg["friction_bps"] == [0, 10, 25]
+    assert cfg["monthly_contribution"] == 2000.0
+    assert cfg["protected_weight"] == 0.165
+    assert cfg["bootstrap"] == {"seed": 20260907, "resamples": 2000, "mean_block_sessions": 21}
     assert cfg["authority"][-1] == "LADDER-0004"
     assert cfg["holdout_previously_exposed"] is True
     assert cfg["advisory_only"] is True
