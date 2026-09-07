@@ -100,7 +100,9 @@ validation or execution, a distinct accepted evidence-disposition decision must:
 
 Absence, drift, or an unresolved row in that disposition is fatal. The disposition
 may limit evidence or require abstention; it may not inspect a V2 holdout result,
-change this protocol's arms, or silently alter accepted targets.
+change this protocol's arms, or silently alter accepted targets. The disposition
+must merge before an implementation PR is opened; the implementation may only verify
+its already-frozen paths and hashes and may not choose or repin OHLC bytes.
 
 Market data end is fixed at **2026-07-31**. Later rows, if present, are rejected.
 Input facts, computed metrics, and recommendation inference must be stored in
@@ -143,7 +145,8 @@ portfolio rather than a fourth reported arm. Its selector decisions therefore re
 identical across all friction cells as well as all reported arms.
 
 The selector uses accepted target weights, largest target-gap dollars first with
-ticker ascending as the deterministic tie-break, the $25 minimum lot, and the frozen
+stable `targets.yaml` destination order as the deterministic tie-break, the $25
+minimum lot, and the frozen
 cluster/effective-issuer/common-driver ceilings. Position values, whole-portfolio
 value, and constraint usage are measured at that selection close after the external
 contribution. Trend eligibility is evaluated once in the selector: additions below SMA200 are blocked
@@ -151,8 +154,13 @@ unless RSI14 is below 30. The result is copied to every arm. For every
 cycle, the resulting ticker list and **cash budget** are byte-identical across A, B,
 C, and all friction cells. If they are not, execution fails closed.
 
-The allocation is the frozen production greedy rule applied to synthetic state. Set
-`remaining` to $2,000; rank eligible positive gaps as above; then for each candidate
+The allocation is the frozen production greedy rule applied to synthetic state.
+After posting the contribution, compute a protected floor of 16.50% of post-flow NAV
+and cash surplus `max(0, cash - protected floor)` separately for the shadow state and
+every arm/friction state. Set shared `remaining` to the lesser of $2,000 and the
+minimum of those surpluses. This caps the new cycle by the most restrictive applicable
+protected surplus while preventing older unassigned cash from being rerouted. Rank
+eligible positive gaps as above; then for each candidate
 set its cash budget to the minimum of its target gap, `remaining`, and every applicable
 cluster, effective-issuer, embedded-fund, and common-driver dollar room. Record the
 candidate only when that clipped budget is at least $25, update all running position
@@ -285,13 +293,12 @@ baseline's. There is no composite score.
 ## 10. Voting and adoption gates
 
 Only the after-tax total-return whole-portfolio voting holdout at 10 bp can initiate
-a recommendation. For
-each ordered challenger-baseline pair, the challenger must:
+a recommendation. For each ordered challenger-baseline pair, the challenger must:
 
 1. improve annualized TWR over the baseline by **more than 1.00 percentage point**;
 2. avoid maximum-drawdown deterioration versus the baseline greater than **1.00
    percentage point**;
-3. preserve the direction of both tests at 0 bp and 25 bp; and
+3. independently satisfy those same two inequalities at both 0 bp and 25 bp; and
 4. have at least **90%** paired-bootstrap probability that its holdout TWR
    difference has the claimed sign.
 
@@ -300,6 +307,11 @@ other arms. This makes the possible winning-arm recommendation unambiguous. The 
 thresholds are inherited evidence-bounded governance selections from V1. The 90%
 probability is a conservative governance selection, not a claim of statistical
 significance.
+
+For every cost cell, maximum drawdown is the nonpositive minimum of
+`TWR_index / running_peak - 1`; the exact inequalities are
+`challenger annualized TWR - baseline annualized TWR > 0.0100` and
+`challenger MaxDD - baseline MaxDD >= -0.0100`.
 
 If segments diverge, the report must say so. A sufficiently supported segment vetoes
 a whole-portfolio change if the challenger worsens its annualized TWR or MaxDD by more

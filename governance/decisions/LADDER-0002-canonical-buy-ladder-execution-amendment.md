@@ -51,7 +51,8 @@ identifiable and decision-useful by:
   ladder validation or execution; and
 - specifying next-session activation, gap-through fills, cycle expiry, 210-session
   availability, the exact greedy allocator, XNYS calendar, Actual/360 cash accrual,
-  pairwise winner gates, deterministic tie-breaking, event order, metric
+  protected-surplus cycle cap, pairwise winner gates and sensitivity inequalities,
+  production-order tie-breaking, event order, metric
   annualization, seed 20260907, manifests, atomic outputs, and independent
   reproduction.
 
@@ -59,7 +60,7 @@ identifiable and decision-useful by:
 
 `research/buy_ladder_backtest/PROTOCOL_V2.md`
 
-SHA-256: `c182372fcf282d790852047ae93b4a7297ee923651f6be83daeae03711ed7e21`
+SHA-256: `42b522e3ad59650dc1378c56bce37eb670804d6268cb43a4dd8b5966b5a9443d`
 
 The protocol was finalized and hashed before this decision record was written. Any
 byte change requires another reviewed amendment. No registered execution may begin
