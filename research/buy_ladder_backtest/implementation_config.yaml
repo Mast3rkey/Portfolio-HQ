@@ -1,0 +1,34 @@
+schema_version: "2.0"
+study_id: LADDER-V2-0001
+status: FROZEN_BEFORE_REGISTERED_EXECUTION
+authority: [LADDER-0001, LADDER-0002, LADDER-0003]
+protocol_sha256: 0529d0d64b213ad876173ba16f555b6c27b7812f483a4839bdffd9f47d609fe4
+amendment_sha256: 6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f
+input_disposition_sha256: 05a86b0f42df6b055532076d2e84e7ac7a460799012402904afe1fcb1e72ab2e
+corporate_actions_sha256: 79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1
+configuration_hashes:
+  targets.yaml: 69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d
+  gates.yaml: e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86
+  issuer_lookthrough.yaml: 6cf4e417e747d9a1ae9621e57d238c685ab593fb65539d561a5d136c7027b0b9
+support_hashes:
+  research/level1_sleeve_robustness/data/transformed/selected/DFF.json: a4610d02a33fc4e72eff5c54ba8499b7d0f85e5d828dd054e4158f967b530b5b
+  research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json: 365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe
+window:
+  simulation_start: 2021-06-01
+  context_end: 2023-12-29
+  holdout_start: 2024-04-02
+  end: 2026-07-31
+friction_bps: [0, 10, 25]
+decision_friction_bps: 10
+monthly_contribution: 2000.0
+protected_weight: 0.165
+minimum_lot: 25.0
+dividend_tax_rate: 0.168
+cash_tax_rate: 0.24
+cash_drag_bps: 25
+bootstrap:
+  seed: 20260907
+  resamples: 2000
+  mean_block_sessions: 21
+advisory_only: true
+stage1: UNARMED_AND_NOT_EXECUTABLE
