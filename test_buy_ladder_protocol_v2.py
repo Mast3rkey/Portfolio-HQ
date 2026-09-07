@@ -14,7 +14,7 @@ DECISION = (
     ROOT
     / "governance/decisions/LADDER-0002-canonical-buy-ladder-execution-amendment.md"
 )
-PROTOCOL_SHA256 = "fce77edb5a214186c7f14e08cccb728f6d3e8f191d427e541c81bcfe2b6fab7f"
+PROTOCOL_SHA256 = "717d3436e608440885174fb94a260aa022d3550d6160e5d44ad3dcabb4d1c238"
 CONFIG_HASHES = {
     "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
     "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
@@ -68,6 +68,10 @@ def test_protocol_freezes_identifiable_held_out_comparison() -> None:
         "0 bp and 25 bp",
         "2,000 resamples",
         "mean block length 21",
+        "seed **20260907**",
+        "ticker ascending as the deterministic tie-break",
+        "365.2425-day year",
+        "Sharpe use 252 trading sessions",
         "historical earnings calendar",
         "UNARMED AND NOT EXECUTABLE",
     ):

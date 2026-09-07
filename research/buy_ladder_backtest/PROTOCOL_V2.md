@@ -106,8 +106,11 @@ next-session open with zero transaction friction, so it is a deterministic refer
 portfolio rather than a fourth reported arm. Its selector decisions therefore remain
 identical across all friction cells as well as all reported arms.
 
-The selector uses accepted target weights, largest target-gap dollars first, the $25
-minimum lot, and the frozen cluster/effective-issuer/common-driver ceilings. Trend
+The selector uses accepted target weights, largest target-gap dollars first with
+ticker ascending as the deterministic tie-break, the $25 minimum lot, and the frozen
+cluster/effective-issuer/common-driver ceilings. Position values, whole-portfolio
+value, and constraint usage are measured at that selection close after the external
+contribution. Trend
 eligibility is evaluated once in the selector: additions below SMA200 are blocked
 unless RSI14 is below 30. The result is copied to every arm. For every
 cycle, the resulting ticker list and **cash budget** are byte-identical across A, B,
@@ -146,7 +149,12 @@ prohibited.
 - Cash accrues daily between market closes at the retained DFF rate available with
   a one-federal-business-day publication lag, less 25 bp annual operating drag, with
   no zero floor. Missing dates use only the last rate already available after that
-  lag. Cash interest is reduced by a fixed 24% ordinary-income tax rate.
+  lag. With DFF expressed in percent, the after-tax annual rate is
+  `(DFF / 100 - 0.0025) * (1 - 0.24)` and the cash factor over `d` calendar days is
+  `(1 + after_tax_annual_rate) ** (d / 365.2425)`. Cash accrual is posted before any
+  next-session open fill; positions and remaining cash are then marked at that
+  session's close. The $2,000 monthly contribution is posted only after the first
+  session's close valuation and therefore cannot fund a same-session fill.
   These settings match the already-preregistered middle taxable assumptions used by
   the whole-portfolio robustness program; they are held identical across arms.
 - Price returns exclude dividends. This biases the absolute return level and is
@@ -180,10 +188,12 @@ never raw account value; the first contribution initializes the index at 1.0. Se
 TWR attributes selected cash budgets and their unfilled cash to the selected segment.
 Unassigned whole-portfolio cash is reported only at the whole level. A segment with
 fewer than 12 attributed cycles is `INSUFFICIENT_EVIDENCE` for a segment veto.
+CAGR uses actual calendar days with a 365.2425-day year. Annualized volatility and
+Sharpe use 252 trading sessions; maximum drawdown is computed from the TWR index.
 
 Also retain daily portfolio paths and a deterministic paired stationary-block
 bootstrap of holdout daily return differences: 2,000 resamples, mean block length 21
-sessions, fixed seed recorded in the implementation configuration. Report the
+sessions, fixed seed **20260907**. Report the
 probability that each challenger's TWR difference has the claimed sign. There is no
 composite score.
 
@@ -220,7 +230,7 @@ checks all inputs and invariants without revealing holdout results, followed by 
 registered execution that emits the complete outputs atomically.
 
 The implementation must pin the protocol hash, configuration hashes, input manifest,
-Python/runtime identity, code commit, seed, and output hashes. Exact reruns must be
+Python/runtime identity, code commit, seed 20260907, and output hashes. Exact reruns must be
 byte-identical except for an explicitly separated execution timestamp. Independent
 review must recompute manifests, selector identity, metrics, gates, and narrative from
 retained artifacts.
