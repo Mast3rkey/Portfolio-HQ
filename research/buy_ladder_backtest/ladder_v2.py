@@ -1264,6 +1264,23 @@ def retained_result(
     }
 
 
+def retained_sensitivity_result(retained: Mapping[str, Any]) -> dict[str, Any]:
+    """Rebuild a sensitivity from its own decision and event ledgers."""
+    required = {
+        "portfolio_paths", "account_events", "cycles", "orders",
+        "constraint_events", "metrics", "bootstrap",
+    }
+    if set(retained) != required:
+        raise StudyError("sensitivity retained bundle is incomplete")
+    for field_name in ("cycles", "orders", "constraint_events"):
+        if type(retained[field_name]) is not list:
+            raise StudyError(f"invalid sensitivity ledger: {field_name}")
+    return retained_result(
+        retained["portfolio_paths"], retained["account_events"],
+        retained["cycles"], retained["orders"], retained["constraint_events"],
+    )
+
+
 def isolated_reconstruction() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="ladder-v2-reconstruct-") as temporary:
         isolated_root = Path(temporary)
@@ -1374,10 +1391,7 @@ def validate_documents(documents: Mapping[str, bytes], cfg: Mapping[str, Any]) -
     if canonical(bootstrap(reconstructed["paths"], cfg)) != documents["bootstrap.json"]:
         raise StudyError("retained main bootstrap does not independently recompute")
     for mode, retained in decoded["sensitivities.json"].items():
-        sensitivity_result = retained_result(
-            retained["portfolio_paths"], retained["account_events"],
-            decoded["cycles.json"], decoded["orders.json"], decoded["constraint_events.json"],
-        )
+        sensitivity_result = retained_sensitivity_result(retained)
         if metrics(sensitivity_result, cfg) != retained["metrics"]:
             raise StudyError(f"{mode}: retained metrics do not independently recompute")
         if bootstrap(sensitivity_result["paths"], cfg) != retained["bootstrap"]:
@@ -1426,6 +1440,8 @@ def execute() -> dict[str, Any]:
             "bootstrap": bootstrap(sensitivity["paths"], cfg),
             "portfolio_paths": {f"{arm}|{bps}|{scope}": value for (arm, bps, scope), value in sensitivity["paths"].items()},
             "account_events": account_events(sensitivity),
+            "cycles": sensitivity["cycles"], "orders": sensitivity["orders"],
+            "constraint_events": sensitivity["constraint_events"],
         }
     decision = disposition(main_metrics, main_bootstrap, sensitivities, cfg)
     json_values = {
