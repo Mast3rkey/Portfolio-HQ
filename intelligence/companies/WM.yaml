@@ -27,9 +27,9 @@ risks:
     severity: low
     identified: "2026-08-05"
     status: monitoring
-  - risk: "Valuation remains demanding after primary-source recovery: at 2026-09-03 14:47 UTC the market snapshot was $219.37 per share and 31.75x trailing earnings. That price was 36.4% above the high end of the repository's prior assumption-driven illustrative range. Because the old range is stale and not peer-derived, the comparison is a caution screen rather than a precise fair-value conclusion; a governed discount-rate valuation remains abstained rather than fabricated."
+  - risk: "A governed 2026-09-07 valuation sensitivity closes the prior discount-rate evidence gap but does not clear initiation. Using WM's $3.75B-$3.85B 2026 FCF guidance as an explicitly qualified FCFE proxy, a 4.78% Treasury yield, published industry beta/ERP inputs, and disclosed growth/terminal sensitivities produces $131.36 downside, $177.24 base, and $222.56 optimistic values per share versus the 2026-09-04 close of $218.99. Only the optimistic case reaches the market and terminal value supplies 70%-79% of modeled value. Peer FCF yields do not show WM as uniquely expensive, but issuer definitions differ and relative value is not an absolute margin of safety."
     severity: low
-    identified: "2026-09-03"
+    identified: "2026-09-07"
     status: monitoring
 catalysts:
   - catalyst: "Q3 2026 earnings release, expected around 2026-10-27 before market open."
@@ -39,15 +39,15 @@ catalysts:
     expected: "2026-12-31"
     status: pending
   - catalyst: "This record's own next scheduled review checkpoint, at which Q3 2026 results, further Stericycle synergy-target reconciliation, and any WM-specific PFAS litigation development will next be actively re-checked."
-    expected: "2026-12-02"
+    expected: "2026-12-06"
     status: pending
 conviction:
   rating: Medium
-  rationale: "Medium conviction is retained after directly reading WM's Q2 2026 release and filed 10-Q. The collection, landfill, transfer, recycling, renewable-energy, and healthcare portfolio produced $6.684B of quarterly revenue, $2.067B of adjusted operating EBITDA, and $1.104B of free cash flow; EBITDA and free-cash-flow guidance were maintained despite a lower revenue range. The offset is valuation and leverage: the 2026-09-03 market snapshot was 31.75x trailing earnings, while filed June debt totaled $23.356B before cash. Stericycle integration benefits remain partly management claims, and WM-specific PFAS exposure is not quantified. This rating excludes allocation, trading, and margin judgments and supports retaining the gate until valuation evidence is robust enough to justify initiation."
+  rationale: "Medium conviction is retained after directly reading WM's Q2 2026 release and filed 10-Q and completing a reproducible valuation sensitivity. The collection, landfill, transfer, recycling, renewable-energy, and healthcare portfolio produced $6.684B of quarterly revenue, $2.067B of adjusted operating EBITDA, and $1.104B of free cash flow; EBITDA and free-cash-flow guidance were maintained despite a lower revenue range. The offset is valuation and leverage: only the optimistic DCF case reaches the 2026-09-04 market price, while filed June debt totaled $23.356B before cash. Stericycle integration benefits remain partly management claims, and WM-specific PFAS exposure is not quantified. This rating excludes allocation, trading, and margin judgments and supports retaining the gate; the accepted 0.75% remains protected cash."
 review:
   cadence_days: 90
-  last_reviewed: "2026-09-03"
-  next_due: "2026-12-02"
+  last_reviewed: "2026-09-07"
+  next_due: "2026-12-06"
   log:
     - date: "2026-08-05"
       note: >
@@ -75,6 +75,14 @@ review:
         retained Medium conviction and the existing gate: the missing-package
         gap is fixed, but the current valuation and governed discount-rate
         evidence do not support gate clearance.
+    - date: "2026-09-07"
+      note: >
+        Closed the discount-rate evidence gap with a reproducible FCFE-proxy
+        sensitivity and current RSG/WCN peer cross-check. The base case remains
+        19.06% below the 2026-09-04 close and only the optimistic case reaches
+        the market; terminal value is 70%-79% of modeled equity value. Retained
+        Medium conviction and the existing cash_pending_clearance gate without
+        changing targets, protected cash, margin policy, or execution state.
 sources:
   - note: "Waste Management, Inc. Q2 2026 earnings release/call (reported/discussed 2026-07-27 through 2026-07-29), covering revenue, adjusted EBITDA, free cash flow, segment detail, and revised FY2026 guidance. Identified via WebSearch snippets citing the release and call commentary; not directly fetched/opened this session (WebFetch blocked)."
     url: null
@@ -99,4 +107,16 @@ sources:
     date: "2026-07-28"
   - note: "Directly read WM's Q2 2026 Form 10-Q, accession 0001104659-26-088016; primary source for filed financial statements, cash, debt, and risk disclosures."
     url: "https://investors.wm.com/node/31041/html"
+    date: "2026-07-29"
+  - note: "U.S. Treasury daily par yield curve; primary source for the 4.78% 10-year Treasury yield on 2026-09-04 used in the valuation sensitivity."
+    url: "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=202609&type=daily_treasury_yield_curve"
+    date: "2026-09-04"
+  - note: "Damodaran NYU datasets; published source for the 2026-08-01 implied equity-risk premium and Environmental & Waste Services industry beta inputs."
+    url: "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html"
+    date: "2026-09-07"
+  - note: "Republic Services Q2 2026 release; primary issuer source for the 2026 adjusted free-cash-flow guidance midpoint used in the peer cross-check."
+    url: "https://investor.republicservices.com/news-releases/news-release-details/republic-services-inc-reports-second-quarter-2026-results"
+    date: "2026-07-28"
+  - note: "Waste Connections Q2 2026 release; primary issuer source for the 2026 adjusted free-cash-flow guidance midpoint used in the peer cross-check."
+    url: "https://investors.wasteconnections.com/news/news-details/2026/Waste-Connections-Reports-Second-Quarter-2026-Results-and-Raises-Full-Year-Outlook/default.aspx"
     date: "2026-07-29"
