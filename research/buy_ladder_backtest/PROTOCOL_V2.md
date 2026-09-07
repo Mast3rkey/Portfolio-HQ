@@ -199,19 +199,36 @@ prohibited.
   one-third rung budget. No cell may create negative cash to pay costs.
 - Fractional shares are allowed. No sale, trim, borrowing, shorting, or forced
   liquidation exists in this study.
-- A cash dividend is earned only on shares held at the preceding XNYS close for an
-  action whose `ex_date` is the current session. Gross entitlement is
-  `eligible_quantity * rate`; it is credited after marking securities at the
-  ex-date close and before final close NAV is recorded, so it first earns cash
-  interest in the next close-to-close interval. Because the
-  retained action rows do not consistently carry payable dates, this ex-date credit
-  is an explicit timing approximation and must be disclosed. Every friction cell
-  debits tax at the same time using the preregistered taxable-middle approximation:
-  80% qualified at 15% and 20% ordinary at 24%, an effective 16.8% rate. Split
-  events must reconcile to the chosen split-adjusted OHLC series and must not be
-  applied a second time to simulated quantities. Gross dividends, dividend tax, and
-  net dividends are retained by ticker, arm, and session. Missing, duplicate,
-  nonpositive, or unreconciled dividend/split facts are fatal.
+- Chosen OHLC files and simulated quantities use the split basis at the fixed
+  **2026-07-31 adjustment anchor**. For a dividend before that anchor, convert its
+  raw per-share rate to the anchor basis by dividing by the product of every later
+  split ratio `new_rate / old_rate` for the same ticker. A split with `ex_date`
+  strictly after the dividend `ex_date` is later. If a split and dividend share an
+  `ex_date`, the evidence disposition must label the dividend rate `PRE_SPLIT` or
+  `POST_SPLIT`; include that split in the divisor only for `PRE_SPLIT`. An absent or
+  ambiguous same-day basis is fatal. Because the OHLC and quantities are already on
+  the anchor basis, split events are never applied again to simulated quantities.
+- A cash dividend is earned only on anchor-basis shares held at the preceding XNYS
+  close for an action whose `ex_date` is the current session. An ex-date open fill is
+  not eligible. Gross entitlement is `eligible_quantity * anchor_basis_rate`.
+  Recognize gross entitlement, tax, and a net dividend receivable after marking
+  securities at the ex-date close and before final close NAV is recorded. Every
+  friction cell uses the preregistered taxable-middle approximation: 80% qualified
+  at 15% and 20% ordinary at 24%, an effective 16.8% tax rate. The net receivable
+  counts in NAV but is not cash, earns no cash interest, and cannot fund a fill or a
+  later cycle before settlement.
+- Settle each receivable on its retained `payable_date`. At 00:00
+  America/New_York on that calendar date, move the net amount from receivable to
+  cash without changing NAV; if the date falls between XNYS closes, split that
+  close-to-close interval at settlement and accrue cash interest only after the
+  transfer. On a session, settlement occurs before cash accrual through that
+  session's open and before any open fill. Receivables persist across reporting-window
+  boundaries. A receivable payable after 2026-07-31 remains in final NAV and is not
+  pulled forward as cash. A payable date before its ex-date, or a missing, duplicate,
+  nonpositive, or unreconciled in-scope dividend/split fact, is fatal. Gross
+  dividends, dividend tax, net dividends, receivable balances, and settlements are
+  retained by ticker, arm, and event date. The shadow portfolio applies the identical
+  unit, entitlement, tax, receivable, and settlement rules to its own holdings.
 - Cash accrues daily between market closes at the retained DFF rate available with
   a one-federal-business-day publication lag, less 25 bp annual operating drag, with
   no zero floor. Missing dates use only the last rate already available after that
@@ -249,8 +266,8 @@ friction cell, report:
 - ending value, cumulative contributions, time-weighted cash percentage, cash drag,
   transaction count, deployed dollars, median deployment days, unfilled dollars,
   and unfilled-capital days;
-- gross dividends, dividend tax, net dividends, and the non-voting price-only TWR
-  diagnostic;
+- gross dividends, dividend tax, net dividends, receivable balances and settlements,
+  and the non-voting price-only TWR diagnostic;
 - maximum single-name weight, maximum target deviation, and counts of cluster,
   effective-issuer, and common-driver clips/blocks;
 - paired A/B/C cycle allocations proving selector identity.

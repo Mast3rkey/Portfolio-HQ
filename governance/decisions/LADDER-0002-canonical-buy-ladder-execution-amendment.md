@@ -43,9 +43,10 @@ identifiable and decision-useful by:
   while leaving the current production gate untouched;
 - freezing 2021-06-01–2023-12-29 as non-voting context and
   2024-04-02–2026-07-31 as the voting holdout;
-- adding 0/10/25 bp cost cells, lagged after-tax cash yield, arm-specific after-tax
-  dividend entitlements, a non-voting price-only diagnostic, and a paired
-  deterministic block-bootstrap confirmation gate;
+- adding 0/10/25 bp cost cells, lagged after-tax cash yield, split-normalized
+  arm-specific dividend receivables with payable-date settlement, a non-voting
+  price-only diagnostic, and a paired deterministic block-bootstrap confirmation
+  gate;
 - requiring a separate accepted evidence disposition to resolve the inherited
   selected-source, corporate-action, and SOL-lawful-inception conflicts before any
   ladder validation or execution; and
@@ -60,7 +61,7 @@ identifiable and decision-useful by:
 
 `research/buy_ladder_backtest/PROTOCOL_V2.md`
 
-SHA-256: `42b522e3ad59650dc1378c56bce37eb670804d6268cb43a4dd8b5966b5a9443d`
+SHA-256: `0529d0d64b213ad876173ba16f555b6c27b7812f483a4839bdffd9f47d609fe4`
 
 The protocol was finalized and hashed before this decision record was written. Any
 byte change requires another reviewed amendment. No registered execution may begin

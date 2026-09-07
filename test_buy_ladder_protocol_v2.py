@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import hashlib
+import json
+from decimal import Decimal
 from pathlib import Path
 
 import yaml
@@ -14,7 +16,7 @@ DECISION = (
     ROOT
     / "governance/decisions/LADDER-0002-canonical-buy-ladder-execution-amendment.md"
 )
-PROTOCOL_SHA256 = "42b522e3ad59650dc1378c56bce37eb670804d6268cb43a4dd8b5966b5a9443d"
+PROTOCOL_SHA256 = "0529d0d64b213ad876173ba16f555b6c27b7812f483a4839bdffd9f47d609fe4"
 CONFIG_HASHES = {
     "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
     "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
@@ -40,6 +42,10 @@ ELIGIBLE = {
     "META", "PANW", "LLY", "ISRG", "TMO", "V", "COST", "CEG", "ETN",
     "GEV", "GNRC", "PWR", "RTX", "SPY", "VEA", "VWO", "GLD",
 }
+ACTION_PATH = (
+    ROOT
+    / "research/level1_sleeve_robustness/data/transformed/actions/alpaca_actions.json"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -50,6 +56,24 @@ def _front_matter(path: Path) -> dict:
     text = path.read_text(encoding="utf-8")
     assert text.startswith("---\n")
     return yaml.safe_load(text.split("---\n", 2)[1])
+
+
+def _anchor_basis_rate(
+    raw_rate: Decimal,
+    dividend_day: str,
+    splits: list[dict],
+    *,
+    same_day_basis: str | None = None,
+) -> Decimal:
+    """Compact oracle for the frozen dividend-unit contract."""
+    factor = Decimal("1")
+    for split in splits:
+        split_day = str(split["ex_date"])
+        if split_day > dividend_day or (
+            split_day == dividend_day and same_day_basis == "PRE_SPLIT"
+        ):
+            factor *= Decimal(str(split["new_rate"])) / Decimal(str(split["old_rate"]))
+    return raw_rate / factor
 
 
 def test_protocol_and_configuration_are_exactly_pinned() -> None:
@@ -92,7 +116,10 @@ def test_protocol_freezes_identifiable_held_out_comparison() -> None:
         "A blocked or sub-$25 candidate does not stop later candidates",
         "against both\nother arms",
         "accepted evidence-disposition decision",
-        "effective 16.8% rate",
+        "effective 16.8% tax rate",
+        "2026-07-31 adjustment anchor",
+        "An ex-date open fill is\n  not eligible",
+        "receivable payable after 2026-07-31 remains in final NAV",
         "price-only diagnostic",
         "after-tax total-return whole-portfolio voting holdout",
         "SOL's provider first observation",
@@ -113,3 +140,61 @@ def test_frozen_roster_has_data_and_excludes_protected_names() -> None:
     text = PROTOCOL.read_text(encoding="utf-8")
     assert "SNPS, ICE, SPGI, WM, RKLB, and TSLA are gated and excluded" in text
     assert "BTC, ETH, SOL, CASH, and RESERVE are outside" in text
+
+
+def test_dividend_unit_entitlement_and_settlement_counterexamples() -> None:
+    rows = json.loads(ACTION_PATH.read_text(encoding="utf-8"))["rows"]
+    dividends = [
+        row for row in rows
+        if row.get("action_type") == "cash_dividend"
+        and row.get("symbol") in ELIGIBLE
+        and "2021-06-01" <= str(row.get("ex_date", "")) <= "2026-07-31"
+    ]
+    assert len(dividends) == 371
+    assert all(row.get("payable_date") for row in dividends)
+
+    splits = [row for row in rows if row.get("action_type") == "split"]
+    nvda = next(
+        row for row in dividends
+        if row["symbol"] == "NVDA" and row["ex_date"] == "2024-03-05"
+    )
+    avgo = next(
+        row for row in dividends
+        if row["symbol"] == "AVGO" and row["ex_date"] == "2024-06-24"
+    )
+    nvda_splits = [row for row in splits if row.get("symbol") == "NVDA"]
+    avgo_splits = [row for row in splits if row.get("symbol") == "AVGO"]
+    assert _anchor_basis_rate(Decimal(str(nvda["rate"])), nvda["ex_date"], nvda_splits) == Decimal("0.004")
+    assert _anchor_basis_rate(Decimal(str(avgo["rate"])), avgo["ex_date"], avgo_splits) == Decimal("0.525")
+
+    same_day_split = [{"ex_date": "2024-01-02", "new_rate": 10, "old_rate": 1}]
+    assert _anchor_basis_rate(
+        Decimal("1"), "2024-01-02", same_day_split, same_day_basis="PRE_SPLIT"
+    ) == Decimal("0.1")
+    assert _anchor_basis_rate(
+        Decimal("1"), "2024-01-02", same_day_split, same_day_basis="POST_SPLIT"
+    ) == Decimal("1")
+
+    preceding_close_quantity = Decimal("10")
+    ex_date_open_fill = Decimal("5")
+    gross_receivable = preceding_close_quantity * Decimal("0.004")
+    assert gross_receivable == Decimal("0.040")
+    assert gross_receivable != (
+        preceding_close_quantity + ex_date_open_fill
+    ) * Decimal("0.004")
+    tax = gross_receivable * Decimal("0.168")
+    net_receivable = gross_receivable - tax
+    assert tax == Decimal("0.006720")
+    assert net_receivable == Decimal("0.033280")
+
+    cash_before, receivable_before = Decimal("0"), net_receivable
+    nav_before = cash_before + receivable_before
+    cash_after, receivable_after = cash_before + receivable_before, Decimal("0")
+    assert cash_after + receivable_after == nav_before
+
+    spy = next(
+        row for row in dividends
+        if row["symbol"] == "SPY" and row["ex_date"] == "2024-03-15"
+    )
+    assert spy["payable_date"] == "2024-04-30"
+    assert spy["ex_date"] < "2024-04-02" < spy["payable_date"]
