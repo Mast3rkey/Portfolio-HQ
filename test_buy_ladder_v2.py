@@ -301,6 +301,42 @@ def test_retained_result_refuses_missing_event_cell():
         engine.retained_result(paths_doc, events, [], [], [])
 
 
+def test_sensitivity_reconstruction_uses_its_own_decision_ledgers(monkeypatch):
+    retained = {
+        "portfolio_paths": {"sentinel": []},
+        "account_events": {"sentinel": {}},
+        "cycles": [{"source": "sensitivity"}],
+        "orders": [{"source": "sensitivity"}],
+        "constraint_events": [{"source": "sensitivity"}],
+        "metrics": {},
+        "bootstrap": [],
+    }
+    captured = {}
+
+    def fake_retained_result(paths, events, cycles, orders, constraints):
+        captured.update(paths=paths, events=events, cycles=cycles, orders=orders, constraints=constraints)
+        return {"ok": True}
+
+    monkeypatch.setattr(engine, "retained_result", fake_retained_result)
+    assert engine.retained_sensitivity_result(retained) == {"ok": True}
+    assert captured == {
+        "paths": retained["portfolio_paths"],
+        "events": retained["account_events"],
+        "cycles": retained["cycles"],
+        "orders": retained["orders"],
+        "constraints": retained["constraint_events"],
+    }
+
+
+def test_sensitivity_reconstruction_refuses_missing_own_ledger():
+    retained = {
+        "portfolio_paths": {}, "account_events": {}, "cycles": [], "orders": [],
+        "metrics": {}, "bootstrap": [],
+    }
+    with pytest.raises(engine.StudyError, match="bundle is incomplete"):
+        engine.retained_sensitivity_result(retained)
+
+
 def test_gate_boundaries_are_strict_for_return_and_inclusive_for_drawdown():
     metric = {}
     for arm in engine.ARMS:
