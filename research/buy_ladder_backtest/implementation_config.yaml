@@ -16,6 +16,7 @@ configuration_hashes:
 support_hashes:
   research/level1_sleeve_robustness/data/transformed/selected/DFF.json: a4610d02a33fc4e72eff5c54ba8499b7d0f85e5d828dd054e4158f967b530b5b
   research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json: 365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe
+  research/buy_ladder_backtest/inputs/price_anomaly_overrides.json: 9f0a9513b769e036f4d1b209f5d63b6b32893fdc375a319252b5b89dc953c13f
 window:
   simulation_start: 2021-06-01
   context_end: 2023-12-29
