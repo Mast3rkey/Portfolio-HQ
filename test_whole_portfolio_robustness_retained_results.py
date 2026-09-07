@@ -14,6 +14,18 @@ STUDY = ROOT / "research/whole_portfolio_robustness"
 RESULTS = STUDY / "execution"
 VALIDATION = STUDY / "validation"
 EXECUTION_COMMIT = "1ce41d0efce16139f24de783df0e994d9a7c7853"
+OUTPUT_MANIFEST_SHA256 = (
+    "d81b892b28219f6bd930eb65336bbb3cffb692d0903355d2c21a31377edfafff"
+)
+NON_HOLDOUT_RECEIPT_SHA256 = (
+    "a11e4536d38fc3c5870c1b898c0d4984c6ba90689c15e3b223d6202179d2786d"
+)
+SOL_ACQUISITION_RECEIPT_SHA256 = (
+    "d6ee9c6f6f8a00dff6b9cc50fa99ef369e35c7b99e670bb9c17b21a7963e6ede"
+)
+RETENTION_RECEIPT_SHA256 = (
+    "17e25d403b0f95c61801d917c8253147c6774a1181e4ef35cef34d94037514a8"
+)
 REGISTERED_OUTPUTS = {
     "bootstrap.json",
     "disposition.yaml",
@@ -41,6 +53,7 @@ def _sha256(path: Path) -> str:
 
 def test_retained_result_manifest_is_complete_and_exact() -> None:
     assert {path.name for path in RESULTS.iterdir()} == REGISTERED_OUTPUTS
+    assert _sha256(RESULTS / "output_manifest.json") == OUTPUT_MANIFEST_SHA256
     manifest = _json(RESULTS / "output_manifest.json")
     assert set(manifest["files"]) == REGISTERED_OUTPUTS - {"output_manifest.json"}
     for name, expected in manifest["files"].items():
@@ -71,10 +84,24 @@ def test_retained_disposition_preserves_policy_boundaries() -> None:
 
 
 def test_retained_validation_and_acquisition_receipts_bind_the_run() -> None:
+    freeze = _json(RESULTS / "input_freeze.json")
     validation = _json(VALIDATION / "non_holdout_validation_receipt.json")
     acquisition = _json(VALIDATION / "sol_acquisition_receipt.json")
     retention = _yaml(VALIDATION / "retention_receipt.yaml")
 
+    assert (
+        _sha256(VALIDATION / "non_holdout_validation_receipt.json")
+        == NON_HOLDOUT_RECEIPT_SHA256
+        == freeze["validation_receipt_sha256"]
+    )
+    assert (
+        _sha256(VALIDATION / "sol_acquisition_receipt.json")
+        == SOL_ACQUISITION_RECEIPT_SHA256
+    )
+    assert (
+        _sha256(VALIDATION / "retention_receipt.yaml")
+        == RETENTION_RECEIPT_SHA256
+    )
     assert validation["status"] == "PASS"
     assert validation["phase"] == "NON_HOLDOUT_VALIDATION"
     assert validation["validation_case_count"] == 54
@@ -85,6 +112,7 @@ def test_retained_validation_and_acquisition_receipts_bind_the_run() -> None:
     assert acquisition["coverage_identity_match"] is True
     assert acquisition["no_registered_results_executed"] is True
     assert acquisition["actual_sha256"] == acquisition["expected_sha256"]
+    assert acquisition["actual_sha256"] == freeze["datasets"]["SOL"]["sha256"]
     assert retention["execution_commit"] == EXECUTION_COMMIT
     assert retention["workflow_validation"] == "PASS"
     assert retention["independent_reproduction"]["status"] == "PASS"
