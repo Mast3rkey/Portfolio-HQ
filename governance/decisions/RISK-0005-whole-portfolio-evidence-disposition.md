@@ -26,6 +26,11 @@ records a EUR1.88 dividend, a 2026-08-05 payment date, and a 1.1371 EUR/USD fixi
 for New York shares. This shows why hash integrity and the presence of payment dates
 cannot establish external action completeness.
 
+The 17 action flags compare action type and ex-date signatures across each
+provider's full retained history. The flags do not by themselves establish an
+equal-window amount discrepancy. The separately verified ASML omission is the
+concrete action-completeness defect.
+
 Transformation fidelity is not the disputed point. The audit reconstructed the
 retained Alpaca transforms and action aggregation from their retained raw bytes.
 The defect is that the run consumed a different source selection than its inventory,
@@ -45,11 +50,20 @@ may not be cited as empirical validation or confirmation of the accepted targets
 The targets continue only under their separate accepted policy authority, and the
 study adopted no alternative automatically.
 
-The retained metrics remain reproducible facts about the inputs actually consumed.
-They do not establish substantive data integrity, externally complete corporate
-actions, a complete SOL confirmation path, or a lawful pre-boundary RTX history.
-Every portfolio alternative uses the affected inputs, so no comparative adoption
-claim is exempted from this qualification.
+The retained metrics are preserved computed outputs. Their reproducibility is
+limited to the pinned code, consumed inputs, runtime, and execution evidence; it is
+not external validation of those inputs. They do not establish substantive data
+integrity, externally complete corporate actions, a complete SOL confirmation path,
+or a lawful pre-boundary RTX history. Every portfolio alternative uses the affected
+inputs, so no comparative adoption claim is exempted from this qualification. Under
+the original protocol's rule for incomplete mandatory evidence, the current
+evidentiary conclusion is `UNABLE_TO_DETERMINE`; this does not rewrite the retained
+historical disposition.
+
+The registered SOL date is a protocol-defined coverage start, not independently
+proved asset inception. The early SOL and RTX defects do not mechanically invalidate
+a later independently initialized window by themselves. Every window remains subject
+to the shared source-selection and action-completeness qualification.
 
 ## Downstream disposition
 

@@ -22,7 +22,8 @@
       "research/whole_portfolio_robustness/implementation_config.yaml": "f23ca9c4c32d8689fc2355089ffb4049de1c50416d47d3d7700f575eea38a9ce",
       "research/whole_portfolio_robustness/pre_registration.yaml": "7e57ca694455431aefde4a5e7eb1fe89a9296ff3579be4983981b90cf049a5e6",
       "research/whole_portfolio_robustness/validation/non_holdout_validation_receipt.json": "a11e4536d38fc3c5870c1b898c0d4984c6ba90689c15e3b223d6202179d2786d",
-      "research/whole_portfolio_robustness/validation/retention_receipt.yaml": "17e25d403b0f95c61801d917c8253147c6774a1181e4ef35cef34d94037514a8"
+      "research/whole_portfolio_robustness/validation/retention_receipt.yaml": "17e25d403b0f95c61801d917c8253147c6774a1181e4ef35cef34d94037514a8",
+      "research/whole_portfolio_robustness/validation/sol_acquisition_receipt.json": "d6ee9c6f6f8a00dff6b9cc50fa99ef369e35c7b99e670bb9c17b21a7963e6ede"
     }
   },
   "findings": {
@@ -60,6 +61,8 @@
     },
     "corporate_action_reconciliation_conflict": {
       "mismatch_count": 17,
+      "comparison_scope": "FULL_RETAINED_HISTORY_ACTION_TYPE_AND_EX_DATE_SIGNATURES_ONLY",
+      "amount_difference_inference": "NOT_ESTABLISHED_BY_THE_BOOLEAN_MISMATCH_FLAG",
       "mismatch_tickers": [
         "ASML",
         "AVGO",
@@ -83,6 +86,7 @@
     },
     "sol_coverage_gap": {
       "registered_lawful_inception": "2021-01-01",
+      "registered_date_semantics": "PROTOCOL_DEFINED_START_NOT_INDEPENDENT_PROOF_OF_ASSET_GENESIS",
       "consumed_provider": "COINBASE_EXCHANGE",
       "first_consumed_observation": "2021-06-17",
       "affected_confirmation_sessions": 115,
@@ -115,7 +119,7 @@
     }
   },
   "surviving_claims": [
-    "THE_RETAINED_BYTES_AND_NUMERIC_OUTPUTS_ARE_REPRODUCIBLE_FROM_THE_CONSUMED_INPUTS",
+    "RETAINED_RESULT_BYTES_ARE_PRESERVED_AND_REPRODUCIBILITY_IS_LIMITED_TO_PINNED_CODE_INPUTS_RUNTIME_AND_EXECUTION_EVIDENCE",
     "THE_STUDY_DID_NOT_AUTOMATICALLY_ADOPT_ANY_ALTERNATIVE_TARGETS",
     "ACCEPTED_TARGETS_CONTINUE_ONLY_UNDER_THEIR_SEPARATE_POLICY_AUTHORITY"
   ],
@@ -126,6 +130,8 @@
     "THE_CONFIRMATION_WINDOW_FULLY_MODELED_SOL_FROM_REGISTERED_INCEPTION",
     "THE_PRE_2020_RTX_PATH_REPRESENTS_THE_REGISTERED_ISSUER_IDENTITY"
   ],
+  "protocol_missing_evidence_disposition": "UNABLE_TO_DETERMINE",
+  "window_scope_note": "EARLY_SOL_OR_RTX_DEFECTS_DO_NOT_MECHANICALLY_INVALIDATE_A_LATER_INDEPENDENTLY_INITIALIZED_WINDOW;_ALL_WINDOWS_REMAIN_SUBJECT_TO_SHARED_SOURCE_AND_ACTION_QUALIFICATIONS",
   "downstream_gates": {
     "ladder_validation": "HALT_PENDING_ACCEPTED_EXACT_INPUT_DISPOSITION",
     "ladder_execution": "HALT_PENDING_ACCEPTED_EXACT_INPUT_DISPOSITION",

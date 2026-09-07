@@ -49,6 +49,16 @@ def test_disposition_preserves_every_original_authority_and_result_byte() -> Non
 
 def test_consumed_alpaca_transforms_reconstruct_from_retained_raw_bytes() -> None:
     data_root = ROOT / "research/level1_sleeve_robustness/data"
+    action_rows = []
+    for raw_path in sorted((data_root / "raw/alpaca/actions").glob("*/*.json")):
+        payload = _json(raw_path)
+        for action_type, rows in (payload.get("corporate_actions") or {}).items():
+            action_rows.extend(
+                {"action_type": action_type, **row} for row in (rows or [])
+            )
+    reconstructed_actions = acquisition.normalize_actions(action_rows)
+    assert reconstructed_actions == _json(ACTION_PATH)
+
     candidates = data_root / "transformed/candidates/alpaca"
     for candidate_path in sorted(candidates.glob("*.json")):
         symbol = candidate_path.stem
@@ -61,17 +71,10 @@ def test_consumed_alpaca_transforms_reconstruct_from_retained_raw_bytes() -> Non
             symbol, bars, "ALPACA_MARKET_DATA"
         )
         retained = _json(candidate_path)
-        reconstructed["events"] = retained["events"]
+        reconstructed["events"] = acquisition.actions_for_symbol(
+            reconstructed_actions, symbol
+        )
         assert reconstructed == retained
-
-    action_rows = []
-    for raw_path in sorted((data_root / "raw/alpaca/actions").glob("*/*.json")):
-        payload = _json(raw_path)
-        for action_type, rows in (payload.get("corporate_actions") or {}).items():
-            action_rows.extend(
-                {"action_type": action_type, **row} for row in (rows or [])
-            )
-    assert acquisition.normalize_actions(action_rows) == _json(ACTION_PATH)
 
 
 def test_consumed_source_and_action_conflicts_are_complete_and_reproducible() -> None:

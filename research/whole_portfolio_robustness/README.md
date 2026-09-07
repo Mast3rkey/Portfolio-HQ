@@ -8,12 +8,12 @@
 > [`evidence_disposition.json`](evidence_disposition.json) and
 > [`RISK-0005`](../../governance/decisions/RISK-0005-whole-portfolio-evidence-disposition.md).
 
-`PORTFOLIO-ROBUSTNESS-0001` is a preregistered, advisory-only comparison of
+Historically, `PORTFOLIO-ROBUSTNESS-0001` was a preregistered, advisory-only comparison of
 the accepted portfolio against five bounded alternatives. It does not optimize
 weights, use account holdings, change policy, authorize leverage, or execute
 trades. Stage 1 remains **UNARMED AND NOT EXECUTABLE**.
 
-## Frozen execution sequence
+## Historical frozen execution sequence
 
 1. `whole_portfolio_robustness_engine.py` verifies every registered input and
    derives the six reconciled 100% target portfolios without renormalizing the
@@ -36,7 +36,7 @@ result artifact from the same immutable commit. Ordinary pull-request CI tests
 the implementation but never installs those quarantined bytes or runs the
 holdout.
 
-## Decision cell and sensitivities
+## Historical decision cell and sensitivities
 
 The sole decision cell is quarterly rebalancing, 10 basis points of one-way
 cost, and `TAXABLE_MID`. Annual cadence, 0/25-basis-point costs, and the other
@@ -45,6 +45,7 @@ after results are known. The disposition may only retain the baseline or
 recommend a separate policy review. It never adopts a target change.
 
 Machine-readable `metrics.json`, `bootstrap.json`, and
-`sensitivity_matrix.json` are facts. `disposition.yaml` and `results.md` contain
-the threshold-driven inference. `limitations.md` records the current-roster,
+`sensitivity_matrix.json` are retained computed outputs subject to `RISK-0005`,
+not decision-grade facts. `disposition.yaml` and `results.md` retain the historical
+threshold-driven inference. `limitations.md` records the historical current-roster,
 look-through, tax, provider, cash-rate, and non-predictive boundaries.
