@@ -3950,8 +3950,8 @@ class TestTheScopeGuardCatchesTheReviewedBypasses:
         """
         rel = "test_portfolio_hq_dashboard_decisions.py"
         src = (ROOT / rel).read_text(encoding="utf-8")
-        assert "== 164" in src, "the cardinality anchor this test re-anchors has moved"
-        assert not _unasserted_predicates(rel, src.replace("== 164", "== 165")), (
+        assert "== 165" in src, "the cardinality anchor this test re-anchors has moved"
+        assert not _unasserted_predicates(rel, src.replace("== 165", "== 166")), (
             "a lawful cardinality re-anchor was reported as a weakening")
 
     def test_a_genuine_strengthening_is_not_reported_as_a_loss(self):

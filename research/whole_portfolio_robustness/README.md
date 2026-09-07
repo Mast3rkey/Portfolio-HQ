@@ -1,5 +1,13 @@
 # Whole-portfolio robustness execution
 
+> **Current evidence status (2026-09-07): EVIDENCE LIMITED — NOT DECISION GRADE.**
+> A post-execution audit found source-selection, corporate-action, SOL coverage,
+> and RTX identity-boundary defects that the original gate did not surface. The
+> retained `RETAIN_BASELINE` output is preserved historical evidence and must not
+> be cited as empirical validation of the baseline. See
+> [`evidence_disposition.json`](evidence_disposition.json) and
+> [`RISK-0005`](../../governance/decisions/RISK-0005-whole-portfolio-evidence-disposition.md).
+
 `PORTFOLIO-ROBUSTNESS-0001` is a preregistered, advisory-only comparison of
 the accepted portfolio against five bounded alternatives. It does not optimize
 weights, use account holdings, change policy, authorize leverage, or execute
