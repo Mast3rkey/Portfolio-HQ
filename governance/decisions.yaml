@@ -1215,3 +1215,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0009, NUM-0001, RISK-0001, RISK-0002, RISK-0005, LADDER-0001, LADDER-0002]
     supporting_artifact: research/buy_ladder_backtest/inputs/input_disposition.json
     file: governance/decisions/LADDER-0003-ladder-input-evidence-disposition.md
+  - decision_id: LADDER-0004
+    date: 2026-09-07
+    status: Accepted
+    category: research_integrity_correction
+    related_decisions: [GOV-0001, GOV-0002, OPS-0009, NUM-0001, LADDER-0001, LADDER-0002, LADDER-0003]
+    supporting_artifact: null
+    file: governance/decisions/LADDER-0004-invalid-initial-execution-and-corrective-reexecution-authorization.md
