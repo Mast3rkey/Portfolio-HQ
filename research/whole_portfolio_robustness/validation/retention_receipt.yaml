@@ -32,4 +32,3 @@ disposition: RETAIN_BASELINE
 targets_changed: false
 advisory_only: true
 stage1: UNARMED_AND_NOT_EXECUTABLE
-
