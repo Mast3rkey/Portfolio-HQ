@@ -18256,7 +18256,7 @@ workstreams:
           AUTHORIZATION_ROOT absent, no stage1_results.yaml, all three authorization predicates
           False, and ATTEMPT_1 INTACT, UNCLAIMED and UNCONSUMED.
       - gate: protected-capital-accounting-and-full-book-reconciliation
-        status: in_progress
+        status: complete
         pr: 364
         description: >-
           PROTECTED-CAPITAL ACCOUNTING AND FULL-BOOK RECONCILIATION. One bounded
@@ -18368,8 +18368,24 @@ workstreams:
           INPUT cash value, is superseded by post-plan preservation tests. Stage 1
           remains UNARMED and NOT EXECUTABLE; the lane is absent; ATTEMPT_1 intact,
           unclaimed and unconsumed; XASSET-0061 remains Proposed; no .env,
-          credential, live allocation, order or trade. Draft, open, unmerged;
-          awaiting an independent FULL exact-head review.
+          credential, live allocation, order or trade.
+          MERGE STATE, corrected 2026-09-03: the sentence previously ending this
+          description -- "Draft, open, unmerged; awaiting an independent FULL
+          exact-head review" -- described this unit while it was in flight and is
+          now FALSE. PR #364 is MERGED: merged_by Mast3rkey at
+          2026-09-03T04:30:36Z, head 40b9f09b8fade3e323596838be6b5aeda2a2e599
+          independently confirmed an ancestor of main, merge commit
+          fa8584d5376dfa08feaaab2ef4499efb47eecb32. This gate's status is
+          therefore complete.
+          REVIEW STATE AS FOUND, recorded honestly and NOT claimed as satisfied:
+          PR #364 carries 28 GitHub reviews, every one of them state COMMENTED --
+          there is NO review in state APPROVED. Its final review 5097752569 IS
+          anchored to the exact merged head 40b9f09b, submitted 2026-09-03T04:30:06Z,
+          thirty seconds before the merge. NO retained artifact for this unit exists
+          under governance/audits/, whose most recent addition by commit date is
+          2026-08-14; a commit-message and PR-body citation was the only record.
+          This note records what is there. It does not assert that an OPS-0009
+          review obligation was met, and it does not retroactively satisfy one.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -19357,6 +19373,22 @@ workstreams:
       entry's own roadmap_preservation field names remain wholly
       unauthorized, unchanged.
     blocker: >
+      LIVE-STATE CORRECTION, 2026-09-03 (Class 2 factual sync, OPS-0014): the
+      "sole active lane / sole mutation lane" statement dated 2026-08-16 below is
+      STALE and is retained only as history. Verified against live GitHub state at
+      main b3a647aa064260dc293fad2fa1b21d7222c9109a (CI run 33780621218,
+      completed/success): ZERO open pull requests at that head, so NO mutation lane
+      was held by any unit; this register-sync unit then took the single OPS-0014
+      SS-D mutation lane, and WS-0014's shared active_branch/active_pr advanced
+      onto it accordingly. PR #364
+      (PHQ-2026-07, protected-capital accounting and full-book reconciliation) is
+      MERGED — merged_by Mast3rkey at 2026-09-03T04:30:36Z, head
+      40b9f09b8fade3e323596838be6b5aeda2a2e599 confirmed an ancestor of main, merge
+      commit fa8584d5376dfa08feaaab2ef4499efb47eecb32 — and its gate above is now
+      status: complete. This correction records confirmed merge state only. It
+      advances, revives, arms, or reauthorizes NOTHING in the ENDPOINT-0001 /
+      XASSET Stage-1 chain: Stage 1 remains UNARMED and NOT EXECUTABLE, the lane
+      ABSENT, and ATTEMPT_1 intact, unclaimed and unconsumed.
       Current critical path, 2026-08-16 (post-XASSET-0026 merge): XASSET-0027
       is the sole active lane and the sole mutation lane. It is a combined Lane
       G governance unit — constituting competent Level-1 endpoint authority and
@@ -20061,10 +20093,10 @@ workstreams:
       CHANGE IS IMPLEMENTED HERE -- level1_stage1_execution_authorization.py stays byte-identical
       to base and to both prior reviewed heads, and Stage 1 remains UNARMED and NOT EXECUTABLE
       with ATTEMPT_1 intact, unclaimed and unconsumed.
-    active_branch: claude/protected-capital-accounting
-    active_pr: 364
-    last_verified_main_sha: 3db918530b10ffc1423ba0b749b086e349a4901d
-    last_verified_date: 2026-09-02
+    active_branch: claude/phq-allocator-restore-2a2zxw
+    active_pr: 369
+    last_verified_main_sha: b3a647aa064260dc293fad2fa1b21d7222c9109a
+    last_verified_date: 2026-09-03
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively
