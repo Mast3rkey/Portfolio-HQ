@@ -103,9 +103,9 @@ def synth_repo(tmp_path: Path) -> Path:
 
 # ── real-repository catalog / reconciliation ────────────────────────────────
 
-def test_real_repository_catalog_builds_all_71_with_no_issues():
+def test_real_repository_catalog_builds_all_decisions_with_no_issues():
     cat = decisions.build_catalog(REPO_ROOT)
-    assert len(cat.decisions) == 163
+    assert len(cat.decisions) == 164
     assert len(cat.legacy) == 12
     assert cat.issues == ()
     assert sum(len(d.issues) for d in cat.decisions) == 0
@@ -520,7 +520,7 @@ def test_title_h1_fallback(tmp_path: Path):
     assert d.title_source == "h1"
 
 
-def test_title_filename_fallback_real_corpus_all_58():
+def test_title_filename_fallback_real_corpus():
     cat = decisions.build_catalog(REPO_ROOT)
     assert all(d.title_source == "filename" for d in cat.decisions)
 
@@ -922,7 +922,7 @@ def test_real_repository_model_and_render_succeed_end_to_end():
     m = build_model(REPO_ROOT)
     html = render_html(m)
     assert html.startswith("<!DOCTYPE html>")
-    assert len(m.decision_catalog.decisions) == 163
+    assert len(m.decision_catalog.decisions) == 164
 
 
 def test_every_decision_renders_exactly_one_detail_section():
