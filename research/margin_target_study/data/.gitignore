@@ -1,4 +1,0 @@
-# MARGIN-0005 quarantine: Yahoo-derived caches (TR validation, Track 3 books, ^IRX)
-# are local-only by governed decision (licensing; see data_manifest.yaml) and must
-# never be committed. Reproduce via: python3 data_acquisition.py yahoo
-quarantine_yahoo/
