@@ -46,14 +46,16 @@ identifiable and decision-useful by:
 - adding 0/10/25 bp cost cells, lagged after-tax cash yield, and a paired deterministic
   block-bootstrap confirmation gate; and
 - specifying next-session activation, gap-through fills, cycle expiry, 210-session
-  availability, deterministic tie-breaking, event order, metric annualization, seed
-  20260907, manifests, atomic outputs, and independent reproduction.
+  availability, the exact greedy allocator, XNYS calendar, Actual/360 cash accrual,
+  pairwise winner gates, deterministic tie-breaking, event order, metric
+  annualization, seed 20260907, manifests, atomic outputs, and independent
+  reproduction.
 
 ## Exact pin
 
 `research/buy_ladder_backtest/PROTOCOL_V2.md`
 
-SHA-256: `717d3436e608440885174fb94a260aa022d3550d6160e5d44ad3dcabb4d1c238`
+SHA-256: `3465f9aecf6c379919c872b1e63ca41bee67e17afd24c4b0bd3ed124dd6a7041`
 
 The protocol was finalized and hashed before this decision record was written. Any
 byte change requires another reviewed amendment. No registered execution may begin

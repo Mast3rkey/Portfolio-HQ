@@ -23,8 +23,9 @@ immediate deployment.
 
 There is no parameter search and no fourth arm.
 
-- **H0 / default:** retain A unless a challenger clears every adoption gate in §10.
-- **H1:** C clears every gate versus A; recommend simplification.
+- **H0 / default:** retain A unless B or C clears every adoption gate against both
+  other arms in §10.
+- **H1:** C clears every gate versus both A and B; recommend simplification.
 - **H2:** A clears every gate versus both B and C; report stronger evidence for A.
 - **H3:** B clears every gate versus both A and C; recommend B for later, separate
   governance consideration.
@@ -64,13 +65,18 @@ roster row is fatal; unavailable history is handled only by §4.
 The implementation reuses the retained, split-adjusted, non-total-return daily OHLC
 files at
 `research/level1_sleeve_robustness/data/transformed/candidates/alpaca/<TICKER>.json`
-and the retained DFF series at
-`research/level1_sleeve_robustness/data/raw/fred/DFF.csv`. It must write a manifest
+and the retained raw and validated transformed DFF series named below. It must write a manifest
 with the SHA-256, provider, adjustment, first/last observation, and row count for
 every consumed file before computing results.
 
-The DFF file is already frozen at SHA-256
+The raw DFF file is already frozen at SHA-256
 `a052a99256ac7fdf075911b03496ab14acbcfd76f428137966bc0fd8781c4849`.
+The validated transformed DFF file at
+`research/level1_sleeve_robustness/data/transformed/selected/DFF.json` is frozen at
+`a4610d02a33fc4e72eff5c54ba8499b7d0f85e5d828dd054e4158f967b530b5b`.
+The XNYS session calendar at
+`research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json` is frozen at
+`365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe`.
 The implementation must reject any mismatch before validation or execution.
 
 Market data end is fixed at **2026-07-31**. Later rows, if present, are rejected.
@@ -85,11 +91,18 @@ account, credential, holdings, order, and brokerage access are prohibited.
   before any V2 result was computed and matches the first retained GEV observation.
 - Regime context: calendar 2022. Non-voting and reported separately.
 
-Indicators and selection on session `t` may use observations only through `t`'s
-close. Orders first become active on the next trading session. A ticker is unavailable
-until it has 210 prior observations, so GEV necessarily enters the eligible selector
-later than the holdout start. The manifest must disclose each ticker's first eligible
-decision date. No backfill, proxy history, or silent full-window exclusion is allowed.
+The frozen XNYS file is the sole master trading calendar and defines each month's first
+session. Indicators and selection on session `t` may use observations only through
+`t`'s close. Orders first become active on the next XNYS session. A ticker is
+unavailable until it has at least 210 completed OHLC rows through `t`, inclusive, so
+GEV necessarily enters the eligible selector later than the holdout start. Once a
+ticker is eligible, a missing required XNYS OHLC row is fatal. The manifest must
+disclose each ticker's first eligible decision date. No backfill, proxy history, or
+silent full-window exclusion is allowed.
+
+The simulation begins on 2021-06-01 and carries one continuous portfolio state
+through 2026-07-31. Window metrics rebase the TWR index at each window start; they do
+not restart holdings or cash. Calendar 2022 is a slice of the continuous context path.
 
 ## 5. Shared selector: timing is the only arm difference
 
@@ -110,11 +123,20 @@ The selector uses accepted target weights, largest target-gap dollars first with
 ticker ascending as the deterministic tie-break, the $25 minimum lot, and the frozen
 cluster/effective-issuer/common-driver ceilings. Position values, whole-portfolio
 value, and constraint usage are measured at that selection close after the external
-contribution. Trend
-eligibility is evaluated once in the selector: additions below SMA200 are blocked
+contribution. Trend eligibility is evaluated once in the selector: additions below SMA200 are blocked
 unless RSI14 is below 30. The result is copied to every arm. For every
 cycle, the resulting ticker list and **cash budget** are byte-identical across A, B,
 C, and all friction cells. If they are not, execution fails closed.
+
+The allocation is the frozen production greedy rule applied to synthetic state. Set
+`remaining` to $2,000; rank eligible positive gaps as above; then for each candidate
+set its cash budget to the minimum of its target gap, `remaining`, and every applicable
+cluster, effective-issuer, embedded-fund, and common-driver dollar room. Record the
+candidate only when that clipped budget is at least $25, update all running position
+and exposure values, subtract it from `remaining`, and continue until the list ends or
+`remaining < $25`. A blocked or sub-$25 candidate does not stop later candidates.
+Unassigned `remaining` stays cash. Fixed fixtures must prove this independent
+implementation matches `allocate.py` at the frozen configuration snapshot.
 
 Only the new $2,000 contribution is staged each cycle. Cash left by earlier expired
 orders stays cash and is not rerouted. This corrects V1's ambiguous arm-dependent gap
@@ -149,9 +171,11 @@ prohibited.
 - Cash accrues daily between market closes at the retained DFF rate available with
   a one-federal-business-day publication lag, less 25 bp annual operating drag, with
   no zero floor. Missing dates use only the last rate already available after that
-  lag. With DFF expressed in percent, the after-tax annual rate is
-  `(DFF / 100 - 0.0025) * (1 - 0.24)` and the cash factor over `d` calendar days is
-  `(1 + after_tax_annual_rate) ** (d / 365.2425)`. Cash accrual is posted before any
+  lag. An observation becomes lawful after 23:59:59 America/New_York on the next U.S.
+  Federal Reserve Bank business day and may first be used on the following calendar
+  day. With DFF expressed in percent, the after-tax annual rate is
+  `(DFF / 100 - 0.0025) * (1 - 0.24)` and the Actual/360 cash factor over `d` calendar
+  days is `(1 + after_tax_annual_rate / 360) ** d`. Cash accrual is posted before any
   next-session open fill; positions and remaining cash are then marked at that
   session's close. The $2,000 monthly contribution is posted only after the first
   session's close valuation and therefore cannot fund a same-session fill.
@@ -163,8 +187,9 @@ prohibited.
 ## 8. Friction cells
 
 The decision cell is **10 bp one-way transaction cost** on filled notional. Mandatory
-sensitivity cells are **0 bp and 25 bp**. Costs reduce cash in addition to gross
-notional and are applied on every fill through §7's cash-budget identity. No result from a sensitivity cell may replace
+sensitivity cells are **0 bp and 25 bp**. Gross security notional plus transaction
+cost equals the cash budget and is applied on every fill through §7's identity. No
+result from a sensitivity cell may replace
 the decision cell. Because the study never sells and excludes dividends, capital-gains
 and dividend taxes are not applicable; cash-interest tax is specified in §7.
 
@@ -189,29 +214,50 @@ TWR attributes selected cash budgets and their unfilled cash to the selected seg
 Unassigned whole-portfolio cash is reported only at the whole level. A segment with
 fewer than 12 attributed cycles is `INSUFFICIENT_EVIDENCE` for a segment veto.
 CAGR uses actual calendar days with a 365.2425-day year. Annualized volatility and
-Sharpe use 252 trading sessions; maximum drawdown is computed from the TWR index.
+Sharpe use 252 trading sessions; maximum drawdown is computed from the TWR index. For
+each XNYS interval, the risk-free return is the gross lawfully lagged DFF Actual/360
+factor minus one, without the cash operating drag or tax. Sharpe is the arithmetic
+mean of `(portfolio TWR return - risk-free return)` divided by its sample standard
+deviation, multiplied by `sqrt(252)`; zero variance yields `UNAVAILABLE`.
+
+Time-weighted cash percentage is the arithmetic mean of close cash divided by close
+NAV across the applicable XNYS sessions. `Cash drag` is Arm C cumulative TWR minus the
+arm's cumulative TWR in the same window and friction cell and may be negative.
+Deployed dollars means gross security notional; unfilled dollars means cumulative
+cash budgets that expire unfilled. Unfilled-capital days are each unfilled budget
+multiplied by calendar days from activation through fill or expiry. Median deployment
+days are calendar days from selection close through fill. Maximum target deviation is
+the largest absolute percentage-point difference between a position's close weight
+and accepted target after any close.
 
 Also retain daily portfolio paths and a deterministic paired stationary-block
 bootstrap of holdout daily return differences: 2,000 resamples, mean block length 21
-sessions, fixed seed **20260907**. Report the
-probability that each challenger's TWR difference has the claimed sign. There is no
-composite score.
+sessions, fixed seed **20260907**. For each ordered pair, use a separate Python
+`random.Random` seed obtained from the first eight bytes of
+`SHA256("20260907|challenger|baseline")`, interpreted big-endian. For a path of length
+`n`, choose the first paired index with `randrange(n)`; at each later draw restart at
+`randrange(n)` when `random() < 1/21`, otherwise advance the prior index by one modulo
+`n`. Apply the same sampled indices to both arms, compound each sampled daily-return
+path, and report the fraction for which the challenger's cumulative TWR exceeds the
+baseline's. There is no composite score.
 
 ## 10. Voting and adoption gates
 
-Only the whole-portfolio voting holdout at 10 bp can initiate a recommendation. A
-challenger must:
+Only the whole-portfolio voting holdout at 10 bp can initiate a recommendation. For
+each ordered challenger-baseline pair, the challenger must:
 
-1. improve annualized TWR over A by **more than 1.00 percentage point**;
-2. avoid maximum-drawdown deterioration versus A greater than **1.00 percentage
-   point**;
+1. improve annualized TWR over the baseline by **more than 1.00 percentage point**;
+2. avoid maximum-drawdown deterioration versus the baseline greater than **1.00
+   percentage point**;
 3. preserve the direction of both tests at 0 bp and 25 bp; and
 4. have at least **90%** paired-bootstrap probability that its holdout TWR
    difference has the claimed sign.
 
-H2 uses the same gates with A as challenger against both B and C. The 1 pp thresholds
-are inherited evidence-bounded governance selections from V1. The 90% probability is
-a conservative governance selection, not a claim of statistical significance.
+H1, H2, or H3 is supported only when its named arm passes all four gates against both
+other arms. This makes the possible winning-arm recommendation unambiguous. The 1 pp
+thresholds are inherited evidence-bounded governance selections from V1. The 90%
+probability is a conservative governance selection, not a claim of statistical
+significance.
 
 If segments diverge, the report must say so. A sufficiently supported segment vetoes
 a whole-portfolio change if the challenger worsens its annualized TWR or MaxDD by more

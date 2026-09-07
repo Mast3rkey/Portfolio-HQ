@@ -14,13 +14,19 @@ DECISION = (
     ROOT
     / "governance/decisions/LADDER-0002-canonical-buy-ladder-execution-amendment.md"
 )
-PROTOCOL_SHA256 = "717d3436e608440885174fb94a260aa022d3550d6160e5d44ad3dcabb4d1c238"
+PROTOCOL_SHA256 = "3465f9aecf6c379919c872b1e63ca41bee67e17afd24c4b0bd3ed124dd6a7041"
 CONFIG_HASHES = {
     "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
     "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
     "issuer_lookthrough.yaml": "6cf4e417e747d9a1ae9621e57d238c685ab593fb65539d561a5d136c7027b0b9",
     "research/level1_sleeve_robustness/data/raw/fred/DFF.csv": (
         "a052a99256ac7fdf075911b03496ab14acbcfd76f428137966bc0fd8781c4849"
+    ),
+    "research/level1_sleeve_robustness/data/transformed/selected/DFF.json": (
+        "a4610d02a33fc4e72eff5c54ba8499b7d0f85e5d828dd054e4158f967b530b5b"
+    ),
+    "research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json": (
+        "365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe"
     ),
 }
 ELIGIBLE = {
@@ -72,6 +78,10 @@ def test_protocol_freezes_identifiable_held_out_comparison() -> None:
         "ticker ascending as the deterministic tie-break",
         "365.2425-day year",
         "Sharpe use 252 trading sessions",
+        "Actual/360 cash factor",
+        "sole master trading calendar",
+        "A blocked or sub-$25 candidate does not stop later candidates",
+        "against both\nother arms",
         "historical earnings calendar",
         "UNARMED AND NOT EXECUTABLE",
     ):
