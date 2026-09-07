@@ -46,6 +46,10 @@ source-net dividends are normalized to gross entitlement, foreign withholding
 and available credit are shown separately, and both the zero-credit and ETN
 25% Irish-withholding cases are mandatory sensitivities. If either changes an
 apparent winner or adoption gate, the disposition is `UNABLE_TO_DETERMINE`.
+The amendment's 16.8% U.S. rate is the taxable-mid instance; in each tax cell,
+tentative U.S. dividend tax instead uses that cell's preregistered qualified/
+ordinary blend. The credit remains capped at that same dividend's tentative
+U.S. tax.
 
 Crypto is a new fail-closed gate. BTC, ETH, and SOL require a successor input
 disposition that pins raw bytes, receipts, transformation rules, daily
@@ -88,7 +92,8 @@ wash-sale benefit is prohibited, dividends and realized gains are taxed when
 recognized, and ending unrealized gains are not liquidated. Equities and funds
 use ordinary short-/long-term capital-gain treatment, crypto uses the same
 property-gain holding-period treatment, and GLD uses the registered
-collectibles-rate sensitivity.
+collectibles-rate sensitivity. Dividend tax is debited on ex-date and realized
+gain tax at each rebalance, so neither can be deferred opportunistically.
 
 Required outputs include daily paths, TWR/CAGR, volatility, downside
 deviation, Sharpe, Sortino, Calmar, maximum drawdown and recovery, worst

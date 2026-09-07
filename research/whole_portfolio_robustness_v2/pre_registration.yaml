@@ -122,9 +122,13 @@ frictions:
   tax_character: {equities_and_funds: STANDARD_SHORT_LONG_CAPITAL_GAIN, crypto: PROPERTY_SHORT_LONG_CAPITAL_GAIN, GLD: COLLECTIBLES_RATE}
   realized_loss_credit: PROHIBITED
   wash_sale_benefit: PROHIBITED
+  dividend_tax_timing: EX_DATE_DEBIT
+  realized_gain_tax_timing: EACH_REBALANCE
   final_unrealized_gain_tax: NONE
   foreign_dividends:
     rule: PINNED_LADDER_0003_GROSS_ENTITLEMENT_WITH_SOURCE_WITHHOLDING_AND_AVAILABLE_CREDIT
+    tentative_us_tax_rate: PROFILE_QUALIFIED_FRACTION_TIMES_QUALIFIED_RATE_PLUS_REMAINDER_TIMES_ORDINARY_RATE
+    foreign_tax_credit_cap: SAME_DIVIDEND_TENTATIVE_US_TAX
     mandatory_sensitivities: [ZERO_FOREIGN_TAX_CREDIT, ETN_25_PERCENT_IRISH_WITHHOLDING]
     decision_rule: WINNER_OR_GATE_CHANGE_CAUSES_UNABLE_TO_DETERMINE
 

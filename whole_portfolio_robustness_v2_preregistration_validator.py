@@ -110,8 +110,12 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
     require(mechanics.get("crypto_calendar_alignment") == "COMPOUND_EVERY_INTERVENING_UTC_DAILY_CLOSE_RETURN_INTO_NEXT_XNYS_VALUATION_NO_FUTURE_CLOSE", "crypto weekend/calendar alignment ambiguous")
     require(mechanics.get("survivorship_disclosure") == "CURRENT_ROSTER_HISTORICAL_COUNTERFACTUAL_WITH_HINDSIGHT_SELECTION_BIAS", "survivorship disclosure missing")
     foreign = p.get("frictions", {}).get("foreign_dividends", {})
+    require(foreign.get("tentative_us_tax_rate") == "PROFILE_QUALIFIED_FRACTION_TIMES_QUALIFIED_RATE_PLUS_REMAINDER_TIMES_ORDINARY_RATE", "foreign-dividend U.S. tax-rate rule ambiguous")
+    require(foreign.get("foreign_tax_credit_cap") == "SAME_DIVIDEND_TENTATIVE_US_TAX", "foreign tax credit cap ambiguous")
     require(set(foreign.get("mandatory_sensitivities", [])) == {"ZERO_FOREIGN_TAX_CREDIT", "ETN_25_PERCENT_IRISH_WITHHOLDING"}, "foreign-dividend sensitivities incomplete")
     require(foreign.get("decision_rule") == "WINNER_OR_GATE_CHANGE_CAUSES_UNABLE_TO_DETERMINE", "foreign-dividend decision rule ambiguous")
+    require(p.get("frictions", {}).get("dividend_tax_timing") == "EX_DATE_DEBIT", "dividend tax timing ambiguous")
+    require(p.get("frictions", {}).get("realized_gain_tax_timing") == "EACH_REBALANCE", "realized-gain tax timing ambiguous")
     require(p.get("bootstrap", {}).get("resamples") == 2000, "bootstrap draws changed")
     require(p.get("bootstrap", {}).get("mean_block_sessions") == 21, "bootstrap block length changed")
 
