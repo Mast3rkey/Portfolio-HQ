@@ -33,6 +33,14 @@ def test_indicator_uses_only_rows_through_decision_date():
     assert engine.indicators(changed_future, 300) == before
 
 
+def test_first_eligible_date_is_bounded_by_simulation_start():
+    cfg, prices, _sessions, _actions = engine.load_inputs()
+    dates = engine.first_eligible_decision_dates(prices, cfg)
+    assert dates["NVDA"] == "2021-06-01"
+    assert dates["CEG"] == "2022-12-01"
+    assert dates["GEV"] == "2025-01-31"
+
+
 @pytest.mark.parametrize("budget,bps", [(25.0, 0), (123.45, 10), (2000.0, 25)])
 def test_transaction_cost_is_inside_budget(budget, bps):
     notional, cost = engine.transaction(budget, bps)
