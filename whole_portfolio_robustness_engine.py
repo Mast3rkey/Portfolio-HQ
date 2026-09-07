@@ -13,7 +13,7 @@ import json
 import math
 from dataclasses import dataclass
 from datetime import date, timedelta
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -30,6 +30,7 @@ GATES_PATH = ROOT / "gates.yaml"
 SOURCE_INVENTORY_PATH = ROOT / "research/level1_sleeve_robustness/data/source_inventory.json"
 XNYS_PATH = ROOT / "research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json"
 DFF_PATH = ROOT / "research/level1_sleeve_robustness/data/transformed/selected/DFF.json"
+ACTION_PATH = ROOT / "research/level1_sleeve_robustness/data/transformed/actions/alpaca_actions.json"
 CANDIDATE_ROOT = ROOT / "research/level1_sleeve_robustness/data/transformed/candidates"
 
 BROAD = frozenset({"SPY", "VEA", "VWO"})
@@ -183,7 +184,15 @@ def _validate_document(path: Path, ticker: str) -> tuple[dict[str, Any], list[st
     seen: set[str] = set()
     prior = ""
     for row in rows:
+        if not isinstance(row, Mapping):
+            issues.append(f"{ticker}: every row must be a mapping")
+            break
         day = str(row.get("date", ""))
+        try:
+            date.fromisoformat(day)
+        except ValueError:
+            issues.append(f"{ticker}: invalid ISO date {day!r}")
+            break
         try:
             value = float(row.get("close"))
         except (TypeError, ValueError):
@@ -196,6 +205,83 @@ def _validate_document(path: Path, ticker: str) -> tuple[dict[str, Any], list[st
             break
         seen.add(day)
         prior = day
+    return doc, issues
+
+
+def _validate_dff(doc: Mapping[str, Any], start: str, end: str) -> list[str]:
+    issues: list[str] = []
+    if doc.get("provider") != "FRED" or doc.get("series") != "DFF":
+        issues.append("DFF: provider or series identity mismatch")
+    rows = doc.get("rows")
+    if not isinstance(rows, list) or not rows:
+        return issues + ["DFF: rows missing"]
+    dates: set[str] = set()
+    prior = ""
+    for row in rows:
+        if not isinstance(row, Mapping):
+            issues.append("DFF: every row must be a mapping")
+            break
+        day = str(row.get("date", ""))
+        try:
+            date.fromisoformat(day)
+            rate = Decimal(str(row.get("rate_pct")))
+        except (InvalidOperation, ValueError, TypeError):
+            issues.append(f"DFF: invalid row on {day!r}")
+            break
+        if day in dates or day <= prior:
+            issues.append("DFF: dates must be unique and increasing")
+            break
+        if not rate.is_finite() or rate < 0 or rate > 100:
+            issues.append(f"DFF: invalid rate on {day}")
+            break
+        dates.add(day)
+        prior = day
+    missing = [day for day in _days(start, end) if day not in dates]
+    if missing:
+        issues.append(
+            f"DFF: {len(missing)} required calendar observations missing "
+            f"({missing[0]}..{missing[-1]})"
+        )
+    return issues
+
+
+def _validate_actions(inventory: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    metadata = inventory.get("corporate_actions")
+    if not isinstance(metadata, Mapping):
+        return {}, ["corporate actions: source-inventory metadata missing"]
+    expected_path = str(metadata.get("transformed_path", ""))
+    expected_sha = str(metadata.get("transformed_sha256", ""))
+    if metadata.get("error") is not None or metadata.get("type_failures") != {}:
+        return {}, ["corporate actions: acquisition did not close without failures"]
+    if expected_path != str(ACTION_PATH.relative_to(ROOT)):
+        return {}, ["corporate actions: transformed path mismatch"]
+    if not ACTION_PATH.is_file():
+        return {}, ["corporate actions: frozen file missing"]
+    actual_sha = _sha256(ACTION_PATH)
+    if not expected_sha or actual_sha != expected_sha:
+        return {}, ["corporate actions: frozen hash mismatch"]
+    try:
+        doc = _json(ACTION_PATH)
+    except (OSError, UnicodeError, json.JSONDecodeError, DataGateError) as exc:
+        return {}, [f"corporate actions: unreadable document: {exc}"]
+    issues: list[str] = []
+    if doc.get("provider") != "ALPACA_CORPORATE_ACTIONS":
+        issues.append("corporate actions: provider identity mismatch")
+    rows = doc.get("rows")
+    if not isinstance(rows, list):
+        return doc, issues + ["corporate actions: rows must be a list"]
+    if len(rows) != metadata.get("row_count"):
+        issues.append("corporate actions: row count mismatches source inventory")
+    identifiers: set[str] = set()
+    for row in rows:
+        if not isinstance(row, Mapping):
+            issues.append("corporate actions: every row must be a mapping")
+            break
+        identifier = str(row.get("id", ""))
+        if not identifier or identifier in identifiers:
+            issues.append("corporate actions: empty or duplicate event identity")
+            break
+        identifiers.add(identifier)
     return doc, issues
 
 
@@ -234,8 +320,12 @@ def build_data_gate(root: Path = ROOT) -> GateReport:
     if sessions != sorted(set(sessions)):
         raise DataGateError("XNYS sessions must be unique and increasing")
 
-    window = prereg["windows"]["holdout_all_current_assets"]
-    start, end = str(window["start"]), str(window["end"])
+    voting_windows = {
+        name: value for name, value in prereg["windows"].items()
+        if isinstance(value, Mapping) and value.get("voting") is True
+    }
+    holdout = prereg["windows"]["holdout_all_current_assets"]
+    start, end = str(holdout["start"]), str(holdout["end"])
     issues: list[str] = []
     datasets: dict[str, Any] = {}
     for ticker in sorted(active):
@@ -249,36 +339,64 @@ def build_data_gate(root: Path = ROOT) -> GateReport:
         candidate_path = _candidate_path(ticker, kind)
         doc, document_issues = _validate_document(candidate_path, ticker)
         issues.extend(document_issues)
-        rows = {str(row["date"]) for row in doc.get("rows", [])}
-        missing = [day for day in _required_dates(kind, sessions, start, end) if day not in rows]
-        if missing:
+        rows = {
+            str(row["date"]) for row in doc.get("rows", [])
+            if isinstance(row, Mapping) and "date" in row
+        }
+        primary_quality = source.get("primary_quality")
+        primary_start = (
+            str(primary_quality.get("first_observation", ""))
+            if isinstance(primary_quality, Mapping) else ""
+        )
+        missing_by_window = {
+            name: [day for day in _required_dates(
+                kind, sessions, max(str(window["start"]), primary_start), str(window["end"])
+            ) if day not in rows]
+            for name, window in voting_windows.items()
+        }
+        if any(missing_by_window.values()):
             if selected_path.is_file() and _sha256(selected_path) == selected_sha:
                 selected, selected_issues = _validate_document(selected_path, ticker)
-                selected_rows = {str(row["date"]) for row in selected.get("rows", [])}
-                selected_missing = [day for day in _required_dates(kind, sessions, start, end)
-                                    if day not in selected_rows]
-                if not selected_issues and not selected_missing:
-                    doc, candidate_path, missing = selected, selected_path, []
+                selected_rows = {
+                    str(row["date"]) for row in selected.get("rows", [])
+                    if isinstance(row, Mapping) and "date" in row
+                }
+                fallback_quality = source.get("fallback_quality")
+                fallback_start = (
+                    str(fallback_quality.get("first_observation", ""))
+                    if isinstance(fallback_quality, Mapping) else ""
+                )
+                selected_missing = {
+                    name: [day for day in _required_dates(
+                        kind, sessions, max(str(window["start"]), fallback_start), str(window["end"])
+                    ) if day not in selected_rows]
+                    for name, window in voting_windows.items()
+                }
+                if not selected_issues and not any(selected_missing.values()):
+                    doc, candidate_path, missing_by_window = selected, selected_path, selected_missing
                 else:
                     issues.extend(selected_issues)
-            if missing:
+            for window_name, missing in missing_by_window.items():
+                if not missing:
+                    continue
                 issues.append(
-                    f"{ticker}: {len(missing)} required holdout observations missing "
+                    f"{ticker}: {len(missing)} required {window_name} observations missing "
                     f"({missing[0]}..{missing[-1]}); pinned selected source "
                     f"{'available' if selected_path.is_file() else 'bytes unavailable'}"
                 )
         datasets[ticker] = {
             "path": str(candidate_path.relative_to(ROOT)),
-            "sha256": _sha256(candidate_path),
+            "sha256": _sha256(candidate_path) if candidate_path.is_file() else None,
             "provider": doc.get("provider"),
             "row_count": len(doc.get("rows", [])),
             "selected_inventory_sha256": selected_sha,
         }
 
     dff = _json(DFF_PATH)
-    dff_dates = {str(row["date"]) for row in dff.get("rows", [])}
-    if not dff_dates or max(dff_dates) < end:
-        issues.append("DFF: frozen comparator does not cover evaluation end")
+    full_context = prereg["windows"]["full_context"]
+    issues.extend(_validate_dff(dff, str(full_context["start"]), str(full_context["end"])))
+    actions, action_issues = _validate_actions(inventory)
+    issues.extend(action_issues)
 
     freeze = {
         "schema_version": "1.0",
@@ -291,6 +409,8 @@ def build_data_gate(root: Path = ROOT) -> GateReport:
         "source_inventory_sha256": _sha256(SOURCE_INVENTORY_PATH),
         "xnys_sha256": _sha256(XNYS_PATH),
         "dff_sha256": _sha256(DFF_PATH),
+        "corporate_actions_sha256": _sha256(ACTION_PATH) if ACTION_PATH.is_file() else None,
+        "corporate_action_count": len(actions.get("rows", [])),
         "variant_instrument_weights_sha256": _canonical_hash(
             {name: {ticker: str(weight) for ticker, weight in sorted(weights.items())}
              for name, weights in sorted(variants.items())}

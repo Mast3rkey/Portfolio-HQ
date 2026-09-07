@@ -1,5 +1,7 @@
 from copy import deepcopy
 from decimal import Decimal
+import hashlib
+import json
 
 import pytest
 
@@ -77,15 +79,68 @@ def test_crypto_uses_only_lawfully_completed_prior_utc_close():
     ]
 
 
+def test_dff_validation_rejects_internal_calendar_gap_and_nonfinite_rate():
+    doc = {
+        "provider": "FRED", "series": "DFF",
+        "rows": [
+            {"date": "2024-04-01", "rate_pct": "5.33"},
+            {"date": "2024-04-03", "rate_pct": "NaN"},
+        ],
+    }
+    issues = engine._validate_dff(doc, "2024-04-01", "2024-04-03")
+    assert "DFF: invalid rate on 2024-04-03" in issues
+    assert any("2 required calendar observations missing" in issue for issue in issues)
+
+
+def test_corporate_action_bytes_must_match_inventory_pin(tmp_path, monkeypatch):
+    doc = {
+        "provider": "ALPACA_CORPORATE_ACTIONS", "schema_version": "1.0",
+        "rows": [{"id": "event-1", "action_type": "cash_dividend"}],
+    }
+    path = tmp_path / "alpaca_actions.json"
+    payload = json.dumps(doc, sort_keys=True).encode()
+    path.write_bytes(payload)
+    monkeypatch.setattr(engine, "ACTION_PATH", path)
+    monkeypatch.setattr(engine, "ROOT", tmp_path)
+    inventory = {"corporate_actions": {
+        "error": None, "type_failures": {}, "row_count": 1,
+        "transformed_path": "alpaca_actions.json",
+        "transformed_sha256": hashlib.sha256(payload).hexdigest(),
+    }}
+    assert engine._validate_actions(inventory)[1] == []
+    path.write_text("{}", encoding="utf-8")
+    assert engine._validate_actions(inventory)[1] == ["corporate actions: frozen hash mismatch"]
+
+
+def test_missing_candidate_file_returns_halt_receipt_not_traceback(monkeypatch):
+    real_candidate_path = engine._candidate_path
+    missing = engine.ROOT / "missing-SOL-test.json"
+    assert not missing.exists()
+    monkeypatch.setattr(
+        engine, "_candidate_path",
+        lambda ticker, kind: missing if ticker == "SOL" else real_candidate_path(ticker, kind),
+    )
+    report = engine.build_data_gate()
+    assert report.ready is False
+    assert report.freeze["datasets"]["SOL"]["sha256"] is None
+    assert any("SOL: unreadable candidate" in issue for issue in report.issues)
+
+
 def test_current_frozen_gate_halts_on_disclosed_sol_gap_not_silent_fill():
     report = engine.build_data_gate()
     assert report.ready is False
     assert report.freeze["gate"] == "HALT"
     assert report.freeze["stage1"] == "UNARMED_AND_NOT_EXECUTABLE"
     sol = [issue for issue in report.issues if issue.startswith("SOL:")]
-    assert len(sol) == 1
-    assert "required holdout observations missing" in sol[0]
-    assert "pinned selected source bytes unavailable" in sol[0]
+    assert len(sol) == 2
+    assert any("required confirmation observations missing" in issue for issue in sol)
+    assert any("102 required holdout_all_current_assets observations missing" in issue for issue in sol)
+    assert all("pinned selected source bytes unavailable" in issue for issue in sol)
+    assert not [issue for issue in report.issues if not issue.startswith("SOL:")]
+    assert report.freeze["corporate_action_count"] == 820
+    assert report.freeze["corporate_actions_sha256"] == (
+        "a75341f1279665423722074fbc3c89eed2a0c4708e8aefcd658220c3e7bc83b2"
+    )
 
 
 def test_require_ready_refuses_to_emit_results_from_incomplete_input():
