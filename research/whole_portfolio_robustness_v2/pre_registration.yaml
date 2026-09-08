@@ -1,21 +1,18 @@
-schema_version: "2.0"
+schema_version: '2.1'
 study_id: PORTFOLIO-ROBUSTNESS-V2-0001
 status: PREREGISTERED_NOT_EXECUTED
-registered_at: "2026-09-07"
+registered_at: '2026-09-07'
 predecessor:
   study_id: PORTFOLIO-ROBUSTNESS-0001
   disposition: EVIDENCE_LIMITED_NOT_DECISION_GRADE
   authority: governance/decisions/RISK-0005-whole-portfolio-evidence-disposition.md
   historical_holdout_exposure: EXPOSED_CORRECTION_REPLICATION_NOT_FRESH_HOLDOUT
-
 decision:
-  question: >-
-    Does a fixed bounded allocation alternative robustly improve risk-adjusted
-    performance and tail survivability without unacceptable return sacrifice?
+  question: Does a fixed bounded allocation alternative robustly improve risk-adjusted performance and tail survivability without unacceptable
+    return sacrifice?
   baseline_rule: CURRENT_ACCEPTED_TARGETS_REMAIN_POLICY
   automatic_adoption: PROHIBITED
   result_authority: RECOMMEND_SEPARATE_POLICY_REVIEW_ONLY
-
 frozen_inputs:
   base_commit: fffb352d577b3c755bd4a24c4fcd909eb56d8259
   files:
@@ -31,59 +28,123 @@ frozen_inputs:
   drift_rule: ANY_PIN_MISMATCH_HALTS_BEFORE_RESULTS
   equities_funds_gold: RECONSTRUCT_FROM_LADDER_0003_ACCEPTED_INPUT_DISPOSITION
   crypto: NEW_SUCCESSOR_DISPOSITION_REQUIRED_BEFORE_EXECUTION
-  crypto_required: [BTC, ETH, SOL]
+  crypto_required:
+  - BTC
+  - ETH
+  - SOL
   crypto_fail_closed: UNABLE_TO_DETERMINE_NO_DROP_NO_CASH_SUBSTITUTION
-
 baseline:
   construction: DERIVE_FROM_TARGETS_AND_GATES_NO_RENORMALIZATION
-  target_assigned_pct: "99.25"
-  unallocated_cash_pct: "0.75"
-  gated_tickers: [SNPS, ICE, SPGI, WM, RKLB, TSLA]
-  gated_target_cash_pct: "6.75"
+  target_assigned_pct: '99.25'
+  unallocated_cash_pct: '0.75'
+  gated_tickers:
+  - SNPS
+  - ICE
+  - SPGI
+  - WM
+  - RKLB
+  - TSLA
+  gated_target_cash_pct: '6.75'
   sleeves_pct:
-    eligible_direct_equity: "56.50"
-    broad_market_funds: "23.00"
-    gold: "4.00"
-    crypto: "4.00"
-    cash_and_protected_capital: "12.50"
-  reconciliation_total_pct: "100.00"
-
+    eligible_direct_equity: '56.50'
+    broad_market_funds: '23.00'
+    gold: '4.00'
+    crypto: '4.00'
+    cash_and_protected_capital: '12.50'
+  reconciliation_total_pct: '100.00'
 variants:
   selection_rule: FIXED_BEFORE_ANY_V2_RESULT
   optimization: PROHIBITED
   definitions:
-    - id: BASELINE
-      hypothesis: The accepted allocation is not robustly dominated.
-      transforms: []
-      expected_sleeves_pct: {eligible_direct_equity: "56.50", broad_market_funds: "23.00", gold: "4.00", crypto: "4.00", cash_and_protected_capital: "12.50"}
-    - id: BROAD_PLUS_5
-      hypothesis: Five points shifted from eligible single names to broad funds improve diversification without material return sacrifice.
-      transforms: [{from: eligible_direct_equity, to: broad_market_funds, percentage_points: "5.00", within_sleeve_rule: PRO_RATA}]
-      expected_sleeves_pct: {eligible_direct_equity: "51.50", broad_market_funds: "28.00", gold: "4.00", crypto: "4.00", cash_and_protected_capital: "12.50"}
-    - id: DEFENSIVE_PLUS_5
-      hypothesis: Five points shifted from eligible single names to protected cash improve tail survival enough to justify opportunity cost.
-      transforms: [{from: eligible_direct_equity, to: cash_and_protected_capital, percentage_points: "5.00", within_sleeve_rule: PRO_RATA}]
-      expected_sleeves_pct: {eligible_direct_equity: "51.50", broad_market_funds: "23.00", gold: "4.00", crypto: "4.00", cash_and_protected_capital: "17.50"}
-    - id: CRYPTO_HALF
-      hypothesis: Halving crypto reduces tail risk and drawdown enough to offset foregone upside.
-      transforms: [{from: crypto, to: cash_and_protected_capital, percentage_points: "2.00", within_sleeve_rule: PRO_RATA}]
-      expected_sleeves_pct: {eligible_direct_equity: "56.50", broad_market_funds: "23.00", gold: "4.00", crypto: "2.00", cash_and_protected_capital: "14.50"}
-    - id: GOLD_PLUS_2
-      hypothesis: Two points shifted from eligible single names to gold improve regime and tail resilience.
-      transforms: [{from: eligible_direct_equity, to: gold, percentage_points: "2.00", within_sleeve_rule: PRO_RATA}]
-      expected_sleeves_pct: {eligible_direct_equity: "54.50", broad_market_funds: "23.00", gold: "6.00", crypto: "4.00", cash_and_protected_capital: "12.50"}
-    - id: DIVERSIFIED_BALANCE
-      hypothesis: A fixed multi-sleeve deconcentration improves several risk metrics without relying on one hedge sleeve.
-      transforms:
-        - {from: eligible_direct_equity, to: broad_market_funds, percentage_points: "3.00", within_sleeve_rule: PRO_RATA}
-        - {from: eligible_direct_equity, to: gold, percentage_points: "1.00", within_sleeve_rule: PRO_RATA}
-        - {from: eligible_direct_equity, to: cash_and_protected_capital, percentage_points: "1.00", within_sleeve_rule: PRO_RATA}
-        - {from: crypto, to: cash_and_protected_capital, percentage_points: "2.00", within_sleeve_rule: PRO_RATA}
-      expected_sleeves_pct: {eligible_direct_equity: "51.50", broad_market_funds: "26.00", gold: "5.00", crypto: "2.00", cash_and_protected_capital: "15.50"}
-
+  - id: BASELINE
+    hypothesis: The accepted allocation is not robustly dominated.
+    transforms: []
+    expected_sleeves_pct:
+      eligible_direct_equity: '56.50'
+      broad_market_funds: '23.00'
+      gold: '4.00'
+      crypto: '4.00'
+      cash_and_protected_capital: '12.50'
+  - id: BROAD_PLUS_5
+    hypothesis: Five points shifted from eligible single names to broad funds improve diversification without material return sacrifice.
+    transforms:
+    - from: eligible_direct_equity
+      to: broad_market_funds
+      percentage_points: '5.00'
+      within_sleeve_rule: PRO_RATA
+    expected_sleeves_pct:
+      eligible_direct_equity: '51.50'
+      broad_market_funds: '28.00'
+      gold: '4.00'
+      crypto: '4.00'
+      cash_and_protected_capital: '12.50'
+  - id: DEFENSIVE_PLUS_5
+    hypothesis: Five points shifted from eligible single names to protected cash improve tail survival enough to justify opportunity cost.
+    transforms:
+    - from: eligible_direct_equity
+      to: cash_and_protected_capital
+      percentage_points: '5.00'
+      within_sleeve_rule: PRO_RATA
+    expected_sleeves_pct:
+      eligible_direct_equity: '51.50'
+      broad_market_funds: '23.00'
+      gold: '4.00'
+      crypto: '4.00'
+      cash_and_protected_capital: '17.50'
+  - id: CRYPTO_HALF
+    hypothesis: Halving crypto reduces tail risk and drawdown enough to offset foregone upside.
+    transforms:
+    - from: crypto
+      to: cash_and_protected_capital
+      percentage_points: '2.00'
+      within_sleeve_rule: PRO_RATA
+    expected_sleeves_pct:
+      eligible_direct_equity: '56.50'
+      broad_market_funds: '23.00'
+      gold: '4.00'
+      crypto: '2.00'
+      cash_and_protected_capital: '14.50'
+  - id: GOLD_PLUS_2
+    hypothesis: Two points shifted from eligible single names to gold improve regime and tail resilience.
+    transforms:
+    - from: eligible_direct_equity
+      to: gold
+      percentage_points: '2.00'
+      within_sleeve_rule: PRO_RATA
+    expected_sleeves_pct:
+      eligible_direct_equity: '54.50'
+      broad_market_funds: '23.00'
+      gold: '6.00'
+      crypto: '4.00'
+      cash_and_protected_capital: '12.50'
+  - id: DIVERSIFIED_BALANCE
+    hypothesis: A fixed multi-sleeve deconcentration improves several risk metrics without relying on one hedge sleeve.
+    transforms:
+    - from: eligible_direct_equity
+      to: broad_market_funds
+      percentage_points: '3.00'
+      within_sleeve_rule: PRO_RATA
+    - from: eligible_direct_equity
+      to: gold
+      percentage_points: '1.00'
+      within_sleeve_rule: PRO_RATA
+    - from: eligible_direct_equity
+      to: cash_and_protected_capital
+      percentage_points: '1.00'
+      within_sleeve_rule: PRO_RATA
+    - from: crypto
+      to: cash_and_protected_capital
+      percentage_points: '2.00'
+      within_sleeve_rule: PRO_RATA
+    expected_sleeves_pct:
+      eligible_direct_equity: '51.50'
+      broad_market_funds: '26.00'
+      gold: '5.00'
+      crypto: '2.00'
+      cash_and_protected_capital: '15.50'
 portfolio_mechanics:
-  starting_value: "100000.00"
-  leverage: "1.00"
+  starting_value: '100000.00'
+  leverage: '1.00'
   external_cash_flows: NONE
   performance_method: DAILY_CHAIN_LINKED_TWR
   primary_rebalance: QUARTERLY_FIRST_AVAILABLE_XNYS_CLOSE
@@ -92,34 +153,120 @@ portfolio_mechanics:
   gated_weight: ALWAYS_CASH_NEVER_REDISTRIBUTED
   valuation_calendar: XNYS_SESSIONS
   crypto_calendar_alignment: COMPOUND_EVERY_INTERVENING_UTC_DAILY_CLOSE_RETURN_INTO_NEXT_XNYS_VALUATION_NO_FUTURE_CLOSE
-  dividends: SPLIT_ADJUSTED_PRICES_PLUS_EXPLICIT_EX_DATE_CASH_CREDIT_ONCE
+  dividends: SPLIT_NORMALIZED_PRICE_PLUS_EX_DATE_NET_RECEIVABLE_SETTLED_ON_ACTUAL_PAYABLE_DATE
   cash_return: LAGGED_DFF_ACTUAL_360_MINUS_25_BPS_ANNUAL_DRAG
   borrowing: PROHIBITED
   survivorship_disclosure: CURRENT_ROSTER_HISTORICAL_COUNTERFACTUAL_WITH_HINDSIGHT_SELECTION_BIAS
-
+  event_order_same_xnys_date:
+  - OPEN_WITH_PRIOR_CLOSE_SHARES_AND_PRIOR_SETTLED_CASH
+  - ACCRUE_AFTER_TAX_CASH_INTEREST_THROUGH_PRECEDING_CALENDAR_DAY_ON_EACH_CALENDAR_DAYS_OPENING_SETTLED_CASH_ONLY
+  - RECORD_SPLIT_NORMALIZED_EX_DATE_DIVIDEND_ENTITLEMENT_AND_TAX_AS_NET_RECEIVABLE_IN_NAV
+  - SETTLE_RECEIVABLES_WITH_ACTUAL_PAYABLE_DATE_TO_SPENDABLE_CASH_NO_SECOND_TAX
+  - VALUE_AT_CLOSE
+  - EXECUTE_SCHEDULED_CLOSE_REBALANCE_USING_SETTLED_CASH_ONLY
+  dividend_entitlement_units: PRIOR_XNYS_CLOSE_SPLIT_NORMALIZED_SHARES
+  dividend_recognition: ON_EX_DATE_ADD_GROSS_ENTITLEMENT_MINUS_SOURCE_WITHHOLDING_MINUS_US_TAX_AFTER_ALLOWED_CREDIT_ONCE_TO_UNSETTLED_RECEIVABLE_AND_NAV
+  dividend_settlement: ACTUAL_PAYABLE_DATE_MOVE_NET_RECEIVABLE_TO_SETTLED_CASH_NO_NAV_CHANGE_NO_SECOND_TAX
+  dividend_receivable_constraints:
+  - NOT_SPENDABLE
+  - EARNS_NO_CASH_INTEREST
+  - PRESERVED_IN_FINAL_NAV_IF_UNPAID
+  dividend_missing_action_rule: MISSING_OR_INVALID_EX_DATE_PAYABLE_DATE_SPLIT_FACTOR_OR_AMOUNT_HALTS_BEFORE_RESULTS
+  dividend_boundary_example:
+    prior_close_shares: '1'
+    prior_close_price: '100'
+    ex_date_price: '98'
+    gross_dividend: '2'
+    tax_profile: TAX_DEFERRED
+    ex_date_nav: '100'
+    ex_date_spendable_cash: '0'
+    payable_date_cash_before_other_events: '2'
+  cash_accrual:
+    classification: RESEARCH_ASSUMPTION_NOT_PERSONAL_TAX_ADVICE
+    balance: SETTLED_CASH_AT_START_OF_EACH_ACCRUAL_CALENDAR_DAY_ONLY_EXCLUDES_UNSETTLED_DIVIDEND_RECEIVABLES_AND_SAME_DAY_SETTLEMENTS
+    rate_series: DFF
+    availability_lag_federal_reserve_business_days: 1
+    lookup: LATEST_OBSERVATION_LAWFULLY_AVAILABLE_AT_OR_BEFORE_CALENDAR_DAY_START_NO_FORWARD_LOOKUP
+    day_count: ACT/360
+    annual_drag_bps: '25'
+    tax_rate: CURRENT_CELL_TAX_PROFILE_ORDINARY_INCOME_RATE
+    daily_factor: 1_PLUS_OPENING_SETTLED_CASH_RATE_WHERE_RATE_EQUALS_OPEN_PAREN_DFF_PERCENT_DIVIDED_BY_100_MINUS_0.0025_CLOSE_PAREN_TIMES_OPEN_PAREN_1_MINUS_ORDINARY_INCOME_RATE_CLOSE_PAREN_DIVIDED_BY_360
+    recognition: FOR_EACH_ELAPSED_CALENDAR_DAY_APPLY_FACTOR_ONCE_TO_THAT_DAYS_OPENING_SETTLED_CASH_BEFORE_ANY CORPORATE_ACTION_RECOGNITION_OR_SETTLEMENT_ON_THE_DESTINATION_DATE
+    weekends_holidays: ACCRUE_EACH_CALENDAR_DAY_USING_LATEST_LAWFULLY_AVAILABLE_LAGGED_DFF
+    missing_rule: MISSING_REQUIRED_RATE_HALTS_AFFECTED_CELL_AND_THEREFORE_STUDY_FAILS_CLOSED
 windows:
-  common_start: "2021-06-01"
-  evaluation_end: "2026-07-31"
-  context: {start: "2021-06-01", end: "2023-12-29", voting: false}
-  correction_replication: {start: "2024-04-02", end: "2026-07-31", voting: true, exposure: PREVIOUSLY_EXPOSED}
-  walk_forward: {method: EXPANDING_ORIGIN_FIXED_POLICY_NO_REFIT, evaluation_years: [2022, 2023, 2024, 2025, 2026]}
+  common_start: '2021-06-01'
+  evaluation_end: '2026-07-31'
+  context:
+    start: '2021-06-01'
+    end: '2023-12-29'
+    voting: false
+  correction_replication:
+    start: '2024-04-02'
+    end: '2026-07-31'
+    voting: true
+    exposure: PREVIOUSLY_EXPOSED
+  walk_forward:
+    method: EXPANDING_ORIGIN_FIXED_POLICY_NO_REFIT
+    evaluation_years:
+    - 2022
+    - 2023
+    - 2024
+    - 2025
+    - 2026
   fixed_regimes:
-    - {id: RATE_INFLATION_2022, start: "2022-01-03", end: "2022-12-30"}
-    - {id: CALENDAR_2023, start: "2023-01-03", end: "2023-12-29"}
-    - {id: CALENDAR_2024, start: "2024-01-02", end: "2024-12-31"}
-    - {id: CALENDAR_2025, start: "2025-01-02", end: "2025-12-31"}
-    - {id: CALENDAR_2026_PARTIAL, start: "2026-01-02", end: "2026-07-31"}
+  - id: RATE_INFLATION_2022
+    start: '2022-01-03'
+    end: '2022-12-30'
+  - id: CALENDAR_2023
+    start: '2023-01-03'
+    end: '2023-12-29'
+  - id: CALENDAR_2024
+    start: '2024-01-02'
+    end: '2024-12-31'
+  - id: CALENDAR_2025
+    start: '2025-01-02'
+    end: '2025-12-31'
+  - id: CALENDAR_2026_PARTIAL
+    start: '2026-01-02'
+    end: '2026-07-31'
   asset_selected_peak_trough_windows: PROHIBITED
-
 frictions:
-  one_way_cost_bps: ["0", "10", "25"]
-  tax_profiles: [TAX_DEFERRED, TAXABLE_MID, TAXABLE_HIGH]
+  one_way_cost_bps:
+  - '0'
+  - '10'
+  - '25'
+  tax_profiles:
+  - TAX_DEFERRED
+  - TAXABLE_MID
+  - TAXABLE_HIGH
   tax_profile_parameters:
-    TAX_DEFERRED: {qualified_dividend_rate: "0.00", ordinary_income_rate: "0.00", short_gain_rate: "0.00", long_gain_rate: "0.00", gold_gain_rate: "0.00", qualified_dividend_fraction: "0.00"}
-    TAXABLE_MID: {qualified_dividend_rate: "0.15", ordinary_income_rate: "0.24", short_gain_rate: "0.24", long_gain_rate: "0.15", gold_gain_rate: "0.28", qualified_dividend_fraction: "0.80"}
-    TAXABLE_HIGH: {qualified_dividend_rate: "0.20", ordinary_income_rate: "0.32", short_gain_rate: "0.32", long_gain_rate: "0.20", gold_gain_rate: "0.28", qualified_dividend_fraction: "0.00"}
+    TAX_DEFERRED:
+      qualified_dividend_rate: '0.00'
+      ordinary_income_rate: '0.00'
+      short_gain_rate: '0.00'
+      long_gain_rate: '0.00'
+      gold_gain_rate: '0.00'
+      qualified_dividend_fraction: '0.00'
+    TAXABLE_MID:
+      qualified_dividend_rate: '0.15'
+      ordinary_income_rate: '0.24'
+      short_gain_rate: '0.24'
+      long_gain_rate: '0.15'
+      gold_gain_rate: '0.28'
+      qualified_dividend_fraction: '0.80'
+    TAXABLE_HIGH:
+      qualified_dividend_rate: '0.20'
+      ordinary_income_rate: '0.32'
+      short_gain_rate: '0.32'
+      long_gain_rate: '0.20'
+      gold_gain_rate: '0.28'
+      qualified_dividend_fraction: '0.00'
   tax_lot_method: HIFO_WITH_ACQUISITION_DATE_TRACKING
-  tax_character: {equities_and_funds: STANDARD_SHORT_LONG_CAPITAL_GAIN, crypto: PROPERTY_SHORT_LONG_CAPITAL_GAIN, GLD: COLLECTIBLES_RATE}
+  tax_character:
+    equities_and_funds: STANDARD_SHORT_LONG_CAPITAL_GAIN
+    crypto: PROPERTY_SHORT_LONG_CAPITAL_GAIN
+    GLD: COLLECTIBLES_RATE
   realized_loss_credit: PROHIBITED
   wash_sale_benefit: PROHIBITED
   dividend_tax_timing: EX_DATE_DEBIT
@@ -129,58 +276,216 @@ frictions:
     rule: PINNED_LADDER_0003_GROSS_ENTITLEMENT_WITH_SOURCE_WITHHOLDING_AND_AVAILABLE_CREDIT
     tentative_us_tax_rate: PROFILE_QUALIFIED_FRACTION_TIMES_QUALIFIED_RATE_PLUS_REMAINDER_TIMES_ORDINARY_RATE
     foreign_tax_credit_cap: SAME_DIVIDEND_TENTATIVE_US_TAX
-    mandatory_sensitivities: [ZERO_FOREIGN_TAX_CREDIT, ETN_25_PERCENT_IRISH_WITHHOLDING]
+    mandatory_sensitivities:
+    - ZERO_FOREIGN_TAX_CREDIT
+    - ETN_25_PERCENT_IRISH_WITHHOLDING
     decision_rule: WINNER_OR_GATE_CHANGE_CAUSES_UNABLE_TO_DETERMINE
-
+    sensitivity_inventory:
+    - STANDARD_AVAILABLE_CREDIT
+    - ZERO_FOREIGN_TAX_CREDIT
+    - ETN_25_PERCENT_IRISH_WITHHOLDING
+    - JOINT_ZERO_CREDIT_AND_ETN_25_PERCENT_IRISH_WITHHOLDING
+    application: RUN_EACH_SEPARATE_SENSITIVITY_AND_THE_JOINT_CASE_OVER_THE_COMPLETE_18_CELL_REGISTRY
+    veto: IF_ANY_SEPARATE_OR_JOINT_CASE_CHANGES_WINNER_OR_ANY_GATE_RESULT_UNABLE_TO_DETERMINE
+  primary_cell:
+    one_way_cost_bps: '10'
+    tax_profile: TAXABLE_MID
+    rebalance_cadence: QUARTERLY
+  rebalance_cadences:
+  - QUARTERLY
+  - ANNUAL
+  cell_registry:
+  - cell_id: COST_0_TAX_TAX_DEFERRED_CADENCE_QUARTERLY
+    one_way_cost_bps: '0'
+    tax_profile: TAX_DEFERRED
+    rebalance_cadence: QUARTERLY
+  - cell_id: COST_0_TAX_TAX_DEFERRED_CADENCE_ANNUAL
+    one_way_cost_bps: '0'
+    tax_profile: TAX_DEFERRED
+    rebalance_cadence: ANNUAL
+  - cell_id: COST_0_TAX_TAXABLE_MID_CADENCE_QUARTERLY
+    one_way_cost_bps: '0'
+    tax_profile: TAXABLE_MID
+    rebalance_cadence: QUARTERLY
+  - cell_id: COST_0_TAX_TAXABLE_MID_CADENCE_ANNUAL
+    one_way_cost_bps: '0'
+    tax_profile: TAXABLE_MID
+    rebalance_cadence: ANNUAL
+  - cell_id: COST_0_TAX_TAXABLE_HIGH_CADENCE_QUARTERLY
+    one_way_cost_bps: '0'
+    tax_profile: TAXABLE_HIGH
+    rebalance_cadence: QUARTERLY
+  - cell_id: COST_0_TAX_TAXABLE_HIGH_CADENCE_ANNUAL
+    one_way_cost_bps: '0'
+    tax_profile: TAXABLE_HIGH
+    rebalance_cadence: ANNUAL
+  - cell_id: COST_10_TAX_TAX_DEFERRED_CADENCE_QUARTERLY
+    one_way_cost_bps: '10'
+    tax_profile: TAX_DEFERRED
+    rebalance_cadence: QUARTERLY
+  - cell_id: COST_10_TAX_TAX_DEFERRED_CADENCE_ANNUAL
+    one_way_cost_bps: '10'
+    tax_profile: TAX_DEFERRED
+    rebalance_cadence: ANNUAL
+  - cell_id: COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY
+    one_way_cost_bps: '10'
+    tax_profile: TAXABLE_MID
+    rebalance_cadence: QUARTERLY
+  - cell_id: COST_10_TAX_TAXABLE_MID_CADENCE_ANNUAL
+    one_way_cost_bps: '10'
+    tax_profile: TAXABLE_MID
+    rebalance_cadence: ANNUAL
+  - cell_id: COST_10_TAX_TAXABLE_HIGH_CADENCE_QUARTERLY
+    one_way_cost_bps: '10'
+    tax_profile: TAXABLE_HIGH
+    rebalance_cadence: QUARTERLY
+  - cell_id: COST_10_TAX_TAXABLE_HIGH_CADENCE_ANNUAL
+    one_way_cost_bps: '10'
+    tax_profile: TAXABLE_HIGH
+    rebalance_cadence: ANNUAL
+  - cell_id: COST_25_TAX_TAX_DEFERRED_CADENCE_QUARTERLY
+    one_way_cost_bps: '25'
+    tax_profile: TAX_DEFERRED
+    rebalance_cadence: QUARTERLY
+  - cell_id: COST_25_TAX_TAX_DEFERRED_CADENCE_ANNUAL
+    one_way_cost_bps: '25'
+    tax_profile: TAX_DEFERRED
+    rebalance_cadence: ANNUAL
+  - cell_id: COST_25_TAX_TAXABLE_MID_CADENCE_QUARTERLY
+    one_way_cost_bps: '25'
+    tax_profile: TAXABLE_MID
+    rebalance_cadence: QUARTERLY
+  - cell_id: COST_25_TAX_TAXABLE_MID_CADENCE_ANNUAL
+    one_way_cost_bps: '25'
+    tax_profile: TAXABLE_MID
+    rebalance_cadence: ANNUAL
+  - cell_id: COST_25_TAX_TAXABLE_HIGH_CADENCE_QUARTERLY
+    one_way_cost_bps: '25'
+    tax_profile: TAXABLE_HIGH
+    rebalance_cadence: QUARTERLY
+  - cell_id: COST_25_TAX_TAXABLE_HIGH_CADENCE_ANNUAL
+    one_way_cost_bps: '25'
+    tax_profile: TAXABLE_HIGH
+    rebalance_cadence: ANNUAL
+  primary_cell_role: AUTHORITATIVE_MAIN_NUMERIC_GATE_AND_PAIRED_BOOTSTRAP_PATH_MUST_PASS_INDEPENDENTLY_SENSITIVITIES_CANNOT_REPLACE_AFTER_OUTCOMES
 metrics:
-  return: [NET_TWR_CAGR, CUMULATIVE_TWR, CASH_DRAG, COST_DRAG, TAX_DRAG]
-  risk_adjusted: [ANNUALIZED_VOLATILITY, DOWNSIDE_DEVIATION, SHARPE_VS_LAGGED_DFF, SORTINO_VS_LAGGED_DFF, CALMAR]
-  tail: [MAX_DRAWDOWN, RECOVERY_DAYS, WORST_MONTH, WORST_QUARTER, WORST_YEAR, DAILY_CVAR_95]
-  concentration: [DIRECT_HHI, MAX_DIRECT_NAME, EFFECTIVE_ISSUER_MAX, AI_PLATFORM_COMMON_DRIVER, SEMIS_CLUSTER, POWER_INFRA_CLUSTER]
-  operations: [ONE_WAY_TURNOVER, REBALANCE_COUNT, TAXABLE_REALIZED_GAIN]
-
+  return:
+  - NET_TWR_CAGR
+  - CUMULATIVE_TWR
+  - CASH_DRAG
+  - COST_DRAG
+  - TAX_DRAG
+  risk_adjusted:
+  - ANNUALIZED_VOLATILITY
+  - DOWNSIDE_DEVIATION
+  - SHARPE_VS_LAGGED_DFF
+  - SORTINO_VS_LAGGED_DFF
+  - CALMAR
+  tail:
+  - MAX_DRAWDOWN
+  - RECOVERY_DAYS
+  - WORST_MONTH
+  - WORST_QUARTER
+  - WORST_YEAR
+  - DAILY_CVAR_95
+  concentration:
+  - DIRECT_HHI
+  - MAX_DIRECT_NAME
+  - EFFECTIVE_ISSUER_MAX
+  - AI_PLATFORM_COMMON_DRIVER
+  - SEMIS_CLUSTER
+  - POWER_INFRA_CLUSTER
+  operations:
+  - ONE_WAY_TURNOVER
+  - REBALANCE_COUNT
+  - TAXABLE_REALIZED_GAIN
 bootstrap:
   method: PAIRED_STATIONARY_BLOCK_BOOTSTRAP_OF_DAILY_PORTFOLIO_RETURNS
   mean_block_sessions: 21
   resamples: 2000
   seed: 20260907
-  windows: [context, correction_replication]
-  statistics: [NET_TWR_CAGR_DELTA, SHARPE_DELTA, MAX_DRAWDOWN_DELTA, DAILY_CVAR_95_DELTA]
-
+  windows:
+  - context
+  - correction_replication
+  statistics:
+  - NET_TWR_CAGR_DELTA
+  - SHARPE_DELTA
+  - MAX_DRAWDOWN_DELTA
+  - DAILY_CVAR_95_DELTA
 review_thresholds:
-  disposition_values: [RETAIN_BASELINE, RECOMMEND_POLICY_REVIEW, UNABLE_TO_DETERMINE]
+  disposition_values:
+  - RETAIN_BASELINE
+  - RECOMMEND_POLICY_REVIEW
+  - UNABLE_TO_DETERMINE
   default: RETAIN_BASELINE
   required_for_recommend_policy_review:
-    correction_net_cagr_floor_delta_pp_per_year: "-0.50"
-    correction_sharpe_min_delta: "0.05"
-    correction_sortino_min_delta: "0.05"
-    tail_improvement_either: {max_drawdown_min_improvement_pp: "2.00", daily_cvar_95_min_improvement_pp: "0.10"}
+    correction_net_cagr_floor_delta_pp_per_year: '-0.50'
+    correction_sharpe_min_delta: '0.05'
+    correction_sortino_min_delta: '0.05'
+    tail_improvement_either:
+      max_drawdown_min_improvement_pp: '2.00'
+      daily_cvar_95_min_improvement_pp: '0.10'
     context_direction_must_match_correction: true
-    regime_max_drawdown_max_worsening_pp: "1.00"
-    friction_tax_cadence_cells_min_fraction_same_direction: "0.80"
-    bootstrap_min_probability_sharpe_positive: "0.75"
-    bootstrap_min_probability_tail_metric_positive: "0.75"
+    regime_max_drawdown_max_worsening_pp: '1.00'
+    friction_tax_cadence_cells_min_fraction_same_direction: '0.80'
+    bootstrap_min_probability_sharpe_positive: '0.75'
+    bootstrap_min_probability_tail_metric_positive: '0.75'
     concentration_controls_must_pass: true
     concentration_limits:
-      direct_hhi_max_delta: "0.00"
-      max_direct_name_max_delta_pp: "0.00"
-      effective_issuer_max_worsening_pp: "0.25"
-      ai_platform_common_driver_max_worsening_pp: "0.25"
-      semis_cluster_cap_pct: "25.00"
-      power_infra_cluster_cap_pct: "20.00"
+      direct_hhi_max_delta: '0.00'
+      max_direct_name_max_delta_pp: '0.00'
+      effective_issuer_max_worsening_pp: '0.25'
+      ai_platform_common_driver_max_worsening_pp: '0.25'
+      semis_cluster_cap_pct: '25.00'
+      power_infra_cluster_cap_pct: '20.00'
     data_and_integrity_gates_must_pass: true
   multiple_comparison_rule: NO_WINNER_PICKING_IF_NO_VARIANT_PASSES_ALL_GATES
   close_call_rule: RETAIN_BASELINE
   target_change_rule: SEPARATE_EXPLICIT_REVIEWED_DECISION_REQUIRED
-
+  support_gate:
+    denominator: EXACTLY_18_REGISTERED_CARTESIAN_CELLS_3_COSTS_X_3_TAX_PROFILES_X_2_CADENCES
+    primary_cell_included: true
+    minimum_passing_cells: 15
+    minimum_fraction: '0.80'
+    rounding_rule: INTEGER_COUNT_AT_LEAST_CEILING_0.80_TIMES_18_EQUALS_15
+    comparison: EACH_ALTERNATIVE_PAIRED_TO_BASELINE_WITHIN_IDENTICAL_CELL_AND_WINDOW
+    missing_nonfinite_or_unregistered: FAIL_CLOSED_ENTIRE_STUDY
+    cell_predicate_all_required:
+      net_cagr_delta_pp_per_year_gte: '-0.50'
+      sharpe_delta_gte: '0.05'
+      sortino_delta_gte: '0.05'
+      tail_either:
+        max_drawdown_improvement_pp_gte: '2.00'
+        daily_cvar_95_improvement_pp_gte: '0.10'
+    economic_signs:
+      max_drawdown: NONPOSITIVE_RETURN_FROM_PRIOR_PEAK_ZERO_IS_BEST_MORE_NEGATIVE_IS_WORSE
+      max_drawdown_improvement_pp: ALTERNATIVE_MAX_DRAWDOWN_MINUS_BASELINE_MAX_DRAWDOWN_POSITIVE_IS_IMPROVEMENT
+      daily_cvar_95: NONPOSITIVE_MEAN_RETURN_OF_WORST_FIVE_PERCENT_DAYS_ZERO_IS_BEST_MORE_NEGATIVE_IS_WORSE
+      daily_cvar_95_improvement_pp: ALTERNATIVE_DAILY_CVAR_95_MINUS_BASELINE_DAILY_CVAR_95_POSITIVE_IS_IMPROVEMENT
 integrity:
-  fail_closed_on: [PIN_DRIFT, WEIGHT_MISMATCH, UNRECONCILED_TOTAL, MISSING_SERIES, MISSING_CRYPTO_DISPOSITION, INCOMPLETE_DAILY_CRYPTO, UNRESOLVED_ACTION, LOOKAHEAD, SILENT_ASSET_DROP, NONDETERMINISTIC_OUTPUT]
+  fail_closed_on:
+  - PIN_DRIFT
+  - WEIGHT_MISMATCH
+  - UNRECONCILED_TOTAL
+  - MISSING_SERIES
+  - MISSING_CRYPTO_DISPOSITION
+  - INCOMPLETE_DAILY_CRYPTO
+  - UNRESOLVED_ACTION
+  - LOOKAHEAD
+  - SILENT_ASSET_DROP
+  - NONDETERMINISTIC_OUTPUT
   no_interpolation: true
   no_forward_fill_prices: true
   no_zero_return_substitution: true
   execution_before_preregistration_merge: PROHIBITED
   code_or_config_change_after_result_inspection: NEW_STUDY_ID_REQUIRED
-
+  protocol_sha256: 4b01443a75dfe84b0a7319710a67f8682d3343a71a2c2c0822432a87243d6523
+  frozen_contract:
+    canonicalization: SHA256_OF_UTF8_CANONICAL_JSON_SORTED_KEYS_COMPACT_SEPARATORS_ALLOW_NAN_FALSE_EXCLUDING_ONLY_integrity.frozen_contract.expected_sha256
+    expected_sha256: fcaca4c156c7f5bf403ab064df5e114b92dab3c2cd6bfb0234e48fa2e928a069
+    validator_expected_sha256_location: whole_portfolio_robustness_v2_preregistration_validator.py::EXPECTED_CONTRACT_SHA256
+    coverage: EVERY_PARSED_YAML_KEY_AND_VALUE_EXCEPT_THIS_EXPECTED_SHA256_FIELD; PROTOCOL_BOUND_BY_protocol_sha256; PIN_REGISTRY_BOUND_BY_EXACT_KEYS_AND_VALUES
+    drift_rule: ANY_DIFFERENCE_HALTS_BEFORE_RESULTS_AND_DIGEST_FIELDS_CANNOT_BE_REMOVED
 safety:
   advisory_only: true
   uses_holdings: false
@@ -190,9 +495,22 @@ safety:
   changes_margin_policy: false
   arms_or_executes_stage1: false
   stage1_state: UNARMED_AND_NOT_EXECUTABLE
-
 deliverables:
   next_unit: CRYPTO_INPUT_DISPOSITION_ENGINE_AND_RESULTS
-  required_outputs: [input_freeze.json, portfolio_paths.json, metrics.json, bootstrap.json, sensitivity_matrix.json, limitations.md, results.md, disposition.yaml]
+  required_outputs:
+  - input_freeze.json
+  - portfolio_paths.json
+  - metrics.json
+  - bootstrap.json
+  - sensitivity_matrix.json
+  - limitations.md
+  - results.md
+  - disposition.yaml
   chart_input_required: false
   account_input_required: false
+correction:
+  kind: PRE_EXECUTION_CONTRACT_CORRECTION
+  corrects_merged_pr: 387
+  review_comment: https://github.com/Mast3rkey/Portfolio-HQ/pull/387#issuecomment-5588445740
+  result_inspection_before_correction: NONE
+  study_identity_preserved: true
