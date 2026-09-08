@@ -3,6 +3,7 @@
   "disposition": "INPUT_ADMISSION_FAILED",
   "errors": [
     "DFF: actual publication-time/vintage evidence unresolved",
+    "SOL: no independently accepted successor source anchor",
     "SOL: missing receipt"
   ],
   "historical_results_executed": false,

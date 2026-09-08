@@ -4,7 +4,7 @@ import math
 import pytest
 from pathlib import Path
 from whole_portfolio_robustness_v2_engine import *
-from whole_portfolio_robustness_v2_engine import _cell_ids
+from whole_portfolio_robustness_v2_engine import _cell_ids, _rebalance_day
 
 def good(delta=True):
     return {"net_cagr_delta_pp":0,"sharpe_delta":.1,"sortino_delta":.1,"max_drawdown_delta_pp":2 if delta else 0,"daily_cvar_95_delta_pp":0}
@@ -45,7 +45,8 @@ def test_dividend_ftc_and_entitlement():
 
 def test_crypto_actual_close_prevents_weekend_future_lookahead():
     bars=[{"close_at":"2021-06-05T00:00:00Z","close":"10"},{"close_at":"2021-06-08T00:00:00Z","close":"20"}]
-    assert align_crypto(bars,[date(2021,6,7)])["2021-06-07"]==10
+    closes={date(2021,6,7):__import__('datetime').datetime.fromisoformat('2021-06-07T20:00:00+00:00')}
+    assert align_crypto(bars,[date(2021,6,7)],closes)["2021-06-07"]==10
 
 def test_metrics_undefined_variance_is_nonfinite():
     m=metrics([.01,.01,.01]);assert math.isnan(m['sharpe'])
@@ -82,7 +83,8 @@ def test_bootstrap_undefined_sharpe_fails_closed():
 
 def test_crypto_close_after_session_is_deferred():
     bars=[{"close_at":"2021-06-07T00:00:00Z","close":1},{"close_at":"2021-06-07T22:00:00Z","close":2}]
-    assert align_crypto(bars,[date(2021,6,7)])["2021-06-07"]==1
+    closes={date(2021,6,7):__import__('datetime').datetime.fromisoformat('2021-06-07T20:00:00+00:00')}
+    assert align_crypto(bars,[date(2021,6,7)],closes)["2021-06-07"]==1
 
 def test_dff_publication_later_that_day_not_available_at_midnight():
     fed={date(2025,1,2),date(2025,1,3)}
@@ -102,9 +104,65 @@ def test_integrated_simulation_derives_all_constructions_and_conserves():
     root=Path(__file__).parent
     tickers=[t for t in derive_weights(root,'BASELINE') if t!='CASH']
     days=['2025-01-02','2025-01-03']
-    fixture={'start':days[0],'end':days[-1],'sessions':days,'prices':{t:{d:'100' for d in days} for t in tickers},'dff':{d:'5' for d in days}}
+    fixture={'start':days[0],'end':days[-1],'sessions':days,'session_closes':{d:d+'T21:00:00Z' for d in days},'prices':{t:{d:'100' for d in days} for t in tickers},'fed_business_days':['2025-01-01','2025-01-02'],'dff_records':[{'observation_date':'2024-12-31','published_at':'2025-01-01T16:15:00Z','value':'5'}]}
     for variant in ('BASELINE',)+ALTERNATIVES:
         result=simulate(root,fixture,variant=variant,cost_bps=D(0))
         assert result['initial_nav']=='100000' and len(result['ledger'])==2
         assert all(D(row['cash'])>=0 for row in result['ledger'])
         assert sum(D(v) for v in result['weights'].values())==1
+
+def test_integrated_golden_initial_cost_weekend_payable_and_split():
+    root=Path(__file__).parent;days=['2025-01-02','2025-01-03','2025-01-06'];tickers=[t for t in derive_weights(root,'BASELINE') if t!='CASH']
+    fixture={'start':'2025-01-02','end':'2025-01-06','sessions':days,'session_closes':{d:d+'T21:00:00Z' for d in days},'prices':{t:{d:'100' for d in days} for t in tickers},'fed_business_days':['2025-01-01','2025-01-02'],'dff_records':[{'observation_date':'2024-12-31','published_at':'2025-01-01T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'TMO','ex_date':'2025-01-03','payable_date':'2025-01-04','gross_per_share':'1','withholding_rate':'0'}],'splits':[{'ticker':'NVDA','date':'2025-01-06','factor':'10'}]}
+    result=simulate(root,fixture,profile={k:D(0) for k in ('ordinary_income_rate','qualified_dividend_rate','qualified_dividend_fraction','short_gain_rate','long_gain_rate','gold_gain_rate')},cost_bps=D(10))
+    assert D(result['ledger'][0]['nav'])==D('99912.5000')
+    assert result['summary']['cumulative_twr']==pytest.approx(float(D(result['ledger'][-1]['nav'])/D(100000)-1))
+    assert any(e['type']=='receivable_settlement' for e in result['calendar_ledger'][2]['events'])
+    assert result['calendar_ledger'][2]['date']=='2025-01-04'
+    from whole_portfolio_robustness_v2_result_validator import validate_ledger
+    assert validate_ledger(result)==[]
+
+def test_quarterly_first_session_boundaries():
+    sessions=list(map(date.fromisoformat,['2025-02-28','2025-03-03','2025-03-31','2025-04-01']))
+    assert not _rebalance_day(sessions[1],'QUARTERLY',sessions)
+    assert _rebalance_day(sessions[3],'QUARTERLY',sessions)
+
+def test_exact_close_required_and_later_available_asset_stays_cash():
+    with pytest.raises(ValueError):align_crypto([{'close_at':'2025-07-03T19:00:00Z','close':999}],[date(2025,7,3)])
+    root=Path(__file__).parent;fixture=full_synthetic_fixture();fixture['available']={'CEG':'2021-07-02'};del fixture['prices']['CEG']['2021-06-01']
+    simulate(root,fixture,cost_bps=D(0))
+
+def test_pinned_fund_lookthrough_is_used():
+    import yaml
+    look=yaml.safe_load(Path('issuer_lookthrough.yaml').read_text())
+    result=concentration({'nav':'100','positions':[{'ticker':'SPY','shares':'1','price':'100'}]},look)
+    assert result['effective_issuer_max']==pytest.approx(.0766) and result['ai_platform_common_driver']>0
+
+def test_wrong_windows_or_empty_regimes_fail_closed():
+    with pytest.raises(ValueError):evaluate_study(synthetic_study_paths(),[])
+
+REGIMES=[{'id':'RATE_INFLATION_2022','start':'2022-01-03','end':'2022-12-30'},{'id':'CALENDAR_2023','start':'2023-01-03','end':'2023-12-29'},{'id':'CALENDAR_2024','start':'2024-01-02','end':'2024-12-31'},{'id':'CALENDAR_2025','start':'2025-01-02','end':'2025-12-31'},{'id':'CALENDAR_2026_PARTIAL','start':'2026-01-02','end':'2026-07-31'}]
+
+def synthetic_study_paths():
+    dates=['2021-06-01','2021-07-01','2022-01-03','2022-06-01','2022-12-30','2023-01-03','2023-06-01','2023-12-29','2024-01-02','2024-04-02','2024-08-01','2024-12-31','2025-01-02','2025-06-02','2025-12-31','2026-01-02','2026-04-01','2026-07-31']
+    full=[{'date':d,'nav':str(D(100000)+D((i%4)-1)*D(1000)+D(i)*10),'cash':str(D(100000)+D((i%4)-1)*D(1000)+D(i)*10),'positions':[],'events':[],'risk_free_return':'.00001'} for i,d in enumerate(dates)]
+    windows={'full':full,'context':[x for x in full if '2021-06-01'<=x['date']<='2023-12-29'],'correction_replication':[x for x in full if '2024-04-02'<=x['date']<='2026-07-31']}
+    return {case:{cell:{alt:{k:list(v) for k,v in windows.items()} for alt in ('BASELINE',)+ALTERNATIVES} for cell in _cell_ids()} for case in FOREIGN_CASES}
+
+def test_complete_synthetic_registry_driver_is_deterministic():
+    paths=synthetic_study_paths();a=evaluate_study(paths,REGIMES);b=evaluate_study(paths,REGIMES)
+    assert a['disposition']==b['disposition']=={'disposition':'RETAIN_BASELINE','passing_set':[]}
+    assert len(a['decision_evidence']['cell_ids'])==18 and set(a['decision_evidence']['cases'])==set(FOREIGN_CASES)
+
+def full_synthetic_fixture():
+    dates=[x['date'] for x in synthetic_study_paths()[FOREIGN_CASES[0]][_cell_ids()[0]]['BASELINE']['full']]
+    tickers=[t for t in derive_weights(Path(__file__).parent,'BASELINE') if t!='CASH']
+    prices={t:{d:str(D(100)+D(i%4-1)*2+D(j%3)) for i,d in enumerate(dates)} for j,t in enumerate(tickers)}
+    return {'start':'2021-06-01','end':'2026-07-31','sessions':dates,'session_closes':{d:d+'T20:00:00Z' for d in dates},'prices':prices,'fed_business_days':['2021-05-31'],'dff_records':[{'observation_date':'2021-05-28','published_at':'2021-05-31T16:15:00Z','value':'.25'}]}
+
+def test_full_simulation_registry_driver_executes_synthetic_fixture():
+    result=run_synthetic_study(Path(__file__).parent,full_synthetic_fixture())
+    assert result['synthetic'] is True and len(result['simulations'])==4
+    assert all(len(cells)==18 for cells in result['simulations'].values())
+    from whole_portfolio_robustness_v2_result_validator import validate_study_bundle
+    assert validate_study_bundle(result)==[]

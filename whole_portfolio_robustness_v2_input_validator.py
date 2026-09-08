@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Independent, result-free V2 input admission checks."""
 from __future__ import annotations
-import hashlib, json, math
+import hashlib, json, math, shutil, subprocess, sys, tempfile
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -9,6 +9,8 @@ from whole_portfolio_robustness_v2_preregistration_validator import EXPECTED_PIN
 
 ROOT=Path(__file__).resolve().parent
 REQUIRED_CRYPTO=("BTC","ETH","SOL")
+ACCEPTED_CRYPTO = {'BTC': {'transform': '2060887fe9921ac9c5a8e5db57011cb0a03bdcfd9077e0875be36d2a82fc9fb9', 'raw': 'c0259e8d47bbb8706ec3946deae4c6e8b7a5954232896f9ab5b30dc2b937e51e', 'receipt': '4322a2deb2a6d50a036b755753ce9993ed4bea0251310960e95f048b423f50a8'}, 'ETH': {'transform': 'f2f2ff4c998575a7a1172649aba4e6078e2534848f272c4fb43e4ea15363b186', 'raw': '026074c64d23c40b860368b05076388d9dead4d0235d522a14bff2b2b1bd9dc0', 'receipt': '7a596181f1a24a32528bea2439c9036e453a73e89c3f4aace7aebcd7e49a1540'}}
+
 
 def sha(path:Path)->str: return hashlib.sha256(path.read_bytes()).hexdigest()
 def load(path:Path)->Any:
@@ -57,15 +59,21 @@ def validate_manifest(path:Path, root:Path=ROOT)->list[str]:
     except Exception as ex:return [f"cannot load manifest: {ex}"]
     e=[]
     if m.get("study_id")!="PORTFOLIO-ROBUSTNESS-V2-0001" or m.get("result_free") is not True:e.append("wrong study/result-free declaration")
-    if m.get("dff_availability",{}).get("status") != "AUTHENTICATED":
+    dff=m.get("dff_availability",{})
+    dff_receipt=root/dff.get("publication_receipt_path","")
+    if dff.get("status") != "AUTHENTICATED" or dff.get("source")!="FRED_DFF" or not dff_receipt.is_file() or sha(dff_receipt)!=dff.get("publication_receipt_sha256"):
         e.append("DFF: actual publication-time/vintage evidence unresolved")
     entries=m.get("crypto",[])
     if [x.get("symbol") for x in entries]!=list(REQUIRED_CRYPTO):e.append("crypto registry must be exactly BTC, ETH, SOL")
     for x in entries:
+        if x.get("symbol")=="SOL" and "SOL" not in ACCEPTED_CRYPTO:e.append("SOL: no independently accepted successor source anchor")
         raw=root/x.get("raw_path",""); rec=root/x.get("receipt_path","")
         if not rec.is_file():e.append(f"{x.get('symbol')}: missing receipt");continue
         receipt=load(rec); e += [f"{x['symbol']}: {z}" for z in validate_receipt(receipt,raw,provider=x.get("provider"),pair=x.get("symbol","")+"USD")]
         if raw.is_file() and x.get("transform_sha256")!=sha(raw):e.append(f"{x['symbol']}: transform hash mismatch")
+        anchor=ACCEPTED_CRYPTO.get(x["symbol"])
+        if anchor and (sha(raw) if raw.is_file() else None)!=anchor["transform"]:e.append(f"{x['symbol']}: transform differs from independently accepted bytes")
+        if anchor and (sha(rec) if rec.is_file() else None)!=anchor["receipt"]:e.append(f"{x['symbol']}: receipt differs from independently accepted bytes")
         if raw.is_file():
             transformed=load(raw)
             if not isinstance(transformed,dict) or transformed.get("instrument")!=x["symbol"] or transformed.get("provider")!="ALPACA_CRYPTO" or not isinstance(transformed.get("rows"),list):
@@ -75,6 +83,14 @@ def validate_manifest(path:Path, root:Path=ROOT)->list[str]:
                 e += [f"{x['symbol']}: {z}" for z in validate_crypto(rows,x["symbol"],date(2021,6,1),date(2026,7,31))]
                 raw_source=root/receipt.get("raw_path","")
                 if not raw_source.is_file() or sha(raw_source)!=receipt.get("raw_sha256"):e.append(f"{x['symbol']}: retained raw/receipt chain mismatch")
+                elif anchor and sha(raw_source)!=anchor["raw"]:e.append(f"{x['symbol']}: raw page differs from independently accepted bytes")
+                else:
+                    payload=load(raw_source); provider_rows=payload.get("bars",{}).get(x["symbol"]+"/USD") if isinstance(payload,dict) else None
+                    if not isinstance(provider_rows,list) or payload.get("next_page_token") is not None:e.append(f"{x['symbol']}: malformed provider candle payload")
+                    else:
+                        derived=[{"date":r["t"][:10],"open":r["o"],"high":r["h"],"low":r["l"],"close":r["c"],"volume":r["v"]} for r in provider_rows]
+                        actual=[{k:r[k] for k in ("date","open","high","low","close","volume")} for r in transformed["rows"]]
+                        if derived!=actual:e.append(f"{x['symbol']}: raw-to-transform reconstruction mismatch")
     return e
 
 def historical_admission(root:Path=ROOT)->dict:
@@ -84,22 +100,19 @@ def historical_admission(root:Path=ROOT)->dict:
         if not p.is_file() or sha(p)!=digest: errors.append(f"pinned predecessor byte mismatch: {rel}")
     manifest=root/"research/whole_portfolio_robustness_v2/inputs/input_freeze.json"
     errors.extend(validate_manifest(manifest,root))
-    # The accepted LADDER disposition is a manifest, not an opaque blessing.
+    # Rebuild only result-blind LADDER inputs in an isolated destination.
     try:
-        disposition=load(root/"research/buy_ladder_backtest/inputs/input_disposition.json")
-        refs=[]
-        def walk(x):
-            if isinstance(x,dict):
-                if "raw_path" in x and "raw_sha256" in x: refs.append((x["raw_path"],x["raw_sha256"]))
-                if "receipt_path" in x and "receipt_sha256" in x: refs.append((x["receipt_path"],x["receipt_sha256"]))
-                for v in x.values():walk(v)
-            elif isinstance(x,list):
-                for v in x:walk(v)
-        walk(disposition)
-        if not refs: errors.append("LADDER disposition contains no reconstructible provenance")
-        for rel,digest in refs:
-            p=root/rel
-            if not p.is_file() or sha(p)!=digest:errors.append(f"LADDER provenance mismatch: {rel}")
+        study=root/"research/buy_ladder_backtest"; data=root/"research/level1_sleeve_robustness/data"
+        builder=study/"build_input_disposition.py"
+        if sha(builder)!="01a664c1c5bc623b5026cb3137a6694f0a55c3ee730eaad39dc7b82f7508bd7f":raise ValueError("builder identity mismatch")
+        with tempfile.TemporaryDirectory(prefix="v2-ladder-reconstruct-") as tmp:
+            isolated=Path(tmp);shutil.copytree(study,isolated/"research/buy_ladder_backtest",ignore=shutil.ignore_patterns("execution","validation","__pycache__"));shutil.copytree(data,isolated/"research/level1_sleeve_robustness/data")
+            run=subprocess.run([sys.executable,str(isolated/"research/buy_ladder_backtest/build_input_disposition.py")],cwd=isolated,capture_output=True,text=True)
+            if run.returncode:raise ValueError(run.stderr.strip())
+            expected={"input_disposition.json":"05a86b0f42df6b055532076d2e84e7ac7a460799012402904afe1fcb1e72ab2e","corporate_actions.json":"79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1","yahoo_action_crosscheck.json":"0c154aa9e88d495f23b4d08e82e079b8054524bed5e3921cbaf1bf56f199deb4"}
+            for name,digest in expected.items():
+                rebuilt=isolated/"research/buy_ladder_backtest/inputs"/name
+                if sha(rebuilt)!=digest or rebuilt.read_bytes()!=(study/"inputs"/name).read_bytes():raise ValueError(f"isolated reconstruction mismatch: {name}")
     except Exception as ex:errors.append(f"cannot reconstruct LADDER evidence: {ex}")
     return {"study_id":"PORTFOLIO-ROBUSTNESS-V2-0001","result_free":True,"admitted":not errors,
             "disposition":"ADMITTED" if not errors else "INPUT_ADMISSION_FAILED","errors":errors,
