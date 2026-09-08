@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import copy
+import json
 import math
 import subprocess
 import sys
 import shutil
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from pathlib import Path
 
 import yaml
@@ -184,11 +185,38 @@ def test_non_xnys_settlement_and_linked_decision_rules_are_frozen() -> None:
     data = _data()
     mechanics = data["portfolio_mechanics"]
     assert mechanics["dividend_settlement_calendar"] == "EVERY_CALENDAR_DATE_NOT_ONLY_XNYS_SESSIONS"
-    assert [(x["payable_date"], x["first_interest_date"]) for x in mechanics["non_xnys_boundary_examples"]] == [
-        ("2023-01-16", "2023-01-17"), ("2025-01-09", "2025-01-10")
+    examples = mechanics["non_xnys_boundary_examples"]
+    assert [(x["payable_date"], x["first_eligible_accrual_day"], x["first_interest_credit_date"]) for x in examples] == [
+        ("2023-01-16", "2023-01-17", "2023-01-18"),
+        ("2025-01-09", "2025-01-10", "2025-01-11"),
     ]
+    session_data = json.loads((validator.ROOT / "research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json").read_text())
+    sessions = {row["session"] for row in session_data["sessions"]}
+    expected_membership = {
+        "2023-01-16": False, "2023-01-17": True, "2023-01-18": True,
+        "2025-01-09": False, "2025-01-10": True, "2025-01-11": False,
+        "2025-01-12": False, "2025-01-13": True,
+    }
+    assert {date: date in sessions for date in expected_membership} == expected_membership
+
+    with localcontext() as context:
+        context.prec = 40
+        daily_rate = (Decimal("0.05") - Decimal("0.05") * Decimal("0.24") - Decimal("0.0025")) / 360
+        compounded = [Decimal("100") * (1 + daily_rate) ** days for days in range(4)]
+    assert Decimal(examples[0]["xnys_trace"][1]["xnys_close_nav"]) == Decimal("100")
+    assert Decimal(examples[0]["xnys_trace"][2]["xnys_close_nav"]) == compounded[1]
+    assert Decimal(examples[1]["xnys_trace"][1]["xnys_close_nav"]) == Decimal("100")
+    assert Decimal(examples[1]["xnys_trace"][2]["nav_after_events"]) == compounded[1]
+    assert Decimal(examples[1]["xnys_trace"][3]["nav_after_events"]) == compounded[2]
+    assert Decimal(examples[1]["xnys_trace"][4]["xnys_close_nav"]) == compounded[3]
     thresholds = data["review_thresholds"]
     assert [x["tail_metric"] for x in thresholds["linked_tail_gate"]["predeclared_paths"]] == ["MAX_DRAWDOWN", "DAILY_CVAR_95"]
     disposition = thresholds["multiple_passer_disposition"]
     assert disposition["empty_passing_set"] == "RETAIN_BASELINE"
     assert disposition["ranking_or_tiebreak"] == "PROHIBITED"
+
+
+def test_foreign_decision_fields_use_full_passing_set_not_winner() -> None:
+    foreign = _data()["frictions"]["foreign_dividends"]
+    assert foreign["decision_rule"] == "FULL_CANONICALLY_ORDERED_PASSING_SET_OR_EVERY_PER_VARIANT_GATE_BOOLEAN_CHANGE_CAUSES_UNABLE_TO_DETERMINE"
+    assert foreign["veto"] == "IF_ANY_SEPARATE_OR_JOINT_CASE_CHANGES_FULL_CANONICALLY_ORDERED_PASSING_SET_OR_ANY_PER_VARIANT_GATE_BOOLEAN_THEN_UNABLE_TO_DETERMINE"

@@ -14,7 +14,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 PREREG = ROOT / "research/whole_portfolio_robustness_v2/pre_registration.yaml"
 PROTOCOL = ROOT / "research/whole_portfolio_robustness_v2/PROTOCOL.md"
-EXPECTED_CONTRACT_SHA256 = "e7d44f7df91f87766e967bd783b28c46bb0b242a68deebb615ee8e19c6e9e2b9"
+EXPECTED_CONTRACT_SHA256 = "c8075d78001dca195ea85215db44f7d33ac8fbf836071f547331e04f41d751be"
 EXPECTED_PINS = {
     "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
     "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
@@ -215,6 +215,8 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
     require(predicate == {"net_cagr_delta_pp_per_year_gte": "-0.50", "sharpe_delta_gte": "0.05", "sortino_delta_gte": "0.05", "tail_either": {"max_drawdown_improvement_pp_gte": "2.00", "daily_cvar_95_improvement_pp_gte": "0.10"}}, "cell predicate changed")
     foreign = frictions.get("foreign_dividends", {})
     require(foreign.get("sensitivity_inventory") == ["STANDARD_AVAILABLE_CREDIT", "ZERO_FOREIGN_TAX_CREDIT", "ETN_25_PERCENT_IRISH_WITHHOLDING", "JOINT_ZERO_CREDIT_AND_ETN_25_PERCENT_IRISH_WITHHOLDING"], "foreign sensitivity inventory changed")
+    require(foreign.get("decision_rule") == "FULL_CANONICALLY_ORDERED_PASSING_SET_OR_EVERY_PER_VARIANT_GATE_BOOLEAN_CHANGE_CAUSES_UNABLE_TO_DETERMINE", "foreign decision rule changed")
+    require(foreign.get("veto") == "IF_ANY_SEPARATE_OR_JOINT_CASE_CHANGES_FULL_CANONICALLY_ORDERED_PASSING_SET_OR_ANY_PER_VARIANT_GATE_BOOLEAN_THEN_UNABLE_TO_DETERMINE", "foreign veto changed")
 
     cash = p.get("portfolio_mechanics", {}).get("cash_accrual", {})
     require(cash.get("tax_rate") == "CURRENT_CELL_TAX_PROFILE_ORDINARY_INCOME_RATE", "cash ordinary-income tax rule changed")
@@ -223,9 +225,17 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
     require(dividend.get("dividend_boundary_example") == {"prior_close_shares": "1", "prior_close_price": "100", "ex_date_price": "98", "gross_dividend": "2", "tax_profile": "TAX_DEFERRED", "ex_date_nav": "100", "ex_date_spendable_cash": "0", "payable_date_cash_before_other_events": "2"}, "dividend boundary example changed")
     require(dividend.get("dividend_settlement_calendar") == "EVERY_CALENDAR_DATE_NOT_ONLY_XNYS_SESSIONS", "dividend settlement calendar changed")
     examples = dividend.get("non_xnys_boundary_examples", [])
-    require([(x.get("ticker"), x.get("payable_date"), x.get("first_interest_date")) for x in examples] == [
-        ("TMO", "2023-01-16", "2023-01-17"), ("TSM", "2025-01-09", "2025-01-10")
+    require([(x.get("ticker"), x.get("payable_date"), x.get("first_eligible_accrual_day"), x.get("first_interest_credit_date")) for x in examples] == [
+        ("TMO", "2023-01-16", "2023-01-17", "2023-01-18"),
+        ("TSM", "2025-01-09", "2025-01-10", "2025-01-11"),
     ], "non-XNYS dividend boundary examples changed")
+    if isinstance(examples, list) and len(examples) == 2 and all(isinstance(x, dict) for x in examples):
+        require([row.get("xnys_close_nav") for row in examples[0].get("xnys_trace", []) if row.get("xnys_session")] == [
+            "100.0000000000000000000000000000000000000", "100.0098611111111111111111111111111111111"
+        ], "TMO interest posting trace changed")
+        require([row.get("xnys_close_nav") for row in examples[1].get("xnys_trace", []) if row.get("xnys_session")] == [
+            "100.0000000000000000000000000000000000000", "100.0295862506745946394890260631001371742"
+        ], "TSM interest posting trace changed")
 
     thresholds = p.get("review_thresholds", {})
     tail_paths = thresholds.get("linked_tail_gate", {}).get("predeclared_paths", [])
