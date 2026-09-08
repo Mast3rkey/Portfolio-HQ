@@ -25,6 +25,7 @@ frozen_inputs:
     research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md: 6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f
     research/level1_sleeve_robustness/data/transformed/selected/DFF.json: a4610d02a33fc4e72eff5c54ba8499b7d0f85e5d828dd054e4158f967b530b5b
     research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json: 365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe
+    research/buy_ladder_backtest/PROTOCOL_V2.md: 0529d0d64b213ad876173ba16f555b6c27b7812f483a4839bdffd9f47d609fe4
   drift_rule: ANY_PIN_MISMATCH_HALTS_BEFORE_RESULTS
   equities_funds_gold: RECONSTRUCT_FROM_LADDER_0003_ACCEPTED_INPUT_DISPOSITION
   crypto: NEW_SUCCESSOR_DISPOSITION_REQUIRED_BEFORE_EXECUTION
@@ -190,10 +191,33 @@ portfolio_mechanics:
     day_count: ACT/360
     annual_drag_bps: '25'
     tax_rate: CURRENT_CELL_TAX_PROFILE_ORDINARY_INCOME_RATE
-    daily_factor: 1_PLUS_OPENING_SETTLED_CASH_RATE_WHERE_RATE_EQUALS_OPEN_PAREN_DFF_PERCENT_DIVIDED_BY_100_MINUS_0.0025_CLOSE_PAREN_TIMES_OPEN_PAREN_1_MINUS_ORDINARY_INCOME_RATE_CLOSE_PAREN_DIVIDED_BY_360
+    daily_factor: 1_PLUS_OPEN_PAREN_DFF_PERCENT_DIVIDED_BY_100_MINUS_MAX_OPEN_PAREN_DFF_PERCENT_DIVIDED_BY_100_COMMA_0_CLOSE_PAREN_TIMES_ORDINARY_INCOME_RATE_MINUS_0.0025_CLOSE_PAREN_DIVIDED_BY_360
     recognition: FOR_EACH_ELAPSED_CALENDAR_DAY_APPLY_FACTOR_ONCE_TO_THAT_DAYS_OPENING_SETTLED_CASH_BEFORE_ANY CORPORATE_ACTION_RECOGNITION_OR_SETTLEMENT_ON_THE_DESTINATION_DATE
     weekends_holidays: ACCRUE_EACH_CALENDAR_DAY_USING_LATEST_LAWFULLY_AVAILABLE_LAGGED_DFF
     missing_rule: MISSING_REQUIRED_RATE_HALTS_AFFECTED_CELL_AND_THEREFORE_STUDY_FAILS_CLOSED
+    interpretation: GROSS_DFF_INTEREST_TAXED_ONLY_WHEN_POSITIVE_THEN_NONDEDUCTIBLE_25_BP_BENCHMARK_YIELD_DRAG_SUBTRACTED_SEPARATELY
+    drag_tax_treatment: OPERATING_BENCHMARK_YIELD_HAIRCUT_NOT_MODELED_AS_TAX_DEDUCTIBLE
+    negative_gross_rate_treatment: NEGATIVE_DFF_IS_A_CASH_COST; ORDINARY_TAX_IS_ZERO; NO_INVENTED_TAX_CREDIT; 25_BP_DRAG_STILL_SUBTRACTED
+    worked_examples_per_100_settled_cash_tax_rate_0_24:
+      dff_positive_5_percent_daily_delta: '0.009861111111111111111111111111'
+      dff_zero_daily_delta: '-0.0006944444444444444444444444444'
+      dff_negative_1_percent_daily_delta: '-0.003472222222222222222222222222'
+  dividend_settlement_calendar: EVERY_CALENDAR_DATE_NOT_ONLY_XNYS_SESSIONS
+  non_xnys_payable_date_order: AT_CALENDAR_DATE_START_FIRST_ACCRUE_PRIOR_DAY_ON_PRIOR_OPENING_SETTLED_CASH_THEN_SETTLE_PAYABLE_RECEIVABLE; SETTLEMENT_EARNS_INTEREST_STARTING_NEXT_CALENDAR_DATE;
+    NEXT_XNYS_NAV_INCLUDES_SETTLED_CASH_AND_ALL_SUBSEQUENT_DAILY_INTEREST
+  non_xnys_boundary_examples:
+  - ticker: TMO
+    payable_date: '2023-01-16'
+    payable_date_is_xnys_session: false
+    settlement: SETTLE_2023_01_16_AFTER_PRIOR_DAY_ACCRUAL
+    first_interest_date: '2023-01-17'
+    next_xnys_nav: INCLUDES_RECEIVABLE_AS_SETTLED_CASH_PLUS_INTEREST_FROM_2023_01_17_OPENING
+  - ticker: TSM
+    payable_date: '2025-01-09'
+    payable_date_is_xnys_session: false
+    settlement: SETTLE_2025_01_09_AFTER_PRIOR_DAY_ACCRUAL
+    first_interest_date: '2025-01-10'
+    next_xnys_nav: INCLUDES_RECEIVABLE_AS_SETTLED_CASH_PLUS_INTEREST_FROM_2025_01_10_OPENING
 windows:
   common_start: '2021-06-01'
   evaluation_end: '2026-07-31'
@@ -462,6 +486,42 @@ review_thresholds:
       max_drawdown_improvement_pp: ALTERNATIVE_MAX_DRAWDOWN_MINUS_BASELINE_MAX_DRAWDOWN_POSITIVE_IS_IMPROVEMENT
       daily_cvar_95: NONPOSITIVE_MEAN_RETURN_OF_WORST_FIVE_PERCENT_DAYS_ZERO_IS_BEST_MORE_NEGATIVE_IS_WORSE
       daily_cvar_95_improvement_pp: ALTERNATIVE_DAILY_CVAR_95_MINUS_BASELINE_DAILY_CVAR_95_POSITIVE_IS_IMPROVEMENT
+  context_direction_gate:
+    window: context
+    comparison: EACH_ALTERNATIVE_PAIRED_TO_BASELINE_IN_AUTHORITATIVE_PRIMARY_CELL
+    required_predicates:
+      net_twr_cagr_delta_pp_per_year_gte: '0.00'
+      sharpe_delta_gte: '0.00'
+      sortino_delta_gte: '0.00'
+      eligible_tail_metric_improvement_pp_gte: '0.00'
+    eligible_tail_metric: SAME_SINGLE_METRIC_THAT_QUALIFIES_PRIMARY_TAIL_OR; IF_BOTH_QUALIFY_EACH_IS_AN_INDEPENDENT_ELIGIBLE_PATH_AND_AT_LEAST_ONE_MUST_COMPLETE_ALL_LINKED_GATES
+    missing_nonfinite: FAIL_CLOSED
+  linked_tail_gate:
+    predeclared_paths:
+    - tail_metric: MAX_DRAWDOWN
+      primary_improvement_pp_gte: '2.00'
+      bootstrap_statistic: MAX_DRAWDOWN_DELTA
+      bootstrap_probability_positive_gte: '0.75'
+      context_improvement_pp_gte: '0.00'
+    - tail_metric: DAILY_CVAR_95
+      primary_improvement_pp_gte: '0.10'
+      bootstrap_statistic: DAILY_CVAR_95_DELTA
+      bootstrap_probability_positive_gte: '0.75'
+      context_improvement_pp_gte: '0.00'
+    qualification: AT_LEAST_ONE_SINGLE_PREDECLARED_PATH_MUST_SATISFY_ITS_OWN_PRIMARY_MAGNITUDE_CONTEXT_DIRECTION_AND_BOOTSTRAP_PROBABILITY; CROSS_METRIC_MIX_AND_POST_RESULT_SELECTION_PROHIBITED
+  multiple_passer_disposition:
+    canonical_alternative_order:
+    - BROAD_PLUS_5
+    - DEFENSIVE_PLUS_5
+    - CRYPTO_HALF
+    - GOLD_PLUS_2
+    - DIVERSIFIED_BALANCE
+    integrity_or_foreign_veto_failure: UNABLE_TO_DETERMINE
+    empty_passing_set: RETAIN_BASELINE
+    one_or_more_passing: RECOMMEND_POLICY_REVIEW_WITH_FULL_CANONICALLY_ORDERED_PASSING_SET
+    ranking_or_tiebreak: PROHIBITED
+    automatic_adoption: PROHIBITED
+    foreign_case_comparison: EACH_SEPARATE_AND_JOINT_CASE_MUST_PRESERVE_FULL_CANONICALLY_ORDERED_PASSING_SET_AND_EVERY_PER_VARIANT_GATE_BOOLEAN_OR_UNABLE_TO_DETERMINE
 integrity:
   fail_closed_on:
   - PIN_DRIFT
@@ -479,10 +539,10 @@ integrity:
   no_zero_return_substitution: true
   execution_before_preregistration_merge: PROHIBITED
   code_or_config_change_after_result_inspection: NEW_STUDY_ID_REQUIRED
-  protocol_sha256: 4b01443a75dfe84b0a7319710a67f8682d3343a71a2c2c0822432a87243d6523
+  protocol_sha256: 632e7d396a02e1be850c23736dffc27cc84636eb160a163cd958a050126758e1
   frozen_contract:
     canonicalization: SHA256_OF_UTF8_CANONICAL_JSON_SORTED_KEYS_COMPACT_SEPARATORS_ALLOW_NAN_FALSE_EXCLUDING_ONLY_integrity.frozen_contract.expected_sha256
-    expected_sha256: fcaca4c156c7f5bf403ab064df5e114b92dab3c2cd6bfb0234e48fa2e928a069
+    expected_sha256: e7d44f7df91f87766e967bd783b28c46bb0b242a68deebb615ee8e19c6e9e2b9
     validator_expected_sha256_location: whole_portfolio_robustness_v2_preregistration_validator.py::EXPECTED_CONTRACT_SHA256
     coverage: EVERY_PARSED_YAML_KEY_AND_VALUE_EXCEPT_THIS_EXPECTED_SHA256_FIELD; PROTOCOL_BOUND_BY_protocol_sha256; PIN_REGISTRY_BOUND_BY_EXACT_KEYS_AND_VALUES
     drift_rule: ANY_DIFFERENCE_HALTS_BEFORE_RESULTS_AND_DIGEST_FIELDS_CANNOT_BE_REMOVED

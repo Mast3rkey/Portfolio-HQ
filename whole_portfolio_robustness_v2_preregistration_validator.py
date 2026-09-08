@@ -14,7 +14,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 PREREG = ROOT / "research/whole_portfolio_robustness_v2/pre_registration.yaml"
 PROTOCOL = ROOT / "research/whole_portfolio_robustness_v2/PROTOCOL.md"
-EXPECTED_CONTRACT_SHA256 = "fcaca4c156c7f5bf403ab064df5e114b92dab3c2cd6bfb0234e48fa2e928a069"
+EXPECTED_CONTRACT_SHA256 = "e7d44f7df91f87766e967bd783b28c46bb0b242a68deebb615ee8e19c6e9e2b9"
 EXPECTED_PINS = {
     "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
     "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
@@ -23,6 +23,7 @@ EXPECTED_PINS = {
     "research/buy_ladder_backtest/inputs/corporate_actions.json": "79be46b9e64191d4897c5b9ada2c7ba7cfb8c4f86eca4e9ec6943c5895a6d2f1",
     "research/buy_ladder_backtest/inputs/price_anomaly_overrides.json": "9f0a9513b769e036f4d1b209f5d63b6b32893fdc375a319252b5b89dc953c13f",
     "research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md": "6f9e335caa5f0733c57932637cca1563a9daeb94a4dcdb81fe51587920f7c60f",
+    "research/buy_ladder_backtest/PROTOCOL_V2.md": "0529d0d64b213ad876173ba16f555b6c27b7812f483a4839bdffd9f47d609fe4",
     "research/level1_sleeve_robustness/data/transformed/selected/DFF.json": "a4610d02a33fc4e72eff5c54ba8499b7d0f85e5d828dd054e4158f967b530b5b",
     "research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json": "365c740ed489a2804189dee439a8cfe4fd926db1f92957988e51ad91db12fabe",
 }
@@ -35,8 +36,46 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+class _UnambiguousSafeLoader(yaml.SafeLoader):
+    """Safe YAML with duplicate keys, aliases, and merge keys rejected."""
+
+    def compose_node(self, parent: Any, index: Any) -> Any:
+        if self.check_event(yaml.AliasEvent):
+            event = self.peek_event()
+            raise yaml.constructor.ConstructorError(
+                None, None, f"YAML aliases are prohibited: *{event.anchor}", event.start_mark
+            )
+        return super().compose_node(parent, index)
+
+    def construct_mapping(self, node: Any, deep: bool = False) -> dict[Any, Any]:
+        if not isinstance(node, yaml.MappingNode):
+            raise yaml.constructor.ConstructorError(None, None, "expected mapping node", node.start_mark)
+        mapping: dict[Any, Any] = {}
+        for key_node, value_node in node.value:
+            if key_node.tag == "tag:yaml.org,2002:merge":
+                raise yaml.constructor.ConstructorError(
+                    "while constructing a mapping", node.start_mark,
+                    "YAML merge keys are prohibited", key_node.start_mark,
+                )
+            key = self.construct_object(key_node, deep=deep)
+            try:
+                duplicate = key in mapping
+            except TypeError as exc:
+                raise yaml.constructor.ConstructorError(
+                    "while constructing a mapping", node.start_mark,
+                    "unhashable mapping key", key_node.start_mark,
+                ) from exc
+            if duplicate:
+                raise yaml.constructor.ConstructorError(
+                    "while constructing a mapping", node.start_mark,
+                    f"duplicate mapping key: {key!r}", key_node.start_mark,
+                )
+            mapping[key] = self.construct_object(value_node, deep=deep)
+        return mapping
+
+
 def _load(path: Path) -> dict[str, Any]:
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data = yaml.load(path.read_text(encoding="utf-8"), Loader=_UnambiguousSafeLoader)
     if not isinstance(data, dict):
         raise ValueError(f"{path}: expected mapping")
     return data
@@ -182,6 +221,21 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
     require(cash.get("day_count") == "ACT/360" and cash.get("annual_drag_bps") == "25", "cash accrual convention changed")
     dividend = p.get("portfolio_mechanics", {})
     require(dividend.get("dividend_boundary_example") == {"prior_close_shares": "1", "prior_close_price": "100", "ex_date_price": "98", "gross_dividend": "2", "tax_profile": "TAX_DEFERRED", "ex_date_nav": "100", "ex_date_spendable_cash": "0", "payable_date_cash_before_other_events": "2"}, "dividend boundary example changed")
+    require(dividend.get("dividend_settlement_calendar") == "EVERY_CALENDAR_DATE_NOT_ONLY_XNYS_SESSIONS", "dividend settlement calendar changed")
+    examples = dividend.get("non_xnys_boundary_examples", [])
+    require([(x.get("ticker"), x.get("payable_date"), x.get("first_interest_date")) for x in examples] == [
+        ("TMO", "2023-01-16", "2023-01-17"), ("TSM", "2025-01-09", "2025-01-10")
+    ], "non-XNYS dividend boundary examples changed")
+
+    thresholds = p.get("review_thresholds", {})
+    tail_paths = thresholds.get("linked_tail_gate", {}).get("predeclared_paths", [])
+    require([(x.get("tail_metric"), x.get("primary_improvement_pp_gte"), x.get("bootstrap_probability_positive_gte")) for x in tail_paths] == [
+        ("MAX_DRAWDOWN", "2.00", "0.75"), ("DAILY_CVAR_95", "0.10", "0.75")
+    ], "linked tail/bootstrap paths changed")
+    disposition = thresholds.get("multiple_passer_disposition", {})
+    require(disposition.get("canonical_alternative_order") == [
+        "BROAD_PLUS_5", "DEFENSIVE_PLUS_5", "CRYPTO_HALF", "GOLD_PLUS_2", "DIVERSIFIED_BALANCE"
+    ], "multiple-passer canonical order changed")
 
     safety = p.get("safety", {})
     require(safety.get("stage1_state") == "UNARMED_AND_NOT_EXECUTABLE", "Stage 1 boundary changed")

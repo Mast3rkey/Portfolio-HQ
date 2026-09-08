@@ -4,6 +4,7 @@ import copy
 import math
 import subprocess
 import sys
+import shutil
 from decimal import Decimal
 from pathlib import Path
 
@@ -83,8 +84,16 @@ def test_dividend_receivable_boundary_and_cash_tax_math() -> None:
     assert ex_nav == Decimal(example["ex_date_nav"]) == Decimal("100")
     assert Decimal(example["ex_date_spendable_cash"]) == 0
     mid = data["frictions"]["tax_profile_parameters"]["TAXABLE_MID"]
-    after_tax_daily_interest = Decimal("100") * ((Decimal("5.00") - Decimal("0.25")) / 100) * (1 - Decimal(mid["ordinary_income_rate"])) / 360
-    assert after_tax_daily_interest == Decimal("0.01002777777777777777777777778")
+    def daily_change(dff_percent: str) -> Decimal:
+        gross_rate = Decimal(dff_percent) / 100
+        return Decimal(100) * (
+            gross_rate - max(gross_rate, Decimal(0)) * Decimal(mid["ordinary_income_rate"])
+            - Decimal("0.0025")
+        ) / 360
+
+    assert daily_change("5") == Decimal("0.009861111111111111111111111111")
+    assert daily_change("0") == Decimal("-0.0006944444444444444444444444444")
+    assert daily_change("-1") == Decimal("-0.003472222222222222222222222222")
     assert "EARNS_NO_CASH_INTEREST" in data["portfolio_mechanics"]["dividend_receivable_constraints"]
 
 
@@ -113,3 +122,73 @@ def test_v2_contains_no_result_outputs() -> None:
 def test_predecessor_outputs_are_untouched() -> None:
     assert (validator.ROOT / "research/whole_portfolio_robustness/execution/results.md").is_file()
     assert (validator.ROOT / "governance/decisions/RISK-0005-whole-portfolio-evidence-disposition.md").is_file()
+
+
+def _isolated_root(tmp_path: Path) -> Path:
+    root = tmp_path / "isolated"
+    for rel in validator.EXPECTED_PINS:
+        target = root / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(validator.ROOT / rel, target)
+    for source in (validator.PREREG, validator.PROTOCOL):
+        target = root / source.relative_to(validator.ROOT)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    return root
+
+
+def test_normative_upstream_protocol_pin_rejects_byte_drift(tmp_path: Path) -> None:
+    root = _isolated_root(tmp_path)
+    assert validator.validate(root=root) == []
+    (root / "research/buy_ladder_backtest/PROTOCOL_V2.md").write_text(
+        "incompatible ex-date cash; no split normalization\n", encoding="utf-8"
+    )
+    assert "pin drift: research/buy_ladder_backtest/PROTOCOL_V2.md" in validator.validate(root=root)
+
+
+def test_normative_upstream_pin_cannot_be_removed_and_self_reblessed(tmp_path: Path) -> None:
+    data = _data()
+    del data["frozen_inputs"]["files"]["research/buy_ladder_backtest/PROTOCOL_V2.md"]
+    data["integrity"]["frozen_contract"]["expected_sha256"] = validator._contract_digest(data)
+    errors = _validate_copy(tmp_path, data)
+    assert "contract digest declaration changed" in errors
+    assert any("pinned-file registry" in error for error in errors)
+
+
+def test_duplicate_mapping_keys_rejected_even_when_last_restores_value(tmp_path: Path) -> None:
+    pristine = validator.PREREG.read_text(encoding="utf-8")
+    top = tmp_path / "top.yaml"
+    top.write_text("schema_version: '999'\n" + pristine, encoding="utf-8")
+    assert any("duplicate mapping key: 'schema_version'" in error for error in validator.validate(prereg_path=top))
+
+    nested = tmp_path / "nested.yaml"
+    nested.write_text(pristine.replace("  disposition: EVIDENCE_LIMITED_NOT_DECISION_GRADE\n", "  disposition: WRONG\n  disposition: EVIDENCE_LIMITED_NOT_DECISION_GRADE\n", 1), encoding="utf-8")
+    assert any("duplicate mapping key: 'disposition'" in error for error in validator.validate(prereg_path=nested))
+
+
+def test_duplicate_mapping_key_rejected_under_optimized_python(tmp_path: Path) -> None:
+    path = tmp_path / "duplicate.yaml"
+    path.write_text("schema_version: '999'\n" + validator.PREREG.read_text(encoding="utf-8"), encoding="utf-8")
+    code = "import sys,whole_portfolio_robustness_v2_preregistration_validator as v; e=v.validate(prereg_path=v.Path(sys.argv[1])); raise SystemExit(0 if any('duplicate mapping key' in x for x in e) else 1)"
+    result = subprocess.run([sys.executable, "-O", "-c", code, str(path)], cwd=validator.ROOT, check=False)
+    assert result.returncode == 0
+
+
+def test_alias_and_merge_yaml_are_rejected(tmp_path: Path) -> None:
+    alias = tmp_path / "alias.yaml"
+    alias.write_text("base: &base {x: 1}\ncopy: *base\n", encoding="utf-8")
+    assert any("aliases are prohibited" in error for error in validator.validate(prereg_path=alias))
+
+
+def test_non_xnys_settlement_and_linked_decision_rules_are_frozen() -> None:
+    data = _data()
+    mechanics = data["portfolio_mechanics"]
+    assert mechanics["dividend_settlement_calendar"] == "EVERY_CALENDAR_DATE_NOT_ONLY_XNYS_SESSIONS"
+    assert [(x["payable_date"], x["first_interest_date"]) for x in mechanics["non_xnys_boundary_examples"]] == [
+        ("2023-01-16", "2023-01-17"), ("2025-01-09", "2025-01-10")
+    ]
+    thresholds = data["review_thresholds"]
+    assert [x["tail_metric"] for x in thresholds["linked_tail_gate"]["predeclared_paths"]] == ["MAX_DRAWDOWN", "DAILY_CVAR_95"]
+    disposition = thresholds["multiple_passer_disposition"]
+    assert disposition["empty_passing_set"] == "RETAIN_BASELINE"
+    assert disposition["ranking_or_tiebreak"] == "PROHIBITED"
