@@ -453,7 +453,7 @@ frictions:
     one_way_cost_bps: '25'
     tax_profile: TAXABLE_HIGH
     rebalance_cadence: ANNUAL
-  primary_cell_role: AUTHORITATIVE_MAIN_NUMERIC_GATE_AND_PAIRED_BOOTSTRAP_PATH_MUST_PASS_INDEPENDENTLY_SENSITIVITIES_CANNOT_REPLACE_AFTER_OUTCOMES
+  primary_cell_role: AUTHORITATIVE_CORRECTION_REPLICATION_MAIN_NUMERIC_GATE_AND_PAIRED_DECISION_BOOTSTRAP_PATH_MUST_PASS_INDEPENDENTLY_SENSITIVITIES_OR_CONTEXT_CANNOT_REPLACE_AFTER_OUTCOMES
 metrics:
   return:
   - NET_TWR_CAGR
@@ -498,6 +498,8 @@ bootstrap:
   - SHARPE_DELTA
   - MAX_DRAWDOWN_DELTA
   - DAILY_CVAR_95_DELTA
+  decision_window: correction_replication
+  context_role: NON_VOTING_CONTEXT_EVIDENCE_CANNOT_SUBSTITUTE_FOR_CORRECTION_REPLICATION_DECISION_BOOTSTRAP
 review_thresholds:
   disposition_values:
   - RETAIN_BASELINE
@@ -534,7 +536,7 @@ review_thresholds:
     minimum_passing_cells: 15
     minimum_fraction: '0.80'
     rounding_rule: INTEGER_COUNT_AT_LEAST_CEILING_0.80_TIMES_18_EQUALS_15
-    comparison: EACH_ALTERNATIVE_PAIRED_TO_BASELINE_WITHIN_IDENTICAL_CELL_AND_WINDOW
+    comparison: EACH_ALTERNATIVE_PAIRED_TO_BASELINE_WITHIN_IDENTICAL_REGISTERED_CELL_IN_CORRECTION_REPLICATION
     missing_nonfinite_or_unregistered: FAIL_CLOSED_ENTIRE_STUDY
     cell_predicate_all_required:
       net_cagr_delta_pp_per_year_gte: '-0.50'
@@ -548,6 +550,8 @@ review_thresholds:
       max_drawdown_improvement_pp: ALTERNATIVE_MAX_DRAWDOWN_MINUS_BASELINE_MAX_DRAWDOWN_POSITIVE_IS_IMPROVEMENT
       daily_cvar_95: NONPOSITIVE_MEAN_RETURN_OF_WORST_FIVE_PERCENT_DAYS_ZERO_IS_BEST_MORE_NEGATIVE_IS_WORSE
       daily_cvar_95_improvement_pp: ALTERNATIVE_DAILY_CVAR_95_MINUS_BASELINE_DAILY_CVAR_95_POSITIVE_IS_IMPROVEMENT
+    window: correction_replication
+    window_role: VOTING_SUPPORT_COUNT_ONLY_CONTEXT_SUPPORT_CANNOT_SUBSTITUTE
   context_direction_gate:
     window: context
     comparison: EACH_ALTERNATIVE_PAIRED_TO_BASELINE_IN_AUTHORITATIVE_PRIMARY_CELL
@@ -601,10 +605,10 @@ integrity:
   no_zero_return_substitution: true
   execution_before_preregistration_merge: PROHIBITED
   code_or_config_change_after_result_inspection: NEW_STUDY_ID_REQUIRED
-  protocol_sha256: 98da4f6c170f15cb10bc0ee12c1e33f81fd17e170263e4802f76a6a757884fbb
+  protocol_sha256: 862f2d8af766cdc1be5b7394501ef4f51dd26c7448b69fed90b9bdfcd53fbb32
   frozen_contract:
     canonicalization: SHA256_OF_UTF8_CANONICAL_JSON_SORTED_KEYS_COMPACT_SEPARATORS_ALLOW_NAN_FALSE_EXCLUDING_ONLY_integrity.frozen_contract.expected_sha256
-    expected_sha256: 5f1ce788d56daff1db2ab02a09af4286ca092ed1e61b39a05ee6d82f19eaec5d
+    expected_sha256: 775522c6840d494dd9c1849a50e4db0d3493b4e5754ac4706ec6ab5fa616e8dd
     validator_expected_sha256_location: whole_portfolio_robustness_v2_preregistration_validator.py::EXPECTED_CONTRACT_SHA256
     coverage: EVERY_PARSED_YAML_KEY_AND_VALUE_EXCEPT_THIS_EXPECTED_SHA256_FIELD; PROTOCOL_BOUND_BY_protocol_sha256; PIN_REGISTRY_BOUND_BY_EXACT_KEYS_AND_VALUES
     drift_rule: ANY_DIFFERENCE_HALTS_BEFORE_RESULTS_AND_DIGEST_FIELDS_CANNOT_BE_REMOVED

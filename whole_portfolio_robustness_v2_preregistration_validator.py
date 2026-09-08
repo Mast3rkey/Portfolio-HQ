@@ -14,7 +14,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 PREREG = ROOT / "research/whole_portfolio_robustness_v2/pre_registration.yaml"
 PROTOCOL = ROOT / "research/whole_portfolio_robustness_v2/PROTOCOL.md"
-EXPECTED_CONTRACT_SHA256 = "5f1ce788d56daff1db2ab02a09af4286ca092ed1e61b39a05ee6d82f19eaec5d"
+EXPECTED_CONTRACT_SHA256 = "775522c6840d494dd9c1849a50e4db0d3493b4e5754ac4706ec6ab5fa616e8dd"
 EXPECTED_PINS = {
     "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
     "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
@@ -255,10 +255,15 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
 
     thresholds = mapping(p.get("review_thresholds"), "review_thresholds")
     support = mapping(thresholds.get("support_gate"), "review_thresholds.support_gate")
+    require(support.get("window") == "correction_replication", "support gate window changed")
+    require(support.get("window_role") == "VOTING_SUPPORT_COUNT_ONLY_CONTEXT_SUPPORT_CANNOT_SUBSTITUTE", "support gate window role changed")
     require(support.get("minimum_passing_cells") == 15 and support.get("minimum_fraction") == "0.80", "80% support threshold changed")
     require(support.get("primary_cell_included") is True, "primary cell excluded from support denominator")
     predicate = support.get("cell_predicate_all_required", {})
     require(predicate == {"net_cagr_delta_pp_per_year_gte": "-0.50", "sharpe_delta_gte": "0.05", "sortino_delta_gte": "0.05", "tail_either": {"max_drawdown_improvement_pp_gte": "2.00", "daily_cvar_95_improvement_pp_gte": "0.10"}}, "cell predicate changed")
+    bootstrap = mapping(p.get("bootstrap"), "bootstrap")
+    require(bootstrap.get("decision_window") == "correction_replication", "decision bootstrap window changed")
+    require(bootstrap.get("context_role") == "NON_VOTING_CONTEXT_EVIDENCE_CANNOT_SUBSTITUTE_FOR_CORRECTION_REPLICATION_DECISION_BOOTSTRAP", "bootstrap context role changed")
     foreign = mapping(frictions.get("foreign_dividends"), "frictions.foreign_dividends")
     require(foreign.get("sensitivity_inventory") == ["STANDARD_AVAILABLE_CREDIT", "ZERO_FOREIGN_TAX_CREDIT", "ETN_25_PERCENT_IRISH_WITHHOLDING", "JOINT_ZERO_CREDIT_AND_ETN_25_PERCENT_IRISH_WITHHOLDING"], "foreign sensitivity inventory changed")
     require(foreign.get("decision_rule") == "FULL_CANONICALLY_ORDERED_PASSING_SET_OR_EVERY_PER_VARIANT_GATE_BOOLEAN_CHANGE_CAUSES_UNABLE_TO_DETERMINE", "foreign decision rule changed")

@@ -345,3 +345,26 @@ def test_missing_pinned_v2_protocol_returns_diagnostic(tmp_path: Path) -> None:
     (root / validator.PROTOCOL.relative_to(validator.ROOT)).unlink()
     errors = validator.validate(root=root)
     assert f"missing pinned protocol: {validator.PROTOCOL.relative_to(validator.ROOT)}" in errors
+
+
+@pytest.mark.parametrize("window", ["context", "UNKNOWN_WINDOW", None])
+def test_support_gate_rejects_nonvoting_unknown_or_removed_window(tmp_path: Path, window: object) -> None:
+    data = _data()
+    if window is None:
+        del data["review_thresholds"]["support_gate"]["window"]
+    else:
+        data["review_thresholds"]["support_gate"]["window"] = window
+    errors = _validate_copy(tmp_path, data)
+    assert "support gate window changed" in errors
+    assert "frozen contract drift" in errors
+
+
+def test_support_and_decision_bootstrap_are_bound_to_voting_correction_window() -> None:
+    data = _data()
+    support = data["review_thresholds"]["support_gate"]
+    assert support["window"] == "correction_replication"
+    assert support["minimum_passing_cells"] == 15
+    assert support["window_role"] == "VOTING_SUPPORT_COUNT_ONLY_CONTEXT_SUPPORT_CANNOT_SUBSTITUTE"
+    assert data["bootstrap"]["decision_window"] == "correction_replication"
+    assert data["bootstrap"]["context_role"] == "NON_VOTING_CONTEXT_EVIDENCE_CANNOT_SUBSTITUTE_FOR_CORRECTION_REPLICATION_DECISION_BOOTSTRAP"
+    assert data["review_thresholds"]["context_direction_gate"]["window"] == "context"
