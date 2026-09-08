@@ -1,119 +1,59 @@
 # Corrected whole-portfolio robustness protocol
 
 Study: `PORTFOLIO-ROBUSTNESS-V2-0001`
-
 Status: **PREREGISTERED — NOT EXECUTED**
+Correction: **pre-execution contract correction after merged PR #387; no result was inspected and the study identity is preserved.**
 
-## Decision question
+## Authority and decision question
 
-Does one of five fixed, economically interpretable alternatives improve the
-current accepted portfolio's held-period risk-adjusted performance and tail
-survivability after realistic costs and tax sensitivities, without an
-unacceptable return sacrifice? The accepted targets remain the baseline. No
-result changes policy automatically.
+This immutable contract asks whether one of five fixed, economically interpretable alternatives improves the current accepted portfolio's held-period risk-adjusted performance and tail survivability after costs and tax sensitivities, without unacceptable return sacrifice. The accepted targets remain the baseline; a passing result can only recommend a separate policy review. It cannot change targets or policy.
 
-This is a correction replication. The historical period through 2026-07-31
-was exposed by `PORTFOLIO-ROBUSTNESS-0001`, whose evidence was classified
-`EVIDENCE_LIMITED_NOT_DECISION_GRADE` by RISK-0005. It is therefore not called
-a fresh holdout. The replacement study gets a new identity, freezes its
-hypotheses before execution, and must reproduce every admitted input from
-pinned source bytes and receipts.
+The interval is an exposed correction replication, not a fresh holdout. `PORTFOLIO-ROBUSTNESS-0001` was classified `EVIDENCE_LIMITED_NOT_DECISION_GRADE` by RISK-0005. V2 remains unexecuted. This correction resolves the post-merge independent review of PR #387 before any V2 implementation or result.
 
-## Portfolio and alternatives
+`pre_registration.yaml` is the executable specification. Its canonical digest covers every parsed key and value except the digest value itself. The validator carries an independently reviewable expected digest, requires the digest machinery and the complete fixed pin registry, and separately pins this protocol. Thus a coherent edit cannot bless itself by editing its own expected digest. Semantic checks provide diagnostics in addition to that full freeze. Any mismatch, malformed YAML, duplicate registry identity, unknown registry member, or non-finite numeric value halts before results under normal and optimized Python.
 
-The engine must derive the 100% counterfactual directly from `targets.yaml`
-and `gates.yaml`; hand-copied weights and renormalization are prohibited. The
-99.25% assigned destination plus the 0.75% unassigned residual reconcile to
-100%. RESERVE, CASH, the residual, and all six gated targets remain cash.
-Gates never open historically. Capital for a not-yet-lawfully-available active
-asset remains cash until the first scheduled rebalance after availability.
+## Fixed portfolio and alternatives
 
-The six fixed candidates are BASELINE, BROAD_PLUS_5, DEFENSIVE_PLUS_5,
-CRYPTO_HALF, GOLD_PLUS_2, and DIVERSIFIED_BALANCE. Their exact sleeve changes
-are in `pre_registration.yaml`. There is no parameter search, ranking-based
-winner selection, or refit after seeing a result.
+The engine derives the counterfactual from the pinned `targets.yaml` and `gates.yaml`, without renormalization: 99.25% assigned plus 0.75% residual equals 100%. RESERVE, CASH, residual, and all six gated targets are cash. Gates never open historically. An unavailable active weight stays cash until the first scheduled rebalance after lawful availability.
 
-## Evidence admission
+The only constructions are `BASELINE`, `BROAD_PLUS_5`, `DEFENSIVE_PLUS_5`, `CRYPTO_HALF`, `GOLD_PLUS_2`, and `DIVERSIFIED_BALANCE`, with exact transforms and expected sleeves in YAML. No parameter search, outcome-conditioned selection, ranking, or refit is permitted.
 
-Eligible stocks, broad funds, and GLD must use the reconciled LADDER-0003
-price selection, bad-tick corrections, and corporate-action registry. The
-engine must independently verify the referenced hashes and reconstruct the
-selected transforms from retained raw bytes and receipts. RTX begins no
-earlier than its lawful identity boundary. Dividends are credited once on the
-ex-date from the frozen registry; split-adjusted prices are not total-return
-prices. The LADDER-0003 foreign-dividend amendment is also pinned: reported
-source-net dividends are normalized to gross entitlement, foreign withholding
-and available credit are shown separately, and both the zero-credit and ETN
-25% Irish-withholding cases are mandatory sensitivities. If either changes an
-apparent winner or adoption gate, the disposition is `UNABLE_TO_DETERMINE`.
-The amendment's 16.8% U.S. rate is the taxable-mid instance; in each tax cell,
-tentative U.S. dividend tax instead uses that cell's preregistered qualified/
-ordinary blend. The credit remains capped at that same dividend's tentative
-U.S. tax.
+## Evidence and portfolio ledger
 
-Crypto is a new fail-closed gate. BTC, ETH, and SOL require a successor input
-disposition that pins raw bytes, receipts, transformation rules, daily
-completeness, and an evidence-supported availability boundary. Existing
-candidate files alone are not admitted. No stitching, interpolation,
-forward-fill, assumed inception date, or silent shortening is allowed. If any
-required crypto series cannot pass, the whole study disposition is
-`UNABLE_TO_DETERMINE`; the engine may not silently move that sleeve to cash or
-drop SOL.
+Equities, funds, and GLD reuse a deliberately limited, pinned subset of LADDER-0003: its accepted input disposition and price-anomaly corrections; split normalization; entitlement from prior-close shares; ex-date net-receivable recognition; and the foreign amendment’s source-withholding and same-dividend foreign-tax-credit mechanics. Both upstream protocol documents are direct immutable input pins, but they are normative only for that enumerated subset. This V2 preregistration’s `portfolio_mechanics` and `frictions` control and supersede conflicting predecessor cash formulas or fixed tax rates, payable-date settlement/accrual ordering, settlement-day interest eligibility, and accrual-day versus credit-date timing. Ladder arms, fills, budgets or contributions, rebalance/trade timing, and decision criteria are not incorporated. There is no implicit merge: an unenumerated conflict halts before results. Split-adjusted price series must not contain distributions. Crypto requires a successor disposition for BTC, ETH, and SOL; absent or incomplete evidence makes the study `UNABLE_TO_DETERMINE`, never a silent drop or cash substitution. The valuation calendar is XNYS sessions, with every intervening UTC crypto daily-close return compounded into the next XNYS value without future data.
 
-The portfolio valuation calendar is XNYS sessions. Each crypto series is built
-from consecutive UTC daily closes; every intervening calendar-day return,
-including weekends and exchange holidays, is compounded into the next XNYS
-portfolio valuation. Discarding weekend returns or using future UTC closes is
-prohibited.
+### Dividend recognition and settlement
 
-Cash earns lagged DFF on an ACT/360 basis less 25 bps annual operating drag.
-The XNYS calendar, DFF, targets, gates, look-through, LADDER-0003 disposition,
-actions, and corrections are hash-pinned. Any drift halts before results.
+All units are split-normalized. Entitlement equals prior-XNYS-close split-normalized shares times the declared gross dividend. On the ex-date, record exactly once in NAV an **unsettled net receivable**: gross entitlement minus source withholding minus tentative U.S. tax after the allowed same-dividend foreign-tax credit. This is recognition, not spendable cash. On the actual payable date, move that receivable to settled cash with no NAV change and no second tax. Before settlement it cannot fund a rebalance and earns no interest. If still unpaid at evaluation end, it remains in final NAV.
 
-## Evaluation
+Missing or invalid required amount, split factor, ex-date, or actual payable date halts before results. For one prior-close share, a price moving from 100 to 98 on ex-date with a gross dividend of 2 and the tax-deferred profile produces ex-date NAV 100 and spendable cash 0; on the later payable date cash becomes 2 before other events.
 
-The common evidence interval is 2021-06-01 through 2026-07-31. The
-2021-06-01–2023-12-29 interval is non-voting context; the previously exposed
-2024-04-02–2026-07-31 interval is the voting correction replication. Fixed
-calendar subperiods cover the 2022 rate/inflation drawdown and each later
-calendar year. Expanding-origin, no-refit annual evaluations begin in 2022.
-Asset-selected peak/trough windows are prohibited.
+The cash clock distinguishes an **accrual day** from its **credit/recognition date**. On every calendar-date transition, first post exactly once the prior calendar day's interest computed from that prior day's opening eligible settled cash; then capture the current day's opening eligible settled cash; then recognize ex-date receivables and settle current-date payables; on an XNYS date, value at close and finally perform any scheduled close rebalance. Current-day interest never posts early at an XNYS close. A same-day settlement is excluded from that day's captured opening balance, so it first earns on the following calendar day and that interest first posts one calendar date later. Entitlement uses prior-XNYS-close shares and cannot be manufactured by a same-close purchase.
 
-This is a current-roster historical counterfactual, not a reconstruction of
-what would have been recommended at each historical date. Holding unavailable
-weights as cash prevents invented predecessor returns, but does not remove
-survivorship or hindsight-selection bias; all outputs must carry that limit.
+Settlement is processed on every calendar date, not deferred to an XNYS session. Under the synthetic frozen trace (`principal=100`, DFF `5%`, taxable-mid ordinary rate `0.24`, unchanged 25-bp drag), TMO settles Monday 2023-01-16, an actual non-XNYS date. Tuesday 2023-01-17 is its first eligible accrual day, but that Tuesday XNYS close is exactly `100`; the first daily interest `0.009861111111111111111111111111` posts Wednesday 2023-01-18, whose close is `100.0098611111111111111111111111111111111`. TSM settles Thursday 2025-01-09, also an actual non-XNYS date. Friday 2025-01-10 closes at exactly `100`; Jan 10 interest posts Saturday Jan 11, Jan 11 interest posts Sunday Jan 12, and Jan 12 interest posts Monday Jan 13. The Jan 13 XNYS close is `100.0295862506745946394890260631001371742`, reflecting exactly three compounded credits through Jan 12 and no Jan 13 interest. This weekend trace prohibits fractional-period or close-time pull-forward.
 
-Primary rebalancing is quarterly at the first available XNYS close; annual
-rebalancing is a sensitivity. Every variant is evaluated at 0, 10, and 25 bps
-one-way costs and under tax-deferred, taxable-mid, and taxable-high profiles.
-Tax lots use HIFO with acquisition dates; losses create no modeled tax credit,
-wash-sale benefit is prohibited, dividends and realized gains are taxed when
-recognized, and ending unrealized gains are not liquidated. Equities and funds
-use ordinary short-/long-term capital-gain treatment, crypto uses the same
-property-gain holding-period treatment, and GLD uses the registered
-collectibles-rate sensitivity. Dividend tax is debited on ex-date and realized
-gain tax at each rebalance, so neither can be deferred opportunistically.
+### Cash accrual
 
-Required outputs include daily paths, TWR/CAGR, volatility, downside
-deviation, Sharpe, Sortino, Calmar, maximum drawdown and recovery, worst
-month/quarter/year, 95% daily CVaR, costs, turnover, taxes, direct and
-look-through concentration, and fixed-regime results. Paired stationary-block
-bootstrap uses a mean 21-session block, 2,000 draws, and seed 20260907.
+Cash return is a research benchmark assumption, not personal tax advice, and needs no account input. For every elapsed calendar day, including weekends and holidays, settled cash compounds once using the latest DFF observation lawfully available at that calendar day's start after a one-Federal-Reserve-business-day lag. There is no forward lookup. For opening settled cash `C`, DFF as a decimal `r`, and the cell's frozen ordinary-income rate `t`, the daily cash change is `C × (r − max(r, 0) × t − 0.0025) / 360`. Tax therefore applies only to positive gross DFF interest; the 25-bp operating benchmark-yield drag is subtracted separately and is not modeled as deductible. Negative DFF is a cash cost, receives no invented tax or realized-security-loss credit, and still bears the drag. At `C=100` and `t=0.24`, daily changes for DFF of +5%, 0%, and −1% are respectively `+0.009861111111111111111111111111`, `−0.0006944444444444444444444444444`, and `−0.003472222222222222222222222222`. The separate prohibition on realized security-loss credits does not supply or justify this cash-yield tax assumption. Unsettled dividend receivables earn nothing. Missing required DFF fails the affected cell and therefore the study closed. The exact formula and event order are frozen in YAML.
 
-## Adoption gate
+## Evaluation cells and primary path
 
-The default is `RETAIN_BASELINE`. A candidate can only earn
-`RECOMMEND_POLICY_REVIEW` if it clears every numeric gate in the preregistration
-across the voting interval, context direction, fixed regimes, friction/tax and
-cadence cells, bootstrap probabilities, data integrity, and concentration.
-A candidate may not increase direct-name HHI or the largest direct weight;
-effective-issuer and AI-platform common-driver exposure may worsen by at most
-0.25 percentage points; the registered 25% semiconductor and 20% power-
-infrastructure caps remain hard limits.
-A close call or mixed result retains baseline. Even a passing result only
-recommends a separate reviewed policy decision.
+The authoritative primary gate and decision-bootstrap path is **10 bps one-way cost / TAXABLE_MID / quarterly first-available-XNYS-close rebalance in the voting `correction_replication` window**. Sensitivities and context-window bootstrap outputs cannot replace that correction decision path after outcomes.
 
-This study is advisory-only. It uses no account state or broker credentials,
-does not authorize a trade or leverage, does not change targets or gates, and
-keeps Stage 1 UNARMED and NOT EXECUTABLE.
+The support registry is the exact Cartesian product of costs `{0,10,25}` bps, profiles `{TAX_DEFERRED,TAXABLE_MID,TAXABLE_HIGH}`, and cadences `{QUARTERLY,ANNUAL}`: exactly 18 uniquely identified cells, including the primary. Support is counted only in the voting `correction_replication` window, with every alternative paired to baseline in the identical registered cell; context support cannot replace it. Missing, extra, duplicate, malformed, or non-finite cell data fails the study closed.
+
+A cell supports an alternative only when **all** of these signed predicates hold: net-CAGR delta ≥ −0.50 percentage points/year; Sharpe delta ≥ +0.05; Sortino delta ≥ +0.05; and either maximum-drawdown improvement ≥ +2.00 percentage points or daily-CVaR-95 improvement ≥ +0.10 percentage points. Maximum drawdown and CVaR are non-positive returns (zero best, more negative worse); each improvement is `alternative − baseline`, so positive is better. At least 15 of the exact 18 cells must support: the integer rule is `count >= ceil(0.80 × 18) = 15`.
+
+The correction-replication support count does not replace any main magnitude, separate context-direction, fixed-regime, bootstrap, integrity, or concentration gate. The primary cell in `correction_replication` must independently pass the complete main gate and supplies the decision-path paired stationary-block bootstrap (21-session mean block, 2,000 draws, seed 20260907). Sensitivities are robustness evidence only.
+
+Context direction is fixed rather than outcome-selectable. In the context window and authoritative primary cell, paired alternative-minus-baseline net-CAGR, Sharpe, and Sortino deltas must each be at least zero. The tail improvement for the same eligible tail path must also be at least zero. The two predeclared tail paths are (1) maximum-drawdown improvement ≥ 2.00 pp in the primary window, context improvement ≥ 0, and bootstrap probability of positive `MAX_DRAWDOWN_DELTA` ≥ 0.75; or (2) daily-CVaR-95 improvement ≥ 0.10 pp, context improvement ≥ 0, and bootstrap probability of positive `DAILY_CVAR_95_DELTA` ≥ 0.75. At least one single path must clear all three linked requirements. Using drawdown for magnitude and CVaR for bootstrap, or selecting the favorable path after results, is prohibited.
+
+Foreign-dividend cases have a separate veto. Run standard available credit, zero credit alone, ETN 25% Irish withholding alone, and their joint case over all 18 cells. Each separate case and the joint case must preserve the full canonically ordered passing set and every per-variant gate result; otherwise disposition is `UNABLE_TO_DETERMINE`. This preserves both mandatory vetoes and fixes the inventory before results.
+
+There is no singular outcome-selected winner. Evaluate alternatives in canonical order: `BROAD_PLUS_5`, `DEFENSIVE_PLUS_5`, `CRYPTO_HALF`, `GOLD_PLUS_2`, `DIVERSIFIED_BALANCE`. With no passing alternative, disposition is `RETAIN_BASELINE`; with one or more, it is `RECOMMEND_POLICY_REVIEW` and reports the full canonically ordered passing set without ranking or tie-break. Integrity or foreign-veto failure overrides either result with `UNABLE_TO_DETERMINE`. Every separate and joint foreign case must preserve both the full passing set and every per-variant gate Boolean; any difference triggers that veto. No result automatically changes policy.
+
+## Remaining gates and safety
+
+The exposed voting correction interval is 2024-04-02–2026-07-31; 2021-06-01–2023-12-29 is non-voting context. Fixed calendar regimes, expanding-origin no-refit evaluations, all original numeric return/tail/bootstrap/concentration thresholds, no-loss-credit treatment, HIFO lots, and data-integrity gates remain mandatory. Asset-selected windows are prohibited. A close call or mixed result retains baseline.
+
+The study is advisory-only. It uses no holdings, account state, broker credentials, leverage, order path, or production mutation; changes no targets, gates, allocator, margin doctrine, or Stage 1 state. Stage 1 remains **UNARMED AND NOT EXECUTABLE**. No historical portfolio or ladder outcome may be run under this correction.
