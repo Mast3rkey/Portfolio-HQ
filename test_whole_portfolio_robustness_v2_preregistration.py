@@ -10,6 +10,7 @@ from decimal import Decimal, localcontext
 from pathlib import Path
 
 import yaml
+import pytest
 
 import whole_portfolio_robustness_v2_preregistration_validator as validator
 
@@ -220,3 +221,53 @@ def test_foreign_decision_fields_use_full_passing_set_not_winner() -> None:
     foreign = _data()["frictions"]["foreign_dividends"]
     assert foreign["decision_rule"] == "FULL_CANONICALLY_ORDERED_PASSING_SET_OR_EVERY_PER_VARIANT_GATE_BOOLEAN_CHANGE_CAUSES_UNABLE_TO_DETERMINE"
     assert foreign["veto"] == "IF_ANY_SEPARATE_OR_JOINT_CASE_CHANGES_FULL_CANONICALLY_ORDERED_PASSING_SET_OR_ANY_PER_VARIANT_GATE_BOOLEAN_THEN_UNABLE_TO_DETERMINE"
+
+
+def test_upstream_incorporation_is_narrow_and_local_v2_controls() -> None:
+    scope = _data()["frozen_inputs"]["upstream_incorporation_scope"]
+    assert scope["retained_normative_mechanics"] == [
+        "ACCEPTED_INPUT_DISPOSITION_AND_PRICE_ANOMALY_CORRECTIONS", "SPLIT_NORMALIZATION",
+        "PRIOR_CLOSE_SHARE_ENTITLEMENT", "EX_DATE_NET_RECEIVABLE_RECOGNITION",
+        "SOURCE_WITHHOLDING_AND_SAME_DIVIDEND_FOREIGN_TAX_CREDIT_MECHANICS",
+    ]
+    assert "CASH_RATE_FORMULA" in scope["superseded_predecessor_economics"]
+    assert "ACCRUAL_DAY_VERSUS_CREDIT_RECOGNITION_DATE_CLOCK" in scope["superseded_predecessor_economics"]
+    assert scope["not_imported"] == [
+        "LADDER_ARMS", "FILLS", "BUDGETS_OR_CONTRIBUTIONS", "REBALANCE_OR_TRADE_TIMING", "DECISION_CRITERIA"
+    ]
+
+
+@pytest.mark.parametrize("malformed", [None, "not-a-mapping", ["not-a-mapping"], 7])
+def test_malformed_variant_entries_return_stable_diagnostics(tmp_path: Path, malformed: object) -> None:
+    data = _data()
+    data["variants"]["definitions"][1] = malformed
+    errors = _validate_copy(tmp_path, data)
+    assert "malformed variant entry at index 1: expected mapping" in errors
+    assert "frozen contract drift" in errors
+
+
+def test_malformed_variant_entries_reject_under_optimized_python(tmp_path: Path) -> None:
+    paths = []
+    for index, malformed in enumerate((None, "not-a-mapping", ["not-a-mapping"], 7)):
+        data = _data()
+        data["variants"]["definitions"][1] = malformed
+        path = tmp_path / f"variant-{index}.yaml"
+        path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+        paths.append(path)
+    code = "import sys,whole_portfolio_robustness_v2_preregistration_validator as v; results=[v.validate(prereg_path=v.Path(p)) for p in sys.argv[1:]]; raise SystemExit(0 if all(any('malformed variant entry at index 1' in e for e in r) for r in results) else 1)"
+    result = subprocess.run([sys.executable, "-O", "-c", code, *(str(path) for path in paths)], cwd=validator.ROOT, check=False)
+    assert result.returncode == 0
+
+
+def test_malformed_directly_related_registries_do_not_crash_diagnostics(tmp_path: Path) -> None:
+    for path_parts, expected in (
+        (("portfolio_mechanics", "non_xnys_boundary_examples"), "non-XNYS dividend boundary registry malformed"),
+        (("review_thresholds", "linked_tail_gate", "predeclared_paths"), "linked tail-path registry malformed"),
+    ):
+        data = _data()
+        target = data
+        for part in path_parts[:-1]:
+            target = target[part]
+        target[path_parts[-1]] = [None, "invalid"]
+        errors = _validate_copy(tmp_path, data)
+        assert expected in errors

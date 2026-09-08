@@ -34,6 +34,30 @@ frozen_inputs:
   - ETH
   - SOL
   crypto_fail_closed: UNABLE_TO_DETERMINE_NO_DROP_NO_CASH_SUBSTITUTION
+  upstream_incorporation_scope:
+    sources:
+    - research/buy_ladder_backtest/PROTOCOL_V2.md
+    - research/buy_ladder_backtest/PROTOCOL_V2_FOREIGN_DIVIDEND_AMENDMENT.md
+    retained_normative_mechanics:
+    - ACCEPTED_INPUT_DISPOSITION_AND_PRICE_ANOMALY_CORRECTIONS
+    - SPLIT_NORMALIZATION
+    - PRIOR_CLOSE_SHARE_ENTITLEMENT
+    - EX_DATE_NET_RECEIVABLE_RECOGNITION
+    - SOURCE_WITHHOLDING_AND_SAME_DIVIDEND_FOREIGN_TAX_CREDIT_MECHANICS
+    local_v2_precedence: THIS_PRE_REGISTRATION_PORTFOLIO_MECHANICS_AND_FRICTIONS_CONTROL_AND_SUPERSEDE_ANY_PREDECESSOR_CONFLICT
+    superseded_predecessor_economics:
+    - CASH_RATE_FORMULA
+    - FIXED_TAX_RATE_OR_PROFILE
+    - PAYABLE_DATE_SETTLEMENT_AND_INTEREST_ORDER
+    - SETTLEMENT_DAY_INTEREST_ELIGIBILITY
+    - ACCRUAL_DAY_VERSUS_CREDIT_RECOGNITION_DATE_CLOCK
+    not_imported:
+    - LADDER_ARMS
+    - FILLS
+    - BUDGETS_OR_CONTRIBUTIONS
+    - REBALANCE_OR_TRADE_TIMING
+    - DECISION_CRITERIA
+    conflict_rule: NO_INFERENCE_OR_MERGE; ENUMERATED_LOCAL_V2_RULES_PREVAIL; UNENUMERATED_CONFLICT_HALTS_BEFORE_RESULTS
 baseline:
   construction: DERIVE_FROM_TARGETS_AND_GATES_NO_RENORMALIZATION
   target_assigned_pct: '99.25'
@@ -577,10 +601,10 @@ integrity:
   no_zero_return_substitution: true
   execution_before_preregistration_merge: PROHIBITED
   code_or_config_change_after_result_inspection: NEW_STUDY_ID_REQUIRED
-  protocol_sha256: 729da9274db82ded07c6ae6f9291e48f88b9e1bdde61b71cfa2793db56ec30b3
+  protocol_sha256: 98da4f6c170f15cb10bc0ee12c1e33f81fd17e170263e4802f76a6a757884fbb
   frozen_contract:
     canonicalization: SHA256_OF_UTF8_CANONICAL_JSON_SORTED_KEYS_COMPACT_SEPARATORS_ALLOW_NAN_FALSE_EXCLUDING_ONLY_integrity.frozen_contract.expected_sha256
-    expected_sha256: c8075d78001dca195ea85215db44f7d33ac8fbf836071f547331e04f41d751be
+    expected_sha256: 5f1ce788d56daff1db2ab02a09af4286ca092ed1e61b39a05ee6d82f19eaec5d
     validator_expected_sha256_location: whole_portfolio_robustness_v2_preregistration_validator.py::EXPECTED_CONTRACT_SHA256
     coverage: EVERY_PARSED_YAML_KEY_AND_VALUE_EXCEPT_THIS_EXPECTED_SHA256_FIELD; PROTOCOL_BOUND_BY_protocol_sha256; PIN_REGISTRY_BOUND_BY_EXACT_KEYS_AND_VALUES
     drift_rule: ANY_DIFFERENCE_HALTS_BEFORE_RESULTS_AND_DIGEST_FIELDS_CANNOT_BE_REMOVED

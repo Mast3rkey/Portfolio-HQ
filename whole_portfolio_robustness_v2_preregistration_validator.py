@@ -14,7 +14,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 PREREG = ROOT / "research/whole_portfolio_robustness_v2/pre_registration.yaml"
 PROTOCOL = ROOT / "research/whole_portfolio_robustness_v2/PROTOCOL.md"
-EXPECTED_CONTRACT_SHA256 = "c8075d78001dca195ea85215db44f7d33ac8fbf836071f547331e04f41d751be"
+EXPECTED_CONTRACT_SHA256 = "5f1ce788d56daff1db2ab02a09af4286ca092ed1e61b39a05ee6d82f19eaec5d"
 EXPECTED_PINS = {
     "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
     "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
@@ -147,6 +147,16 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
             require(candidate.is_file(), f"missing pinned file: {rel}")
             if candidate.is_file():
                 require(_sha256(candidate) == expected, f"pin drift: {rel}")
+    incorporation = p.get("frozen_inputs", {}).get("upstream_incorporation_scope", {})
+    require(incorporation.get("local_v2_precedence") == "THIS_PRE_REGISTRATION_PORTFOLIO_MECHANICS_AND_FRICTIONS_CONTROL_AND_SUPERSEDE_ANY_PREDECESSOR_CONFLICT", "upstream/local precedence changed")
+    require(incorporation.get("retained_normative_mechanics") == [
+        "ACCEPTED_INPUT_DISPOSITION_AND_PRICE_ANOMALY_CORRECTIONS", "SPLIT_NORMALIZATION",
+        "PRIOR_CLOSE_SHARE_ENTITLEMENT", "EX_DATE_NET_RECEIVABLE_RECOGNITION",
+        "SOURCE_WITHHOLDING_AND_SAME_DIVIDEND_FOREIGN_TAX_CREDIT_MECHANICS",
+    ], "upstream incorporation scope changed")
+    require(incorporation.get("not_imported") == [
+        "LADDER_ARMS", "FILLS", "BUDGETS_OR_CONTRIBUTIONS", "REBALANCE_OR_TRADE_TIMING", "DECISION_CRITERIA"
+    ], "excluded predecessor mechanics changed")
     require(p.get("integrity", {}).get("protocol_sha256") == _sha256(root / PROTOCOL.relative_to(ROOT)), "protocol pin drift")
 
     try:
@@ -176,11 +186,17 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
         errors.append(f"cannot derive baseline: {exc}")
 
     definitions = p.get("variants", {}).get("definitions", [])
+    if not isinstance(definitions, list):
+        errors.append("variant registry must be a list")
+        definitions = []
     expected_ids = ["BASELINE", "BROAD_PLUS_5", "DEFENSIVE_PLUS_5", "CRYPTO_HALF", "GOLD_PLUS_2", "DIVERSIFIED_BALANCE"]
     ids = [v.get("id") for v in definitions if isinstance(v, dict)]
     require(ids == expected_ids and len(ids) == len(set(ids)), "fixed variant registry malformed or duplicated")
     baseline = {k: _decimal(v, k) for k, v in p.get("baseline", {}).get("sleeves_pct", {}).items()}
-    for variant in definitions:
+    for index, variant in enumerate(definitions):
+        if not isinstance(variant, dict):
+            errors.append(f"malformed variant entry at index {index}: expected mapping")
+            continue
         try:
             derived = dict(baseline)
             for transform in variant["transforms"]:
@@ -192,7 +208,7 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
             expected = {k: _decimal(v, k) for k, v in variant["expected_sleeves_pct"].items()}
             require(derived == expected and sum(expected.values()) == Decimal(100), f"variant {variant['id']} expected sleeves do not match transforms")
         except Exception as exc:
-            errors.append(f"invalid variant {variant.get('id')}: {exc}")
+            errors.append(f"invalid variant {variant.get('id', f'index {index}')}: {exc}")
 
     frictions = p.get("frictions", {})
     require(frictions.get("primary_cell") == {"one_way_cost_bps": "10", "tax_profile": "TAXABLE_MID", "rebalance_cadence": "QUARTERLY"}, "primary cell changed")
@@ -225,23 +241,32 @@ def validate(root: Path = ROOT, prereg_path: Path | None = None) -> list[str]:
     require(dividend.get("dividend_boundary_example") == {"prior_close_shares": "1", "prior_close_price": "100", "ex_date_price": "98", "gross_dividend": "2", "tax_profile": "TAX_DEFERRED", "ex_date_nav": "100", "ex_date_spendable_cash": "0", "payable_date_cash_before_other_events": "2"}, "dividend boundary example changed")
     require(dividend.get("dividend_settlement_calendar") == "EVERY_CALENDAR_DATE_NOT_ONLY_XNYS_SESSIONS", "dividend settlement calendar changed")
     examples = dividend.get("non_xnys_boundary_examples", [])
-    require([(x.get("ticker"), x.get("payable_date"), x.get("first_eligible_accrual_day"), x.get("first_interest_credit_date")) for x in examples] == [
-        ("TMO", "2023-01-16", "2023-01-17", "2023-01-18"),
-        ("TSM", "2025-01-09", "2025-01-10", "2025-01-11"),
-    ], "non-XNYS dividend boundary examples changed")
-    if isinstance(examples, list) and len(examples) == 2 and all(isinstance(x, dict) for x in examples):
-        require([row.get("xnys_close_nav") for row in examples[0].get("xnys_trace", []) if row.get("xnys_session")] == [
-            "100.0000000000000000000000000000000000000", "100.0098611111111111111111111111111111111"
-        ], "TMO interest posting trace changed")
-        require([row.get("xnys_close_nav") for row in examples[1].get("xnys_trace", []) if row.get("xnys_session")] == [
-            "100.0000000000000000000000000000000000000", "100.0295862506745946394890260631001371742"
-        ], "TSM interest posting trace changed")
+    examples_well_formed = isinstance(examples, list) and len(examples) == 2 and all(isinstance(x, dict) for x in examples)
+    require(examples_well_formed, "non-XNYS dividend boundary registry malformed")
+    if examples_well_formed:
+        require([(x.get("ticker"), x.get("payable_date"), x.get("first_eligible_accrual_day"), x.get("first_interest_credit_date")) for x in examples] == [
+            ("TMO", "2023-01-16", "2023-01-17", "2023-01-18"),
+            ("TSM", "2025-01-09", "2025-01-10", "2025-01-11"),
+        ], "non-XNYS dividend boundary examples changed")
+        traces = [example.get("xnys_trace") for example in examples]
+        traces_well_formed = all(isinstance(trace, list) and all(isinstance(row, dict) for row in trace) for trace in traces)
+        require(traces_well_formed, "non-XNYS dividend trace registry malformed")
+        if traces_well_formed:
+            require([row.get("xnys_close_nav") for row in traces[0] if row.get("xnys_session")] == [
+                "100.0000000000000000000000000000000000000", "100.0098611111111111111111111111111111111"
+            ], "TMO interest posting trace changed")
+            require([row.get("xnys_close_nav") for row in traces[1] if row.get("xnys_session")] == [
+                "100.0000000000000000000000000000000000000", "100.0295862506745946394890260631001371742"
+            ], "TSM interest posting trace changed")
 
     thresholds = p.get("review_thresholds", {})
     tail_paths = thresholds.get("linked_tail_gate", {}).get("predeclared_paths", [])
-    require([(x.get("tail_metric"), x.get("primary_improvement_pp_gte"), x.get("bootstrap_probability_positive_gte")) for x in tail_paths] == [
-        ("MAX_DRAWDOWN", "2.00", "0.75"), ("DAILY_CVAR_95", "0.10", "0.75")
-    ], "linked tail/bootstrap paths changed")
+    tail_paths_well_formed = isinstance(tail_paths, list) and len(tail_paths) == 2 and all(isinstance(x, dict) for x in tail_paths)
+    require(tail_paths_well_formed, "linked tail-path registry malformed")
+    if tail_paths_well_formed:
+        require([(x.get("tail_metric"), x.get("primary_improvement_pp_gte"), x.get("bootstrap_probability_positive_gte")) for x in tail_paths] == [
+            ("MAX_DRAWDOWN", "2.00", "0.75"), ("DAILY_CVAR_95", "0.10", "0.75")
+        ], "linked tail/bootstrap paths changed")
     disposition = thresholds.get("multiple_passer_disposition", {})
     require(disposition.get("canonical_alternative_order") == [
         "BROAD_PLUS_5", "DEFENSIVE_PLUS_5", "CRYPTO_HALF", "GOLD_PLUS_2", "DIVERSIFIED_BALANCE"
