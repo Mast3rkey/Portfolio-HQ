@@ -1,0 +1,12 @@
+{
+  "admitted": false,
+  "disposition": "INPUT_ADMISSION_FAILED",
+  "errors": [
+    "DFF: actual publication-time/vintage evidence unresolved",
+    "SOL: missing receipt"
+  ],
+  "historical_results_executed": false,
+  "result_free": true,
+  "stage1": "UNARMED_AND_NOT_EXECUTABLE",
+  "study_id": "PORTFOLIO-ROBUSTNESS-V2-0001"
+}
