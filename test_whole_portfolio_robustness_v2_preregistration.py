@@ -271,3 +271,77 @@ def test_malformed_directly_related_registries_do_not_crash_diagnostics(tmp_path
         target[path_parts[-1]] = [None, "invalid"]
         errors = _validate_copy(tmp_path, data)
         assert expected in errors
+
+
+@pytest.mark.parametrize("replacement", [None, "invalid", [], 7])
+def test_malformed_baseline_sleeves_returns_diagnostics(tmp_path: Path, replacement: object) -> None:
+    data = _data()
+    data["baseline"]["sleeves_pct"] = replacement
+    errors = _validate_copy(tmp_path, data)
+    assert "baseline.sleeves_pct: expected mapping" in errors
+    assert "frozen contract drift" in errors
+
+
+@pytest.mark.parametrize("value", ["NaN", "Infinity", "not-a-number", None])
+def test_invalid_baseline_numbers_return_path_diagnostics(tmp_path: Path, value: object) -> None:
+    data = _data()
+    data["baseline"]["sleeves_pct"]["eligible_direct_equity"] = value
+    errors = _validate_copy(tmp_path, data)
+    assert any("baseline.sleeves_pct.eligible_direct_equity" in error for error in errors)
+    assert "frozen contract drift" in errors
+
+
+@pytest.mark.parametrize("section", [
+    "correction", "frozen_inputs", "integrity", "baseline", "variants", "frictions",
+    "review_thresholds", "portfolio_mechanics", "safety",
+])
+def test_malformed_top_level_mapping_sections_never_escape(tmp_path: Path, section: str) -> None:
+    data = _data()
+    data[section] = ["invalid"]
+    errors = _validate_copy(tmp_path, data)
+    assert errors
+    assert f"{section}: expected mapping" in errors
+
+
+def test_malformed_registry_identities_never_reach_set_with_unhashable_values(tmp_path: Path) -> None:
+    for mutate, diagnostic in (
+        (lambda data: data["variants"]["definitions"][0].update(id=["BASELINE"]), "fixed variant registry malformed"),
+        (lambda data: data["frictions"]["cell_registry"][0].update(tax_profile=["TAX_DEFERRED"]), "malformed cell registry identity"),
+        (lambda data: data["baseline"].update(gated_tickers=[["SNPS"]]), "baseline.gated_tickers"),
+    ):
+        data = _data()
+        mutate(data)
+        errors = _validate_copy(tmp_path, data)
+        assert any(diagnostic in error for error in errors)
+
+
+def test_malformed_container_matrix_rejects_under_optimized_python(tmp_path: Path) -> None:
+    paths = []
+    mutations = [
+        lambda data: data["baseline"].update(sleeves_pct=[]),
+        lambda data: data["baseline"]["sleeves_pct"].update(eligible_direct_equity="NaN"),
+        lambda data: data.update(correction=None),
+        lambda data: data.update(frozen_inputs="invalid"),
+        lambda data: data.update(integrity=[]),
+        lambda data: data.update(variants=7),
+        lambda data: data.update(frictions=None),
+        lambda data: data.update(review_thresholds="invalid"),
+        lambda data: data.update(portfolio_mechanics=[]),
+        lambda data: data.update(safety=7),
+    ]
+    for index, mutate in enumerate(mutations):
+        data = _data()
+        mutate(data)
+        path = tmp_path / f"container-{index}.yaml"
+        path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+        paths.append(path)
+    code = "import sys,whole_portfolio_robustness_v2_preregistration_validator as v; results=[v.validate(prereg_path=v.Path(p)) for p in sys.argv[1:]]; raise SystemExit(0 if all(r for r in results) else 1)"
+    result = subprocess.run([sys.executable, "-O", "-c", code, *(str(path) for path in paths)], cwd=validator.ROOT, check=False)
+    assert result.returncode == 0
+
+
+def test_missing_pinned_v2_protocol_returns_diagnostic(tmp_path: Path) -> None:
+    root = _isolated_root(tmp_path)
+    (root / validator.PROTOCOL.relative_to(validator.ROOT)).unlink()
+    errors = validator.validate(root=root)
+    assert f"missing pinned protocol: {validator.PROTOCOL.relative_to(validator.ROOT)}" in errors
