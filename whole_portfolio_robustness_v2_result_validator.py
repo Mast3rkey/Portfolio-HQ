@@ -93,10 +93,11 @@ def validate_ledger(doc:dict)->list[str]:
     for i,r in enumerate(rows):
         try:
             cash=D(str(r["cash"])); recv=sum((D(str(x["net"])) for x in r.get("receivables",[])),D(0))
+            has_holdings="positions" in r
             positions=sum((D(str(x["shares"]))*D(str(x["price"])) for x in r.get("positions",[])),D(0))
-            nav=cash+recv+positions
+            nav=cash+recv+positions if has_holdings else D(str(r["nav"]))
             primitive_rows.append({"nav":str(nav)})
-            if nav!=D(str(r["nav"])):e.append(f"row {i}: NAV does not reconcile")
+            if has_holdings and nav!=D(str(r["nav"])):e.append(f"row {i}: NAV does not reconcile")
             if cash<0:e.append(f"row {i}: borrowing/negative cash")
             if D(str(r.get("external_flow","0"))):e.append(f"row {i}: external flow prohibited")
             if calendar is None and last_cash is not None:
@@ -143,7 +144,7 @@ def validate_ledger(doc:dict)->list[str]:
                         units=D(str(event["units"]));proceeds=D(str(event["proceeds"]));
                         gains=sum((max(D(str(x["gain"])),D(0)) for x in event.get("lots",[])),D(0))
                         price=D(str(event["price"]));lot_errors=any(D(str(x["gain"]))!=D(str(x["units"]))*(price-D(str(x["basis"]))) or D(str(x["tax"]))!=max(D(str(x["gain"])),D(0))*D(str(x["rate"])) for x in event.get("lots",[]))
-                        if proceeds!=units*price or lot_errors or gains!=D(str(event.get("realized_gain"))) or abs(D(str(event["cost"]))-proceeds*cost_bps/D(10000))>D("1e-18") or D(str(event["tax"]))!=sum((D(str(x["tax"])) for x in event.get("lots",[])),D(0)):e.append(f"calendar row {i}: sell economics mismatch")
+                        if abs(proceeds-units*price)>D("1e-18") or lot_errors or abs(gains-D(str(event.get("realized_gain"))))>D("1e-18") or abs(D(str(event["cost"]))-proceeds*cost_bps/D(10000))>D("1e-18") or abs(D(str(event["tax"]))-sum((D(str(x["tax"])) for x in event.get("lots",[])),D(0)))>D("1e-18"):e.append(f"calendar row {i}: sell economics mismatch")
                         cash+=proceeds-D(str(event["cost"]))-D(str(event["tax"]));shares[event["ticker"]]-=units
                     elif kind=="receivable_settlement":
                         match=next((x for x in receivables if x["ticker"]==event["ticker"] and x["payable_date"]==row["date"] and x["net"]==D(str(event["net"]))),None)
@@ -164,7 +165,12 @@ def validate_ledger(doc:dict)->list[str]:
                 if row["date"] in sessions:
                     if abs(D(str(sessions[row["date"]]["cash"]))-cash)>D("1e-18"):e.append(f"calendar row {i}: valuation cash mismatch")
                     actual={x["ticker"]:D(str(x["shares"])) for x in sessions[row["date"]].get("positions",[])}
-                    if set(shares)!=set(actual) or any(abs(shares[x]-actual[x])>D("1e-18") for x in shares):e.append(f"calendar row {i}: position replay mismatch")
+                    if actual and (set(shares)!=set(actual) or any(abs(shares[x]-actual[x])>D("1e-18") for x in shares)):e.append(f"calendar row {i}: position replay mismatch")
+                    fixture=doc.get("primitive_fixture")
+                    if fixture:
+                        securities=sum((units*D(str(fixture["prices"][ticker][row["date"]])) for ticker,units in shares.items()),D(0))
+                        expected_nav=cash+securities+sum((x["net"] for x in receivables),D(0))
+                        if abs(expected_nav-D(str(sessions[row["date"]]["nav"])))>D("1e-18"):e.append(f"calendar row {i}: valuation NAV mismatch")
                 with localcontext() as ctx:
                     ctx.prec=60;gross=rate/D(100);pending=opening*(gross-max(gross,D(0))*ordinary-D(".0025"))/D(360)
             except Exception as ex:e.append(f"calendar row {i}: malformed evidence: {ex}")
@@ -262,6 +268,9 @@ def validate_study_bundle(bundle:dict)->list[str]:
         for cell,variants in cells.items():
             if set(variants)!={"BASELINE",*ALTS}:errors.append(f"{case}/{cell}: simulation variant registry mismatch");continue
             for variant,simulation in variants.items():
+                replay_document={**simulation,"primitive_fixture":fixture}
+                for ledger_error in validate_ledger(replay_document):
+                    errors.append(f"{case}/{cell}/{variant}: {ledger_error}")
                 expected_cost,expected_tax,expected_cadence=cell.split("_")[1],cell.split("_TAX_")[1].split("_CADENCE_")[0],cell.split("_CADENCE_")[1]
                 identity=simulation.get("cell",{})
                 if simulation.get("variant")!=variant or identity.get("cost_bps")!=expected_cost or identity.get("tax_profile")!=expected_tax or identity.get("cadence")!=expected_cadence or identity.get("foreign_case")!=case:errors.append(f"{case}/{cell}/{variant}: simulation identity mismatch")

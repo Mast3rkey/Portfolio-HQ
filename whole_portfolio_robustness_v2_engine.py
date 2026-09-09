@@ -423,7 +423,9 @@ def run_synthetic_study(root:Path, fixture:Mapping[str,Any])->dict[str,Any]:
                     keep={k:row[k] for k in ("date","nav","cash","risk_free_return")}
                     if row.get("events"):keep.update(events=row["events"],positions=row["positions"],receivables=row["receivables"])
                     compact_ledger.append(keep)
-                compact_calendar=[row for row in result["calendar_ledger"] if row["events"]]
+                # Calendar cash clocks are economic primitives, not an optional audit
+                # summary.  Retain every day while keeping session holdings compact.
+                compact_calendar=result["calendar_ledger"]
                 simulations[case][identity][variant]={"variant":variant,"cell":result["cell"],"initial_nav":"100000","calendar_ledger":compact_calendar,"calendar_day_count":len(result["calendar_ledger"]),"ledger":compact_ledger,"summary":result["summary"]}
     decision=evaluate_study(paths,prereg["windows"]["fixed_regimes"],issuer)
     return {"study_id":"PORTFOLIO-ROBUSTNESS-V2-0001","synthetic":True,"primitive_fixture":fixture,"simulations":simulations,**decision}
