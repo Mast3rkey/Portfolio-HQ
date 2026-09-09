@@ -151,16 +151,21 @@ def complete_metrics(ledger:Sequence[Mapping], risk_free:Sequence[float]|None=No
     result["annualized_volatility"]=(sum((x-mean)**2 for x in returns)/(len(returns)-1))**.5*math.sqrt(252)
     result["downside_deviation"]=(sum(min(x,0)**2 for x in returns)/len(returns))**.5*math.sqrt(252)
     result["calmar"]=result["net_twr_cagr"]/abs(result["max_drawdown"]) if result["max_drawdown"]<0 else math.nan
-    dates=[date.fromisoformat(ledger[0]["date"])-timedelta(days=1)]+[date.fromisoformat(x["date"]) for x in ledger]
+    if "anchor_date" not in ledger[0]:raise ValueError("path boundary date required")
+    dates=[date.fromisoformat(ledger[0]["anchor_date"])]+[date.fromisoformat(x["date"]) for x in ledger]
     def worst(period):
         grouped={}
         for i,r in enumerate(returns,1): grouped[period(dates[i])]=grouped.get(period(dates[i]),1)*(1+r)
         return min(x-1 for x in grouped.values())
     result.update(worst_month=worst(lambda d:(d.year,d.month)),worst_quarter=worst(lambda d:(d.year,(d.month-1)//3)),worst_year=worst(lambda d:d.year))
-    peak=nav[0]; peak_index=0; recovery=0
-    for i,value in enumerate(nav):
-        if value>=peak: peak=value;peak_index=i
-        else: recovery=max(recovery,(dates[i]-dates[peak_index]).days)
+    peak=nav[0];peak_index=0;deepest=0.;deep_peak=0;trough=0
+    for i,value in enumerate(nav[1:],1):
+        if value>=peak:peak=value;peak_index=i
+        elif value/peak-1<deepest:deepest=value/peak-1;deep_peak=peak_index;trough=i
+    if deepest==0:recovery=0
+    else:
+        recovered=next((i for i in range(trough+1,len(nav)) if nav[i]>=nav[deep_peak]),None)
+        recovery=None if recovered is None else (dates[recovered]-dates[deep_peak]).days
     if "operations" in ledger[-1]:
         start=ledger[0].get("anchor_operations",{k:0 for k in ledger[-1]["operations"]});ops={k:float(ledger[-1]["operations"][k])-float(start.get(k,0)) for k in ledger[-1]["operations"]}
         result.update(recovery_days=recovery,one_way_turnover=ops["turnover_notional"]/nav[0],rebalance_count=int(ops["rebalance_count"]),taxable_realized_gain=ops["taxable_realized_gain"],cost_drag=ops["cost_drag"],tax_drag=ops["tax_drag"],cash_drag=ops["cash_drag"])
@@ -200,7 +205,7 @@ def fixed_evaluations(ledger:Sequence[Mapping], regimes:Sequence[Mapping])->dict
     for r in regimes:
         rows=[dict(x) for x in ledger if r["start"]<=x["date"]<=r["end"]]
         if rows:
-            index=next(i for i,x in enumerate(ledger) if x["date"]==rows[0]["date"]);rows[0]["anchor_nav"]="100000" if index==0 else ledger[index-1]["nav"];rows[0]["anchor_operations"]={k:"0" for k in rows[0]["operations"]} if index==0 else ledger[index-1]["operations"]
+            index=next(i for i,x in enumerate(ledger) if x["date"]==rows[0]["date"]);rows[0]["anchor_nav"]="100000" if index==0 else ledger[index-1]["nav"];rows[0]["anchor_date"]=ledger[0]["anchor_date"] if index==0 else ledger[index-1]["date"];rows[0]["anchor_operations"]={k:"0" for k in rows[0]["operations"]} if index==0 else ledger[index-1]["operations"]
         out[r["id"]]=complete_metrics(rows,[float(x["risk_free_return"]) for x in rows]) if len(rows)>=2 else None
     years=sorted({date.fromisoformat(x["date"]).year for x in ledger})
     out["walk_forward"]={str(y):complete_metrics([x for x in ledger if date.fromisoformat(x["date"]).year<=y],[float(x["risk_free_return"]) for x in ledger if date.fromisoformat(x["date"]).year<=y]) for y in years if len([x for x in ledger if date.fromisoformat(x["date"]).year<=y])>=2}
@@ -407,7 +412,7 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
             nav=cash+sum(D(x["shares"])*D(x["price"]) for x in positions)+sum(r["net"] for r in receivables)
             events.extend({"date":day.isoformat(),**e} for e in events_day)
             interval_rf=rf_index/prior_session_rf-D(1);prior_session_rf=rf_index
-            ledger.append({"date":day.isoformat(),"anchor_nav":"100000" if not ledger else None,"cash":str(cash),"opening_eligible_cash":str(opening),"interest_credited":str(credited_interest),"unposted_interest":str(pending_interest),"risk_free_return":str(interval_rf),"positions":positions,"receivables":[{**r,"net":str(r["net"])} for r in receivables],"events":events_day,"nav":str(nav),"external_flow":"0"})
+            ledger.append({"date":day.isoformat(),"anchor_nav":"100000" if not ledger else None,"anchor_date":fixture.get("anchor_date",(start-timedelta(days=1)).isoformat()) if not ledger else None,"cash":str(cash),"opening_eligible_cash":str(opening),"interest_credited":str(credited_interest),"unposted_interest":str(pending_interest),"risk_free_return":str(interval_rf),"positions":positions,"receivables":[{**r,"net":str(r["net"])} for r in receivables],"events":events_day,"nav":str(nav),"external_flow":"0"})
         calendar_ledger.append({"date":day.isoformat(),"opening_eligible_cash":str(opening),"dff_percent":str(rates[day]),"interest_credited":str(credited_interest),"settled_cash":str(cash),"events":events_day,"receivables":[{**r,"net":str(r["net"])} for r in receivables]})
         events.extend({"date":day.isoformat(),**e} for e in events_day if day not in session_set)
         day+=timedelta(days=1)
@@ -439,7 +444,7 @@ def run_synthetic_study(root:Path, fixture:Mapping[str,Any])->dict[str,Any]:
                 def window(start,end):
                     selected=[x for x in rows if start<=x["date"]<=end]
                     first=next(i for i,x in enumerate(rows) if x["date"]==start)
-                    selected[0]={**selected[0],"anchor_nav":result["initial_nav"] if first==0 else rows[first-1]["nav"],"anchor_operations":{k:"0" for k in selected[0]["operations"]} if first==0 else rows[first-1]["operations"]}
+                    selected[0]={**selected[0],"anchor_nav":result["initial_nav"] if first==0 else rows[first-1]["nav"],"anchor_date":fixture["anchor_date"] if first==0 else rows[first-1]["date"],"anchor_operations":{k:"0" for k in selected[0]["operations"]} if first==0 else rows[first-1]["operations"]}
                     return selected
                 windows={"full":window("2021-06-01","2026-07-31"),"context":window("2021-06-01","2023-12-29"),"correction_replication":window("2024-04-02","2026-07-31")}
                 paths[case][identity][variant]=windows
@@ -447,6 +452,7 @@ def run_synthetic_study(root:Path, fixture:Mapping[str,Any])->dict[str,Any]:
                 for row in audit_rows:
                     keep={k:row[k] for k in ("date","nav","cash","risk_free_return","operations")}
                     if "anchor_operations" in row:keep["anchor_operations"]=row["anchor_operations"]
+                    if row.get("anchor_date") is not None:keep["anchor_date"]=row["anchor_date"]
                     if row.get("events"):keep.update(events=row["events"],positions=row["positions"],receivables=row["receivables"])
                     compact_ledger.append(keep)
                 compact_calendar=[row for row in result["calendar_ledger"] if row["events"]]

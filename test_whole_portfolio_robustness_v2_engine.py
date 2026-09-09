@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal as D
 import math
 import pytest
@@ -52,9 +52,19 @@ def test_metrics_undefined_variance_is_nonfinite():
     m=metrics([.01,.01,.01]);assert math.isnan(m['sharpe'])
 
 def test_subwindow_requires_and_uses_preceding_anchor():
-    rows=[{'date':'2025-01-02','anchor_nav':'200000','nav':'200000','events':[],'risk_free_return':'0'},{'date':'2025-01-03','nav':'199000','events':[],'risk_free_return':'0'}]
+    rows=[{'date':'2025-01-02','anchor_nav':'200000','anchor_date':'2024-12-31','nav':'200000','events':[],'risk_free_return':'0'},{'date':'2025-01-03','nav':'199000','events':[],'risk_free_return':'0'}]
     assert complete_metrics(rows)['cumulative_twr']==pytest.approx(-.005)
     with pytest.raises(ValueError):complete_metrics([{k:v for k,v in row.items() if k!='anchor_nav'} for row in rows])
+
+def test_recovery_days_is_peak_to_first_full_recovery_and_censors():
+    recovered=[{'date':'2025-01-02','anchor_nav':'100000','anchor_date':'2024-12-31','nav':'100000','risk_free_return':'0'}, {'date':'2025-01-03','nav':'99000','risk_free_return':'0'}, {'date':'2025-01-13','nav':'100000','risk_free_return':'0'}]
+    assert complete_metrics(recovered)['recovery_days']==11
+    unrecovered=[*recovered[:-1],{'date':'2025-01-13','nav':'98000','risk_free_return':'0'}]
+    assert complete_metrics(unrecovered)['recovery_days'] is None
+    flat=[recovered[0],{'date':'2025-01-03','nav':'100000','risk_free_return':'0'}]
+    assert complete_metrics(flat)['recovery_days']==0
+    multiple=[{'date':'2025-01-02','anchor_nav':'100000','anchor_date':'2024-12-31','nav':'100000','risk_free_return':'0'}, {'date':'2025-01-03','nav':'99000','risk_free_return':'0'}, {'date':'2025-01-06','nav':'100000','risk_free_return':'0'}, {'date':'2025-01-07','nav':'97000','risk_free_return':'0'}, {'date':'2025-01-13','nav':'100000','risk_free_return':'0'}]
+    assert complete_metrics(multiple)['recovery_days']==7
 
 def test_stationary_bootstrap_is_deterministic_and_paired():
     b=[-.02,.01,.03,-.01]*8;a=[-.01,.012,.031,-.005]*8;rf=[.0001]*32
@@ -172,7 +182,14 @@ def full_synthetic_fixture():
     dates=[x['session'] for x in sessions]
     tickers=[t for t in derive_weights(Path(__file__).parent,'BASELINE') if t!='CASH']
     prices={t:{d:str(D(100)+D(i%17-8)/10+D(j%5)) for i,d in enumerate(dates) if t!='CEG' or d>='2022-02-02'} for j,t in enumerate(tickers)}
-    return {'input_kind':'SYNTHETIC_TEST_ONLY','start':'2021-06-01','end':'2026-07-31','sessions':dates,'session_closes':{x['session']:x['close_utc'] for x in sessions},'prices':prices,'available':{'CEG':'2022-02-02'},'fed_business_days':['2021-05-31'],'dff_records':[{'observation_date':'2021-05-28','published_at':'2021-05-31T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'ETN','ex_date':'2023-01-13','payable_date':'2023-01-14','gross_per_share':'1','withholding_rate':'.10'}],'splits':[{'ticker':'NVDA','date':'2024-06-10','factor':'10'}]}
+    crypto_bars={}
+    for ticker in ('BTC','ETH','SOL'):
+        bars=[];day=date(2021,6,1);last=None
+        while day<=date(2026,7,31):
+            if day.isoformat() in prices[ticker]:last=prices[ticker][day.isoformat()]
+            bars.append({'close_at':day.isoformat()+'T00:00:00Z','close':last});day+=timedelta(days=1)
+        crypto_bars[ticker]=bars
+    return {'input_kind':'SYNTHETIC_TEST_ONLY','start':'2021-06-01','end':'2026-07-31','anchor_date':'2021-05-28','sessions':dates,'session_closes':{x['session']:x['close_utc'] for x in sessions},'prices':prices,'crypto_bars':crypto_bars,'available':{'CEG':'2022-02-02'},'fed_business_days':['2021-05-31'],'dff_records':[{'observation_date':'2021-05-28','published_at':'2021-05-31T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'ETN','ex_date':'2023-01-13','payable_date':'2023-01-14','gross_per_share':'1','withholding_rate':'.10'}],'splits':[{'ticker':'NVDA','date':'2024-06-10','factor':'10'}]}
 
 _FULL_BUNDLE=None
 def get_full_bundle():

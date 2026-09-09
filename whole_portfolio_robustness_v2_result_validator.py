@@ -32,6 +32,7 @@ def _derived_windows(replay_path:list[dict], initial_nav:str="100000")->dict[str
         if not indices:raise ValueError(f"{name} replay window is empty")
         rows=[dict(replay_path[i]) for i in indices]
         rows[0]["anchor_nav"]=initial_nav if indices[0]==0 else replay_path[indices[0]-1]["nav"]
+        rows[0]["anchor_date"]=replay_path[0]["anchor_date"] if indices[0]==0 else replay_path[indices[0]-1]["date"]
         rows[0]["anchor_operations"]={k:"0" for k in rows[0]["operations"]} if indices[0]==0 else replay_path[indices[0]-1]["operations"]
         result[name]=rows
     return result
@@ -46,6 +47,26 @@ def _concentration(nav:D,shares:dict[str,D],prices:dict[str,D])->dict[str,float]
     for item in _LOOK["issuers"]:effective[item["ticker"]]=effective.get(item["ticker"],0)+sum(values.get(x["fund"],0)*float(x["fund_holding_weight"]) for x in item["funds"])
     names=("NVDA","MSFT","AMZN","GOOGL","AVGO","META","LLY","TSLA","AAPL","TSM","ASML")
     return {"direct_hhi":sum(x*x for x in direct),"max_direct_name":max(direct,default=0),"effective_issuer_max":max(effective.values(),default=0),"ai_platform_common_driver":sum(effective.get(x,0) for x in names),"semis_cluster":sum(effective.get(x,0) for x in ("ASML","TSM","NVDA","AVGO","KLAC")),"power_infra_cluster":sum(effective.get(x,0) for x in ("ETN","GEV","PWR"))}
+
+def _align_crypto_primitives(bars:list[dict],sessions:list[str],closes:dict[str,str],start:date,end:date)->dict[str,D]:
+    """Independently authenticate and align one complete UTC daily spot series."""
+    expected=[];day=start
+    while day<=end:expected.append(datetime.combine(day,datetime.min.time(),timezone.utc));day+=timedelta(days=1)
+    parsed=[]
+    for row in bars:
+        if not isinstance(row,dict) or set(row)!={"close_at","close"} or isinstance(row["close"],bool):raise ValueError("malformed crypto bar")
+        instant=datetime.fromisoformat(str(row["close_at"]).replace("Z","+00:00"));value=D(str(row["close"]))
+        if instant.tzinfo is None or instant.utcoffset()!=timedelta(0) or not value.is_finite() or value<=0:raise ValueError("invalid crypto bar")
+        parsed.append((instant.astimezone(timezone.utc),value))
+    if [x[0] for x in parsed]!=expected or len({x[0] for x in parsed})!=len(parsed):raise ValueError("crypto daily coverage/order mismatch")
+    result={};index=-1
+    for session in sessions:
+        cutoff=datetime.fromisoformat(closes[session].replace("Z","+00:00"))
+        if cutoff.tzinfo is None:raise ValueError("invalid XNYS cutoff")
+        while index+1<len(parsed) and parsed[index+1][0]<=cutoff.astimezone(timezone.utc):index+=1
+        if index<0:raise ValueError("missing predecessor crypto close")
+        result[session]=parsed[index][1]
+    return result
 
 def _finite(x:Any)->bool:
     return isinstance(x,(int,float)) and not isinstance(x,bool) and math.isfinite(x)
@@ -94,15 +115,20 @@ def _bootstrap(base:list[dict],alt:list[dict])->dict[str,float]:
 def _fixed_evaluations(rows:list[dict], regimes:list[dict])->dict:
     def complete(selected):
         base=_path_stats(selected);nav=[float(selected[0]["anchor_nav"])]+[float(x["nav"]) for x in selected];returns=[nav[i]/nav[i-1]-1 for i in range(1,len(nav))]
-        mean=sum(returns)/len(returns);dates=[date.fromisoformat(selected[0]["date"])-timedelta(days=1)]+[date.fromisoformat(x["date"]) for x in selected]
+        if "anchor_date" not in selected[0]:raise ValueError("path boundary date missing")
+        mean=sum(returns)/len(returns);dates=[date.fromisoformat(selected[0]["anchor_date"])]+[date.fromisoformat(x["date"]) for x in selected]
         def worst(group):
             buckets={}
             for i,r in enumerate(returns,1):buckets[group(dates[i])]=buckets.get(group(dates[i]),1)*(1+r)
             return min(x-1 for x in buckets.values())
-        peak=nav[0];peak_i=0;recovery=0
-        for i,value in enumerate(nav):
+        peak=nav[0];peak_i=0;deepest=0.;deep_peak=0;trough=0
+        for i,value in enumerate(nav[1:],1):
             if value>=peak:peak=value;peak_i=i
-            else:recovery=max(recovery,(dates[i]-dates[peak_i]).days)
+            elif value/peak-1<deepest:deepest=value/peak-1;deep_peak=peak_i;trough=i
+        if deepest==0:recovery=0
+        else:
+            recovered=next((i for i in range(trough+1,len(nav)) if nav[i]>=nav[deep_peak]),None)
+            recovery=None if recovered is None else (dates[recovered]-dates[deep_peak]).days
         result={"cumulative_twr":nav[-1]/nav[0]-1,**base,"annualized_volatility":(sum((x-mean)**2 for x in returns)/(len(returns)-1))**.5*math.sqrt(252),"downside_deviation":(sum(min(x,0)**2 for x in returns)/len(returns))**.5*math.sqrt(252)}
         result["calmar"]=result["net_twr_cagr"]/abs(result["max_drawdown"]) if result["max_drawdown"]<0 else math.nan
         end=selected[-1]["operations"];start=selected[0]["anchor_operations"];ops={k:float(end[k])-float(start[k]) for k in end}
@@ -114,6 +140,7 @@ def _fixed_evaluations(rows:list[dict], regimes:list[dict])->dict:
         if len(selected)<2:raise ValueError("missing fixed regime path")
         index=next(i for i,x in enumerate(rows) if x["date"]==selected[0]["date"])
         selected[0]["anchor_nav"]=rows[index-1]["nav"] if index else rows[0]["anchor_nav"]
+        selected[0]["anchor_date"]=rows[index-1]["date"] if index else rows[0]["anchor_date"]
         selected[0]["anchor_operations"]=rows[index-1]["operations"] if index else rows[0]["anchor_operations"]
         out[regime["id"]]=complete(selected)
     years=sorted({date.fromisoformat(x["date"]).year for x in rows});walk={}
@@ -273,6 +300,12 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
     if cell_id not in registered or registered[cell_id]!={"cell_id":cell_id,"one_way_cost_bps":cost_name,"tax_profile":tax_name,"rebalance_cadence":cadence}:raise ValueError("cell identity mismatch")
     profile={k:D(str(v)) for k,v in prereg["frictions"]["tax_profile_parameters"][tax_name].items()};cost=D(cost_name);weights=_weights(variant)
     available={k:date.fromisoformat(v) for k,v in fixture.get("available",{}).items()};prices={t:{d:D(str(v)) for d,v in series.items()} for t,series in fixture.get("prices",{}).items()}
+    bars=fixture.get("crypto_bars")
+    if not isinstance(bars,dict) or set(bars)!={"BTC","ETH","SOL"}:raise ValueError("complete underlying crypto bars missing")
+    for ticker in ("BTC","ETH","SOL"):
+        aligned=_align_crypto_primitives(bars[ticker],sessions,fixture["session_closes"],date.fromisoformat(fixture["start"]),date.fromisoformat(fixture["end"]))
+        if prices.get(ticker)!=aligned:raise ValueError(f"{ticker} aligned prices detached from bars")
+        prices[ticker]=aligned
     for series in prices.values():
         if any(isinstance(v,bool) or not v.is_finite() or v<=0 for v in series.values()):raise ValueError("invalid price primitive")
     start=date.fromisoformat(fixture["start"]);end=date.fromisoformat(fixture["end"]);session_set=set(sessions);session_dates=[date.fromisoformat(x) for x in sessions]
@@ -322,6 +355,7 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
             prior_shares={t:sum((x["units"] for x in ls),D(0)) for t,ls in lots.items()};positions=[{"ticker":t,"shares":str(sum(x["units"] for x in ls)),"price":str(prices[t][day.isoformat()]),"lots":[{"units":str(x["units"]),"basis":str(x["basis"]),"acquired":x["acquired"].isoformat()} for x in ls]} for t,ls in lots.items()]
             securities=sum((sum(x["units"] for x in lots[t])*prices[t][day.isoformat()] for t in lots),D(0));nav=cash+securities+sum(x["net"] for x in receivables);interval_rf=rf_index/prior_rf-1;prior_rf=rf_index
             row={"date":day.isoformat(),"nav":str(nav),"cash":str(cash),"risk_free_return":str(interval_rf),"_interest_credited":str(credited),"_positions":positions}
+            if not ledger:row["anchor_date"]=fixture["anchor_date"]
             if events:row.update(events=events,positions=positions,receivables=[{**x,"net":str(x["net"])} for x in receivables])
             ledger.append(row)
         operations["cash_drag"]+=credited
@@ -446,7 +480,7 @@ def validate_study_bundle(bundle:dict)->list[str]:
                     replay_full=[]
                     for i,row in enumerate(expected["ledger"]):
                         item={"date":row["date"],"nav":row["nav"],"risk_free_return":row["risk_free_return"],"operations":row["operations"]};shares={x["ticker"]:D(x["shares"]) for x in row["_positions"]};prices={x["ticker"]:D(x["price"]) for x in row["_positions"]};item["concentration"]=_concentration(D(row["nav"]),shares,prices)
-                        if i==0:item.update(anchor_nav="100000",anchor_operations=row["anchor_operations"])
+                        if i==0:item.update(anchor_nav="100000",anchor_date=row["anchor_date"],anchor_operations=row["anchor_operations"])
                         replay_full.append(item)
                     expected_windows=_derived_windows(replay_full,"100000");stored=bundle["portfolio_paths"][case][cell][variant]
                     if set(stored)!=set(expected_windows):raise ValueError("registered window inventory mismatch")

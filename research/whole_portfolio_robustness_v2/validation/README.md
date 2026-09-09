@@ -28,3 +28,9 @@ Operational fields are cumulative primitive counters on each session row. Window
 replayed predecessor counters: turnover is traded notional divided by the window anchor NAV; cost and tax
 drag are dollars; taxable realized gain is dollars without loss credit; cash drag is all calendar-day cash
 interest credits; and rebalance count counts scheduled rebalance events. Missing counters are not zero.
+
+`recovery_days` is the calendar-day distance from the peak preceding the deepest drawdown to its first
+subsequent full recovery (equality qualifies); it is `null` when that drawdown remains unrecovered and zero
+when no drawdown occurs. Window anchors carry the actual predecessor XNYS date. Synthetic crypto prices
+are independently rebuilt from complete, ordered UTC daily bars against each pinned XNYS close; aligned
+price dictionaries are comparison claims, not replay inputs.

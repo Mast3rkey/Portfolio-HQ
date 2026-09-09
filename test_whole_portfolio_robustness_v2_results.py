@@ -1,7 +1,7 @@
 from copy import deepcopy
 import pytest
 from whole_portfolio_robustness_v2_result_validator import *
-from whole_portfolio_robustness_v2_result_validator import _XNYS, _SUMMARY_FIELDS, _compare_metric_tree, _compare_probability_claim, _concentration, _derived_windows, _path_identity, _replay_simulation
+from whole_portfolio_robustness_v2_result_validator import _XNYS, _SUMMARY_FIELDS, _compare_metric_tree, _compare_probability_claim, _concentration, _derived_windows, _fixed_evaluations, _path_identity, _replay_simulation
 
 def test_replay_window_derivation_binds_predecessor_and_every_field():
     full=[]
@@ -10,6 +10,7 @@ def test_replay_window_derivation_binds_predecessor_and_every_field():
             full.append({'date':item['session'],'nav':str(100000+len(full)),
                          'risk_free_return':'0.0001','concentration':{'effective_issuer_max':.06},
                          'operations':{'turnover_notional':'0','rebalance_count':'0','taxable_realized_gain':'0','cost_drag':'0','tax_drag':'0','cash_drag':'0'}})
+    full[0]['anchor_date']='2021-05-28'
     windows=_derived_windows(full);correction=windows['correction_replication']
     first=next(i for i,x in enumerate(full) if x['date']==correction[0]['date'])
     assert correction[0]['anchor_nav']==full[first-1]['nav']
@@ -38,6 +39,7 @@ def test_primitive_replay_rejects_source_and_stored_economic_mutations():
     for row in actual['ledger']:
         keep={key:row[key] for key in ('date','nav','cash','risk_free_return','operations')}
         if 'anchor_operations' in row:keep['anchor_operations']=row['anchor_operations']
+        if row.get('anchor_date') is not None:keep['anchor_date']=row['anchor_date']
         if row.get('events'):keep.update(events=row['events'],positions=row['positions'],receivables=row['receivables'])
         compact.append(keep)
     assert compact==projection(expected['ledger'])
@@ -51,6 +53,19 @@ def test_primitive_replay_rejects_source_and_stored_economic_mutations():
         assert changed!=expected
         collection[key]=original
         assert _replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')==expected
+    btc=fixture['crypto_bars']['BTC'][7];original=btc['close'];btc['close']=str(D(original)*2)
+    with pytest.raises(ValueError,match='detached from bars'):_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+    btc['close']=original;assert _replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')==expected
+    for bad in (True,'NaN','Infinity','0'):
+        original=btc['close'];btc['close']=bad
+        with pytest.raises(ValueError):_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+        btc['close']=original
+    removed=fixture['crypto_bars']['ETH'].pop(10)
+    with pytest.raises(ValueError,match='coverage/order'):_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+    fixture['crypto_bars']['ETH'].insert(10,removed)
+    original=removed['close_at'];removed['close_at']='2021-06-11T22:00:00-04:00'
+    with pytest.raises(ValueError):_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+    removed['close_at']=original;assert _replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')==expected
     mutated=deepcopy(compact);row=next(x for x in mutated if x.get('positions'));row['positions'][0]['lots'][0]['basis']='999999'
     assert mutated!=projection(expected['ledger'])
 
@@ -65,6 +80,13 @@ def test_fixed_evaluation_uses_replayed_operational_economics():
     assert metrics['tax_drag']==pytest.approx(3.9731247866407537)
     assert metrics['rebalance_count']==4
     assert metrics['one_way_turnover']==pytest.approx(.0030288705385554133)
+
+def test_independent_recovery_uses_real_anchor_and_censors():
+    zero={'turnover_notional':'0','rebalance_count':'0','taxable_realized_gain':'0','cost_drag':'0','tax_drag':'0','cash_drag':'0'}
+    rows=[{'date':'2025-01-02','anchor_nav':'100000','anchor_date':'2024-12-31','anchor_operations':zero,'operations':zero,'nav':'100000','risk_free_return':'0'}, {'date':'2025-01-03','operations':zero,'nav':'99000','risk_free_return':'0'}, {'date':'2025-01-13','operations':zero,'nav':'100000','risk_free_return':'0'}]
+    assert _fixed_evaluations(rows,[{'id':'X','start':'2025-01-02','end':'2025-01-13'}])['X']['recovery_days']==11
+    rows[-1]['nav']='98000'
+    assert _fixed_evaluations(rows,[{'id':'X','start':'2025-01-02','end':'2025-01-13'}])['X']['recovery_days'] is None
 
 def test_probability_claims_reject_bool_missing_extra_nonfinite_and_wrong_values():
     actual={'NET_TWR_CAGR_DELTA':.4315,'SHARPE_DELTA':.473,'MAX_DRAWDOWN_DELTA':.097,'DAILY_CVAR_95_DELTA':0.}
