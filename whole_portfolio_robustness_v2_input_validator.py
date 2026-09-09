@@ -59,10 +59,9 @@ def validate_manifest(path:Path, root:Path=ROOT)->list[str]:
     except Exception as ex:return [f"cannot load manifest: {ex}"]
     e=[]
     if m.get("study_id")!="PORTFOLIO-ROBUSTNESS-V2-0001" or m.get("result_free") is not True:e.append("wrong study/result-free declaration")
-    dff=m.get("dff_availability",{})
-    dff_receipt=root/dff.get("publication_receipt_path","")
-    if dff.get("status") != "AUTHENTICATED" or dff.get("source")!="FRED_DFF" or not dff_receipt.is_file() or sha(dff_receipt)!=dff.get("publication_receipt_sha256"):
-        e.append("DFF: actual publication-time/vintage evidence unresolved")
+    # No independently accepted publication/vintage receipt exists in this unit. A manifest
+    # assertion can never promote it; retained values are reconstructed separately below.
+    e.append("DFF: actual publication-time/vintage evidence unresolved")
     entries=m.get("crypto",[])
     if [x.get("symbol") for x in entries]!=list(REQUIRED_CRYPTO):e.append("crypto registry must be exactly BTC, ETH, SOL")
     for x in entries:
@@ -100,6 +99,16 @@ def historical_admission(root:Path=ROOT)->dict:
         if not p.is_file() or sha(p)!=digest: errors.append(f"pinned predecessor byte mismatch: {rel}")
     manifest=root/"research/whole_portfolio_robustness_v2/inputs/input_freeze.json"
     errors.extend(validate_manifest(manifest,root))
+    try:
+        import csv
+        raw=root/"research/level1_sleeve_robustness/data/raw/fred/DFF.csv";receipt=root/"research/level1_sleeve_robustness/data/receipts/comparator_DFF_FRED.page-0000.final.json";selected=root/"research/level1_sleeve_robustness/data/transformed/selected/DFF.json"
+        if sha(raw)!="a052a99256ac7fdf075911b03496ab14acbcfd76f428137966bc0fd8781c4849" or sha(receipt)!="a07e872fc2b276a77918c7546605fc29b9d01b1cca2538ab5b1cc4e1abfd4a00":raise ValueError("retained DFF raw/receipt anchor mismatch")
+        rec=load(receipt)
+        if rec.get("raw_sha256")!=sha(raw) or rec.get("endpoint_locator")!="https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF" or rec.get("dataset_id")!="comparator:DFF:FRED":raise ValueError("DFF receipt identity mismatch")
+        with raw.open(newline="") as stream:derived=[{"date":r["observation_date"],"rate_pct":r["DFF"]} for r in csv.DictReader(stream) if r["observation_date"]<="2026-07-31"]
+        transformed=load(selected)
+        if transformed.get("provider")!="FRED" or transformed.get("series")!="DFF" or transformed.get("rows")!=derived:raise ValueError("DFF raw-to-selected reconstruction mismatch")
+    except Exception as ex:errors.append(f"cannot reconstruct retained DFF values: {ex}")
     # Rebuild only result-blind LADDER inputs in an isolated destination.
     try:
         study=root/"research/buy_ladder_backtest"; data=root/"research/level1_sleeve_robustness/data"

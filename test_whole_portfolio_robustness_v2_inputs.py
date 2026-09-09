@@ -40,3 +40,10 @@ def test_rate_shock_not_available_at_midnight():
 def test_historical_admission_is_result_free_and_fails_precisely():
     r=historical_admission();assert not r['admitted'] and not r['historical_results_executed']
     assert any('SOL' in e for e in r['errors'])
+
+def test_self_hashed_fake_dff_receipt_never_authenticates(tmp_path):
+    receipt=tmp_path/'fake.json';receipt.write_text('{"this_is_not_publication_evidence":true}')
+    manifest=load(ROOT/'research/whole_portfolio_robustness_v2/inputs/input_freeze.json')
+    manifest['dff_availability']={'status':'AUTHENTICATED','source':'FRED_DFF','publication_receipt_path':str(receipt),'publication_receipt_sha256':sha(receipt)}
+    path=tmp_path/'manifest.json';path.write_text(json.dumps(manifest))
+    assert any(x.startswith('DFF:') for x in validate_manifest(path,ROOT))

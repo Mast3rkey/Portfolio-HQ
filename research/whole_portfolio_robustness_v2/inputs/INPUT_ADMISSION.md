@@ -17,7 +17,9 @@ three-asset successor disposition.
 Admission is also blocked pending a retained receipt that pins the DFF/FRED vintage's actual publication
 availability convention. A one-Federal-Reserve-business-day observation lag is necessary but does not
 prove availability at calendar-day start: the official EFFR release is approximately 09:00 and H.15 is
-16:15. A rate published during a date may first be used at the following calendar-day start.
+16:15. A rate published during a date may first be used at the following calendar-day start. The retained
+FRED CSV, acquisition receipt and selected DFF values are independently hash-anchored and reconstruct
+exactly through 2026-07-31; that value reconstruction does not supply the missing publication/vintage proof.
 
 Public endpoint access was unavailable in this environment (GitHub/API HTTPS tunnel returned 403); no
 access restriction was bypassed and no brokerage endpoint, account, credential, historical metric, or

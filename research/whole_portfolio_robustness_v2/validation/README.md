@@ -14,3 +14,9 @@ Positive realized HIFO gains use frozen holding-period/asset tax character; loss
 The bootstrap samples paired baseline, alternative and lawful risk-free observations with one stationary
 index path, mean block 21, 2,000 draws and seed 20260907. `correction_replication` alone supplies the
 exact 15-of-18 vote and decision bootstrap; context supplies only its separate direction/link gate.
+
+Whole-study fixtures must use the byte-pinned 1,298-session XNYS sequence and each retained UTC close,
+including DST and early closes. Each path carries its immediately preceding NAV and the compounded gross
+lagged-DFF return for that valuation interval; `$100,000` is used only at inception. The full registry
+shares immutable synthetic primitives and retains compact paths plus event/lot audit rows to bound memory;
+the independent validator binds every compact path back to its exact case/cell/variant simulation.

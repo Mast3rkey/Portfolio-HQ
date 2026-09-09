@@ -6,6 +6,7 @@ records (the tests use synthetic records); historical admission is a separate ga
 """
 from __future__ import annotations
 
+import json
 import math
 import random
 from dataclasses import dataclass
@@ -14,6 +15,7 @@ from decimal import Decimal, localcontext
 from typing import Any, Iterable, Mapping, Sequence
 from pathlib import Path
 import yaml
+import numpy as np
 
 D = Decimal
 ALTERNATIVES = ("BROAD_PLUS_5", "DEFENSIVE_PLUS_5", "CRYPTO_HALF", "GOLD_PLUS_2", "DIVERSIFIED_BALANCE")
@@ -44,7 +46,7 @@ def hifo_sell(lots: list[Lot], units: D, price: D, when: date, short_rate: D, lo
         rate = gold_rate if gold_rate is not None else (long_rate if (when-lot.acquired).days > 365 else short_rate)
         due = max(gain, D(0)) * rate
         lot.units -= take; units -= take; tax += due; gain_total += max(gain, D(0))
-        records.append({"units": str(take), "basis": str(lot.basis_per_unit), "gain": str(gain), "tax": str(due)})
+        records.append({"units": str(take), "basis": str(lot.basis_per_unit), "acquired":lot.acquired.isoformat(),"rate":str(rate), "gain": str(gain), "tax": str(due)})
     lots[:] = [x for x in lots if x.units]
     return gain_total, tax, records
 
@@ -140,7 +142,9 @@ def metrics(returns: Sequence[float], risk_free: Sequence[float] | None = None) 
 def complete_metrics(ledger:Sequence[Mapping], risk_free:Sequence[float]|None=None)->dict[str,Any]:
     """All registered path and operational measures, with return fields in decimal units."""
     if len(ledger)<2: raise ValueError("insufficient metric observations")
-    nav=[100000.0]+[float(x["nav"]) for x in ledger]
+    if "anchor_nav" not in ledger[0]:raise ValueError("path boundary anchor required")
+    anchor=float(ledger[0]["anchor_nav"])
+    nav=[anchor]+[float(x["nav"]) for x in ledger]
     returns=[nav[i]/nav[i-1]-1 for i in range(1,len(nav))]
     result=metrics(returns,risk_free); mean=sum(returns)/len(returns)
     result["annualized_volatility"]=(sum((x-mean)**2 for x in returns)/(len(returns)-1))**.5*math.sqrt(252)
@@ -161,21 +165,25 @@ def complete_metrics(ledger:Sequence[Mapping], risk_free:Sequence[float]|None=No
     return result
 
 def concentration(ledger_row:Mapping, issuer_map:Mapping[str,Any]|None=None)->dict[str,float]:
+    if "concentration" in ledger_row:return dict(ledger_row["concentration"])
     nav=float(ledger_row["nav"]); values={x["ticker"]:float(x["shares"])*float(x["price"])/nav for x in ledger_row["positions"]}
     direct=[v for t,v in values.items() if t not in {"SPY","VEA","VWO","GLD","BTC","ETH","SOL"}]
-    effective={t:values.get(t,0) for t in values if t not in {"SPY","VEA","VWO"}}
+    non_issuers={"SPY","VEA","VWO","GLD","BTC","ETH","SOL"}
+    effective={t:values.get(t,0) for t in values if t not in non_issuers}
     lookthrough={item["ticker"]:{x["fund"]:float(x["fund_holding_weight"]) for x in item["funds"]} for item in (issuer_map or {}).get("issuers",[])} if issuer_map and "issuers" in issuer_map else (issuer_map or {})
     for issuer,funds in lookthrough.items(): effective[issuer]=effective.get(issuer,0)+sum(values.get(f,0)*w for f,w in funds.items())
     ai=("NVDA","MSFT","AMZN","GOOGL","AVGO","META","LLY","TSLA","AAPL","TSM","ASML")
-    return {"direct_hhi":sum(x*x for x in direct),"max_direct_name":max(direct,default=0),"effective_issuer_max":max((effective.get(x,0) for x in ai),default=0),"ai_platform_common_driver":sum(effective.get(t,0) for t in ai),"semis_cluster":sum(effective.get(t,0) for t in ("ASML","TSM","NVDA","AVGO","KLAC")),"power_infra_cluster":sum(effective.get(t,0) for t in ("ETN","GEV","PWR"))}
+    return {"direct_hhi":sum(x*x for x in direct),"max_direct_name":max(direct,default=0),"effective_issuer_max":max(effective.values(),default=0),"ai_platform_common_driver":sum(effective.get(t,0) for t in ai),"semis_cluster":sum(effective.get(t,0) for t in ("ASML","TSM","NVDA","AVGO","KLAC")),"power_infra_cluster":sum(effective.get(t,0) for t in ("ETN","GEV","PWR"))}
 
 def fixed_evaluations(ledger:Sequence[Mapping], regimes:Sequence[Mapping])->dict[str,Any]:
     out={}
     for r in regimes:
-        rows=[x for x in ledger if r["start"]<=x["date"]<=r["end"]]
-        out[r["id"]]=complete_metrics(rows) if len(rows)>=2 else None
+        rows=[dict(x) for x in ledger if r["start"]<=x["date"]<=r["end"]]
+        if rows:
+            index=next(i for i,x in enumerate(ledger) if x["date"]==rows[0]["date"]);rows[0]["anchor_nav"]="100000" if index==0 else ledger[index-1]["nav"]
+        out[r["id"]]=complete_metrics(rows,[float(x["risk_free_return"]) for x in rows]) if len(rows)>=2 else None
     years=sorted({date.fromisoformat(x["date"]).year for x in ledger})
-    out["walk_forward"]={str(y):complete_metrics([x for x in ledger if date.fromisoformat(x["date"]).year<=y]) for y in years if len([x for x in ledger if date.fromisoformat(x["date"]).year<=y])>=2}
+    out["walk_forward"]={str(y):complete_metrics([x for x in ledger if date.fromisoformat(x["date"]).year<=y],[float(x["risk_free_return"]) for x in ledger if date.fromisoformat(x["date"]).year<=y]) for y in years if len([x for x in ledger if date.fromisoformat(x["date"]).year<=y])>=2}
     return out
 
 def evaluate_study(paths:Mapping[str,Mapping[str,Mapping[str,Mapping[str,Sequence[Mapping]]]]], regimes:Sequence[Mapping], issuer_map:Mapping[str,Any]|None=None)->dict[str,Any]:
@@ -195,9 +203,11 @@ def evaluate_study(paths:Mapping[str,Mapping[str,Mapping[str,Mapping[str,Sequenc
                 windows=variant_map[variant]; baseline=variant_map["BASELINE"]
                 if set(windows)!={"full","context","correction_replication"} or set(baseline)!=set(windows):raise ValueError("window registry mismatch")
                 bounds={"full":("2021-06-01","2026-07-31"),"context":("2021-06-01","2023-12-29"),"correction_replication":("2024-04-02","2026-07-31")}
+                retained_sessions=json.loads(Path("research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json").read_text())["sessions"]
                 for name,(first,last) in bounds.items():
                     dates=[x.get("date") for x in windows[name]]
-                    if not dates or dates[0]!=first or dates[-1]!=last or dates!=sorted(set(dates)):raise ValueError(f"{name} dated window mismatch")
+                    expected=[x["session"] for x in retained_sessions if first<=x["session"]<=last]
+                    if dates!=expected or "anchor_nav" not in windows[name][0]:raise ValueError(f"{name} dated window mismatch")
                 computed={}
                 for window in windows:
                     rf=[float(x["risk_free_return"]) for x in baseline[window]]
@@ -211,20 +221,29 @@ def evaluate_study(paths:Mapping[str,Mapping[str,Mapping[str,Mapping[str,Sequenc
         case_gates={};case_detail={}
         for variant in ALTERNATIVES:
             computed,base_windows,alt_windows=primary_evidence[variant]
-            bret=[float(D(x["nav"])/D(base_windows["correction_replication"][i-1]["nav"])-1) for i,x in enumerate(base_windows["correction_replication"]) if i]
-            aret=[float(D(x["nav"])/D(alt_windows["correction_replication"][i-1]["nav"])-1) for i,x in enumerate(alt_windows["correction_replication"]) if i]
-            rf=[float(x["risk_free_return"]) for x in base_windows["correction_replication"]][1:]
+            bw=base_windows["correction_replication"];aw=alt_windows["correction_replication"]
+            bret=[float(D(x["nav"])/(D(str(x.get("anchor_nav"))) if i==0 else D(bw[i-1]["nav"]))-1) for i,x in enumerate(bw)]
+            aret=[float(D(x["nav"])/(D(str(x.get("anchor_nav"))) if i==0 else D(aw[i-1]["nav"]))-1) for i,x in enumerate(aw)]
+            rf=[float(x["risk_free_return"]) for x in bw]
             boot=stationary_bootstrap(bret,aret,rf)
-            bc=concentration(base_windows["correction_replication"][-1],issuer_map);ac=concentration(alt_windows["correction_replication"][-1],issuer_map)
-            concentration_pass=ac["direct_hhi"]<=bc["direct_hhi"] and ac["max_direct_name"]<=bc["max_direct_name"] and ac["effective_issuer_max"]-bc["effective_issuer_max"]<=.0025 and ac["ai_platform_common_driver"]-bc["ai_platform_common_driver"]<=.0025 and ac["semis_cluster"]<=.25 and ac["power_infra_cluster"]<=.20
+            cbw=base_windows["context"];caw=alt_windows["context"]
+            cbret=[float(D(x["nav"])/(D(str(x["anchor_nav"])) if i==0 else D(cbw[i-1]["nav"]))-1) for i,x in enumerate(cbw)]
+            caret=[float(D(x["nav"])/(D(str(x["anchor_nav"])) if i==0 else D(caw[i-1]["nav"]))-1) for i,x in enumerate(caw)]
+            context_boot=stationary_bootstrap(cbret,caret,[float(x["risk_free_return"]) for x in cbw])
+            bc_path=[concentration(x,issuer_map) for x in base_windows["correction_replication"]];ac_path=[concentration(x,issuer_map) for x in alt_windows["correction_replication"]]
+            concentration_pass=all(a["direct_hhi"]<=b["direct_hhi"] and a["max_direct_name"]<=b["max_direct_name"] and a["effective_issuer_max"]-b["effective_issuer_max"]<=.0025 and a["ai_platform_common_driver"]-b["ai_platform_common_driver"]<=.0025 and a["semis_cluster"]<=.25 and a["power_infra_cluster"]<=.20 for a,b in zip(ac_path,bc_path))
             regime_pass=True
             for regime in regimes:
                 br=[x for x in base_windows["full"] if regime["start"]<=x["date"]<=regime["end"]];ar=[x for x in alt_windows["full"] if regime["start"]<=x["date"]<=regime["end"]]
                 if len(br)<2 or len(ar)<2:raise ValueError("missing fixed regime evidence")
-                regime_pass &= complete_metrics(ar)["max_drawdown"]-complete_metrics(br)["max_drawdown"]>=-.01
+                bi=next(i for i,x in enumerate(base_windows["full"]) if x["date"]==br[0]["date"]);ai=next(i for i,x in enumerate(alt_windows["full"]) if x["date"]==ar[0]["date"])
+                br=[dict(x) for x in br];ar=[dict(x) for x in ar];br[0]["anchor_nav"]=base_windows["full"][bi-1]["nav"];ar[0]["anchor_nav"]=alt_windows["full"][ai-1]["nav"]
+                regime_pass &= complete_metrics(ar,[float(x["risk_free_return"]) for x in ar])["max_drawdown"]-complete_metrics(br,[float(x["risk_free_return"]) for x in br])["max_drawdown"]>=-.01
             passed=decide_variant(variants[variant],computed["correction_replication"],computed["context"],boot,bool(regime_pass),bool(concentration_pass))
-            named={"support_15_of_18":sum(cell_support(x) for x in variants[variant])>=15,"primary":cell_support(computed["correction_replication"]),"context_direction":all(computed["context"][k]>=0 for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta")),"bootstrap_sharpe":boot["SHARPE_DELTA"]>=.75,"regimes":bool(regime_pass),"concentration":bool(concentration_pass),"linked_tail":passed if all((sum(cell_support(x) for x in variants[variant])>=15,cell_support(computed["correction_replication"]),bool(regime_pass),bool(concentration_pass))) else False,"final":passed}
-            case_gates[variant]=passed;case_detail[variant]={"cells":variants[variant],"primary":computed,"bootstrap":boot,"concentration":ac,"gates":named,"concentration_pass":concentration_pass,"regime_pass":regime_pass,"final":passed}
+            linked=(computed["correction_replication"]["max_drawdown_delta_pp"]>=2 and computed["context"]["max_drawdown_delta_pp"]>=0 and boot["MAX_DRAWDOWN_DELTA"]>=.75) or (computed["correction_replication"]["daily_cvar_95_delta_pp"]>=.1 and computed["context"]["daily_cvar_95_delta_pp"]>=0 and boot["DAILY_CVAR_95_DELTA"]>=.75)
+            named={"support_15_of_18":sum(cell_support(x) for x in variants[variant])>=15,"primary":cell_support(computed["correction_replication"]),"context_direction":all(computed["context"][k]>=0 for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta")),"bootstrap_sharpe":boot["SHARPE_DELTA"]>=.75,"regimes":bool(regime_pass),"concentration":bool(concentration_pass),"linked_tail":linked,"final":passed}
+            evaluations={"baseline":fixed_evaluations(base_windows["full"],regimes),"alternative":fixed_evaluations(alt_windows["full"],regimes)}
+            case_gates[variant]=passed;case_detail[variant]={"cells":variants[variant],"primary":computed,"bootstrap":boot,"context_bootstrap":context_boot,"concentration_path":ac_path,"gates":named,"evaluations":evaluations,"concentration_pass":concentration_pass,"regime_pass":regime_pass,"final":passed}
         gate_booleans[case]=case_gates;all_cases[case]=case_detail
     final=disposition(gate_booleans)
     standard=all_cases[FOREIGN_CASES[0]]
@@ -234,20 +253,23 @@ def evaluate_study(paths:Mapping[str,Mapping[str,Mapping[str,Mapping[str,Sequenc
 def stationary_bootstrap(base: Sequence[float], alt: Sequence[float], rf: Sequence[float], draws=2000,
                          mean_block=21, seed=20260907) -> dict[str,float]:
     if not (len(base)==len(alt)==len(rf)) or not base: raise ValueError("paired bootstrap length mismatch")
-    rng=random.Random(seed); n=len(base); counts={k:0 for k in ("NET_TWR_CAGR_DELTA","SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA")}
-    for _ in range(draws):
-        idx=[]; j=rng.randrange(n)
-        while len(idx)<n:
-            idx.append(j); j=(j+1)%n if rng.random()>1/mean_block else rng.randrange(n)
-        bm=metrics([base[i] for i in idx],[rf[i] for i in idx]); am=metrics([alt[i] for i in idx],[rf[i] for i in idx])
-        vals={"NET_TWR_CAGR_DELTA":am["net_twr_cagr"]-bm["net_twr_cagr"],"SHARPE_DELTA":am["sharpe"]-bm["sharpe"],"MAX_DRAWDOWN_DELTA":am["max_drawdown"]-bm["max_drawdown"],"DAILY_CVAR_95_DELTA":am["daily_cvar_95"]-bm["daily_cvar_95"]}
-        if not all(math.isfinite(v) for v in vals.values()): raise ValueError("undefined required bootstrap statistic")
-        for k,v in vals.items(): counts[k]+=v>0
-    return {k:v/draws for k,v in counts.items()}
+    rng=random.Random(seed);n=len(base);indices=np.empty((draws,n),dtype=np.int32)
+    for draw in range(draws):
+        j=rng.randrange(n)
+        for i in range(n):
+            indices[draw,i]=j;j=(j+1)%n if rng.random()>1/mean_block else rng.randrange(n)
+    def stats(values):
+        sample=np.asarray(values,dtype=float)[indices];risk=np.asarray(rf,dtype=float)[indices];excess=sample-risk;std=excess.std(axis=1,ddof=1)
+        if np.any(std==0) or not np.all(np.isfinite(std)):raise ValueError("undefined required bootstrap statistic")
+        wealth=np.cumprod(1+sample,axis=1);peaks=np.maximum.accumulate(np.concatenate((np.ones((draws,1)),wealth),axis=1),axis=1)[:,1:]
+        tail=np.sort(sample,axis=1)[:,:max(1,math.ceil(.05*n))].mean(axis=1)
+        return np.prod(1+sample,axis=1)**(252/n)-1,excess.mean(axis=1)/std*math.sqrt(252),np.min(wealth/peaks-1,axis=1),tail
+    b=stats(base);a=stats(alt);names=("NET_TWR_CAGR_DELTA","SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA")
+    return {name:float(np.mean(a[i]-b[i]>0)) for i,name in enumerate(names)}
 
 def cell_support(d: Mapping[str,float]) -> bool:
     vals=(d.get("net_cagr_delta_pp"),d.get("sharpe_delta"),d.get("sortino_delta"),d.get("max_drawdown_delta_pp"),d.get("daily_cvar_95_delta_pp"))
-    return all(isinstance(x,(int,float)) and math.isfinite(x) for x in vals) and vals[0]>=-.5 and vals[1]>=.05 and vals[2]>=.05 and (vals[3]>=2 or vals[4]>=.1)
+    return all(isinstance(x,(int,float)) and not isinstance(x,bool) and math.isfinite(x) for x in vals) and vals[0]>=-.5 and vals[1]>=.05 and vals[2]>=.05 and (vals[3]>=2 or vals[4]>=.1)
 
 def _cell_ids() -> tuple[str,...]:
     return tuple(f"COST_{c}_TAX_{t}_CADENCE_{q}" for c in ("0","10","25") for t in ("TAX_DEFERRED","TAXABLE_MID","TAXABLE_HIGH") for q in ("QUARTERLY","ANNUAL"))
@@ -256,13 +278,15 @@ def decide_variant(correction_cells: Sequence[Mapping], primary: Mapping, contex
                    bootstrap: Mapping, regimes_pass: bool, concentration_pass: bool, integrity_pass=True) -> bool:
     ids=[x.get("cell_id") for x in correction_cells]
     if tuple(ids)!=_cell_ids() or any(x.get("window")!="correction_replication" for x in correction_cells): raise ValueError("invalid correction cell registry/window")
-    if any(not cell_support(x) and any(not isinstance(x.get(k),(int,float)) or isinstance(x.get(k),bool) or not math.isfinite(x.get(k)) for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta","max_drawdown_delta_pp","daily_cvar_95_delta_pp")) for x in correction_cells): raise ValueError("nonfinite cell evidence")
+    keys=("net_cagr_delta_pp","sharpe_delta","sortino_delta","max_drawdown_delta_pp","daily_cvar_95_delta_pp")
+    valid=lambda value:isinstance(value,(int,float)) and not isinstance(value,bool) and math.isfinite(value)
+    if any(not all(valid(x.get(k)) for k in keys) for x in correction_cells) or not all(valid(primary.get(k)) and valid(context.get(k)) for k in keys): raise ValueError("invalid numeric gate evidence")
+    if not all(valid(bootstrap.get(k)) and 0<=bootstrap[k]<=1 for k in ("NET_TWR_CAGR_DELTA","SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA")):raise ValueError("invalid bootstrap probability")
     if not all(type(x) is bool for x in (regimes_pass,concentration_pass,integrity_pass)): raise ValueError("gate must be boolean")
     if not integrity_pass or sum(map(cell_support,correction_cells))<15: return False
     if not cell_support(primary) or not regimes_pass or not concentration_pass: return False
-    finite=lambda x:isinstance(x,(int,float)) and math.isfinite(x)
+    finite=valid
     if not all(finite(context.get(k)) and context[k]>=0 for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta")): return False
-    if not all(finite(bootstrap.get(k)) and 0<=bootstrap[k]<=1 for k in ("SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA")): raise ValueError("invalid bootstrap probability")
     if bootstrap["SHARPE_DELTA"]<.75: return False
     dd=primary["max_drawdown_delta_pp"]>=2 and context.get("max_drawdown_delta_pp",-math.inf)>=0 and bootstrap.get("MAX_DRAWDOWN_DELTA",-1)>=.75
     cv=primary["daily_cvar_95_delta_pp"]>=.1 and context.get("daily_cvar_95_delta_pp",-math.inf)>=0 and bootstrap.get("DAILY_CVAR_95_DELTA",-1)>=.75
@@ -316,12 +340,13 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
     days=[];cursor=start
     while cursor<=end:days.append(cursor);cursor+=timedelta(days=1)
     rates=lawful_dff(fixture.get("dff_records",[]),days,{date.fromisoformat(x) for x in fixture.get("fed_business_days",[])})
-    cash=D('100000'); lots:dict[str,list[Lot]]={}; receivables=[]; ledger=[]; calendar_ledger=[]; events=[]; pending_interest=D(0); prior_shares={}; day=start
+    cash=D('100000'); lots:dict[str,list[Lot]]={}; receivables=[]; ledger=[]; calendar_ledger=[]; events=[]; pending_interest=D(0); pending_rf=D(0); rf_index=D(1); prior_session_rf=D(1); prior_shares={}; day=start
     dividends=fixture.get("dividends",[]); splits=fixture.get("splits",[])
     while day<=end:
-        credited_interest=pending_interest;cash+=credited_interest; events_day=[]
+        credited_interest=pending_interest;cash+=credited_interest;rf_index*=D(1)+pending_rf; events_day=[]
         opening=cash
         pending_interest=cash_delta(opening,rates[day],D(str(profile["ordinary_income_rate"])))
+        pending_rf=rates[day]/D(100)/D(360)
         for s in splits:
             if s["date"]==day.isoformat():
                 factor=D(str(s["factor"])); ticker=s["ticker"]
@@ -347,7 +372,7 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
                 for t,ls in lots.items():
                     value=sum(x.units for x in ls)*prices[t][day]; delta=value-targets.get(t,D(0))
                     if delta>D(0):
-                        units=delta/prices[t][day]; gain,tax,detail=hifo_sell(ls,units,prices[t][day],day,D(str(profile["short_gain_rate"])),D(str(profile["long_gain_rate"])),gold_rate=D(str(profile["gold_gain_rate"])) if t=="GLD" else None);cost=delta*cost_bps/D(10000);cash+=delta-cost-tax;events_day.append({"type":"sell","ticker":t,"units":str(units),"proceeds":str(delta),"realized_gain":str(gain),"cost":str(cost),"tax":str(tax),"lots":detail})
+                        units=delta/prices[t][day]; gain,tax,detail=hifo_sell(ls,units,prices[t][day],day,D(str(profile["short_gain_rate"])),D(str(profile["long_gain_rate"])),gold_rate=D(str(profile["gold_gain_rate"])) if t=="GLD" else None);cost=delta*cost_bps/D(10000);cash+=delta-cost-tax;events_day.append({"type":"sell","ticker":t,"price":str(prices[t][day]),"units":str(units),"proceeds":str(delta),"realized_gain":str(gain),"cost":str(cost),"tax":str(tax),"lots":detail})
                 for t,target in targets.items():
                     held=sum((x.units for x in lots.get(t,[])),D(0))
                     if not held and not target:continue
@@ -358,7 +383,8 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
             positions=[{"ticker":t,"shares":str(sum(x.units for x in ls)),"price":str(prices[t][day]),"lots":[{"units":str(x.units),"basis":str(x.basis_per_unit),"acquired":x.acquired.isoformat()} for x in ls]} for t,ls in lots.items()]
             nav=cash+sum(D(x["shares"])*D(x["price"]) for x in positions)+sum(r["net"] for r in receivables)
             events.extend({"date":day.isoformat(),**e} for e in events_day)
-            ledger.append({"date":day.isoformat(),"cash":str(cash),"opening_eligible_cash":str(opening),"interest_credited":str(credited_interest),"unposted_interest":str(pending_interest),"risk_free_return":str(cash_delta(D(1),rates[day],D(0))),"positions":positions,"receivables":[{**r,"net":str(r["net"])} for r in receivables],"events":events_day,"nav":str(nav),"external_flow":"0"})
+            interval_rf=rf_index/prior_session_rf-D(1);prior_session_rf=rf_index
+            ledger.append({"date":day.isoformat(),"anchor_nav":"100000" if not ledger else None,"cash":str(cash),"opening_eligible_cash":str(opening),"interest_credited":str(credited_interest),"unposted_interest":str(pending_interest),"risk_free_return":str(interval_rf),"positions":positions,"receivables":[{**r,"net":str(r["net"])} for r in receivables],"events":events_day,"nav":str(nav),"external_flow":"0"})
         calendar_ledger.append({"date":day.isoformat(),"opening_eligible_cash":str(opening),"dff_percent":str(rates[day]),"interest_credited":str(credited_interest),"settled_cash":str(cash),"events":events_day,"receivables":[{**r,"net":str(r["net"])} for r in receivables]})
         events.extend({"date":day.isoformat(),**e} for e in events_day if day not in session_set)
         day+=timedelta(days=1)
@@ -368,7 +394,13 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
 def run_synthetic_study(root:Path, fixture:Mapping[str,Any])->dict[str,Any]:
     """Execute the complete frozen 6x18x4 registry from synthetic authenticated primitives."""
     prereg=yaml.safe_load((root/"research/whole_portfolio_robustness_v2/pre_registration.yaml").read_text())
+    retained=json.loads((root/"research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json").read_text())["sessions"]
+    required=[x for x in retained if fixture["start"]<=x["session"]<=fixture["end"]]
+    expected_closes={x["session"]:x["close_utc"] for x in required}
+    if fixture.get("input_kind")!="SYNTHETIC_TEST_ONLY" or fixture["sessions"]!=[x["session"] for x in required] or fixture["session_closes"]!=expected_closes:
+        raise ValueError("synthetic study requires the exact pinned XNYS session/close clock")
     profiles={k:{n:D(v) for n,v in values.items()} for k,values in prereg["frictions"]["tax_profile_parameters"].items()}
+    issuer=yaml.safe_load((root/"issuer_lookthrough.yaml").read_text())
     paths={};simulations={}
     for case in FOREIGN_CASES:
         paths[case]={};simulations[case]={}
@@ -376,9 +408,22 @@ def run_synthetic_study(root:Path, fixture:Mapping[str,Any])->dict[str,Any]:
             identity=cell["cell_id"];paths[case][identity]={};simulations[case][identity]={}
             for variant in ("BASELINE",)+ALTERNATIVES:
                 result=simulate(root,fixture,variant,D(cell["one_way_cost_bps"]),profiles[cell["tax_profile"]],cell["rebalance_cadence"],case)
-                rows=result["ledger"]
-                windows={"full":rows,"context":[x for x in rows if "2021-06-01"<=x["date"]<="2023-12-29"],"correction_replication":[x for x in rows if "2024-04-02"<=x["date"]<="2026-07-31"]}
-                paths[case][identity][variant]=windows;simulations[case][identity][variant]=result
-    issuer=yaml.safe_load((root/"issuer_lookthrough.yaml").read_text())
+                result["cell"]["tax_profile"]=cell["tax_profile"]
+                audit_rows=result["ledger"]
+                rows=[{**{k:row[k] for k in ("date","nav","risk_free_return")},"concentration":concentration(row,issuer)} for row in audit_rows]
+                def window(start,end):
+                    selected=[x for x in rows if start<=x["date"]<=end]
+                    first=next(i for i,x in enumerate(rows) if x["date"]==start)
+                    selected[0]={**selected[0],"anchor_nav":result["initial_nav"] if first==0 else rows[first-1]["nav"]}
+                    return selected
+                windows={"full":window("2021-06-01","2026-07-31"),"context":window("2021-06-01","2023-12-29"),"correction_replication":window("2024-04-02","2026-07-31")}
+                paths[case][identity][variant]=windows
+                compact_ledger=[]
+                for row in audit_rows:
+                    keep={k:row[k] for k in ("date","nav","cash","risk_free_return")}
+                    if row.get("events"):keep.update(events=row["events"],positions=row["positions"],receivables=row["receivables"])
+                    compact_ledger.append(keep)
+                compact_calendar=[row for row in result["calendar_ledger"] if row["events"]]
+                simulations[case][identity][variant]={"variant":variant,"cell":result["cell"],"initial_nav":"100000","calendar_ledger":compact_calendar,"calendar_day_count":len(result["calendar_ledger"]),"ledger":compact_ledger,"summary":result["summary"]}
     decision=evaluate_study(paths,prereg["windows"]["fixed_regimes"],issuer)
-    return {"study_id":"PORTFOLIO-ROBUSTNESS-V2-0001","synthetic":True,"simulations":simulations,**decision}
+    return {"study_id":"PORTFOLIO-ROBUSTNESS-V2-0001","synthetic":True,"primitive_fixture":fixture,"simulations":simulations,**decision}

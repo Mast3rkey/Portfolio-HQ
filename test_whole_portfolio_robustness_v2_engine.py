@@ -51,25 +51,30 @@ def test_crypto_actual_close_prevents_weekend_future_lookahead():
 def test_metrics_undefined_variance_is_nonfinite():
     m=metrics([.01,.01,.01]);assert math.isnan(m['sharpe'])
 
+def test_subwindow_requires_and_uses_preceding_anchor():
+    rows=[{'date':'2025-01-02','anchor_nav':'200000','nav':'200000','events':[],'risk_free_return':'0'},{'date':'2025-01-03','nav':'199000','events':[],'risk_free_return':'0'}]
+    assert complete_metrics(rows)['cumulative_twr']==pytest.approx(-.005)
+    with pytest.raises(ValueError):complete_metrics([{k:v for k,v in row.items() if k!='anchor_nav'} for row in rows])
+
 def test_stationary_bootstrap_is_deterministic_and_paired():
     b=[-.02,.01,.03,-.01]*8;a=[-.01,.012,.031,-.005]*8;rf=[.0001]*32
     assert stationary_bootstrap(b,a,rf,draws=50)==stationary_bootstrap(b,a,rf,draws=50)
 
 def test_support_14_vs_15_and_context_cannot_replace_correction():
-    boot={"SHARPE_DELTA":.8,"MAX_DRAWDOWN_DELTA":.8,"DAILY_CVAR_95_DELTA":0}
+    boot={"NET_TWR_CAGR_DELTA":.8,"SHARPE_DELTA":.8,"MAX_DRAWDOWN_DELTA":.8,"DAILY_CVAR_95_DELTA":0}
     assert not decide_variant(cells(14),good(),good(),boot,True,True)
     assert decide_variant(cells(15),good(),good(),boot,True,True)
     # Context has 18 hypothetical supports; correction still owns the only support count.
     assert not decide_variant(cells(0),good(),good(),boot,True,True)
 
 def test_primary_and_linked_tail_must_pass():
-    boot={"SHARPE_DELTA":.8,"MAX_DRAWDOWN_DELTA":.2,"DAILY_CVAR_95_DELTA":.8}
+    boot={"NET_TWR_CAGR_DELTA":.8,"SHARPE_DELTA":.8,"MAX_DRAWDOWN_DELTA":.2,"DAILY_CVAR_95_DELTA":.8}
     context=good();context['daily_cvar_95_delta_pp']=-1
     assert not decide_variant(cells(),good(),context,boot,True,True)
     assert not decide_variant(cells(),good(False),good(),boot,True,True)
 
 def test_adversarial_registry_nonfinite_probability_and_string_boolean():
-    boot={"SHARPE_DELTA":.8,"MAX_DRAWDOWN_DELTA":.8,"DAILY_CVAR_95_DELTA":0}
+    boot={"NET_TWR_CAGR_DELTA":.8,"SHARPE_DELTA":.8,"MAX_DRAWDOWN_DELTA":.8,"DAILY_CVAR_95_DELTA":0}
     bad=cells();bad[0]["cell_id"]="UNREGISTERED"
     with pytest.raises(ValueError):decide_variant(bad,good(),good(),boot,True,True)
     bad=cells();bad[-1]["sharpe_delta"]=math.nan
@@ -129,7 +134,7 @@ def test_quarterly_first_session_boundaries():
 
 def test_exact_close_required_and_later_available_asset_stays_cash():
     with pytest.raises(ValueError):align_crypto([{'close_at':'2025-07-03T19:00:00Z','close':999}],[date(2025,7,3)])
-    root=Path(__file__).parent;fixture=full_synthetic_fixture();fixture['available']={'CEG':'2021-07-02'};del fixture['prices']['CEG']['2021-06-01']
+    root=Path(__file__).parent;fixture=full_synthetic_fixture()
     simulate(root,fixture,cost_bps=D(0))
 
 def test_pinned_fund_lookthrough_is_used():
@@ -137,6 +142,15 @@ def test_pinned_fund_lookthrough_is_used():
     look=yaml.safe_load(Path('issuer_lookthrough.yaml').read_text())
     result=concentration({'nav':'100','positions':[{'ticker':'SPY','shares':'1','price':'100'}]},look)
     assert result['effective_issuer_max']==pytest.approx(.0766) and result['ai_platform_common_driver']>0
+
+@pytest.mark.parametrize('sleeve',['GLD','BTC','ETH','SOL'])
+def test_non_issuer_sleeves_do_not_control_effective_issuer_max(sleeve):
+    import yaml
+    look=yaml.safe_load(Path('issuer_lookthrough.yaml').read_text())
+    positions=[{'ticker':'COST','shares':'1','price':'6'},{'ticker':'NVDA','shares':'1','price':'3'},
+               {'ticker':'SPY','shares':'1','price':'10'},{'ticker':sleeve,'shares':'1','price':'35'}]
+    result=concentration({'nav':'100','positions':positions},look)
+    assert result['effective_issuer_max']==pytest.approx(.06)
 
 def test_wrong_windows_or_empty_regimes_fail_closed():
     with pytest.raises(ValueError):evaluate_study(synthetic_study_paths(),[])
@@ -150,18 +164,24 @@ def synthetic_study_paths():
     return {case:{cell:{alt:{k:list(v) for k,v in windows.items()} for alt in ('BASELINE',)+ALTERNATIVES} for cell in _cell_ids()} for case in FOREIGN_CASES}
 
 def test_complete_synthetic_registry_driver_is_deterministic():
-    paths=synthetic_study_paths();a=evaluate_study(paths,REGIMES);b=evaluate_study(paths,REGIMES)
-    assert a['disposition']==b['disposition']=={'disposition':'RETAIN_BASELINE','passing_set':[]}
-    assert len(a['decision_evidence']['cell_ids'])==18 and set(a['decision_evidence']['cases'])==set(FOREIGN_CASES)
+    with pytest.raises(ValueError):evaluate_study(synthetic_study_paths(),REGIMES)
 
 def full_synthetic_fixture():
-    dates=[x['date'] for x in synthetic_study_paths()[FOREIGN_CASES[0]][_cell_ids()[0]]['BASELINE']['full']]
+    import json
+    sessions=[x for x in json.loads((Path(__file__).parent/'research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json').read_text())['sessions'] if '2021-06-01'<=x['session']<='2026-07-31']
+    dates=[x['session'] for x in sessions]
     tickers=[t for t in derive_weights(Path(__file__).parent,'BASELINE') if t!='CASH']
-    prices={t:{d:str(D(100)+D(i%4-1)*2+D(j%3)) for i,d in enumerate(dates)} for j,t in enumerate(tickers)}
-    return {'start':'2021-06-01','end':'2026-07-31','sessions':dates,'session_closes':{d:d+'T20:00:00Z' for d in dates},'prices':prices,'fed_business_days':['2021-05-31'],'dff_records':[{'observation_date':'2021-05-28','published_at':'2021-05-31T16:15:00Z','value':'.25'}]}
+    prices={t:{d:str(D(100)+D(i%17-8)/10+D(j%5)) for i,d in enumerate(dates) if t!='CEG' or d>='2022-02-02'} for j,t in enumerate(tickers)}
+    return {'input_kind':'SYNTHETIC_TEST_ONLY','start':'2021-06-01','end':'2026-07-31','sessions':dates,'session_closes':{x['session']:x['close_utc'] for x in sessions},'prices':prices,'available':{'CEG':'2022-02-02'},'fed_business_days':['2021-05-31'],'dff_records':[{'observation_date':'2021-05-28','published_at':'2021-05-31T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'ETN','ex_date':'2023-01-13','payable_date':'2023-01-14','gross_per_share':'1','withholding_rate':'.10'}],'splits':[{'ticker':'NVDA','date':'2024-06-10','factor':'10'}]}
+
+_FULL_BUNDLE=None
+def get_full_bundle():
+    global _FULL_BUNDLE
+    if _FULL_BUNDLE is None:_FULL_BUNDLE=run_synthetic_study(Path(__file__).parent,full_synthetic_fixture())
+    return _FULL_BUNDLE
 
 def test_full_simulation_registry_driver_executes_synthetic_fixture():
-    result=run_synthetic_study(Path(__file__).parent,full_synthetic_fixture())
+    result=get_full_bundle()
     assert result['synthetic'] is True and len(result['simulations'])==4
     assert all(len(cells)==18 for cells in result['simulations'].values())
     from whole_portfolio_robustness_v2_result_validator import validate_study_bundle
