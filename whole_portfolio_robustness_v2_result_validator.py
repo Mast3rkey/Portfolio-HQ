@@ -129,11 +129,24 @@ def _compare_metric_tree(actual:Any, claimed:Any, path="evaluations")->list[str]
         if not isinstance(claimed,dict) or set(actual)!=set(claimed):return [f"{path}: registry mismatch"]
         for key,value in actual.items():errors.extend(_compare_metric_tree(value,claimed[key],f"{path}/{key}"))
     elif isinstance(actual,list):
-        if actual!=claimed:errors.append(f"{path}: value mismatch")
+        if not isinstance(claimed,list) or len(actual)!=len(claimed):return [f"{path}: registry mismatch"]
+        for index,value in enumerate(actual):errors.extend(_compare_metric_tree(value,claimed[index],f"{path}/{index}"))
     elif isinstance(actual,(int,float)):
         if not _finite(claimed) or abs(actual-claimed)>1e-10:errors.append(f"{path}: numeric mismatch")
     elif actual!=claimed:errors.append(f"{path}: value mismatch")
     return errors
+
+_BOOTSTRAP_FIELDS={"NET_TWR_CAGR_DELTA","SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA"}
+
+def _compare_probability_claim(actual:Any,claimed:Any,path:str)->list[str]:
+    """Strictly bind the complete probability vector; bool is never numeric."""
+    if not isinstance(actual,dict) or set(actual)!=_BOOTSTRAP_FIELDS:return [f"{path}: computed probability registry mismatch"]
+    if not isinstance(claimed,dict) or set(claimed)!=_BOOTSTRAP_FIELDS:return [f"{path}: probability registry mismatch"]
+    for key in sorted(_BOOTSTRAP_FIELDS):
+        value=claimed[key]
+        if not _finite(value) or not 0<=value<=1:return [f"{path}/{key}: invalid probability"]
+        if value!=actual[key]:return [f"{path}/{key}: probability mismatch"]
+    return []
 
 def validate_ledger(doc:dict)->list[str]:
     e=[]; rows=doc.get("ledger"); primitive_rows=[]
@@ -375,11 +388,12 @@ def validate_result(doc:dict, *, decision_only:bool=False)->list[str]:
                         actual_context=_paired_delta(paths[case][primary_id]["BASELINE"]["context"],paths[case][primary_id][alt]["context"])
                         if any(abs(actual_context[k]-context[k])>1e-10 for k in actual_context):raise ValueError("context metric/path mismatch")
                         if not all(finite(x.get(k)) for x in (primary,context) for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta","max_drawdown_delta_pp","daily_cvar_95_delta_pp")):raise ValueError("nonfinite primary/context evidence")
-                        if not all(finite(boot[k]) and 0<=boot[k]<=1 for k in ("SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA")):raise ValueError("bootstrap")
                         actual_boot=_bootstrap(paths[case][primary_id]["BASELINE"]["correction_replication"],paths[case][primary_id][alt]["correction_replication"])
-                        if any(actual_boot[k]!=boot[k] for k in actual_boot):raise ValueError("bootstrap/path mismatch")
+                        mismatch=_compare_probability_claim(actual_boot,boot,"bootstrap")
+                        if mismatch:raise ValueError(mismatch[0])
                         actual_context_boot=_bootstrap(paths[case][primary_id]["BASELINE"]["context"],paths[case][primary_id][alt]["context"])
-                        if detail.get("context_bootstrap")!=actual_context_boot:raise ValueError("context bootstrap/path mismatch")
+                        mismatch=_compare_probability_claim(actual_context_boot,detail.get("context_bootstrap"),"context_bootstrap")
+                        if mismatch:raise ValueError(mismatch[0])
                         concentrations=[x["concentration"] for x in paths[case][primary_id][alt]["correction_replication"]]
                         if detail.get("concentration_path")!=concentrations:raise ValueError("concentration/path mismatch")
                         base_concentrations=[x["concentration"] for x in paths[case][primary_id]["BASELINE"]["correction_replication"]]
@@ -454,6 +468,6 @@ def validate_decision_variant(bundle:dict,case:str,alt:str)->list[str]:
         concentrations=[x["concentration"] for x in paths[alt]["correction_replication"]]
         if concentrations!=detail["concentration_path"]:errors.append("concentration/path mismatch")
         actual_boot=_bootstrap(paths["BASELINE"]["correction_replication"],paths[alt]["correction_replication"])
-        if actual_boot!=detail["bootstrap"]:errors.append("bootstrap/path mismatch")
+        errors.extend(_compare_probability_claim(actual_boot,detail.get("bootstrap"),"bootstrap"))
     except Exception as ex:errors.append(f"malformed decision evidence: {ex}")
     return errors

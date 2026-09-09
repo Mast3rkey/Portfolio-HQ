@@ -1,7 +1,7 @@
 from copy import deepcopy
 import pytest
 from whole_portfolio_robustness_v2_result_validator import *
-from whole_portfolio_robustness_v2_result_validator import _XNYS, _SUMMARY_FIELDS, _compare_metric_tree, _concentration, _derived_windows, _path_identity, _replay_simulation
+from whole_portfolio_robustness_v2_result_validator import _XNYS, _SUMMARY_FIELDS, _compare_metric_tree, _compare_probability_claim, _concentration, _derived_windows, _path_identity, _replay_simulation
 
 def test_replay_window_derivation_binds_predecessor_and_every_field():
     full=[]
@@ -66,6 +66,17 @@ def test_fixed_evaluation_uses_replayed_operational_economics():
     assert metrics['rebalance_count']==4
     assert metrics['one_way_turnover']==pytest.approx(.0030288705385554133)
 
+def test_probability_claims_reject_bool_missing_extra_nonfinite_and_wrong_values():
+    actual={'NET_TWR_CAGR_DELTA':.4315,'SHARPE_DELTA':.473,'MAX_DRAWDOWN_DELTA':.097,'DAILY_CVAR_95_DELTA':0.}
+    assert _compare_probability_claim(actual,deepcopy(actual),'context_bootstrap')==[]
+    attacks=[]
+    for key,bad in (('DAILY_CVAR_95_DELTA',False),('NET_TWR_CAGR_DELTA',True),('SHARPE_DELTA',float('nan')),('MAX_DRAWDOWN_DELTA',float('inf')),('SHARPE_DELTA',1.1)):
+        claim=deepcopy(actual);claim[key]=bad;attacks.append(claim)
+    missing=deepcopy(actual);del missing['NET_TWR_CAGR_DELTA'];attacks.append(missing)
+    extra=deepcopy(actual);extra['UNREGISTERED']=.5;attacks.append(extra)
+    assert all(_compare_probability_claim(actual,claim,'context_bootstrap') for claim in attacks)
+    assert _compare_metric_tree([0.0],[False],'nested')
+
 def document():
     rows=[{'date':'2025-01-02','cash':'100000','positions':[],'receivables':[],'nav':'100000','events':[]}, {'date':'2025-01-03','cash':'100000','positions':[],'receivables':[],'nav':'100000','events':[],'interest_credited':'0'}]
     gates={c:{a:False for a in ALTS} for c in CASES}
@@ -102,6 +113,8 @@ def test_complete_synthetic_driver_result_replays_and_path_mutation_fails():
     old=bundle['portfolio_paths'][case][cell]['BASELINE']['context'][0]['risk_free_return'];bundle['portfolio_paths'][case][cell]['BASELINE']['context'][0]['risk_free_return']='NaN'
     decision={k:bundle[k] for k in ('portfolio_paths','decision_evidence','foreign_case_gate_booleans','disposition')}
     assert validate_result(decision,decision_only=True);bundle['portfolio_paths'][case][cell]['BASELINE']['context'][0]['risk_free_return']=old
+    detail=bundle['decision_evidence']['cases'][case][ALTS[0]];claim=detail['context_bootstrap'];old=claim['DAILY_CVAR_95_DELTA'];claim['DAILY_CVAR_95_DELTA']=False
+    assert validate_result(decision,decision_only=True);claim['DAILY_CVAR_95_DELTA']=old
 
 def test_full_bundle_rejects_calendar_identity_lot_primary_concentration_and_detachment():
     import copy
