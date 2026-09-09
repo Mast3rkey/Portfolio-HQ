@@ -258,17 +258,11 @@ def evaluate_study(paths:Mapping[str,Mapping[str,Mapping[str,Mapping[str,Sequenc
             context_boot=stationary_bootstrap(cbret,caret,[float(x["risk_free_return"]) for x in cbw])
             bc_path=[concentration(x,issuer_map) for x in base_windows["correction_replication"]];ac_path=[concentration(x,issuer_map) for x in alt_windows["correction_replication"]]
             concentration_pass=all(a["direct_hhi"]<=b["direct_hhi"] and a["max_direct_name"]<=b["max_direct_name"] and a["effective_issuer_max"]-b["effective_issuer_max"]<=.0025 and a["ai_platform_common_driver"]-b["ai_platform_common_driver"]<=.0025 and a["semis_cluster"]<=.25 and a["power_infra_cluster"]<=.20 for a,b in zip(ac_path,bc_path))
-            regime_pass=True
-            for regime in regimes:
-                br=[x for x in base_windows["full"] if regime["start"]<=x["date"]<=regime["end"]];ar=[x for x in alt_windows["full"] if regime["start"]<=x["date"]<=regime["end"]]
-                if len(br)<2 or len(ar)<2:raise ValueError("missing fixed regime evidence")
-                bi=next(i for i,x in enumerate(base_windows["full"]) if x["date"]==br[0]["date"]);ai=next(i for i,x in enumerate(alt_windows["full"]) if x["date"]==ar[0]["date"])
-                br=[dict(x) for x in br];ar=[dict(x) for x in ar];br[0]["anchor_nav"]=base_windows["full"][bi-1]["nav"];ar[0]["anchor_nav"]=alt_windows["full"][ai-1]["nav"]
-                regime_pass &= complete_metrics(ar,[float(x["risk_free_return"]) for x in ar])["max_drawdown"]-complete_metrics(br,[float(x["risk_free_return"]) for x in br])["max_drawdown"]>=-.01
+            evaluations={"baseline":fixed_evaluations(base_windows["full"],regimes),"alternative":fixed_evaluations(alt_windows["full"],regimes)}
+            regime_pass=all(evaluations["alternative"][regime["id"]]["max_drawdown"]-evaluations["baseline"][regime["id"]]["max_drawdown"]>=-.01 for regime in regimes)
             passed=decide_variant(variants[variant],computed["correction_replication"],computed["context"],boot,bool(regime_pass),bool(concentration_pass))
             linked=(computed["correction_replication"]["max_drawdown_delta_pp"]>=2 and computed["context"]["max_drawdown_delta_pp"]>=0 and boot["MAX_DRAWDOWN_DELTA"]>=.75) or (computed["correction_replication"]["daily_cvar_95_delta_pp"]>=.1 and computed["context"]["daily_cvar_95_delta_pp"]>=0 and boot["DAILY_CVAR_95_DELTA"]>=.75)
             named={"support_15_of_18":sum(cell_support(x) for x in variants[variant])>=15,"primary":cell_support(computed["correction_replication"]),"context_direction":all(computed["context"][k]>=0 for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta")),"bootstrap_sharpe":boot["SHARPE_DELTA"]>=.75,"regimes":bool(regime_pass),"concentration":bool(concentration_pass),"linked_tail":linked,"final":passed}
-            evaluations={"baseline":fixed_evaluations(base_windows["full"],regimes),"alternative":fixed_evaluations(alt_windows["full"],regimes)}
             case_gates[variant]=passed;case_detail[variant]={"cells":variants[variant],"primary":computed,"bootstrap":boot,"context_bootstrap":context_boot,"concentration_path":ac_path,"gates":named,"evaluations":evaluations,"concentration_pass":concentration_pass,"regime_pass":regime_pass,"final":passed}
         gate_booleans[case]=case_gates;all_cases[case]=case_detail
     final=disposition(gate_booleans)

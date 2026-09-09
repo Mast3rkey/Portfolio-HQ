@@ -176,6 +176,39 @@ def synthetic_study_paths():
 def test_complete_synthetic_registry_driver_is_deterministic():
     with pytest.raises(ValueError):evaluate_study(synthetic_study_paths(),REGIMES)
 
+def test_evaluate_study_fixed_regimes_inherit_complete_predecessor_boundary(monkeypatch):
+    import json
+    import whole_portfolio_robustness_v2_engine as engine
+    sessions=[x['session'] for x in json.loads((Path(__file__).parent/'research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json').read_text())['sessions'] if '2021-06-01'<=x['session']<='2026-07-31']
+    zero={k:'0' for k in ('turnover_notional','rebalance_count','taxable_realized_gain','cost_drag','tax_drag','cash_drag')}
+    full=[]
+    for i,day in enumerate(sessions):
+        row={'date':day,'nav':str(D(100000)+D(i%11-5)*10+D(i)),'risk_free_return':'.00001','operations':dict(zero),'concentration':{k:0. for k in ('direct_hhi','max_direct_name','effective_issuer_max','ai_platform_common_driver','semis_cluster','power_infra_cluster')}}
+        if i==0:row.update(anchor_nav='100000',anchor_date='2021-05-28',anchor_operations=dict(zero))
+        full.append(row)
+    def window(start,end):
+        selected=[dict(x) for x in full if start<=x['date']<=end];first=next(i for i,x in enumerate(full) if x['date']==selected[0]['date'])
+        selected[0].update(anchor_nav='100000' if first==0 else full[first-1]['nav'],anchor_date='2021-05-28' if first==0 else full[first-1]['date'],anchor_operations=dict(zero) if first==0 else full[first-1]['operations'])
+        return selected
+    windows={'full':window('2021-06-01','2026-07-31'),'context':window('2021-06-01','2023-12-29'),'correction_replication':window('2024-04-02','2026-07-31')}
+    primary='COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY';monkeypatch.setattr(engine,'_cell_ids',lambda:(primary,));monkeypatch.setattr(engine,'stationary_bootstrap',lambda *a,**k:{x:0. for x in ('NET_TWR_CAGR_DELTA','SHARPE_DELTA','MAX_DRAWDOWN_DELTA','DAILY_CVAR_95_DELTA')})
+    boundaries=[];real_complete=engine.complete_metrics
+    def checked_complete(rows,risk_free=None):
+        if rows[0]['date']=='2023-01-03':boundaries.append((rows[0]['anchor_date'],rows[0]['anchor_nav'],rows[0]['anchor_operations']))
+        return real_complete(rows,risk_free)
+    monkeypatch.setattr(engine,'complete_metrics',checked_complete)
+    seen=[];real=engine.fixed_evaluations
+    def checked(rows,regimes):
+        result=real(rows,regimes);seen.append(result)
+        assert result['CALENDAR_2023']['recovery_days'] is not None
+        return result
+    monkeypatch.setattr(engine,'fixed_evaluations',checked)
+    paths={case:{primary:{variant:{name:[dict(x) for x in rows] for name,rows in windows.items()} for variant in ('BASELINE',)+ALTERNATIVES}} for case in FOREIGN_CASES}
+    result=engine.evaluate_study(paths,REGIMES)
+    assert result['decision_evidence']['cases'] and len(seen)==len(FOREIGN_CASES)*len(ALTERNATIVES)*2
+    predecessor=next(x for x in full if x['date']=='2022-12-30')
+    assert boundaries and all(x==('2022-12-30',predecessor['nav'],predecessor['operations']) for x in boundaries)
+
 def full_synthetic_fixture():
     import json
     sessions=[x for x in json.loads((Path(__file__).parent/'research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json').read_text())['sessions'] if '2021-06-01'<=x['session']<='2026-07-31']
