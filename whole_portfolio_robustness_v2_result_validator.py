@@ -68,6 +68,11 @@ def _align_crypto_primitives(bars:list[dict],sessions:list[str],closes:dict[str,
         result[session]=parsed[index][1]
     return result
 
+def _xnys_predecessor(start:str)->str:
+    dates=[row["session"] for row in _XNYS]
+    if start not in dates or dates.index(start)==0:raise ValueError("retained XNYS predecessor unavailable")
+    return dates[dates.index(start)-1]
+
 def _finite(x:Any)->bool:
     return isinstance(x,(int,float)) and not isinstance(x,bool) and math.isfinite(x)
 
@@ -117,6 +122,7 @@ def _fixed_evaluations(rows:list[dict], regimes:list[dict])->dict:
         base=_path_stats(selected);nav=[float(selected[0]["anchor_nav"])]+[float(x["nav"]) for x in selected];returns=[nav[i]/nav[i-1]-1 for i in range(1,len(nav))]
         if "anchor_date" not in selected[0]:raise ValueError("path boundary date missing")
         mean=sum(returns)/len(returns);dates=[date.fromisoformat(selected[0]["anchor_date"])]+[date.fromisoformat(x["date"]) for x in selected]
+        if any(a>=b for a,b in zip(dates,dates[1:])):raise ValueError("path dates must strictly follow boundary anchor")
         def worst(group):
             buckets={}
             for i,r in enumerate(returns,1):buckets[group(dates[i])]=buckets.get(group(dates[i]),1)*(1+r)
@@ -295,6 +301,8 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
     if fixture.get("input_kind")!="SYNTHETIC_TEST_ONLY":raise ValueError("unadmitted primitive fixture")
     retained=[x for x in _XNYS if fixture.get("start")<=x["session"]<=fixture.get("end")];sessions=[x["session"] for x in retained]
     if fixture.get("sessions")!=sessions or fixture.get("session_closes")!={x["session"]:x["close_utc"] for x in retained}:raise ValueError("pinned XNYS clock mismatch")
+    anchor=fixture.get("anchor_date")
+    if isinstance(anchor,bool) or not isinstance(anchor,str) or anchor!=_xnys_predecessor(fixture["start"]):raise ValueError("initial anchor is not the retained XNYS predecessor")
     cost_name=cell_id.split("_")[1];tax_name=cell_id.split("_TAX_")[1].split("_CADENCE_")[0];cadence=cell_id.split("_CADENCE_")[1]
     prereg=yaml.safe_load((ROOT/"research/whole_portfolio_robustness_v2/pre_registration.yaml").read_text());registered={x["cell_id"]:x for x in prereg["frictions"]["cell_registry"]}
     if cell_id not in registered or registered[cell_id]!={"cell_id":cell_id,"one_way_cost_bps":cost_name,"tax_profile":tax_name,"rebalance_cadence":cadence}:raise ValueError("cell identity mismatch")

@@ -43,6 +43,15 @@ def test_primitive_replay_rejects_source_and_stored_economic_mutations():
         if row.get('events'):keep.update(events=row['events'],positions=row['positions'],receivables=row['receivables'])
         compact.append(keep)
     assert compact==projection(expected['ledger'])
+    original_anchor=fixture['anchor_date'];fixture['anchor_date']='2026-08-03'
+    with pytest.raises(ValueError,match='retained XNYS predecessor'):_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+    with pytest.raises(ValueError,match='retained XNYS predecessor'):engine.simulate(Path('.'),fixture,'BASELINE',D(cell['one_way_cost_bps']),profile,cell['rebalance_cadence'],CASES[0])
+    fixture['anchor_date']=original_anchor
+    assert _replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')==expected
+    for bad in (True,None,'not-a-date','2021-06-01','2021-05-27'):
+        fixture['anchor_date']=bad
+        with pytest.raises((ValueError,TypeError)):_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+    fixture['anchor_date']=original_anchor
     assert set(actual['summary'])==set(_SUMMARY_FIELDS)
     claimed=deepcopy(actual['summary']);claimed['annualized_volatility']=True
     assert _compare_metric_tree(actual['summary'],claimed,'summary')

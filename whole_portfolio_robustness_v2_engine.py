@@ -153,6 +153,7 @@ def complete_metrics(ledger:Sequence[Mapping], risk_free:Sequence[float]|None=No
     result["calmar"]=result["net_twr_cagr"]/abs(result["max_drawdown"]) if result["max_drawdown"]<0 else math.nan
     if "anchor_date" not in ledger[0]:raise ValueError("path boundary date required")
     dates=[date.fromisoformat(ledger[0]["anchor_date"])]+[date.fromisoformat(x["date"]) for x in ledger]
+    if any(a>=b for a,b in zip(dates,dates[1:])):raise ValueError("path dates must strictly follow the boundary anchor")
     def worst(period):
         grouped={}
         for i,r in enumerate(returns,1): grouped[period(dates[i])]=grouped.get(period(dates[i]),1)*(1+r)
@@ -355,6 +356,14 @@ def _rebalance_day(day:date, cadence:str, sessions:Sequence[date])->bool:
     p=previous[-1]
     return day.year!=p.year if cadence=="ANNUAL" else (day.year,(day.month-1)//3)!=(p.year,(p.month-1)//3)
 
+def _xnys_predecessor(root:Path,start:date)->date:
+    retained=json.loads((root/"research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json").read_text())["sessions"]
+    dates=[date.fromisoformat(row["session"]) for row in retained]
+    if start not in dates:raise ValueError("study start is not a retained XNYS session")
+    index=dates.index(start)
+    if index==0:raise ValueError("retained XNYS predecessor unavailable")
+    return dates[index-1]
+
 def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D(10), profile:Mapping[str,D]|None=None, cadence="QUARTERLY", foreign_case=FOREIGN_CASES[0])->dict:
     """Integrated deterministic synthetic simulator; all input clocks are explicit primitives."""
     profile=profile or {"ordinary_income_rate":D('.24'),"qualified_dividend_rate":D('.15'),"qualified_dividend_fraction":D('.8'),"short_gain_rate":D('.24'),"long_gain_rate":D('.15'),"gold_gain_rate":D('.28')}
@@ -362,6 +371,8 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
     close_clock={date.fromisoformat(k):datetime.fromisoformat(v.replace("Z","+00:00")) for k,v in fixture.get("session_closes",{}).items()}
     if set(close_clock)!=session_set or any(v.tzinfo is None for v in close_clock.values()):raise ValueError("complete authenticated XNYS close clock required")
     start=date.fromisoformat(fixture["start"]); end=date.fromisoformat(fixture["end"])
+    expected_anchor=_xnys_predecessor(root,start)
+    if "anchor_date" in fixture and (isinstance(fixture["anchor_date"],bool) or date.fromisoformat(str(fixture["anchor_date"]))!=expected_anchor):raise ValueError("initial anchor is not the retained XNYS predecessor")
     prices={t:{date.fromisoformat(d):D(str(v)) for d,v in rows.items()} for t,rows in fixture["prices"].items()}
     for ticker,bars in fixture.get("crypto_bars",{}).items():prices[ticker]={date.fromisoformat(k):v for k,v in align_crypto(bars,sessions,close_clock).items()}
     available={t:date.fromisoformat(v) for t,v in fixture.get("available",{}).items()}; weights=derive_weights(root,variant)
@@ -412,7 +423,7 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
             nav=cash+sum(D(x["shares"])*D(x["price"]) for x in positions)+sum(r["net"] for r in receivables)
             events.extend({"date":day.isoformat(),**e} for e in events_day)
             interval_rf=rf_index/prior_session_rf-D(1);prior_session_rf=rf_index
-            ledger.append({"date":day.isoformat(),"anchor_nav":"100000" if not ledger else None,"anchor_date":fixture.get("anchor_date",(start-timedelta(days=1)).isoformat()) if not ledger else None,"cash":str(cash),"opening_eligible_cash":str(opening),"interest_credited":str(credited_interest),"unposted_interest":str(pending_interest),"risk_free_return":str(interval_rf),"positions":positions,"receivables":[{**r,"net":str(r["net"])} for r in receivables],"events":events_day,"nav":str(nav),"external_flow":"0"})
+            ledger.append({"date":day.isoformat(),"anchor_nav":"100000" if not ledger else None,"anchor_date":expected_anchor.isoformat() if not ledger else None,"cash":str(cash),"opening_eligible_cash":str(opening),"interest_credited":str(credited_interest),"unposted_interest":str(pending_interest),"risk_free_return":str(interval_rf),"positions":positions,"receivables":[{**r,"net":str(r["net"])} for r in receivables],"events":events_day,"nav":str(nav),"external_flow":"0"})
         calendar_ledger.append({"date":day.isoformat(),"opening_eligible_cash":str(opening),"dff_percent":str(rates[day]),"interest_credited":str(credited_interest),"settled_cash":str(cash),"events":events_day,"receivables":[{**r,"net":str(r["net"])} for r in receivables]})
         events.extend({"date":day.isoformat(),**e} for e in events_day if day not in session_set)
         day+=timedelta(days=1)
@@ -427,7 +438,8 @@ def run_synthetic_study(root:Path, fixture:Mapping[str,Any])->dict[str,Any]:
     retained=json.loads((root/"research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json").read_text())["sessions"]
     required=[x for x in retained if fixture["start"]<=x["session"]<=fixture["end"]]
     expected_closes={x["session"]:x["close_utc"] for x in required}
-    if fixture.get("input_kind")!="SYNTHETIC_TEST_ONLY" or fixture["sessions"]!=[x["session"] for x in required] or fixture["session_closes"]!=expected_closes:
+    predecessor=next((x["session"] for x in reversed(retained) if x["session"]<fixture["start"]),None)
+    if fixture.get("input_kind")!="SYNTHETIC_TEST_ONLY" or fixture["sessions"]!=[x["session"] for x in required] or fixture["session_closes"]!=expected_closes or fixture.get("anchor_date")!=predecessor:
         raise ValueError("synthetic study requires the exact pinned XNYS session/close clock")
     profiles={k:{n:D(v) for n,v in values.items()} for k,values in prereg["frictions"]["tax_profile_parameters"].items()}
     issuer=yaml.safe_load((root/"issuer_lookthrough.yaml").read_text())

@@ -34,3 +34,5 @@ subsequent full recovery (equality qualifies); it is `null` when that drawdown r
 when no drawdown occurs. Window anchors carry the actual predecessor XNYS date. Synthetic crypto prices
 are independently rebuilt from complete, ordered UTC daily bars against each pinned XNYS close; aligned
 price dictionaries are comparison claims, not replay inputs.
+The complete study's initial anchor date is independently derived as the immediately preceding retained
+XNYS session; a caller-supplied missing, malformed, merely-earlier, same-day or future date is rejected.
