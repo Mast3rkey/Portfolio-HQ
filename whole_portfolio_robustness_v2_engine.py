@@ -124,8 +124,9 @@ def align_crypto(bars: Sequence[Mapping], sessions: Sequence[date], session_clos
         out[session.isoformat()] = parsed[i][1]
     return out
 
-def metrics(returns: Sequence[float], risk_free: Sequence[float] | None = None) -> dict[str,float]:
+def metrics(returns: Sequence[float], risk_free: Sequence[float] | None = None, *, elapsed_days: int) -> dict[str,float]:
     if not returns or any(not math.isfinite(x) or x <= -1 for x in returns): raise ValueError("invalid returns")
+    if isinstance(elapsed_days,bool) or not isinstance(elapsed_days,int) or elapsed_days<=0:raise ValueError("positive calendar duration required")
     rf=list(risk_free or [0.0]*len(returns))
     if len(rf)!=len(returns) or any(not math.isfinite(x) for x in rf): raise ValueError("invalid risk-free series")
     nav=1.; peak=1.; mdd=0.; excess=[]; downside=[]
@@ -137,7 +138,7 @@ def metrics(returns: Sequence[float], risk_free: Sequence[float] | None = None) 
     sharpe=mean/(var**.5)*math.sqrt(252) if var>0 else math.nan
     sortino=mean/down*math.sqrt(252) if down>0 else math.nan
     tail=sorted(returns)[:max(1,math.ceil(.05*n))]
-    return {"cumulative_twr":nav-1,"net_twr_cagr":nav**(252/n)-1,"sharpe":sharpe,"sortino":sortino,
+    return {"cumulative_twr":nav-1,"net_twr_cagr":nav**(365.2425/elapsed_days)-1,"sharpe":sharpe,"sortino":sortino,
             "max_drawdown":mdd,"daily_cvar_95":sum(tail)/len(tail)}
 
 def complete_metrics(ledger:Sequence[Mapping], risk_free:Sequence[float]|None=None)->dict[str,Any]:
@@ -147,13 +148,13 @@ def complete_metrics(ledger:Sequence[Mapping], risk_free:Sequence[float]|None=No
     anchor=float(ledger[0]["anchor_nav"])
     nav=[anchor]+[float(x["nav"]) for x in ledger]
     returns=[nav[i]/nav[i-1]-1 for i in range(1,len(nav))]
-    result=metrics(returns,risk_free); mean=sum(returns)/len(returns)
-    result["annualized_volatility"]=(sum((x-mean)**2 for x in returns)/(len(returns)-1))**.5*math.sqrt(252)
-    result["downside_deviation"]=(sum(min(x,0)**2 for x in returns)/len(returns))**.5*math.sqrt(252)
-    result["calmar"]=result["net_twr_cagr"]/abs(result["max_drawdown"]) if result["max_drawdown"]<0 else math.nan
     if "anchor_date" not in ledger[0]:raise ValueError("path boundary date required")
     dates=[date.fromisoformat(ledger[0]["anchor_date"])]+[date.fromisoformat(x["date"]) for x in ledger]
     if any(a>=b for a,b in zip(dates,dates[1:])):raise ValueError("path dates must strictly follow the boundary anchor")
+    rf=list(risk_free or [0.0]*len(returns));result=metrics(returns,rf,elapsed_days=(dates[-1]-dates[0]).days);mean=sum(returns)/len(returns)
+    result["annualized_volatility"]=(sum((x-mean)**2 for x in returns)/(len(returns)-1))**.5*math.sqrt(252)
+    result["downside_deviation"]=(sum(min(r-f,0)**2 for r,f in zip(returns,rf))/len(returns))**.5*math.sqrt(252)
+    result["calmar"]=result["net_twr_cagr"]/abs(result["max_drawdown"]) if result["max_drawdown"]<0 else math.nan
     def worst(period):
         grouped={}
         for i,r in enumerate(returns,1): grouped[period(dates[i])]=grouped.get(period(dates[i]),1)*(1+r)
@@ -200,6 +201,12 @@ def concentration(ledger_row:Mapping, issuer_map:Mapping[str,Any]|None=None)->di
     for issuer,funds in lookthrough.items(): effective[issuer]=effective.get(issuer,0)+sum(values.get(f,0)*w for f,w in funds.items())
     ai=("NVDA","MSFT","AMZN","GOOGL","AVGO","META","LLY","TSLA","AAPL","TSM","ASML")
     return {"direct_hhi":sum(x*x for x in direct),"max_direct_name":max(direct,default=0),"effective_issuer_max":max(effective.values(),default=0),"ai_platform_common_driver":sum(effective.get(t,0) for t in ai),"semis_cluster":sum(effective.get(t,0) for t in ("ASML","TSM","NVDA","AVGO","KLAC")),"power_infra_cluster":sum(effective.get(t,0) for t in ("ETN","GEV","PWR"))}
+
+def concentration_window_pass(baseline:Sequence[Mapping[str,float]],alternative:Sequence[Mapping[str,float]])->bool:
+    keys=("direct_hhi","max_direct_name","effective_issuer_max","ai_platform_common_driver","semis_cluster","power_infra_cluster")
+    if not baseline or len(baseline)!=len(alternative) or any(set(row)!=set(keys) or any(isinstance(row[k],bool) or not math.isfinite(row[k]) for k in keys) for row in (*baseline,*alternative)):raise ValueError("invalid concentration window")
+    b={k:max(row[k] for row in baseline) for k in keys};a={k:max(row[k] for row in alternative) for k in keys}
+    return a["direct_hhi"]<=b["direct_hhi"] and a["max_direct_name"]<=b["max_direct_name"] and a["effective_issuer_max"]-b["effective_issuer_max"]<=.0025 and a["ai_platform_common_driver"]-b["ai_platform_common_driver"]<=.0025 and a["semis_cluster"]<=.25 and a["power_infra_cluster"]<=.20
 
 def fixed_evaluations(ledger:Sequence[Mapping], regimes:Sequence[Mapping])->dict[str,Any]:
     out={}
@@ -251,13 +258,13 @@ def evaluate_study(paths:Mapping[str,Mapping[str,Mapping[str,Mapping[str,Sequenc
             bret=[float(D(x["nav"])/(D(str(x.get("anchor_nav"))) if i==0 else D(bw[i-1]["nav"]))-1) for i,x in enumerate(bw)]
             aret=[float(D(x["nav"])/(D(str(x.get("anchor_nav"))) if i==0 else D(aw[i-1]["nav"]))-1) for i,x in enumerate(aw)]
             rf=[float(x["risk_free_return"]) for x in bw]
-            boot=stationary_bootstrap(bret,aret,rf)
+            boot=stationary_bootstrap(bret,aret,rf,elapsed_days=(date.fromisoformat(bw[-1]["date"])-date.fromisoformat(bw[0]["anchor_date"])).days)
             cbw=base_windows["context"];caw=alt_windows["context"]
             cbret=[float(D(x["nav"])/(D(str(x["anchor_nav"])) if i==0 else D(cbw[i-1]["nav"]))-1) for i,x in enumerate(cbw)]
             caret=[float(D(x["nav"])/(D(str(x["anchor_nav"])) if i==0 else D(caw[i-1]["nav"]))-1) for i,x in enumerate(caw)]
-            context_boot=stationary_bootstrap(cbret,caret,[float(x["risk_free_return"]) for x in cbw])
+            context_boot=stationary_bootstrap(cbret,caret,[float(x["risk_free_return"]) for x in cbw],elapsed_days=(date.fromisoformat(cbw[-1]["date"])-date.fromisoformat(cbw[0]["anchor_date"])).days)
             bc_path=[concentration(x,issuer_map) for x in base_windows["correction_replication"]];ac_path=[concentration(x,issuer_map) for x in alt_windows["correction_replication"]]
-            concentration_pass=all(a["direct_hhi"]<=b["direct_hhi"] and a["max_direct_name"]<=b["max_direct_name"] and a["effective_issuer_max"]-b["effective_issuer_max"]<=.0025 and a["ai_platform_common_driver"]-b["ai_platform_common_driver"]<=.0025 and a["semis_cluster"]<=.25 and a["power_infra_cluster"]<=.20 for a,b in zip(ac_path,bc_path))
+            concentration_pass=concentration_window_pass(bc_path,ac_path)
             evaluations={"baseline":fixed_evaluations(base_windows["full"],regimes),"alternative":fixed_evaluations(alt_windows["full"],regimes)}
             regime_pass=all(evaluations["alternative"][regime["id"]]["max_drawdown"]-evaluations["baseline"][regime["id"]]["max_drawdown"]>=-.01 for regime in regimes)
             passed=decide_variant(variants[variant],computed["correction_replication"],computed["context"],boot,bool(regime_pass),bool(concentration_pass))
@@ -271,8 +278,9 @@ def evaluate_study(paths:Mapping[str,Mapping[str,Mapping[str,Mapping[str,Sequenc
     return {"portfolio_paths":paths,"decision_evidence":{"cell_ids":list(_cell_ids()),"cases":all_cases},"foreign_case_gate_booleans":gate_booleans,"disposition":final}
 
 def stationary_bootstrap(base: Sequence[float], alt: Sequence[float], rf: Sequence[float], draws=2000,
-                         mean_block=21, seed=20260907) -> dict[str,float]:
+                         mean_block=21, seed=20260907, *, elapsed_days:int) -> dict[str,float]:
     if not (len(base)==len(alt)==len(rf)) or not base: raise ValueError("paired bootstrap length mismatch")
+    if isinstance(elapsed_days,bool) or not isinstance(elapsed_days,int) or elapsed_days<=0:raise ValueError("positive bootstrap calendar duration required")
     n=len(base);cache_key=(n,draws,mean_block,seed);indices=_BOOTSTRAP_INDEX_CACHE.get(cache_key)
     if indices is None:
         rng=random.Random(seed);indices=np.empty((draws,n),dtype=np.int32)
@@ -286,7 +294,7 @@ def stationary_bootstrap(base: Sequence[float], alt: Sequence[float], rf: Sequen
         if np.any(std==0) or not np.all(np.isfinite(std)):raise ValueError("undefined required bootstrap statistic")
         wealth=np.cumprod(1+sample,axis=1);peaks=np.maximum.accumulate(np.concatenate((np.ones((draws,1)),wealth),axis=1),axis=1)[:,1:]
         tail=np.sort(sample,axis=1)[:,:max(1,math.ceil(.05*n))].mean(axis=1)
-        return np.prod(1+sample,axis=1)**(252/n)-1,excess.mean(axis=1)/std*math.sqrt(252),np.min(wealth/peaks-1,axis=1),tail
+        return np.prod(1+sample,axis=1)**(365.2425/elapsed_days)-1,excess.mean(axis=1)/std*math.sqrt(252),np.min(wealth/peaks-1,axis=1),tail
     b=stats(base);a=stats(alt);names=("NET_TWR_CAGR_DELTA","SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA")
     return {name:float(np.mean(a[i]-b[i]>0)) for i,name in enumerate(names)}
 
@@ -358,6 +366,54 @@ def _xnys_predecessor(root:Path,start:date)->date:
     if index==0:raise ValueError("retained XNYS predecessor unavailable")
     return dates[index-1]
 
+def _validated_actions(fixture:Mapping[str,Any],start:date,end:date,sessions:set[date],known_tickers:set[str])->tuple[list[Mapping],list[Mapping]]:
+    """Admit the complete synthetic corporate-action registry before simulation."""
+    dividends=fixture.get("dividends",[]);splits=fixture.get("splits",[])
+    if not isinstance(dividends,list) or not isinstance(splits,list):raise ValueError("corporate-action registry must be lists")
+    dividend_keys={"ticker","ex_date","payable_date","gross_per_share","withholding_rate"};optional={"provider_reported_rate_usd","provider_amount_basis","rate_evidence","gross_rate_usd","source_net_rate_usd","source_withholding_usd"};seen=set()
+    for row in dividends:
+        if not isinstance(row,Mapping) or not dividend_keys<=set(row) or set(row)-dividend_keys-optional:raise ValueError("malformed dividend registry entry")
+        ticker=row["ticker"]
+        if not isinstance(ticker,str) or not ticker or ticker!=ticker.upper() or ticker not in known_tickers:raise ValueError("invalid dividend ticker")
+        try:ex=date.fromisoformat(row["ex_date"]);pay=date.fromisoformat(row["payable_date"])
+        except (TypeError,ValueError):raise ValueError("invalid dividend date") from None
+        if row["ex_date"]!=ex.isoformat() or row["payable_date"]!=pay.isoformat() or pay<ex:raise ValueError("invalid dividend date ordering")
+        gross=row["gross_per_share"];withholding=row["withholding_rate"]
+        if isinstance(gross,bool) or isinstance(withholding,bool):raise ValueError("invalid dividend amount")
+        try:gross_d=D(str(gross));withholding_d=D(str(withholding))
+        except Exception:raise ValueError("invalid dividend amount") from None
+        if not gross_d.is_finite() or gross_d<=0 or not withholding_d.is_finite() or not D(0)<=withholding_d<=D(1):raise ValueError("invalid dividend amount")
+        if start<=ex<=end and ex not in sessions:raise ValueError("in-scope dividend ex-date is not an XNYS session")
+        if {"gross_rate_usd","source_net_rate_usd","source_withholding_usd"}&set(row):
+            if not {"gross_rate_usd","source_net_rate_usd","source_withholding_usd","rate_evidence"}<=set(row) or not isinstance(row["rate_evidence"],str) or not row["rate_evidence"].strip():raise ValueError("incomplete dividend rate provenance")
+            try:gr=D(str(row["gross_rate_usd"]));sn=D(str(row["source_net_rate_usd"]));sw=D(str(row["source_withholding_usd"]))
+            except Exception:raise ValueError("invalid dividend rate provenance") from None
+            if any(isinstance(row[k],bool) for k in ("gross_rate_usd","source_net_rate_usd","source_withholding_usd")) or not all(x.is_finite() for x in (gr,sn,sw)) or gr!=gross_d or sn<0 or sw<0 or sn+sw!=gr:raise ValueError("invalid dividend rate provenance")
+        if {"provider_reported_rate_usd","provider_amount_basis"}&set(row):
+            if not {"provider_reported_rate_usd","provider_amount_basis"}<=set(row) or row["provider_amount_basis"] not in {"gross","source_net"}:raise ValueError("invalid provider amount provenance")
+            provider=row["provider_reported_rate_usd"]
+            try:provider_d=D(str(provider))
+            except Exception:raise ValueError("invalid provider amount provenance") from None
+            if isinstance(provider,bool) or not provider_d.is_finite() or provider_d<=0:raise ValueError("invalid provider amount provenance")
+        identity=(ticker,ex,pay)
+        if start<=ex<=end or start<=pay<=end:
+            if identity in seen:raise ValueError("duplicate in-scope dividend")
+            seen.add(identity)
+    seen.clear()
+    for row in splits:
+        if not isinstance(row,Mapping) or set(row)!={"ticker","date","factor"}:raise ValueError("malformed split registry entry")
+        ticker=row["ticker"]
+        if not isinstance(ticker,str) or not ticker or ticker!=ticker.upper() or ticker not in known_tickers:raise ValueError("invalid split ticker")
+        try:action_date=date.fromisoformat(row["date"]);factor=D(str(row["factor"]))
+        except (TypeError,ValueError,ArithmeticError):raise ValueError("invalid split action") from None
+        if isinstance(row["factor"],bool) or row["date"]!=action_date.isoformat() or not factor.is_finite() or factor<=0:raise ValueError("invalid split action")
+        if start<=action_date<=end and action_date not in sessions:raise ValueError("in-scope split date is not an XNYS session")
+        identity=(ticker,action_date)
+        if start<=action_date<=end:
+            if identity in seen:raise ValueError("duplicate in-scope split")
+            seen.add(identity)
+    return dividends,splits
+
 def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D(10), profile:Mapping[str,D]|None=None, cadence="QUARTERLY", foreign_case=FOREIGN_CASES[0])->dict:
     """Integrated deterministic synthetic simulator; all input clocks are explicit primitives."""
     profile=profile or {"ordinary_income_rate":D('.24'),"qualified_dividend_rate":D('.15'),"qualified_dividend_fraction":D('.8'),"short_gain_rate":D('.24'),"long_gain_rate":D('.15'),"gold_gain_rate":D('.28')}
@@ -373,8 +429,8 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
     days=[];cursor=start
     while cursor<=end:days.append(cursor);cursor+=timedelta(days=1)
     rates=lawful_dff(fixture.get("dff_records",[]),days,{date.fromisoformat(x) for x in fixture.get("fed_business_days",[])})
+    dividends,splits=_validated_actions(fixture,start,end,session_set,set(prices))
     cash=D('100000'); lots:dict[str,list[Lot]]={}; receivables=[]; ledger=[]; calendar_ledger=[]; events=[]; pending_interest=D(0); pending_rf=D(0); rf_index=D(1); prior_session_rf=D(1); prior_shares={}; day=start
-    dividends=fixture.get("dividends",[]); splits=fixture.get("splits",[])
     while day<=end:
         credited_interest=pending_interest;cash+=credited_interest;rf_index*=D(1)+pending_rf; events_day=[]
         opening=cash
@@ -388,8 +444,8 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
                 events_day.append({"type":"split","ticker":ticker,"factor":str(factor),"unit_basis":"SPLIT_NORMALIZED_NO_POSITION_MUTATION"})
         for d in dividends:
             if d["ex_date"]==day.isoformat():
-                wh=D(str(d.get("withholding_rate",0)))
-                if "ETN_25" in foreign_case and d["ticker"]=="ETN":wh=D('.25')
+                source_wh=D(str(d["withholding_rate"]))
+                wh=D('.25') if "ETN_25" in foreign_case and d["ticker"]=="ETN" else (D(0) if d["ticker"]=="ETN" else source_wh)
                 net=dividend_net(prior_shares.get(d["ticker"],D(0)),D(str(d["gross_per_share"])),wh,D(str(profile["qualified_dividend_fraction"])),D(str(profile["qualified_dividend_rate"])),D(str(profile["ordinary_income_rate"])),"ZERO" not in foreign_case)
                 rec={"ticker":d["ticker"],"payable_date":d["payable_date"],"net":net["net_receivable"]};receivables.append(rec);events_day.append({"type":"dividend_recognition",**{k:str(v) for k,v in net.items()},**rec})
         for rec in list(receivables):

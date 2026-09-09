@@ -48,6 +48,12 @@ def _concentration(nav:D,shares:dict[str,D],prices:dict[str,D])->dict[str,float]
     names=("NVDA","MSFT","AMZN","GOOGL","AVGO","META","LLY","TSLA","AAPL","TSM","ASML")
     return {"direct_hhi":sum(x*x for x in direct),"max_direct_name":max(direct,default=0),"effective_issuer_max":max(effective.values(),default=0),"ai_platform_common_driver":sum(effective.get(x,0) for x in names),"semis_cluster":sum(effective.get(x,0) for x in ("ASML","TSM","NVDA","AVGO","KLAC")),"power_infra_cluster":sum(effective.get(x,0) for x in ("ETN","GEV","PWR"))}
 
+def _concentration_window_pass(baseline:list[dict],alternative:list[dict])->bool:
+    keys={"direct_hhi","max_direct_name","effective_issuer_max","ai_platform_common_driver","semis_cluster","power_infra_cluster"}
+    if not baseline or len(baseline)!=len(alternative) or any(set(row)!=keys or any(not _finite(row[k]) for k in keys) for row in (*baseline,*alternative)):raise ValueError("invalid concentration window")
+    b={k:max(row[k] for row in baseline) for k in keys};a={k:max(row[k] for row in alternative) for k in keys}
+    return a["direct_hhi"]<=b["direct_hhi"] and a["max_direct_name"]<=b["max_direct_name"] and a["effective_issuer_max"]-b["effective_issuer_max"]<=.0025 and a["ai_platform_common_driver"]-b["ai_platform_common_driver"]<=.0025 and a["semis_cluster"]<=.25 and a["power_infra_cluster"]<=.20
+
 def _align_crypto_primitives(bars:list[dict],sessions:list[str],closes:dict[str,str],start:date,end:date)->dict[str,D]:
     """Independently authenticate and align one complete UTC daily spot series."""
     expected=[];day=start
@@ -85,14 +91,16 @@ def recompute_metrics(rows:list[dict])->dict[str,float]:
     return {"cumulative_twr":cumulative,"max_drawdown":mdd,"returns":returns}
 
 def _path_stats(rows:list[dict])->dict[str,float]:
-    if not rows or "anchor_nav" not in rows[0]:raise ValueError("path boundary anchor missing")
+    if not rows or "anchor_nav" not in rows[0] or "anchor_date" not in rows[0]:raise ValueError("path boundary anchor missing")
     nav=[float(rows[0]["anchor_nav"])]+[float(x["nav"]) for x in rows];ret=[nav[i]/nav[i-1]-1 for i in range(1,len(nav))];rf=[float(x["risk_free_return"]) for x in rows]
+    dates=[date.fromisoformat(rows[0]["anchor_date"])]+[date.fromisoformat(x["date"]) for x in rows]
+    if any(a>=b for a,b in zip(dates,dates[1:])):raise ValueError("path dates must strictly follow boundary anchor")
     excess=[x-y for x,y in zip(ret,rf)];mean=sum(excess)/len(excess);var=sum((x-mean)**2 for x in excess)/(len(excess)-1);down=(sum(min(x,0)**2 for x in excess)/len(excess))**.5
     if var<=0 or down<=0:raise ValueError("undefined path risk metric")
     peak=nav[0];mdd=0
     for x in nav:peak=max(peak,x);mdd=min(mdd,x/peak-1)
     tail=sorted(ret)[:max(1,math.ceil(.05*len(ret)))]
-    return {"net_twr_cagr":(nav[-1]/nav[0])**(252/len(ret))-1,"sharpe":mean/math.sqrt(var)*math.sqrt(252),"sortino":mean/down*math.sqrt(252),"max_drawdown":mdd,"daily_cvar_95":sum(tail)/len(tail)}
+    return {"net_twr_cagr":(nav[-1]/nav[0])**(365.2425/(dates[-1]-dates[0]).days)-1,"sharpe":mean/math.sqrt(var)*math.sqrt(252),"sortino":mean/down*math.sqrt(252),"max_drawdown":mdd,"daily_cvar_95":sum(tail)/len(tail)}
 
 def _paired_delta(base:list[dict],alt:list[dict])->dict[str,float]:
     if [x["date"] for x in base]!=[x["date"] for x in alt]:raise ValueError("unpaired paths")
@@ -102,7 +110,9 @@ def _paired_delta(base:list[dict],alt:list[dict])->dict[str,float]:
 def _bootstrap(base:list[dict],alt:list[dict])->dict[str,float]:
     br=[float(x["nav"])/(float(x["anchor_nav"]) if i==0 else float(base[i-1]["nav"]))-1 for i,x in enumerate(base)]
     ar=[float(x["nav"])/(float(x["anchor_nav"]) if i==0 else float(alt[i-1]["nav"]))-1 for i,x in enumerate(alt)];rf=[float(x["risk_free_return"]) for x in base]
-    n=len(br);indices=_BOOTSTRAP_INDEX_CACHE.get(n)
+    dates=[date.fromisoformat(base[0]["anchor_date"])]+[date.fromisoformat(x["date"]) for x in base]
+    if any(a>=b for a,b in zip(dates,dates[1:])):raise ValueError("invalid bootstrap dates")
+    elapsed_days=(dates[-1]-dates[0]).days;n=len(br);indices=_BOOTSTRAP_INDEX_CACHE.get(n)
     if indices is None:
         rng=random.Random(20260907);indices=np.empty((2000,n),dtype=np.int32)
         for draw in range(2000):
@@ -113,7 +123,7 @@ def _bootstrap(base:list[dict],alt:list[dict])->dict[str,float]:
         sample=np.asarray(ret)[indices];risk=np.asarray(rf)[indices];ex=sample-risk;std=ex.std(axis=1,ddof=1)
         if np.any(std==0) or not np.all(np.isfinite(std)):raise ValueError("undefined bootstrap")
         wealth=np.cumprod(1+sample,axis=1);peaks=np.maximum.accumulate(np.concatenate((np.ones((2000,1)),wealth),axis=1),axis=1)[:,1:];tail=np.sort(sample,axis=1)[:,:max(1,math.ceil(.05*n))].mean(axis=1)
-        return np.prod(1+sample,axis=1)**(252/n)-1,ex.mean(axis=1)/std*math.sqrt(252),np.min(wealth/peaks-1,axis=1),tail
+        return np.prod(1+sample,axis=1)**(365.2425/elapsed_days)-1,ex.mean(axis=1)/std*math.sqrt(252),np.min(wealth/peaks-1,axis=1),tail
     b=stat(br);a=stat(ar);names=("NET_TWR_CAGR_DELTA","SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA")
     return {name:float(np.mean(a[i]-b[i]>0)) for i,name in enumerate(names)}
 
@@ -135,7 +145,8 @@ def _fixed_evaluations(rows:list[dict], regimes:list[dict])->dict:
         else:
             recovered=next((i for i in range(trough+1,len(nav)) if nav[i]>=nav[deep_peak]),None)
             recovery=None if recovered is None else (dates[recovered]-dates[deep_peak]).days
-        result={"cumulative_twr":nav[-1]/nav[0]-1,**base,"annualized_volatility":(sum((x-mean)**2 for x in returns)/(len(returns)-1))**.5*math.sqrt(252),"downside_deviation":(sum(min(x,0)**2 for x in returns)/len(returns))**.5*math.sqrt(252)}
+        rf=[float(x["risk_free_return"]) for x in selected]
+        result={"cumulative_twr":nav[-1]/nav[0]-1,**base,"annualized_volatility":(sum((x-mean)**2 for x in returns)/(len(returns)-1))**.5*math.sqrt(252),"downside_deviation":(sum(min(r-f,0)**2 for r,f in zip(returns,rf))/len(returns))**.5*math.sqrt(252)}
         result["calmar"]=result["net_twr_cagr"]/abs(result["max_drawdown"]) if result["max_drawdown"]<0 else math.nan
         end=selected[-1]["operations"];start=selected[0]["anchor_operations"];ops={k:float(end[k])-float(start[k]) for k in end}
         result.update(worst_month=worst(lambda d:(d.year,d.month)),worst_quarter=worst(lambda d:(d.year,(d.month-1)//3)),worst_year=worst(lambda d:d.year),recovery_days=recovery,one_way_turnover=ops["turnover_notional"]/nav[0],rebalance_count=int(ops["rebalance_count"]),taxable_realized_gain=ops["taxable_realized_gain"],cost_drag=ops["cost_drag"],tax_drag=ops["tax_drag"],cash_drag=ops["cash_drag"])
@@ -296,6 +307,49 @@ def _weights(variant:str)->dict[str,D]:
     weights["CASH"]=D(1)-sum(weights.values())
     return weights
 
+def _validated_actions(fixture:dict,start:date,end:date,sessions:set[date],known_tickers:set[str])->tuple[list[dict],list[dict]]:
+    """Independently admit corporate-action primitives before replay."""
+    dividends=fixture.get("dividends",[]);splits=fixture.get("splits",[])
+    if not isinstance(dividends,list) or not isinstance(splits,list):raise ValueError("corporate-action registry must be lists")
+    required={"ticker","ex_date","payable_date","gross_per_share","withholding_rate"};optional={"provider_reported_rate_usd","provider_amount_basis","rate_evidence","gross_rate_usd","source_net_rate_usd","source_withholding_usd"};seen=set()
+    for row in dividends:
+        if not isinstance(row,dict) or not required<=set(row) or set(row)-required-optional:raise ValueError("malformed dividend registry entry")
+        ticker=row["ticker"]
+        if not isinstance(ticker,str) or not ticker or ticker!=ticker.upper() or ticker not in known_tickers:raise ValueError("invalid dividend ticker")
+        try:ex=date.fromisoformat(row["ex_date"]);pay=date.fromisoformat(row["payable_date"]);gross=D(str(row["gross_per_share"]));source_wh=D(str(row["withholding_rate"]))
+        except (TypeError,ValueError,ArithmeticError):raise ValueError("invalid dividend primitive") from None
+        if isinstance(row["gross_per_share"],bool) or isinstance(row["withholding_rate"],bool) or row["ex_date"]!=ex.isoformat() or row["payable_date"]!=pay.isoformat() or pay<ex or not gross.is_finite() or gross<=0 or not source_wh.is_finite() or not D(0)<=source_wh<=D(1):raise ValueError("invalid dividend primitive")
+        if start<=ex<=end and ex not in sessions:raise ValueError("in-scope dividend ex-date is not an XNYS session")
+        if {"gross_rate_usd","source_net_rate_usd","source_withholding_usd"}&set(row):
+            if not {"gross_rate_usd","source_net_rate_usd","source_withholding_usd","rate_evidence"}<=set(row) or not isinstance(row["rate_evidence"],str) or not row["rate_evidence"].strip():raise ValueError("incomplete dividend rate provenance")
+            try:gr=D(str(row["gross_rate_usd"]));sn=D(str(row["source_net_rate_usd"]));sw=D(str(row["source_withholding_usd"]))
+            except Exception:raise ValueError("invalid dividend rate provenance") from None
+            if any(isinstance(row[k],bool) for k in ("gross_rate_usd","source_net_rate_usd","source_withholding_usd")) or not all(x.is_finite() for x in (gr,sn,sw)) or gr!=gross or sn<0 or sw<0 or sn+sw!=gr:raise ValueError("invalid dividend rate provenance")
+        if {"provider_reported_rate_usd","provider_amount_basis"}&set(row):
+            if not {"provider_reported_rate_usd","provider_amount_basis"}<=set(row) or row["provider_amount_basis"] not in {"gross","source_net"}:raise ValueError("invalid provider amount provenance")
+            provider=row["provider_reported_rate_usd"]
+            try:provider_d=D(str(provider))
+            except Exception:raise ValueError("invalid provider amount provenance") from None
+            if isinstance(provider,bool) or not provider_d.is_finite() or provider_d<=0:raise ValueError("invalid provider amount provenance")
+        identity=(ticker,ex,pay)
+        if start<=ex<=end or start<=pay<=end:
+            if identity in seen:raise ValueError("duplicate in-scope dividend")
+            seen.add(identity)
+    seen.clear()
+    for row in splits:
+        if not isinstance(row,dict) or set(row)!={"ticker","date","factor"}:raise ValueError("malformed split registry entry")
+        ticker=row["ticker"]
+        if not isinstance(ticker,str) or not ticker or ticker!=ticker.upper() or ticker not in known_tickers:raise ValueError("invalid split ticker")
+        try:action_date=date.fromisoformat(row["date"]);factor=D(str(row["factor"]))
+        except (TypeError,ValueError,ArithmeticError):raise ValueError("invalid split primitive") from None
+        if isinstance(row["factor"],bool) or row["date"]!=action_date.isoformat() or not factor.is_finite() or factor<=0:raise ValueError("invalid split primitive")
+        if start<=action_date<=end and action_date not in sessions:raise ValueError("in-scope split date is not an XNYS session")
+        identity=(ticker,action_date)
+        if start<=action_date<=end:
+            if identity in seen:raise ValueError("duplicate in-scope split")
+            seen.add(identity)
+    return dividends,splits
+
 def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
     """Independently stream a simulation from dated source primitives."""
     if fixture.get("input_kind")!="SYNTHETIC_TEST_ONLY":raise ValueError("unadmitted primitive fixture")
@@ -317,6 +371,7 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
     for series in prices.values():
         if any(isinstance(v,bool) or not v.is_finite() or v<=0 for v in series.values()):raise ValueError("invalid price primitive")
     start=date.fromisoformat(fixture["start"]);end=date.fromisoformat(fixture["end"]);session_set=set(sessions);session_dates=[date.fromisoformat(x) for x in sessions]
+    dividends,splits=_validated_actions(fixture,start,end,set(session_dates),set(prices))
     fed={date.fromisoformat(x) for x in fixture.get("fed_business_days",[])};records=[]
     for record in fixture.get("dff_records",[]):
         value=record.get("value");published=datetime.fromisoformat(record["published_at"].replace("Z","+00:00"));observed=date.fromisoformat(record["observation_date"]);later=sorted(x for x in fed if x>observed)
@@ -330,14 +385,14 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
         rate=max(eligible,key=lambda x:x[0])[1];credited=pending;cash+=credited;rf_index*=1+pending_rf;opening=cash;gross_rate=rate/100
         with localcontext() as ctx:ctx.prec=60;pending=opening*(gross_rate-max(gross_rate,D(0))*profile["ordinary_income_rate"]-D(".0025"))/360
         pending_rf=gross_rate/360;events=[]
-        for split in fixture.get("splits",[]):
+        for split in splits:
             if split["date"]==day.isoformat():
                 factor=D(str(split["factor"]));
                 if factor<=0:raise ValueError("invalid split")
                 events.append({"type":"split","ticker":split["ticker"],"factor":str(factor),"unit_basis":"SPLIT_NORMALIZED_NO_POSITION_MUTATION"})
-        for div in fixture.get("dividends",[]):
+        for div in dividends:
             if div["ex_date"]==day.isoformat():
-                ticker=div["ticker"];gross=prior_shares.get(ticker,D(0))*D(str(div["gross_per_share"]));wh_rate=D(".25") if "ETN_25" in case and ticker=="ETN" else D(str(div.get("withholding_rate",0)));withholding=gross*wh_rate
+                ticker=div["ticker"];gross=prior_shares.get(ticker,D(0))*D(str(div["gross_per_share"]));source_wh=D(str(div["withholding_rate"]));wh_rate=D(".25") if "ETN_25" in case and ticker=="ETN" else (D(0) if ticker=="ETN" else source_wh);withholding=gross*wh_rate
                 tentative=gross*(profile["qualified_dividend_fraction"]*profile["qualified_dividend_rate"]+(1-profile["qualified_dividend_fraction"])*profile["ordinary_income_rate"]);credit=D(0) if "ZERO" in case else min(withholding,tentative);us_tax=tentative-credit;net=gross-withholding-us_tax
                 rec={"ticker":ticker,"payable_date":div["payable_date"],"net":net};receivables.append(rec);events.append({"type":"dividend_recognition","gross":str(gross),"withholding":str(withholding),"foreign_tax_credit":str(credit),"us_tax":str(us_tax),"net_receivable":str(net),**rec})
         for rec in list(receivables):
@@ -439,7 +494,7 @@ def validate_result(doc:dict, *, decision_only:bool=False)->list[str]:
                         concentrations=[x["concentration"] for x in paths[case][primary_id][alt]["correction_replication"]]
                         if detail.get("concentration_path")!=concentrations:raise ValueError("concentration/path mismatch")
                         base_concentrations=[x["concentration"] for x in paths[case][primary_id]["BASELINE"]["correction_replication"]]
-                        concentration_pass=all(a["direct_hhi"]<=b["direct_hhi"] and a["max_direct_name"]<=b["max_direct_name"] and a["effective_issuer_max"]-b["effective_issuer_max"]<=.0025 and a["ai_platform_common_driver"]-b["ai_platform_common_driver"]<=.0025 and a["semis_cluster"]<=.25 and a["power_infra_cluster"]<=.20 for a,b in zip(concentrations,base_concentrations))
+                        concentration_pass=_concentration_window_pass(base_concentrations,concentrations)
                         regimes=[{"id":"RATE_INFLATION_2022","start":"2022-01-03","end":"2022-12-30"},{"id":"CALENDAR_2023","start":"2023-01-03","end":"2023-12-29"},{"id":"CALENDAR_2024","start":"2024-01-02","end":"2024-12-31"},{"id":"CALENDAR_2025","start":"2025-01-02","end":"2025-12-31"},{"id":"CALENDAR_2026_PARTIAL","start":"2026-01-02","end":"2026-07-31"}]
                         evaluations={"baseline":_fixed_evaluations(paths[case][primary_id]["BASELINE"]["full"],regimes),"alternative":_fixed_evaluations(paths[case][primary_id][alt]["full"],regimes)}
                         mismatch=_compare_metric_tree(evaluations,detail.get("evaluations"),f"{case}/{alt}/evaluations")
@@ -470,6 +525,10 @@ def validate_study_bundle(bundle:dict)->list[str]:
     simulations=bundle.get("simulations");fixture=bundle.get("primitive_fixture")
     if bundle.get("study_id")!="PORTFOLIO-ROBUSTNESS-V2-0001" or bundle.get("synthetic") is not True:return ["invalid study identity"]
     if not isinstance(simulations,dict) or tuple(simulations)!=CASES:return ["complete simulation registry missing"]
+    try:
+        start=date.fromisoformat(fixture["start"]);end=date.fromisoformat(fixture["end"]);sessions={date.fromisoformat(x) for x in fixture["sessions"]}
+        _validated_actions(fixture,start,end,sessions,set(fixture["prices"]))
+    except Exception as ex:return [f"primitive corporate-action registry: {ex}"]
     combined={"portfolio_paths":bundle.get("portfolio_paths"),"decision_evidence":bundle.get("decision_evidence"),"foreign_case_gate_booleans":bundle.get("foreign_case_gate_booleans"),"disposition":bundle.get("disposition")}
     errors=validate_result(combined,decision_only=True)
     if errors:return errors

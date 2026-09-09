@@ -49,7 +49,7 @@ def test_crypto_actual_close_prevents_weekend_future_lookahead():
     assert align_crypto(bars,[date(2021,6,7)],closes)["2021-06-07"]==10
 
 def test_metrics_undefined_variance_is_nonfinite():
-    m=metrics([.01,.01,.01]);assert math.isnan(m['sharpe'])
+    m=metrics([.01,.01,.01],elapsed_days=3);assert math.isnan(m['sharpe'])
 
 def test_subwindow_requires_and_uses_preceding_anchor():
     rows=[{'date':'2025-01-02','anchor_nav':'200000','anchor_date':'2024-12-31','nav':'200000','events':[],'risk_free_return':'0'},{'date':'2025-01-03','nav':'199000','events':[],'risk_free_return':'0'}]
@@ -66,9 +66,19 @@ def test_recovery_days_is_peak_to_first_full_recovery_and_censors():
     multiple=[{'date':'2025-01-02','anchor_nav':'100000','anchor_date':'2024-12-31','nav':'100000','risk_free_return':'0'}, {'date':'2025-01-03','nav':'99000','risk_free_return':'0'}, {'date':'2025-01-06','nav':'100000','risk_free_return':'0'}, {'date':'2025-01-07','nav':'97000','risk_free_return':'0'}, {'date':'2025-01-13','nav':'100000','risk_free_return':'0'}]
     assert complete_metrics(multiple)['recovery_days']==7
 
+def test_calendar_cagr_and_excess_downside_use_dated_boundary():
+    rows=[{'date':'2025-01-02','anchor_nav':'100','anchor_date':'2024-12-31','nav':'101','risk_free_return':'.02'},
+          {'date':'2025-01-06','nav':'100.5','risk_free_return':'.02'}]
+    result=complete_metrics(rows,[.02,.02])
+    assert result['net_twr_cagr']==pytest.approx(1.005**(365.2425/6)-1)
+    returns=[.01,100.5/101-1]
+    expected=(sum(min(r-.02,0)**2 for r in returns)/2)**.5*math.sqrt(252)
+    assert result['downside_deviation']==pytest.approx(expected)
+    with pytest.raises(ValueError):metrics(returns,[.02,.02],elapsed_days=0)
+
 def test_stationary_bootstrap_is_deterministic_and_paired():
     b=[-.02,.01,.03,-.01]*8;a=[-.01,.012,.031,-.005]*8;rf=[.0001]*32
-    assert stationary_bootstrap(b,a,rf,draws=50)==stationary_bootstrap(b,a,rf,draws=50)
+    assert stationary_bootstrap(b,a,rf,draws=50,elapsed_days=32)==stationary_bootstrap(b,a,rf,draws=50,elapsed_days=32)
 
 def test_support_14_vs_15_and_context_cannot_replace_correction():
     boot={"NET_TWR_CAGR_DELTA":.8,"SHARPE_DELTA":.8,"MAX_DRAWDOWN_DELTA":.8,"DAILY_CVAR_95_DELTA":0}
@@ -94,7 +104,7 @@ def test_adversarial_registry_nonfinite_probability_and_string_boolean():
     assert disposition(cases)["disposition"]=="UNABLE_TO_DETERMINE"
 
 def test_bootstrap_undefined_sharpe_fails_closed():
-    with pytest.raises(ValueError):stationary_bootstrap([.01]*4,[.02]*4,[0.]*4,draws=10)
+    with pytest.raises(ValueError):stationary_bootstrap([.01]*4,[.02]*4,[0.]*4,draws=10,elapsed_days=4)
 
 def test_crypto_close_after_session_is_deferred():
     bars=[{"close_at":"2021-06-07T00:00:00Z","close":1},{"close_at":"2021-06-07T22:00:00Z","close":2}]
@@ -136,6 +146,9 @@ def test_integrated_golden_initial_cost_weekend_payable_and_split():
     assert result['calendar_ledger'][2]['date']=='2025-01-04'
     from whole_portfolio_robustness_v2_result_validator import validate_ledger
     assert validate_ledger(result)==[]
+    fixture['dividends'][0]['payable_date']='2025-01-07'
+    unpaid=simulate(root,fixture,profile={k:D(0) for k in ('ordinary_income_rate','qualified_dividend_rate','qualified_dividend_fraction','short_gain_rate','long_gain_rate','gold_gain_rate')},cost_bps=D(10))
+    assert unpaid['ledger'][-1]['receivables'] and not any(e['type']=='receivable_settlement' for row in unpaid['calendar_ledger'] for e in row['events'])
 
 def test_quarterly_first_session_boundaries():
     sessions=list(map(date.fromisoformat,['2025-02-28','2025-03-03','2025-03-31','2025-04-01']))
@@ -161,6 +174,46 @@ def test_non_issuer_sleeves_do_not_control_effective_issuer_max(sleeve):
                {'ticker':'SPY','shares':'1','price':'10'},{'ticker':sleeve,'shares':'1','price':'35'}]
     result=concentration({'nav':'100','positions':positions},look)
     assert result['effective_issuer_max']==pytest.approx(.06)
+
+def test_concentration_uses_independent_window_maxima_not_same_day_pairs():
+    keys=('direct_hhi','max_direct_name','effective_issuer_max','ai_platform_common_driver','semis_cluster','power_infra_cluster')
+    def row(hhi,name):return dict(zip(keys,(hhi,name,name,name,.10,.10)))
+    baseline=[row(.10,.20),row(.05,.10)];alternative=[row(.06,.15),row(.07,.16)]
+    assert concentration_window_pass(baseline,alternative)
+    bad=[dict(x) for x in alternative];bad[1]['semis_cluster']=.2501
+    assert not concentration_window_pass(baseline,bad)
+
+def test_etn_withholding_cases_and_action_registry_fail_closed():
+    root=Path(__file__).parent;fixture=full_synthetic_fixture();fixture['end']='2023-01-16'
+    fixture['sessions']=[d for d in fixture['sessions'] if d<=fixture['end']];fixture['session_closes']={d:v for d,v in fixture['session_closes'].items() if d<=fixture['end']}
+    for ticker in fixture['prices']:fixture['prices'][ticker]={d:v for d,v in fixture['prices'][ticker].items() if d<=fixture['end']}
+    for ticker in fixture['crypto_bars']:fixture['crypto_bars'][ticker]=[x for x in fixture['crypto_bars'][ticker] if x['close_at'][:10]<=fixture['end']]
+    fixture['splits']=[]
+    observed={}
+    for case in FOREIGN_CASES:
+        result=simulate(root,fixture,'BASELINE',D(0),foreign_case=case)
+        event=next(e for row in result['calendar_ledger'] for e in row['events'] if e['type']=='dividend_recognition')
+        settlement=next(e for row in result['calendar_ledger'] for e in row['events'] if e['type']=='receivable_settlement')
+        gross=D(event['gross']);observed[case]=(D(event['withholding'])/gross,D(event['foreign_tax_credit'])/gross,D(event['us_tax'])/gross,D(settlement['net']))
+    assert observed[FOREIGN_CASES[0]][0]==0 and observed[FOREIGN_CASES[1]][0]==0
+    assert observed[FOREIGN_CASES[2]][0]==D('.25') and observed[FOREIGN_CASES[3]][0]==D('.25')
+    assert observed[FOREIGN_CASES[2]][1]>0 and observed[FOREIGN_CASES[3]][1]==0
+    original=fixture['dividends'][0]
+    attacks=[dict(original,gross_per_share=x) for x in (0,-1,True,'NaN')]
+    attacks += [dict(original,withholding_rate=x) for x in (True,'Infinity')]
+    attacks += [dict(original,ex_date='2023-02-30'),dict(original,ex_date='2023-01-15'),dict(original,payable_date='2023-01-12')]
+    for bad in attacks:
+        fixture['dividends']=[bad]
+        with pytest.raises(ValueError):simulate(root,fixture,'BASELINE',D(0))
+    fixture['dividends']=[original,dict(original)]
+    with pytest.raises(ValueError,match='duplicate'):simulate(root,fixture,'BASELINE',D(0))
+    fixture['dividends']=[original];split={'ticker':'NVDA','date':'2023-01-13','factor':'2'}
+    for bad in (0,-1,True,'NaN'):
+        fixture['splits']=[dict(split,factor=bad)]
+        with pytest.raises(ValueError):simulate(root,fixture,'BASELINE',D(0))
+    fixture['splits']=[split,dict(split)]
+    with pytest.raises(ValueError,match='duplicate'):simulate(root,fixture,'BASELINE',D(0))
+    fixture['splits']=[];assert len(simulate(root,fixture,'BASELINE',D(0))['ledger'])==len(fixture['sessions'])
 
 def test_wrong_windows_or_empty_regimes_fail_closed():
     with pytest.raises(ValueError):evaluate_study(synthetic_study_paths(),[])
