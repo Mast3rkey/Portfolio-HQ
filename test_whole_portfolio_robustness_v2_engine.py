@@ -250,6 +250,25 @@ def test_etn_withholding_cases_and_action_registry_fail_closed():
     with pytest.raises(ValueError,match='duplicate'):simulate(root,fixture,'BASELINE',D(0))
     fixture['splits']=[];assert len(simulate(root,fixture,'BASELINE',D(0))['ledger'])==len(fixture['sessions'])
 
+@pytest.mark.parametrize('ticker',('TSM','ASML'))
+def test_retained_foreign_withholding_amount_controls_economics_and_rate_must_reconcile(ticker):
+    root=Path(__file__).parent;fixture=full_synthetic_fixture();profile={k:D(v) for k,v in __import__('yaml').safe_load((root/'research/whole_portfolio_robustness_v2/pre_registration.yaml').read_text())['frictions']['tax_profile_parameters']['TAXABLE_MID'].items()}
+    action={'ticker':ticker,'ex_date':'2023-01-13','payable_date':'2023-01-14','gross_per_share':'1','withholding_rate':'.30','gross_rate_usd':'1','source_net_rate_usd':'.70','source_withholding_usd':'.30','rate_evidence':'SYNTHETIC_REVIEW_ONLY: stipulated retained amounts'};fixture['dividends'].append(action)
+    result=simulate(root,fixture,'BASELINE',D(10),profile,'QUARTERLY','ZERO_FOREIGN_TAX_CREDIT');event=next(e for row in result['calendar_ledger'] for e in row['events'] if e.get('type')=='dividend_recognition' and e['ticker']==ticker)
+    shares=next(D(x['shares']) for x in result['ledger'] if x['date']=='2023-01-12' for x in x['positions'] if x['ticker']==ticker)
+    assert D(event['withholding'])==shares*D('.30') and D(event['foreign_tax_credit'])==0
+    action['withholding_rate']='0'
+    with pytest.raises(ValueError,match='rate provenance'):simulate(root,fixture,'BASELINE',D(10),profile,'QUARTERLY','ZERO_FOREIGN_TAX_CREDIT')
+    action.update(withholding_rate='.30',source_withholding_usd=True)
+    with pytest.raises(ValueError,match='rate provenance'):simulate(root,fixture,'BASELINE',D(10),profile,'QUARTERLY','ZERO_FOREIGN_TAX_CREDIT')
+    action.update(source_withholding_usd='.30',provider_reported_rate_usd='.70',provider_amount_basis='gross')
+    with pytest.raises(ValueError,match='provider amount provenance mismatch'):simulate(root,fixture,'BASELINE',D(10),profile,'QUARTERLY','ZERO_FOREIGN_TAX_CREDIT')
+    action['provider_amount_basis']='source_net';assert simulate(root,fixture,'BASELINE',D(10),profile,'QUARTERLY','ZERO_FOREIGN_TAX_CREDIT')['ledger']
+    del action['provider_reported_rate_usd'];del action['provider_amount_basis']
+    action.update(gross_per_share='3',withholding_rate=str(D(1)/D(3)),gross_rate_usd='3',source_net_rate_usd='2',source_withholding_usd='1')
+    repeating=simulate(root,fixture,'BASELINE',D(10),profile,'QUARTERLY','ZERO_FOREIGN_TAX_CREDIT');event=next(e for row in repeating['calendar_ledger'] for e in row['events'] if e.get('type')=='dividend_recognition' and e['ticker']==ticker)
+    assert D(event['withholding'])==shares
+
 def test_wrong_windows_or_empty_regimes_fail_closed():
     with pytest.raises(ValueError):evaluate_study(synthetic_study_paths(),[])
 

@@ -372,13 +372,15 @@ def _validated_actions(fixture:dict,start:date,end:date,sessions:set[date],known
             if not {"gross_rate_usd","source_net_rate_usd","source_withholding_usd","rate_evidence"}<=set(row) or not isinstance(row["rate_evidence"],str) or not row["rate_evidence"].strip():raise ValueError("incomplete dividend rate provenance")
             try:gr=D(str(row["gross_rate_usd"]));sn=D(str(row["source_net_rate_usd"]));sw=D(str(row["source_withholding_usd"]))
             except Exception:raise ValueError("invalid dividend rate provenance") from None
-            if any(isinstance(row[k],bool) for k in ("gross_rate_usd","source_net_rate_usd","source_withholding_usd")) or not all(x.is_finite() for x in (gr,sn,sw)) or gr!=gross or sn<0 or sw<0 or sn+sw!=gr:raise ValueError("invalid dividend rate provenance")
+            if any(isinstance(row[k],bool) for k in ("gross_rate_usd","source_net_rate_usd","source_withholding_usd")) or not all(x.is_finite() for x in (gr,sn,sw)) or gr!=gross or sn<0 or sw<0 or sn+sw!=gr or source_wh!=sw/gr:raise ValueError("invalid dividend rate provenance")
         if {"provider_reported_rate_usd","provider_amount_basis"}&set(row):
             if not {"provider_reported_rate_usd","provider_amount_basis"}<=set(row) or row["provider_amount_basis"] not in {"gross","source_net"}:raise ValueError("invalid provider amount provenance")
             provider=row["provider_reported_rate_usd"]
             try:provider_d=D(str(provider))
             except Exception:raise ValueError("invalid provider amount provenance") from None
             if isinstance(provider,bool) or not provider_d.is_finite() or provider_d<=0:raise ValueError("invalid provider amount provenance")
+            if row["provider_amount_basis"]=="source_net" and "source_net_rate_usd" not in row:raise ValueError("incomplete provider amount provenance")
+            if provider_d!=(gross if row["provider_amount_basis"]=="gross" else D(str(row["source_net_rate_usd"]))):raise ValueError("provider amount provenance mismatch")
         identity=(ticker,ex,pay)
         if start<=ex<=end or start<=pay<=end:
             if identity in seen:raise ValueError("duplicate in-scope dividend")
@@ -440,7 +442,7 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
                 events.append({"type":"split","ticker":split["ticker"],"factor":str(factor),"unit_basis":"SPLIT_NORMALIZED_NO_POSITION_MUTATION"})
         for div in dividends:
             if div["ex_date"]==day.isoformat():
-                ticker=div["ticker"];gross=prior_shares.get(ticker,D(0))*D(str(div["gross_per_share"]));source_wh=D(str(div["withholding_rate"]));wh_rate=D(".25") if "ETN_25" in case and ticker=="ETN" else (D(0) if ticker=="ETN" else source_wh);withholding=gross*wh_rate
+                ticker=div["ticker"];shares=prior_shares.get(ticker,D(0));gross=shares*D(str(div["gross_per_share"]));source_wh=D(str(div["withholding_rate"]));wh_rate=D(".25") if "ETN_25" in case and ticker=="ETN" else (D(0) if ticker=="ETN" else source_wh);withholding=shares*D(str(div["source_withholding_usd"])) if ticker!="ETN" and "source_withholding_usd" in div else gross*wh_rate
                 tentative=gross*(profile["qualified_dividend_fraction"]*profile["qualified_dividend_rate"]+(1-profile["qualified_dividend_fraction"])*profile["ordinary_income_rate"]);credit=D(0) if "ZERO" in case else min(withholding,tentative);us_tax=tentative-credit;net=gross-withholding-us_tax
                 rec={"ticker":ticker,"payable_date":div["payable_date"],"net":net};receivables.append(rec);events.append({"type":"dividend_recognition","gross":str(gross),"withholding":str(withholding),"foreign_tax_credit":str(credit),"us_tax":str(us_tax),"net_receivable":str(net),**rec,"net":str(net)})
         for rec in list(receivables):

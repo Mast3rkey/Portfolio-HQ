@@ -105,6 +105,16 @@ def test_independent_replay_etn_cases_and_malformed_actions():
     fixture['splits']=[split]
     assert _replay_simulation(fixture,CASES[0],cell,'BASELINE')
 
+def test_independent_replay_uses_retained_foreign_withholding_amount_and_rejects_conflict():
+    from test_whole_portfolio_robustness_v2_engine import full_synthetic_fixture
+    fixture=full_synthetic_fixture();cell='COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY';action={'ticker':'TSM','ex_date':'2023-01-13','payable_date':'2023-01-14','gross_per_share':'1','withholding_rate':'.30','gross_rate_usd':'1','source_net_rate_usd':'.70','source_withholding_usd':'.30','rate_evidence':'SYNTHETIC_REVIEW_ONLY: stipulated retained amounts'};fixture['dividends'].append(action)
+    replay=_replay_simulation(fixture,CASES[1],cell,'BASELINE');event=next(e for row in replay['calendar_ledger'] for e in row['events'] if e.get('type')=='dividend_recognition' and e['ticker']=='TSM');shares=next(D(x['shares']) for x in replay['ledger'] if x['date']=='2023-01-12' for x in x['_positions'] if x['ticker']=='TSM')
+    assert D(event['withholding'])==shares*D('.30') and D(event['foreign_tax_credit'])==0
+    action['withholding_rate']='0'
+    with pytest.raises(ValueError,match='rate provenance'):_replay_simulation(fixture,CASES[1],cell,'BASELINE')
+    action.update(gross_per_share='3',withholding_rate=str(D(1)/D(3)),gross_rate_usd='3',source_net_rate_usd='2',source_withholding_usd='1')
+    replay=_replay_simulation(fixture,CASES[1],cell,'BASELINE');event=next(e for row in replay['calendar_ledger'] for e in row['events'] if e.get('type')=='dividend_recognition' and e['ticker']=='TSM');assert D(event['withholding'])==shares
+
 def test_independent_replay_reconstructs_post_friction_targets_and_price_basis():
     from test_whole_portfolio_robustness_v2_engine import full_synthetic_fixture
     fixture=full_synthetic_fixture();cell='COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY'
@@ -244,6 +254,8 @@ def test_complete_synthetic_driver_result_replays_and_path_mutation_fails():
     assert any('corporate-action registry' in e for e in validate_study_bundle(bundle));bundle['primitive_fixture']['dividends']=[dividend]
     split=bundle['primitive_fixture']['splits'][0];bundle['primitive_fixture']['splits']=[split,dict(split)]
     assert any('corporate-action registry' in e for e in validate_study_bundle(bundle));bundle['primitive_fixture']['splits']=[split]
+    conflicting={'ticker':'TSM','ex_date':'2023-01-13','payable_date':'2023-01-14','gross_per_share':'1','withholding_rate':'0','gross_rate_usd':'1','source_net_rate_usd':'.70','source_withholding_usd':'.30','rate_evidence':'SYNTHETIC_REVIEW_ONLY: contradictory rate'};bundle['primitive_fixture']['dividends'].append(conflicting)
+    assert any('corporate-action registry' in e for e in validate_study_bundle(bundle));bundle['primitive_fixture']['dividends'].remove(conflicting)
     attack_case=CASES[-1];attack_cell=bundle['decision_evidence']['cell_ids'][-1];attack_alt=ALTS[-1]
     row=bundle['portfolio_paths'][attack_case][attack_cell][attack_alt]['correction_replication'][10];old=row['nav'];row['nav']='NaN'
     assert validate_result(decision,decision_only=True);row['nav']=old

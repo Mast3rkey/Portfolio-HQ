@@ -100,9 +100,10 @@ def _rebalance_fixed_point(cash:D, receivables:D, lots:Mapping[str,list[Lot]], p
     raise ArithmeticError("post-friction fixed point did not converge")
 
 def dividend_net(shares: D, gross_per_share: D, withholding_rate: D, qualified_fraction: D,
-                 qualified_rate: D, ordinary_rate: D, credit_allowed: bool = True) -> dict[str, D]:
+                 qualified_rate: D, ordinary_rate: D, credit_allowed: bool = True,
+                 source_withholding_per_share: D | None = None) -> dict[str, D]:
     gross = shares * gross_per_share
-    withholding = gross * withholding_rate
+    withholding = shares*source_withholding_per_share if source_withholding_per_share is not None else gross*withholding_rate
     tentative = gross * (qualified_fraction * qualified_rate + (D(1)-qualified_fraction)*ordinary_rate)
     credit = min(withholding, tentative) if credit_allowed else D(0)
     us_tax = tentative - credit
@@ -426,13 +427,15 @@ def _validated_actions(fixture:Mapping[str,Any],start:date,end:date,sessions:set
             if not {"gross_rate_usd","source_net_rate_usd","source_withholding_usd","rate_evidence"}<=set(row) or not isinstance(row["rate_evidence"],str) or not row["rate_evidence"].strip():raise ValueError("incomplete dividend rate provenance")
             try:gr=D(str(row["gross_rate_usd"]));sn=D(str(row["source_net_rate_usd"]));sw=D(str(row["source_withholding_usd"]))
             except Exception:raise ValueError("invalid dividend rate provenance") from None
-            if any(isinstance(row[k],bool) for k in ("gross_rate_usd","source_net_rate_usd","source_withholding_usd")) or not all(x.is_finite() for x in (gr,sn,sw)) or gr!=gross_d or sn<0 or sw<0 or sn+sw!=gr:raise ValueError("invalid dividend rate provenance")
+            if any(isinstance(row[k],bool) for k in ("gross_rate_usd","source_net_rate_usd","source_withholding_usd")) or not all(x.is_finite() for x in (gr,sn,sw)) or gr!=gross_d or sn<0 or sw<0 or sn+sw!=gr or withholding_d!=sw/gr:raise ValueError("invalid dividend rate provenance")
         if {"provider_reported_rate_usd","provider_amount_basis"}&set(row):
             if not {"provider_reported_rate_usd","provider_amount_basis"}<=set(row) or row["provider_amount_basis"] not in {"gross","source_net"}:raise ValueError("invalid provider amount provenance")
             provider=row["provider_reported_rate_usd"]
             try:provider_d=D(str(provider))
             except Exception:raise ValueError("invalid provider amount provenance") from None
             if isinstance(provider,bool) or not provider_d.is_finite() or provider_d<=0:raise ValueError("invalid provider amount provenance")
+            if row["provider_amount_basis"]=="source_net" and "source_net_rate_usd" not in row:raise ValueError("incomplete provider amount provenance")
+            if provider_d!=(gross_d if row["provider_amount_basis"]=="gross" else D(str(row["source_net_rate_usd"]))):raise ValueError("provider amount provenance mismatch")
         identity=(ticker,ex,pay)
         if start<=ex<=end or start<=pay<=end:
             if identity in seen:raise ValueError("duplicate in-scope dividend")
@@ -486,7 +489,8 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
             if d["ex_date"]==day.isoformat():
                 source_wh=D(str(d["withholding_rate"]))
                 wh=D('.25') if "ETN_25" in foreign_case and d["ticker"]=="ETN" else (D(0) if d["ticker"]=="ETN" else source_wh)
-                net=dividend_net(prior_shares.get(d["ticker"],D(0)),D(str(d["gross_per_share"])),wh,D(str(profile["qualified_dividend_fraction"])),D(str(profile["qualified_dividend_rate"])),D(str(profile["ordinary_income_rate"])),"ZERO" not in foreign_case)
+                retained_sw=None if d["ticker"]=="ETN" or "source_withholding_usd" not in d else D(str(d["source_withholding_usd"]))
+                net=dividend_net(prior_shares.get(d["ticker"],D(0)),D(str(d["gross_per_share"])),wh,D(str(profile["qualified_dividend_fraction"])),D(str(profile["qualified_dividend_rate"])),D(str(profile["ordinary_income_rate"])),"ZERO" not in foreign_case,retained_sw)
                 rec={"ticker":d["ticker"],"payable_date":d["payable_date"],"net":net["net_receivable"]};receivables.append(rec);external_rec={**rec,"net":str(rec["net"])};events_day.append({"type":"dividend_recognition",**{k:str(v) for k,v in net.items()},**external_rec})
         for rec in list(receivables):
             if rec["payable_date"]==day.isoformat(): cash+=rec["net"];receivables.remove(rec);events_day.append({"type":"receivable_settlement",**rec,"net":str(rec["net"])})
