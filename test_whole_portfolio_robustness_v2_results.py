@@ -1,7 +1,7 @@
 from copy import deepcopy
 import pytest
 from whole_portfolio_robustness_v2_result_validator import *
-from whole_portfolio_robustness_v2_result_validator import _XNYS, _SUMMARY_FIELDS, _compare_metric_tree, _compare_probability_claim, _concentration, _concentration_window_pass, _derived_windows, _fixed_evaluations, _path_identity, _replay_simulation
+from whole_portfolio_robustness_v2_result_validator import _XNYS, _SUMMARY_FIELDS, _compare_metric_tree, _compare_probability_claim, _concentration, _concentration_window_pass, _derived_windows, _fixed_evaluations, _path_identity, _path_stats, _replay_simulation
 
 def test_replay_window_derivation_binds_predecessor_and_every_field():
     full=[]
@@ -116,6 +116,10 @@ def test_fixed_evaluation_uses_replayed_operational_economics():
     assert metrics['tax_drag']==pytest.approx(3.9731247866407537)
     assert metrics['rebalance_count']==4
     assert metrics['one_way_turnover']==pytest.approx(.0030288705385554133)
+    evaluations=engine.fixed_evaluations(result['ledger'],REGIMES)
+    assert tuple(evaluations['walk_forward'])==('2022','2023','2024','2025','2026')
+    independent=_fixed_evaluations(result['ledger'],REGIMES)
+    assert tuple(independent['walk_forward'])==('2022','2023','2024','2025','2026')
 
 def test_independent_recovery_uses_real_anchor_and_censors():
     zero={'turnover_notional':'0','rebalance_count':'0','taxable_realized_gain':'0','cost_drag':'0','tax_drag':'0','cash_drag':'0'}
@@ -132,6 +136,14 @@ def test_independent_calendar_cagr_downside_and_concentration_maxima():
     assert result['downside_deviation']==pytest.approx((sum(min(r-.02,0)**2 for r in returns)/2)**.5*252**.5)
     keys=('direct_hhi','max_direct_name','effective_issuer_max','ai_platform_common_driver','semis_cluster','power_infra_cluster');row=lambda h,n:dict(zip(keys,(h,n,n,n,.1,.1)))
     assert _concentration_window_pass([row(.1,.2),row(.05,.1)],[row(.06,.15),row(.07,.16)])
+
+def test_path_metric_admission_rejects_nonfinite_actual_and_claimed_values():
+    assert _compare_metric_tree({'x':float('nan')},{'x':1.},'metrics')
+    assert _compare_metric_tree({'x':1.},{'x':float('nan')},'metrics')
+    rows=[{'date':'2025-01-02','anchor_nav':'100','anchor_date':'2024-12-31','nav':'101','risk_free_return':'0'}, {'date':'2025-01-03','nav':'99','risk_free_return':'0'}]
+    for location,bad in (('nav','NaN'),('nav',0),('nav',False),('anchor_nav','Infinity'),('anchor_nav',-1)):
+        attacked=deepcopy(rows);target=attacked[0] if location=='anchor_nav' else attacked[1];target[location]=bad
+        with pytest.raises(ValueError):_path_stats(attacked)
 
 def test_probability_claims_reject_bool_missing_extra_nonfinite_and_wrong_values():
     actual={'NET_TWR_CAGR_DELTA':.4315,'SHARPE_DELTA':.473,'MAX_DRAWDOWN_DELTA':.097,'DAILY_CVAR_95_DELTA':0.}
@@ -186,6 +198,11 @@ def test_complete_synthetic_driver_result_replays_and_path_mutation_fails():
     assert any('corporate-action registry' in e for e in validate_study_bundle(bundle));bundle['primitive_fixture']['dividends']=[dividend]
     split=bundle['primitive_fixture']['splits'][0];bundle['primitive_fixture']['splits']=[split,dict(split)]
     assert any('corporate-action registry' in e for e in validate_study_bundle(bundle));bundle['primitive_fixture']['splits']=[split]
+    attack_case=CASES[-1];attack_cell=bundle['decision_evidence']['cell_ids'][-1];attack_alt=ALTS[-1]
+    row=bundle['portfolio_paths'][attack_case][attack_cell][attack_alt]['correction_replication'][10];old=row['nav'];row['nav']='NaN'
+    assert validate_result(decision,decision_only=True);row['nav']=old
+    evaluation=bundle['decision_evidence']['cases'][case][ALTS[0]]['evaluations']['baseline']['walk_forward'];evaluation['2021']=deepcopy(evaluation['2022'])
+    assert validate_result(decision,decision_only=True);del evaluation['2021']
 
 def test_full_bundle_rejects_calendar_identity_lot_primary_concentration_and_detachment():
     import copy

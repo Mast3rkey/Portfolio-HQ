@@ -137,6 +137,7 @@ def test_integrated_simulation_derives_all_constructions_and_conserves():
         assert sum(D(v) for v in result['weights'].values())==1
 
 def test_integrated_golden_initial_cost_weekend_payable_and_split():
+    import json
     root=Path(__file__).parent;days=['2025-01-02','2025-01-03','2025-01-06'];tickers=[t for t in derive_weights(root,'BASELINE') if t!='CASH']
     fixture={'start':'2025-01-02','end':'2025-01-06','sessions':days,'session_closes':{d:d+'T21:00:00Z' for d in days},'prices':{t:{d:'100' for d in days} for t in tickers},'fed_business_days':['2025-01-01','2025-01-02'],'dff_records':[{'observation_date':'2024-12-31','published_at':'2025-01-01T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'TMO','ex_date':'2025-01-03','payable_date':'2025-01-04','gross_per_share':'1','withholding_rate':'0'}],'splits':[{'ticker':'NVDA','date':'2025-01-06','factor':'10'}]}
     result=simulate(root,fixture,profile={k:D(0) for k in ('ordinary_income_rate','qualified_dividend_rate','qualified_dividend_fraction','short_gain_rate','long_gain_rate','gold_gain_rate')},cost_bps=D(10))
@@ -146,6 +147,7 @@ def test_integrated_golden_initial_cost_weekend_payable_and_split():
     assert result['calendar_ledger'][2]['date']=='2025-01-04'
     from whole_portfolio_robustness_v2_result_validator import validate_ledger
     assert validate_ledger(result)==[]
+    assert validate_ledger(json.loads(json.dumps(result,allow_nan=False)))==[]
     fixture['dividends'][0]['payable_date']='2025-01-07'
     unpaid=simulate(root,fixture,profile={k:D(0) for k in ('ordinary_income_rate','qualified_dividend_rate','qualified_dividend_fraction','short_gain_rate','long_gain_rate','gold_gain_rate')},cost_bps=D(10))
     assert unpaid['ledger'][-1]['receivables'] and not any(e['type']=='receivable_settlement' for row in unpaid['calendar_ledger'] for e in row['events'])
@@ -261,6 +263,8 @@ def test_evaluate_study_fixed_regimes_inherit_complete_predecessor_boundary(monk
     assert result['decision_evidence']['cases'] and len(seen)==len(FOREIGN_CASES)*len(ALTERNATIVES)*2
     predecessor=next(x for x in full if x['date']=='2022-12-30')
     assert boundaries and all(x==('2022-12-30',predecessor['nav'],predecessor['operations']) for x in boundaries)
+    detail=next(iter(next(iter(result['decision_evidence']['cases'].values())).values()))
+    assert tuple(detail['evaluations']['baseline']['walk_forward'])==('2022','2023','2024','2025','2026')
 
 def full_synthetic_fixture():
     import json
@@ -284,8 +288,10 @@ def get_full_bundle():
     return _FULL_BUNDLE
 
 def test_full_simulation_registry_driver_executes_synthetic_fixture():
+    import json
     result=get_full_bundle()
     assert result['synthetic'] is True and len(result['simulations'])==4
     assert all(len(cells)==18 for cells in result['simulations'].values())
     from whole_portfolio_robustness_v2_result_validator import validate_study_bundle
-    assert validate_study_bundle(result)==[]
+    artifact=json.loads(json.dumps(result,allow_nan=False))
+    assert validate_study_bundle(artifact)==[]

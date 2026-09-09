@@ -21,6 +21,7 @@ _LOOK=yaml.safe_load((ROOT/"issuer_lookthrough.yaml").read_text())
 _WINDOW_BOUNDS={"full":("2021-06-01","2026-07-31"),"context":("2021-06-01","2023-12-29"),"correction_replication":("2024-04-02","2026-07-31")}
 _BOOTSTRAP_INDEX_CACHE: dict[int,np.ndarray]={}
 _SUMMARY_FIELDS=("cumulative_twr","net_twr_cagr","sharpe","sortino","max_drawdown","daily_cvar_95","annualized_volatility","downside_deviation","calmar","worst_month","worst_quarter","worst_year","recovery_days","one_way_turnover","rebalance_count","taxable_realized_gain","cost_drag","tax_drag","cash_drag")
+_WALK_FORWARD_YEARS=(2022,2023,2024,2025,2026)
 
 def _derived_windows(replay_path:list[dict], initial_nav:str="100000")->dict[str,list[dict]]:
     """Derive every registered window and its true predecessor NAV anchor."""
@@ -82,6 +83,12 @@ def _xnys_predecessor(start:str)->str:
 def _finite(x:Any)->bool:
     return isinstance(x,(int,float)) and not isinstance(x,bool) and math.isfinite(x)
 
+def _positive_numeric(value:Any)->bool:
+    if isinstance(value,bool):return False
+    try:number=D(str(value))
+    except Exception:return False
+    return number.is_finite() and number>0
+
 def recompute_metrics(rows:list[dict])->dict[str,float]:
     nav=[100000.0]+[float(x["nav"]) for x in rows]
     if len(nav)<2 or any(not math.isfinite(x) or x<=0 for x in nav): raise ValueError("invalid NAV path")
@@ -91,7 +98,8 @@ def recompute_metrics(rows:list[dict])->dict[str,float]:
     return {"cumulative_twr":cumulative,"max_drawdown":mdd,"returns":returns}
 
 def _path_stats(rows:list[dict])->dict[str,float]:
-    if not rows or "anchor_nav" not in rows[0] or "anchor_date" not in rows[0]:raise ValueError("path boundary anchor missing")
+    if not rows or "anchor_nav" not in rows[0] or "anchor_date" not in rows[0] or not _positive_numeric(rows[0]["anchor_nav"]):raise ValueError("positive finite path boundary anchor missing")
+    if any("nav" not in row or not _positive_numeric(row["nav"]) for row in rows):raise ValueError("positive finite NAV path required")
     nav=[float(rows[0]["anchor_nav"])]+[float(x["nav"]) for x in rows];ret=[nav[i]/nav[i-1]-1 for i in range(1,len(nav))];rf=[float(x["risk_free_return"]) for x in rows]
     dates=[date.fromisoformat(rows[0]["anchor_date"])]+[date.fromisoformat(x["date"]) for x in rows]
     if any(a>=b for a,b in zip(dates,dates[1:])):raise ValueError("path dates must strictly follow boundary anchor")
@@ -105,7 +113,9 @@ def _path_stats(rows:list[dict])->dict[str,float]:
 def _paired_delta(base:list[dict],alt:list[dict])->dict[str,float]:
     if [x["date"] for x in base]!=[x["date"] for x in alt]:raise ValueError("unpaired paths")
     b=_path_stats(base);a=_path_stats(alt)
-    return {"net_cagr_delta_pp":100*(a["net_twr_cagr"]-b["net_twr_cagr"]),"sharpe_delta":a["sharpe"]-b["sharpe"],"sortino_delta":a["sortino"]-b["sortino"],"max_drawdown_delta_pp":100*(a["max_drawdown"]-b["max_drawdown"]),"daily_cvar_95_delta_pp":100*(a["daily_cvar_95"]-b["daily_cvar_95"])}
+    result={"net_cagr_delta_pp":100*(a["net_twr_cagr"]-b["net_twr_cagr"]),"sharpe_delta":a["sharpe"]-b["sharpe"],"sortino_delta":a["sortino"]-b["sortino"],"max_drawdown_delta_pp":100*(a["max_drawdown"]-b["max_drawdown"]),"daily_cvar_95_delta_pp":100*(a["daily_cvar_95"]-b["daily_cvar_95"])}
+    if not all(_finite(value) for value in result.values()):raise ValueError("nonfinite recomputed paired metric")
+    return result
 
 def _bootstrap(base:list[dict],alt:list[dict])->dict[str,float]:
     br=[float(x["nav"])/(float(x["anchor_nav"]) if i==0 else float(base[i-1]["nav"]))-1 for i,x in enumerate(base)]
@@ -160,10 +170,13 @@ def _fixed_evaluations(rows:list[dict], regimes:list[dict])->dict:
         selected[0]["anchor_date"]=rows[index-1]["date"] if index else rows[0]["anchor_date"]
         selected[0]["anchor_operations"]=rows[index-1]["operations"] if index else rows[0]["anchor_operations"]
         out[regime["id"]]=complete(selected)
-    years=sorted({date.fromisoformat(x["date"]).year for x in rows});walk={}
-    for year in years:
+    registered=rows[0]["date"]<="2021-12-31" and rows[-1]["date"]>="2026-01-01"
+    evaluation_years=_WALK_FORWARD_YEARS if registered else tuple(sorted({date.fromisoformat(x["date"]).year for x in rows}))
+    walk={}
+    for year in evaluation_years:
         selected=[dict(x) for x in rows if date.fromisoformat(x["date"]).year<=year]
-        if len(selected)>=2:walk[str(year)]=complete(selected)
+        if len(selected)<2:continue
+        walk[str(year)]=complete(selected)
     out["walk_forward"]=walk
     return out
 
@@ -176,7 +189,7 @@ def _compare_metric_tree(actual:Any, claimed:Any, path="evaluations")->list[str]
         if not isinstance(claimed,list) or len(actual)!=len(claimed):return [f"{path}: registry mismatch"]
         for index,value in enumerate(actual):errors.extend(_compare_metric_tree(value,claimed[index],f"{path}/{index}"))
     elif isinstance(actual,(int,float)):
-        if not _finite(claimed) or abs(actual-claimed)>1e-10:errors.append(f"{path}: numeric mismatch")
+        if not _finite(actual) or not _finite(claimed) or abs(actual-claimed)>1e-10:errors.append(f"{path}: numeric mismatch")
     elif actual!=claimed:errors.append(f"{path}: value mismatch")
     return errors
 
@@ -394,9 +407,9 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
             if div["ex_date"]==day.isoformat():
                 ticker=div["ticker"];gross=prior_shares.get(ticker,D(0))*D(str(div["gross_per_share"]));source_wh=D(str(div["withholding_rate"]));wh_rate=D(".25") if "ETN_25" in case and ticker=="ETN" else (D(0) if ticker=="ETN" else source_wh);withholding=gross*wh_rate
                 tentative=gross*(profile["qualified_dividend_fraction"]*profile["qualified_dividend_rate"]+(1-profile["qualified_dividend_fraction"])*profile["ordinary_income_rate"]);credit=D(0) if "ZERO" in case else min(withholding,tentative);us_tax=tentative-credit;net=gross-withholding-us_tax
-                rec={"ticker":ticker,"payable_date":div["payable_date"],"net":net};receivables.append(rec);events.append({"type":"dividend_recognition","gross":str(gross),"withholding":str(withholding),"foreign_tax_credit":str(credit),"us_tax":str(us_tax),"net_receivable":str(net),**rec})
+                rec={"ticker":ticker,"payable_date":div["payable_date"],"net":net};receivables.append(rec);events.append({"type":"dividend_recognition","gross":str(gross),"withholding":str(withholding),"foreign_tax_credit":str(credit),"us_tax":str(us_tax),"net_receivable":str(net),**rec,"net":str(net)})
         for rec in list(receivables):
-            if rec["payable_date"]==day.isoformat():cash+=rec["net"];receivables.remove(rec);events.append({"type":"receivable_settlement",**rec})
+            if rec["payable_date"]==day.isoformat():cash+=rec["net"];receivables.remove(rec);events.append({"type":"receivable_settlement",**rec,"net":str(rec["net"])})
         if day.isoformat() in session_set:
             previous=[x for x in session_dates if x<day];rebalance=not previous or (day.year!=previous[-1].year if cadence=="ANNUAL" else (day.year,(day.month-1)//3)!=(previous[-1].year,(previous[-1].month-1)//3))
             if rebalance:
@@ -453,8 +466,8 @@ def validate_result(doc:dict, *, decision_only:bool=False)->list[str]:
                         dates=[x.get("date") for x in windows[window]]
                         expected=[x["session"] for x in _XNYS if start<=x["session"]<=end]
                         concentration_keys={"direct_hhi","max_direct_name","effective_issuer_max","ai_platform_common_driver","semis_cluster","power_infra_cluster"};operation_keys={"turnover_notional","rebalance_count","taxable_realized_gain","cost_drag","tax_drag","cash_drag"}
-                        malformed=any(isinstance(x.get("risk_free_return"),bool) or not _finite(float(x.get("risk_free_return",float("nan")))) or set(x.get("concentration",{}))!=concentration_keys or any(not _finite(v) for v in x.get("concentration",{}).values()) or set(x.get("operations",{}))!=operation_keys or any(isinstance(v,bool) or not D(str(v)).is_finite() for v in x.get("operations",{}).values()) for x in windows[window])
-                        if dates!=expected or malformed or "anchor_nav" not in windows[window][0] or "anchor_operations" not in windows[window][0]:errors.append(f"{case}/{cell}/{variant}/{window}: invalid dated primitives")
+                        malformed=any(not _positive_numeric(x.get("nav")) or isinstance(x.get("risk_free_return"),bool) or not _finite(float(x.get("risk_free_return",float("nan")))) or set(x.get("concentration",{}))!=concentration_keys or any(not _finite(v) for v in x.get("concentration",{}).values()) or set(x.get("operations",{}))!=operation_keys or any(isinstance(v,bool) or not D(str(v)).is_finite() for v in x.get("operations",{}).values()) for x in windows[window])
+                        if dates!=expected or malformed or not _positive_numeric(windows[window][0].get("anchor_nav")) or "anchor_date" not in windows[window][0] or "anchor_operations" not in windows[window][0]:errors.append(f"{case}/{cell}/{variant}/{window}: invalid dated primitives")
         if errors:return errors
     evidence=doc.get("decision_evidence")
     if not isinstance(evidence,dict) or set(evidence.get("cell_ids",[]))!=set(f"COST_{c}_TAX_{t}_CADENCE_{q}" for c in ("0","10","25") for t in ("TAX_DEFERRED","TAXABLE_MID","TAXABLE_HIGH") for q in ("QUARTERLY","ANNUAL")):

@@ -21,6 +21,13 @@ D = Decimal
 ALTERNATIVES = ("BROAD_PLUS_5", "DEFENSIVE_PLUS_5", "CRYPTO_HALF", "GOLD_PLUS_2", "DIVERSIFIED_BALANCE")
 FOREIGN_CASES = ("STANDARD_AVAILABLE_CREDIT", "ZERO_FOREIGN_TAX_CREDIT", "ETN_25_PERCENT_IRISH_WITHHOLDING", "JOINT_ZERO_CREDIT_AND_ETN_25_PERCENT_IRISH_WITHHOLDING")
 _BOOTSTRAP_INDEX_CACHE: dict[tuple[int,int,int,int],np.ndarray] = {}
+_WALK_FORWARD_YEARS=(2022,2023,2024,2025,2026)
+
+def _positive_numeric(value:Any)->bool:
+    if isinstance(value,bool):return False
+    try:number=D(str(value))
+    except Exception:return False
+    return number.is_finite() and number>0
 
 def cash_delta(cash: D, dff_percent: D, ordinary_rate: D) -> D:
     with localcontext() as ctx:
@@ -144,7 +151,8 @@ def metrics(returns: Sequence[float], risk_free: Sequence[float] | None = None, 
 def complete_metrics(ledger:Sequence[Mapping], risk_free:Sequence[float]|None=None)->dict[str,Any]:
     """All registered path and operational measures, with return fields in decimal units."""
     if len(ledger)<2: raise ValueError("insufficient metric observations")
-    if "anchor_nav" not in ledger[0]:raise ValueError("path boundary anchor required")
+    if "anchor_nav" not in ledger[0] or not _positive_numeric(ledger[0]["anchor_nav"]):raise ValueError("positive finite path boundary anchor required")
+    if any("nav" not in row or not _positive_numeric(row["nav"]) for row in ledger):raise ValueError("positive finite NAV path required")
     anchor=float(ledger[0]["anchor_nav"])
     nav=[anchor]+[float(x["nav"]) for x in ledger]
     returns=[nav[i]/nav[i-1]-1 for i in range(1,len(nav))]
@@ -215,8 +223,7 @@ def fixed_evaluations(ledger:Sequence[Mapping], regimes:Sequence[Mapping])->dict
         if rows:
             index=next(i for i,x in enumerate(ledger) if x["date"]==rows[0]["date"]);rows[0]["anchor_nav"]="100000" if index==0 else ledger[index-1]["nav"];rows[0]["anchor_date"]=ledger[0]["anchor_date"] if index==0 else ledger[index-1]["date"];rows[0]["anchor_operations"]={k:"0" for k in rows[0]["operations"]} if index==0 else ledger[index-1]["operations"]
         out[r["id"]]=complete_metrics(rows,[float(x["risk_free_return"]) for x in rows]) if len(rows)>=2 else None
-    years=sorted({date.fromisoformat(x["date"]).year for x in ledger})
-    out["walk_forward"]={str(y):complete_metrics([x for x in ledger if date.fromisoformat(x["date"]).year<=y],[float(x["risk_free_return"]) for x in ledger if date.fromisoformat(x["date"]).year<=y]) for y in years if len([x for x in ledger if date.fromisoformat(x["date"]).year<=y])>=2}
+    out["walk_forward"]={str(y):complete_metrics([x for x in ledger if date.fromisoformat(x["date"]).year<=y],[float(x["risk_free_return"]) for x in ledger if date.fromisoformat(x["date"]).year<=y]) for y in _WALK_FORWARD_YEARS}
     return out
 
 def evaluate_study(paths:Mapping[str,Mapping[str,Mapping[str,Mapping[str,Sequence[Mapping]]]]], regimes:Sequence[Mapping], issuer_map:Mapping[str,Any]|None=None)->dict[str,Any]:
@@ -447,9 +454,9 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
                 source_wh=D(str(d["withholding_rate"]))
                 wh=D('.25') if "ETN_25" in foreign_case and d["ticker"]=="ETN" else (D(0) if d["ticker"]=="ETN" else source_wh)
                 net=dividend_net(prior_shares.get(d["ticker"],D(0)),D(str(d["gross_per_share"])),wh,D(str(profile["qualified_dividend_fraction"])),D(str(profile["qualified_dividend_rate"])),D(str(profile["ordinary_income_rate"])),"ZERO" not in foreign_case)
-                rec={"ticker":d["ticker"],"payable_date":d["payable_date"],"net":net["net_receivable"]};receivables.append(rec);events_day.append({"type":"dividend_recognition",**{k:str(v) for k,v in net.items()},**rec})
+                rec={"ticker":d["ticker"],"payable_date":d["payable_date"],"net":net["net_receivable"]};receivables.append(rec);external_rec={**rec,"net":str(rec["net"])};events_day.append({"type":"dividend_recognition",**{k:str(v) for k,v in net.items()},**external_rec})
         for rec in list(receivables):
-            if rec["payable_date"]==day.isoformat(): cash+=rec["net"];receivables.remove(rec);events_day.append({"type":"receivable_settlement",**rec})
+            if rec["payable_date"]==day.isoformat(): cash+=rec["net"];receivables.remove(rec);events_day.append({"type":"receivable_settlement",**rec,"net":str(rec["net"])})
         if day in session_set:
             if any(day not in prices.get(t,{}) for t,ls in lots.items() if sum(x.units for x in ls)): raise ValueError("missing held-asset session price")
             if _rebalance_day(day,cadence,sessions):
