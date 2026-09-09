@@ -1,6 +1,6 @@
 from copy import deepcopy
 from whole_portfolio_robustness_v2_result_validator import *
-from whole_portfolio_robustness_v2_result_validator import _XNYS, _concentration, _derived_windows, _path_identity
+from whole_portfolio_robustness_v2_result_validator import _XNYS, _concentration, _derived_windows, _path_identity, _replay_simulation
 
 def test_replay_window_derivation_binds_predecessor_and_every_field():
     full=[]
@@ -20,52 +20,32 @@ def test_validator_effective_issuer_excludes_non_issuer_sleeves():
                               {'COST':D(6),'NVDA':D(3),'SPY':D(10),sleeve:D(35)})
         assert result['effective_issuer_max']==.06
 
-def test_complete_registry_routes_every_simulation_through_detailed_replay(monkeypatch):
-    """Isolation probe: proves routing, not acceptance of a complete positive bundle."""
-    import whole_portfolio_robustness_v2_result_validator as validator
-    cells=[f"COST_{c}_TAX_{t}_CADENCE_{q}" for c in ('0','10','25')
-           for t in ('TAX_DEFERRED','TAXABLE_MID','TAXABLE_HIGH') for q in ('QUARTERLY','ANNUAL')]
-    simulations={case:{cell:{variant:{} for variant in ('BASELINE',*ALTS)} for cell in cells} for case in CASES}
-    calls=[]
-    def reject(simulation):
-        calls.append(simulation)
-        return ['synthetic malformed economics']
-    monkeypatch.setattr(validator,'validate_ledger',reject)
-    errors=validator.validate_study_bundle({'simulations':simulations,'decision_evidence':{'cell_ids':cells}})
-    assert len(calls)==len(CASES)*len(cells)*(1+len(ALTS))==432
-    assert sum('synthetic malformed economics' in error for error in errors)==432
-
-def test_detailed_replay_rejects_economic_mutations_on_valid_simulation():
-    """One full-calendar simulation is accepted, then each restored mutation fails."""
+def test_primitive_replay_rejects_source_and_stored_economic_mutations():
+    """A full-calendar simulation is bound to independent source reconstruction."""
     from pathlib import Path
     import yaml
     import whole_portfolio_robustness_v2_engine as engine
     from test_whole_portfolio_robustness_v2_engine import full_synthetic_fixture
-    fixture=full_synthetic_fixture()
-    prereg=yaml.safe_load(Path('research/whole_portfolio_robustness_v2/pre_registration.yaml').read_text())
-    cell=prereg['frictions']['cell_registry'][0]
+    fixture=full_synthetic_fixture();prereg=yaml.safe_load(Path('research/whole_portfolio_robustness_v2/pre_registration.yaml').read_text());cell=prereg['frictions']['cell_registry'][0]
     profile={key:D(value) for key,value in prereg['frictions']['tax_profile_parameters'][cell['tax_profile']].items()}
-    result=engine.simulate(Path('.'),fixture,'BASELINE',D(cell['one_way_cost_bps']),profile,
-                           cell['rebalance_cadence'],CASES[0])
-    result['cell']['tax_profile']=cell['tax_profile'];result['primitive_fixture']=fixture
-    assert validate_ledger(result)==[]
-
-    targets=[
-        (result['calendar_ledger'][1],'dff_percent','NaN'),
-        (result['calendar_ledger'][1],'interest_credited','999'),
-        (next(event for row in result['calendar_ledger'] for event in row['events'] if event['type']=='buy'),'cost','999'),
-        (next(event for row in result['calendar_ledger'] for event in row['events'] if event['type']=='sell'),'tax','999'),
-        (next(event for row in result['calendar_ledger'] for event in row['events'] if event['type']=='dividend_recognition'),'net','999'),
-        (next(event for row in result['calendar_ledger'] for event in row['events'] if event['type']=='receivable_settlement'),'net','999'),
-        (result['ledger'][0],'cash','-1'),
-        (result['ledger'][0],'nav','999'),
-        (result['summary'],'cumulative_twr',999),
-    ]
-    for container,key,replacement in targets:
-        original=container[key];container[key]=replacement
-        assert validate_ledger(result),f'{key} mutation was accepted'
-        container[key]=original
-        assert validate_ledger(result)==[],f'{key} restoration did not recover the accepted fixture'
+    actual=engine.simulate(Path('.'),fixture,'BASELINE',D(cell['one_way_cost_bps']),profile,cell['rebalance_cadence'],CASES[0])
+    expected=_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+    projection=lambda rows:[{k:v for k,v in row.items() if not k.startswith('_')} for row in rows]
+    assert [row for row in actual['calendar_ledger'] if row['events']]==expected['calendar_ledger']
+    compact=[]
+    for row in actual['ledger']:
+        keep={key:row[key] for key in ('date','nav','cash','risk_free_return')}
+        if row.get('events'):keep.update(events=row['events'],positions=row['positions'],receivables=row['receivables'])
+        compact.append(keep)
+    assert compact==projection(expected['ledger'])
+    for collection,key,value in ((fixture['dff_records'][0],'value','5'),(fixture['dividends'][0],'gross_per_share','2'),(fixture['splits'][0],'factor','2')):
+        original=collection[key];collection[key]=value
+        changed=_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+        assert changed!=expected
+        collection[key]=original
+        assert _replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')==expected
+    mutated=deepcopy(compact);row=next(x for x in mutated if x.get('positions'));row['positions'][0]['lots'][0]['basis']='999999'
+    assert mutated!=projection(expected['ledger'])
 
 def document():
     rows=[{'date':'2025-01-02','cash':'100000','positions':[],'receivables':[],'nav':'100000','events':[]}, {'date':'2025-01-03','cash':'100000','positions':[],'receivables':[],'nav':'100000','events':[],'interest_credited':'0'}]

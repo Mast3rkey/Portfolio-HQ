@@ -20,6 +20,7 @@ import numpy as np
 D = Decimal
 ALTERNATIVES = ("BROAD_PLUS_5", "DEFENSIVE_PLUS_5", "CRYPTO_HALF", "GOLD_PLUS_2", "DIVERSIFIED_BALANCE")
 FOREIGN_CASES = ("STANDARD_AVAILABLE_CREDIT", "ZERO_FOREIGN_TAX_CREDIT", "ETN_25_PERCENT_IRISH_WITHHOLDING", "JOINT_ZERO_CREDIT_AND_ETN_25_PERCENT_IRISH_WITHHOLDING")
+_BOOTSTRAP_INDEX_CACHE: dict[tuple[int,int,int,int],np.ndarray] = {}
 
 def cash_delta(cash: D, dff_percent: D, ordinary_rate: D) -> D:
     with localcontext() as ctx:
@@ -166,7 +167,7 @@ def complete_metrics(ledger:Sequence[Mapping], risk_free:Sequence[float]|None=No
 
 def concentration(ledger_row:Mapping, issuer_map:Mapping[str,Any]|None=None)->dict[str,float]:
     if "concentration" in ledger_row:return dict(ledger_row["concentration"])
-    nav=float(ledger_row["nav"]); values={x["ticker"]:float(x["shares"])*float(x["price"])/nav for x in ledger_row["positions"]}
+    nav=D(str(ledger_row["nav"])); values={x["ticker"]:float(D(str(x["shares"]))*D(str(x["price"]))/nav) for x in ledger_row["positions"]}
     direct=[v for t,v in values.items() if t not in {"SPY","VEA","VWO","GLD","BTC","ETH","SOL"}]
     non_issuers={"SPY","VEA","VWO","GLD","BTC","ETH","SOL"}
     effective={t:values.get(t,0) for t in values if t not in non_issuers}
@@ -253,11 +254,14 @@ def evaluate_study(paths:Mapping[str,Mapping[str,Mapping[str,Mapping[str,Sequenc
 def stationary_bootstrap(base: Sequence[float], alt: Sequence[float], rf: Sequence[float], draws=2000,
                          mean_block=21, seed=20260907) -> dict[str,float]:
     if not (len(base)==len(alt)==len(rf)) or not base: raise ValueError("paired bootstrap length mismatch")
-    rng=random.Random(seed);n=len(base);indices=np.empty((draws,n),dtype=np.int32)
-    for draw in range(draws):
-        j=rng.randrange(n)
-        for i in range(n):
-            indices[draw,i]=j;j=(j+1)%n if rng.random()>1/mean_block else rng.randrange(n)
+    n=len(base);cache_key=(n,draws,mean_block,seed);indices=_BOOTSTRAP_INDEX_CACHE.get(cache_key)
+    if indices is None:
+        rng=random.Random(seed);indices=np.empty((draws,n),dtype=np.int32)
+        for draw in range(draws):
+            j=rng.randrange(n)
+            for i in range(n):
+                indices[draw,i]=j;j=(j+1)%n if rng.random()>1/mean_block else rng.randrange(n)
+        indices.setflags(write=False);_BOOTSTRAP_INDEX_CACHE[cache_key]=indices
     def stats(values):
         sample=np.asarray(values,dtype=float)[indices];risk=np.asarray(rf,dtype=float)[indices];excess=sample-risk;std=excess.std(axis=1,ddof=1)
         if np.any(std==0) or not np.all(np.isfinite(std)):raise ValueError("undefined required bootstrap statistic")
@@ -423,9 +427,7 @@ def run_synthetic_study(root:Path, fixture:Mapping[str,Any])->dict[str,Any]:
                     keep={k:row[k] for k in ("date","nav","cash","risk_free_return")}
                     if row.get("events"):keep.update(events=row["events"],positions=row["positions"],receivables=row["receivables"])
                     compact_ledger.append(keep)
-                # Calendar cash clocks are economic primitives, not an optional audit
-                # summary.  Retain every day while keeping session holdings compact.
-                compact_calendar=result["calendar_ledger"]
+                compact_calendar=[row for row in result["calendar_ledger"] if row["events"]]
                 simulations[case][identity][variant]={"variant":variant,"cell":result["cell"],"initial_nav":"100000","calendar_ledger":compact_calendar,"calendar_day_count":len(result["calendar_ledger"]),"ledger":compact_ledger,"summary":result["summary"]}
     decision=evaluate_study(paths,prereg["windows"]["fixed_regimes"],issuer)
     return {"study_id":"PORTFOLIO-ROBUSTNESS-V2-0001","synthetic":True,"primitive_fixture":fixture,"simulations":simulations,**decision}

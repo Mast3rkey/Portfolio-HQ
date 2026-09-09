@@ -19,4 +19,7 @@ Whole-study fixtures must use the byte-pinned 1,298-session XNYS sequence and ea
 including DST and early closes. Each path carries its immediately preceding NAV and the compounded gross
 lagged-DFF return for that valuation interval; `$100,000` is used only at inception. The full registry
 shares immutable synthetic primitives and retains compact paths plus event/lot audit rows to bound memory;
-the independent validator binds every compact path back to its exact case/cell/variant simulation.
+the independent validator replays all 1,887 calendar transitions from those primitives and binds every
+compact path back to its exact case/cell/variant simulation. Fixed regimes, expanding-origin metrics,
+both registered bootstraps, pathwise concentration, standalone named gates, foreign vetoes and the
+ordered passing set are regenerated rather than accepted as caller assertions.

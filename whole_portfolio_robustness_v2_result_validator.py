@@ -9,7 +9,7 @@ import json, math, random
 import yaml
 import numpy as np
 from decimal import Decimal as D, localcontext
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +19,7 @@ ROOT=Path(__file__).resolve().parent
 _XNYS=json.loads((ROOT/"research/level1_sleeve_robustness/data/transformed/XNYS_sessions.json").read_text())["sessions"]
 _LOOK=yaml.safe_load((ROOT/"issuer_lookthrough.yaml").read_text())
 _WINDOW_BOUNDS={"full":("2021-06-01","2026-07-31"),"context":("2021-06-01","2023-12-29"),"correction_replication":("2024-04-02","2026-07-31")}
+_BOOTSTRAP_INDEX_CACHE: dict[int,np.ndarray]={}
 
 def _derived_windows(replay_path:list[dict], initial_nav:str="100000")->dict[str,list[dict]]:
     """Derive every registered window and its true predecessor NAV anchor."""
@@ -73,10 +74,13 @@ def _paired_delta(base:list[dict],alt:list[dict])->dict[str,float]:
 def _bootstrap(base:list[dict],alt:list[dict])->dict[str,float]:
     br=[float(x["nav"])/(float(x["anchor_nav"]) if i==0 else float(base[i-1]["nav"]))-1 for i,x in enumerate(base)]
     ar=[float(x["nav"])/(float(x["anchor_nav"]) if i==0 else float(alt[i-1]["nav"]))-1 for i,x in enumerate(alt)];rf=[float(x["risk_free_return"]) for x in base]
-    rng=random.Random(20260907);n=len(br);indices=np.empty((2000,n),dtype=np.int32)
-    for draw in range(2000):
-        j=rng.randrange(n)
-        for i in range(n):indices[draw,i]=j;j=(j+1)%n if rng.random()>1/21 else rng.randrange(n)
+    n=len(br);indices=_BOOTSTRAP_INDEX_CACHE.get(n)
+    if indices is None:
+        rng=random.Random(20260907);indices=np.empty((2000,n),dtype=np.int32)
+        for draw in range(2000):
+            j=rng.randrange(n)
+            for i in range(n):indices[draw,i]=j;j=(j+1)%n if rng.random()>1/21 else rng.randrange(n)
+        indices.setflags(write=False);_BOOTSTRAP_INDEX_CACHE[n]=indices
     def stat(ret):
         sample=np.asarray(ret)[indices];risk=np.asarray(rf)[indices];ex=sample-risk;std=ex.std(axis=1,ddof=1)
         if np.any(std==0) or not np.all(np.isfinite(std)):raise ValueError("undefined bootstrap")
@@ -84,6 +88,48 @@ def _bootstrap(base:list[dict],alt:list[dict])->dict[str,float]:
         return np.prod(1+sample,axis=1)**(252/n)-1,ex.mean(axis=1)/std*math.sqrt(252),np.min(wealth/peaks-1,axis=1),tail
     b=stat(br);a=stat(ar);names=("NET_TWR_CAGR_DELTA","SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA")
     return {name:float(np.mean(a[i]-b[i]>0)) for i,name in enumerate(names)}
+
+def _fixed_evaluations(rows:list[dict], regimes:list[dict])->dict:
+    def complete(selected):
+        base=_path_stats(selected);nav=[float(selected[0]["anchor_nav"])]+[float(x["nav"]) for x in selected];returns=[nav[i]/nav[i-1]-1 for i in range(1,len(nav))]
+        mean=sum(returns)/len(returns);dates=[date.fromisoformat(selected[0]["date"])-timedelta(days=1)]+[date.fromisoformat(x["date"]) for x in selected]
+        def worst(group):
+            buckets={}
+            for i,r in enumerate(returns,1):buckets[group(dates[i])]=buckets.get(group(dates[i]),1)*(1+r)
+            return min(x-1 for x in buckets.values())
+        peak=nav[0];peak_i=0;recovery=0
+        for i,value in enumerate(nav):
+            if value>=peak:peak=value;peak_i=i
+            else:recovery=max(recovery,(dates[i]-dates[peak_i]).days)
+        result={"cumulative_twr":nav[-1]/nav[0]-1,**base,"annualized_volatility":(sum((x-mean)**2 for x in returns)/(len(returns)-1))**.5*math.sqrt(252),"downside_deviation":(sum(min(x,0)**2 for x in returns)/len(returns))**.5*math.sqrt(252)}
+        result["calmar"]=result["net_twr_cagr"]/abs(result["max_drawdown"]) if result["max_drawdown"]<0 else math.nan
+        result.update(worst_month=worst(lambda d:(d.year,d.month)),worst_quarter=worst(lambda d:(d.year,(d.month-1)//3)),worst_year=worst(lambda d:d.year),recovery_days=recovery,one_way_turnover=0.0,rebalance_count=0,taxable_realized_gain=0.0,cost_drag=0.0,tax_drag=0.0,cash_drag=0.0)
+        return result
+    out={}
+    for regime in regimes:
+        selected=[dict(x) for x in rows if regime["start"]<=x["date"]<=regime["end"]]
+        if len(selected)<2:raise ValueError("missing fixed regime path")
+        index=next(i for i,x in enumerate(rows) if x["date"]==selected[0]["date"])
+        selected[0]["anchor_nav"]=rows[index-1]["nav"] if index else rows[0]["anchor_nav"]
+        out[regime["id"]]=complete(selected)
+    years=sorted({date.fromisoformat(x["date"]).year for x in rows});walk={}
+    for year in years:
+        selected=[dict(x) for x in rows if date.fromisoformat(x["date"]).year<=year]
+        if len(selected)>=2:walk[str(year)]=complete(selected)
+    out["walk_forward"]=walk
+    return out
+
+def _compare_metric_tree(actual:Any, claimed:Any, path="evaluations")->list[str]:
+    errors=[]
+    if isinstance(actual,dict):
+        if not isinstance(claimed,dict) or set(actual)!=set(claimed):return [f"{path}: registry mismatch"]
+        for key,value in actual.items():errors.extend(_compare_metric_tree(value,claimed[key],f"{path}/{key}"))
+    elif isinstance(actual,list):
+        if actual!=claimed:errors.append(f"{path}: value mismatch")
+    elif isinstance(actual,(int,float)):
+        if not _finite(claimed) or abs(actual-claimed)>1e-10:errors.append(f"{path}: numeric mismatch")
+    elif actual!=claimed:errors.append(f"{path}: value mismatch")
+    return errors
 
 def validate_ledger(doc:dict)->list[str]:
     e=[]; rows=doc.get("ledger"); primitive_rows=[]
@@ -184,6 +230,86 @@ def recompute_disposition(gates:dict[str,dict[str,bool]])->dict:
     passing=[a for a in ALTS if standard[a]]
     return {"disposition":"RECOMMEND_POLICY_REVIEW" if passing else "RETAIN_BASELINE","passing_set":passing}
 
+def _weights(variant:str)->dict[str,D]:
+    """Independently reconstruct the frozen constructions."""
+    targets=yaml.safe_load((ROOT/"targets.yaml").read_text())["destination"]
+    gated={x["ticker"] for x in yaml.safe_load((ROOT/"gates.yaml").read_text())["gates"]}
+    weights={x["ticker"]:D(str(x["target_pct"]))/100 for x in targets if x["asset_class"] not in {"cash","reserve"} and x["ticker"] not in gated}
+    sleeves={"equity":[x["ticker"] for x in targets if x["asset_class"]=="equity" and x["ticker"] not in gated],"fund":[x["ticker"] for x in targets if x["asset_class"]=="fund" and x["ticker"]!="GLD"],"gold":["GLD"],"crypto":["BTC","ETH","SOL"]}
+    transforms={"BROAD_PLUS_5":[("equity","fund",D(".05"))],"DEFENSIVE_PLUS_5":[("equity",None,D(".05"))],"CRYPTO_HALF":[("crypto",None,D(".02"))],"GOLD_PLUS_2":[("equity","gold",D(".02"))],"DIVERSIFIED_BALANCE":[("equity","fund",D(".03")),("equity","gold",D(".01")),("equity",None,D(".01")),("crypto",None,D(".02"))]}
+    for source,destination,amount in transforms.get(variant,[]):
+        total=sum(weights[t] for t in sleeves[source])
+        for ticker in sleeves[source]:weights[ticker]-=amount*weights[ticker]/total
+        if destination:
+            total=sum(weights[t] for t in sleeves[destination])
+            for ticker in sleeves[destination]:weights[ticker]+=amount*weights[ticker]/total
+    weights["CASH"]=D(1)-sum(weights.values())
+    return weights
+
+def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
+    """Independently stream a simulation from dated source primitives."""
+    if fixture.get("input_kind")!="SYNTHETIC_TEST_ONLY":raise ValueError("unadmitted primitive fixture")
+    retained=[x for x in _XNYS if fixture.get("start")<=x["session"]<=fixture.get("end")];sessions=[x["session"] for x in retained]
+    if fixture.get("sessions")!=sessions or fixture.get("session_closes")!={x["session"]:x["close_utc"] for x in retained}:raise ValueError("pinned XNYS clock mismatch")
+    cost_name=cell_id.split("_")[1];tax_name=cell_id.split("_TAX_")[1].split("_CADENCE_")[0];cadence=cell_id.split("_CADENCE_")[1]
+    prereg=yaml.safe_load((ROOT/"research/whole_portfolio_robustness_v2/pre_registration.yaml").read_text());registered={x["cell_id"]:x for x in prereg["frictions"]["cell_registry"]}
+    if cell_id not in registered or registered[cell_id]!={"cell_id":cell_id,"one_way_cost_bps":cost_name,"tax_profile":tax_name,"rebalance_cadence":cadence}:raise ValueError("cell identity mismatch")
+    profile={k:D(str(v)) for k,v in prereg["frictions"]["tax_profile_parameters"][tax_name].items()};cost=D(cost_name);weights=_weights(variant)
+    available={k:date.fromisoformat(v) for k,v in fixture.get("available",{}).items()};prices={t:{d:D(str(v)) for d,v in series.items()} for t,series in fixture.get("prices",{}).items()}
+    for series in prices.values():
+        if any(isinstance(v,bool) or not v.is_finite() or v<=0 for v in series.values()):raise ValueError("invalid price primitive")
+    start=date.fromisoformat(fixture["start"]);end=date.fromisoformat(fixture["end"]);session_set=set(sessions);session_dates=[date.fromisoformat(x) for x in sessions]
+    fed={date.fromisoformat(x) for x in fixture.get("fed_business_days",[])};records=[]
+    for record in fixture.get("dff_records",[]):
+        value=record.get("value");published=datetime.fromisoformat(record["published_at"].replace("Z","+00:00"));observed=date.fromisoformat(record["observation_date"]);later=sorted(x for x in fed if x>observed)
+        if isinstance(value,bool) or not D(str(value)).is_finite() or published.tzinfo is None or not later or published.date()<later[0]:raise ValueError("invalid DFF primitive")
+        records.append((published.astimezone(timezone.utc),D(str(value))))
+    cash=D("100000");pending=D(0);pending_rf=D(0);rf_index=D(1);prior_rf=D(1);lots={};receivables=[];prior_shares={};calendar=[];ledger=[];day=start
+    while day<=end:
+        cutoff=datetime.combine(day,datetime.min.time(),timezone.utc);eligible=[x for x in records if x[0]<=cutoff]
+        if not eligible:raise ValueError("missing lawful DFF")
+        rate=max(eligible,key=lambda x:x[0])[1];credited=pending;cash+=credited;rf_index*=1+pending_rf;opening=cash;gross_rate=rate/100
+        with localcontext() as ctx:ctx.prec=60;pending=opening*(gross_rate-max(gross_rate,D(0))*profile["ordinary_income_rate"]-D(".0025"))/360
+        pending_rf=gross_rate/360;events=[]
+        for split in fixture.get("splits",[]):
+            if split["date"]==day.isoformat():
+                factor=D(str(split["factor"]));
+                if factor<=0:raise ValueError("invalid split")
+                events.append({"type":"split","ticker":split["ticker"],"factor":str(factor),"unit_basis":"SPLIT_NORMALIZED_NO_POSITION_MUTATION"})
+        for div in fixture.get("dividends",[]):
+            if div["ex_date"]==day.isoformat():
+                ticker=div["ticker"];gross=prior_shares.get(ticker,D(0))*D(str(div["gross_per_share"]));wh_rate=D(".25") if "ETN_25" in case and ticker=="ETN" else D(str(div.get("withholding_rate",0)));withholding=gross*wh_rate
+                tentative=gross*(profile["qualified_dividend_fraction"]*profile["qualified_dividend_rate"]+(1-profile["qualified_dividend_fraction"])*profile["ordinary_income_rate"]);credit=D(0) if "ZERO" in case else min(withholding,tentative);us_tax=tentative-credit;net=gross-withholding-us_tax
+                rec={"ticker":ticker,"payable_date":div["payable_date"],"net":net};receivables.append(rec);events.append({"type":"dividend_recognition","gross":str(gross),"withholding":str(withholding),"foreign_tax_credit":str(credit),"us_tax":str(us_tax),"net_receivable":str(net),**rec})
+        for rec in list(receivables):
+            if rec["payable_date"]==day.isoformat():cash+=rec["net"];receivables.remove(rec);events.append({"type":"receivable_settlement",**rec})
+        if day.isoformat() in session_set:
+            previous=[x for x in session_dates if x<day];rebalance=not previous or (day.year!=previous[-1].year if cadence=="ANNUAL" else (day.year,(day.month-1)//3)!=(previous[-1].year,(previous[-1].month-1)//3))
+            if rebalance:
+                nav=cash+sum(sum(x["units"] for x in ls)*prices[t][day.isoformat()] for t,ls in lots.items())+sum(x["net"] for x in receivables);targets={t:(w*nav if available.get(t,start)<=day else D(0)) for t,w in weights.items() if t!="CASH"};events.append({"type":"rebalance","cadence":cadence})
+                for ticker,ls in list(lots.items()):
+                    price=prices[ticker][day.isoformat()];delta=sum(x["units"] for x in ls)*price-targets.get(ticker,D(0))
+                    if delta>0:
+                        left=delta/price;details=[];tax=D(0);gain_total=D(0)
+                        for lot in sorted(ls,key=lambda x:(x["basis"],x["acquired"]),reverse=True):
+                            take=min(lot["units"],left)
+                            if not take:continue
+                            gain=take*(price-lot["basis"]);rate_tax=profile["gold_gain_rate"] if ticker=="GLD" else (profile["long_gain_rate"] if (day-lot["acquired"]).days>365 else profile["short_gain_rate"]);due=max(gain,D(0))*rate_tax
+                            lot["units"]-=take;left-=take;tax+=due;gain_total+=max(gain,D(0));details.append({"units":str(take),"basis":str(lot["basis"]),"acquired":lot["acquired"].isoformat(),"rate":str(rate_tax),"gain":str(gain),"tax":str(due)})
+                        lots[ticker]=[x for x in ls if x["units"]];fee=delta*cost/D(10000);cash+=delta-fee-tax;events.append({"type":"sell","ticker":ticker,"price":str(price),"units":str(delta/price),"proceeds":str(delta),"realized_gain":str(gain_total),"cost":str(fee),"tax":str(tax),"lots":details})
+                for ticker,target in targets.items():
+                    held=sum((x["units"] for x in lots.get(ticker,[])),D(0));current=held*prices[ticker][day.isoformat()] if held else D(0);need=max(target-current,D(0))
+                    if need:
+                        fee_rate=cost/D(10000);spend=min(need,cash/(1+fee_rate));fee=spend*fee_rate;price=prices[ticker][day.isoformat()];units=spend/price;cash=cash-spend-fee;lots.setdefault(ticker,[]).append({"units":units,"basis":price+fee/units,"acquired":day});events.append({"type":"buy","ticker":ticker,"units":str(units),"notional":str(units*price),"cost":str(fee)})
+            prior_shares={t:sum((x["units"] for x in ls),D(0)) for t,ls in lots.items()};positions=[{"ticker":t,"shares":str(sum(x["units"] for x in ls)),"price":str(prices[t][day.isoformat()]),"lots":[{"units":str(x["units"]),"basis":str(x["basis"]),"acquired":x["acquired"].isoformat()} for x in ls]} for t,ls in lots.items()]
+            securities=sum((sum(x["units"] for x in lots[t])*prices[t][day.isoformat()] for t in lots),D(0));nav=cash+securities+sum(x["net"] for x in receivables);interval_rf=rf_index/prior_rf-1;prior_rf=rf_index
+            row={"date":day.isoformat(),"nav":str(nav),"cash":str(cash),"risk_free_return":str(interval_rf),"_interest_credited":str(credited),"_positions":positions}
+            if events:row.update(events=events,positions=positions,receivables=[{**x,"net":str(x["net"])} for x in receivables])
+            ledger.append(row)
+        if events:calendar.append({"date":day.isoformat(),"opening_eligible_cash":str(opening),"dff_percent":str(rate),"interest_credited":str(credited),"settled_cash":str(cash),"events":events,"receivables":[{**x,"net":str(x["net"])} for x in receivables]})
+        day+=timedelta(days=1)
+    return {"calendar_ledger":calendar,"calendar_day_count":(end-start).days+1,"ledger":ledger}
+
 def validate_result(doc:dict, *, decision_only:bool=False)->list[str]:
     errors=[] if decision_only else validate_ledger(doc)
     paths=doc.get("portfolio_paths")
@@ -234,11 +360,21 @@ def validate_result(doc:dict, *, decision_only:bool=False)->list[str]:
                         if not all(finite(boot[k]) and 0<=boot[k]<=1 for k in ("SHARPE_DELTA","MAX_DRAWDOWN_DELTA","DAILY_CVAR_95_DELTA")):raise ValueError("bootstrap")
                         actual_boot=_bootstrap(paths[case][primary_id]["BASELINE"]["correction_replication"],paths[case][primary_id][alt]["correction_replication"])
                         if any(actual_boot[k]!=boot[k] for k in actual_boot):raise ValueError("bootstrap/path mismatch")
+                        actual_context_boot=_bootstrap(paths[case][primary_id]["BASELINE"]["context"],paths[case][primary_id][alt]["context"])
+                        if detail.get("context_bootstrap")!=actual_context_boot:raise ValueError("context bootstrap/path mismatch")
                         concentrations=[x["concentration"] for x in paths[case][primary_id][alt]["correction_replication"]]
                         if detail.get("concentration_path")!=concentrations:raise ValueError("concentration/path mismatch")
+                        base_concentrations=[x["concentration"] for x in paths[case][primary_id]["BASELINE"]["correction_replication"]]
+                        concentration_pass=all(a["direct_hhi"]<=b["direct_hhi"] and a["max_direct_name"]<=b["max_direct_name"] and a["effective_issuer_max"]-b["effective_issuer_max"]<=.0025 and a["ai_platform_common_driver"]-b["ai_platform_common_driver"]<=.0025 and a["semis_cluster"]<=.25 and a["power_infra_cluster"]<=.20 for a,b in zip(concentrations,base_concentrations))
+                        regimes=[{"id":"RATE_INFLATION_2022","start":"2022-01-03","end":"2022-12-30"},{"id":"CALENDAR_2023","start":"2023-01-03","end":"2023-12-29"},{"id":"CALENDAR_2024","start":"2024-01-02","end":"2024-12-31"},{"id":"CALENDAR_2025","start":"2025-01-02","end":"2025-12-31"},{"id":"CALENDAR_2026_PARTIAL","start":"2026-01-02","end":"2026-07-31"}]
+                        evaluations={"baseline":_fixed_evaluations(paths[case][primary_id]["BASELINE"]["full"],regimes),"alternative":_fixed_evaluations(paths[case][primary_id][alt]["full"],regimes)}
+                        mismatch=_compare_metric_tree(evaluations,detail.get("evaluations"),f"{case}/{alt}/evaluations")
+                        if mismatch:raise ValueError(mismatch[0])
+                        regime_pass=all(evaluations["alternative"][r["id"]]["max_drawdown"]-evaluations["baseline"][r["id"]]["max_drawdown"]>=-.01 for r in regimes)
+                        if detail.get("regime_pass") is not regime_pass or detail.get("concentration_pass") is not concentration_pass:raise ValueError("derived regime/concentration gate mismatch")
                         linked=(primary["max_drawdown_delta_pp"]>=2 and context["max_drawdown_delta_pp"]>=0 and boot["MAX_DRAWDOWN_DELTA"]>=.75) or (primary["daily_cvar_95_delta_pp"]>=.1 and context["daily_cvar_95_delta_pp"]>=0 and boot["DAILY_CVAR_95_DELTA"]>=.75)
-                        passed=sum(support(x) for x in cells)>=15 and support(primary) and all(context[k]>=0 for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta")) and boot["SHARPE_DELTA"]>=.75 and linked and detail["regime_pass"] is True and detail["concentration_pass"] is True
-                        named={"support_15_of_18":sum(support(x) for x in cells)>=15,"primary":support(primary),"context_direction":all(context[k]>=0 for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta")),"bootstrap_sharpe":boot["SHARPE_DELTA"]>=.75,"regimes":detail["regime_pass"] is True,"concentration":detail["concentration_pass"] is True,"linked_tail":linked,"final":passed}
+                        passed=sum(support(x) for x in cells)>=15 and support(primary) and all(context[k]>=0 for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta")) and boot["SHARPE_DELTA"]>=.75 and linked and regime_pass and concentration_pass
+                        named={"support_15_of_18":sum(support(x) for x in cells)>=15,"primary":support(primary),"context_direction":all(context[k]>=0 for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta")),"bootstrap_sharpe":boot["SHARPE_DELTA"]>=.75,"regimes":regime_pass,"concentration":concentration_pass,"linked_tail":linked,"final":passed}
                         if detail.get("gates")!=named:errors.append(f"{case}/{alt}: named gate vector mismatch")
                         recomputed[case][alt]=passed
                         if detail.get("final") is not passed:errors.append(f"{case}/{alt}: gate summary mismatch")
@@ -256,60 +392,41 @@ def validate_file(path:Path)->list[str]:
     except Exception as ex:return [f"cannot load result: {ex}"]
 
 def validate_study_bundle(bundle:dict)->list[str]:
-    """Replay every simulation and then independently validate the complete decision evidence."""
-    errors=[]; simulations=bundle.get("simulations")
-    if not isinstance(simulations,dict) or set(simulations)!=set(CASES):return ["complete simulation registry missing"]
-    exemplar=None;fixture=bundle.get("primitive_fixture",{});required_days=[]
-    if fixture:
-        cursor=date.fromisoformat(fixture["start"]);end=date.fromisoformat(fixture["end"])
-        while cursor<=end:required_days.append(cursor.isoformat());cursor+=__import__('datetime').timedelta(days=1)
-    for case,cells in simulations.items():
-        if set(cells)!=set(bundle.get("decision_evidence",{}).get("cell_ids",[])):errors.append(f"{case}: simulation cell registry mismatch");continue
-        for cell,variants in cells.items():
-            if set(variants)!={"BASELINE",*ALTS}:errors.append(f"{case}/{cell}: simulation variant registry mismatch");continue
-            for variant,simulation in variants.items():
-                replay_document={**simulation,"primitive_fixture":fixture}
-                for ledger_error in validate_ledger(replay_document):
-                    errors.append(f"{case}/{cell}/{variant}: {ledger_error}")
-                expected_cost,expected_tax,expected_cadence=cell.split("_")[1],cell.split("_TAX_")[1].split("_CADENCE_")[0],cell.split("_CADENCE_")[1]
-                identity=simulation.get("cell",{})
-                if simulation.get("variant")!=variant or identity.get("cost_bps")!=expected_cost or identity.get("tax_profile")!=expected_tax or identity.get("cadence")!=expected_cadence or identity.get("foreign_case")!=case:errors.append(f"{case}/{cell}/{variant}: simulation identity mismatch")
-                calendar_rows=simulation.get("calendar_ledger",[])
-                if not calendar_rows or simulation.get("calendar_day_count")!=len(required_days) or [x.get("date") for x in calendar_rows]!=sorted(set(x.get("date") for x in calendar_rows)):errors.append(f"{case}/{cell}/{variant}: incomplete calendar ledger")
-                stored_windows=bundle.get("portfolio_paths",{}).get(case,{}).get(cell,{}).get(variant,{})
-                full=stored_windows.get("full",[])
-                compact=simulation.get("ledger",[])
-                if [(x.get("date"),x.get("nav"),x.get("risk_free_return")) for x in compact]!=[(x.get("date"),x.get("nav"),x.get("risk_free_return")) for x in full]:errors.append(f"{case}/{cell}/{variant}: simulation/path mismatch")
-                event_by_date={row["date"]:row.get("events",[]) for row in calendar_rows};shares={}
-                for row in compact:
-                    for event in event_by_date.get(row["date"],[]):
-                        if event.get("type")=="buy":shares[event["ticker"]]=shares.get(event["ticker"],D(0))+D(str(event["units"]))
-                        elif event.get("type")=="sell":shares[event["ticker"]]=shares.get(event["ticker"],D(0))-D(str(event["units"]))
-                    for position in row.get("positions",[]):
-                        lots=position.get("lots",[])
-                        if any(D(str(x["units"]))<0 or D(str(x["basis"]))<=0 or date.fromisoformat(x["acquired"])>date.fromisoformat(row["date"]) for x in lots) or abs(sum((D(str(x["units"])) for x in lots),D(0))-D(str(position["shares"])))>D("1e-18"):errors.append(f"{case}/{cell}/{variant}: invalid lot ledger")
-                    try:
-                        prices={t:D(str(series[row["date"]])) for t,series in fixture["prices"].items() if row["date"] in series and shares.get(t,D(0))}
-                        expected_concentration=_concentration(D(str(row["nav"])),shares,prices)
-                        actual=next(x["concentration"] for x in full if x["date"]==row["date"])
-                        if any(abs(expected_concentration[k]-actual[k])>1e-12 for k in expected_concentration):errors.append(f"{case}/{cell}/{variant}: concentration replay mismatch")
-                    except Exception as ex:errors.append(f"{case}/{cell}/{variant}: concentration replay malformed: {ex}")
-                try:
-                    replay_path=[]
-                    for row in compact:
-                        stored=next(x for x in full if x.get("date")==row.get("date"))
-                        replay_path.append({"date":row["date"],"nav":row["nav"],"risk_free_return":row["risk_free_return"],"concentration":stored["concentration"]})
-                    expected_windows=_derived_windows(replay_path,str(simulation.get("initial_nav")))
-                    if set(stored_windows)!=set(expected_windows):raise ValueError("registered window inventory mismatch")
-                    for window,expected in expected_windows.items():
-                        if _path_identity(stored_windows[window])!=_path_identity(expected):raise ValueError(f"{window} path detached from replay")
-                except Exception as ex:errors.append(f"{case}/{cell}/{variant}: window replay mismatch: {ex}")
-                exemplar=exemplar or simulation
+    """Independently replay every registered simulation before accepting a bundle."""
+    simulations=bundle.get("simulations");fixture=bundle.get("primitive_fixture")
+    if bundle.get("study_id")!="PORTFOLIO-ROBUSTNESS-V2-0001" or bundle.get("synthetic") is not True:return ["invalid study identity"]
+    if not isinstance(simulations,dict) or tuple(simulations)!=CASES:return ["complete simulation registry missing"]
+    combined={"portfolio_paths":bundle.get("portfolio_paths"),"decision_evidence":bundle.get("decision_evidence"),"foreign_case_gate_booleans":bundle.get("foreign_case_gate_booleans"),"disposition":bundle.get("disposition")}
+    errors=validate_result(combined,decision_only=True)
     if errors:return errors
-    if exemplar:
-        combined={"portfolio_paths":bundle.get("portfolio_paths"),"decision_evidence":bundle.get("decision_evidence"),"foreign_case_gate_booleans":bundle.get("foreign_case_gate_booleans"),"disposition":bundle.get("disposition")}
-        errors.extend(validate_result(combined,decision_only=True))
-    return errors
+    cell_ids=tuple(bundle["decision_evidence"]["cell_ids"])
+    for case,cells in simulations.items():
+        if tuple(cells)!=cell_ids:return [f"{case}: simulation cell registry mismatch"]
+        for cell,variants in cells.items():
+            if tuple(variants)!=("BASELINE",*ALTS):return [f"{case}/{cell}: simulation variant registry mismatch"]
+            for variant,actual in variants.items():
+                try:
+                    expected=_replay_simulation(fixture,case,cell,variant);identity=actual.get("cell",{});tax=cell.split("_TAX_")[1].split("_CADENCE_")[0]
+                    if actual.get("variant")!=variant or actual.get("initial_nav")!="100000" or identity.get("cost_bps")!=cell.split("_")[1] or identity.get("tax_profile")!=tax or identity.get("cadence")!=cell.split("_CADENCE_")[1] or identity.get("foreign_case")!=case:raise ValueError("simulation identity mismatch")
+                    if actual.get("calendar_day_count")!=expected["calendar_day_count"] or actual.get("calendar_ledger")!=expected["calendar_ledger"]:raise ValueError("calendar/economic replay mismatch")
+                    projection=lambda rows:[{k:v for k,v in x.items() if not k.startswith("_")} for x in rows]
+                    if actual.get("ledger")!=projection(expected["ledger"]):raise ValueError("session cash/NAV/event/lot replay mismatch")
+                    replay_full=[]
+                    for i,row in enumerate(expected["ledger"]):
+                        item={"date":row["date"],"nav":row["nav"],"risk_free_return":row["risk_free_return"]};shares={x["ticker"]:D(x["shares"]) for x in row["_positions"]};prices={x["ticker"]:D(x["price"]) for x in row["_positions"]};item["concentration"]=_concentration(D(row["nav"]),shares,prices)
+                        if i==0:item["anchor_nav"]="100000"
+                        replay_full.append(item)
+                    expected_windows=_derived_windows(replay_full,"100000");stored=bundle["portfolio_paths"][case][cell][variant]
+                    if set(stored)!=set(expected_windows):raise ValueError("registered window inventory mismatch")
+                    for window,rows in expected_windows.items():
+                        if _path_identity(stored[window])!=_path_identity(rows):raise ValueError(f"{window} path detached from primitive replay")
+                    stats=_path_stats(replay_full);claimed=actual.get("summary",{})
+                    for key in ("net_twr_cagr","sharpe","sortino","max_drawdown","daily_cvar_95"):
+                        if not _finite(claimed.get(key)) or abs(stats[key]-claimed[key])>1e-10:raise ValueError(f"summary {key} mismatch")
+                    cumulative=float(replay_full[-1]["nav"])/100000-1
+                    if not _finite(claimed.get("cumulative_twr")) or abs(cumulative-claimed["cumulative_twr"])>1e-10:raise ValueError("summary cumulative_twr mismatch")
+                except Exception as ex:return [f"{case}/{cell}/{variant}: {ex}"]
+    return []
 
 def validate_decision_variant(bundle:dict,case:str,alt:str)->list[str]:
     """Focused independent replay used for mutation diagnostics without replaying 432 simulations."""
