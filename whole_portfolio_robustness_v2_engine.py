@@ -68,6 +68,37 @@ def funded_purchase(cash: D, desired_notional: D, price: D, cost_bps: D) -> tupl
     if remainder < 0: raise ArithmeticError("negative cash")
     return spend / price, cost, remainder
 
+def _rebalance_fixed_point(cash:D, receivables:D, lots:Mapping[str,list[Lot]], prices:Mapping[str,D],
+                           weights:Mapping[str,D], available:Mapping[str,date], day:date, cost_bps:D,
+                           profile:Mapping[str,D])->tuple[D,dict[str,list[Lot]],list[dict]]:
+    """Solve post-friction target NAV from unchanged pre-trade lots, then settle once."""
+    pre_nav=cash+receivables+sum((sum(x.units for x in ls)*prices[t] for t,ls in lots.items()),D(0))
+    fee_rate=cost_bps/D(10000)
+    def plan(target_nav:D)->tuple[D,D,dict[str,list[Lot]],list[dict],D]:
+        trial={t:[Lot(x.units,x.basis_per_unit,x.acquired) for x in ls] for t,ls in lots.items()};settled=cash;events=[];drag=D(0)
+        targets={t:(w*target_nav if available.get(t,day)<=day else D(0)) for t,w in weights.items() if t!="CASH"}
+        for ticker,ls in trial.items():
+            value=sum(x.units for x in ls)*prices[ticker];delta=value-targets.get(ticker,D(0))
+            if delta>D(0):
+                units=delta/prices[ticker];gain,tax,detail=hifo_sell(ls,units,prices[ticker],day,D(str(profile["short_gain_rate"])),D(str(profile["long_gain_rate"])),gold_rate=D(str(profile["gold_gain_rate"])) if ticker=="GLD" else None);fee=delta*fee_rate
+                settled+=delta-fee-tax;drag+=fee+tax;events.append({"type":"sell","ticker":ticker,"price":str(prices[ticker]),"units":str(units),"proceeds":str(delta),"realized_gain":str(gain),"cost":str(fee),"tax":str(tax),"lots":detail})
+        for ticker,target in targets.items():
+            held=sum((x.units for x in trial.get(ticker,[])),D(0));need=max(target-held*prices[ticker],D(0))
+            if need:
+                fee=need*fee_rate
+                settled-=need+fee;drag+=fee;trial.setdefault(ticker,[]).append(Lot(need/prices[ticker],prices[ticker],day));events.append({"type":"buy","ticker":ticker,"units":str(need/prices[ticker]),"notional":str(need),"cost":str(fee)})
+        post=settled+receivables+sum((sum(x.units for x in ls)*prices[t] for t,ls in trial.items()),D(0))
+        return post,settled,trial,events,drag
+    target=pre_nav
+    for _ in range(100):
+        _,_,_,_,drag=plan(target);candidate=pre_nav-drag
+        if abs(candidate-target)<=D("0.000001"):
+            post,settled,trial,events,_=plan(candidate)
+            if abs(post-candidate)>D("0.000001") or settled < -D("0.000001") or not post.is_finite() or post<=0:raise ArithmeticError("post-friction fixed point invalid")
+            return max(settled,D(0)),trial,events
+        target=candidate
+    raise ArithmeticError("post-friction fixed point did not converge")
+
 def dividend_net(shares: D, gross_per_share: D, withholding_rate: D, qualified_fraction: D,
                  qualified_rate: D, ordinary_rate: D, credit_allowed: bool = True) -> dict[str, D]:
     gross = shares * gross_per_share
@@ -424,6 +455,8 @@ def _validated_actions(fixture:Mapping[str,Any],start:date,end:date,sessions:set
 def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D(10), profile:Mapping[str,D]|None=None, cadence="QUARTERLY", foreign_case=FOREIGN_CASES[0])->dict:
     """Integrated deterministic synthetic simulator; all input clocks are explicit primitives."""
     profile=profile or {"ordinary_income_rate":D('.24'),"qualified_dividend_rate":D('.15'),"qualified_dividend_fraction":D('.8'),"short_gain_rate":D('.24'),"long_gain_rate":D('.15'),"gold_gain_rate":D('.28')}
+    if isinstance(cost_bps,bool) or not D(str(cost_bps)).is_finite() or D(str(cost_bps))<0:raise ValueError("invalid transaction cost")
+    if any(isinstance(v,bool) or not D(str(v)).is_finite() or D(str(v))<0 or D(str(v))>1 for v in profile.values()):raise ValueError("invalid tax profile")
     sessions=[date.fromisoformat(x) for x in fixture["sessions"]]; session_set=set(sessions)
     close_clock={date.fromisoformat(k):datetime.fromisoformat(v.replace("Z","+00:00")) for k,v in fixture.get("session_closes",{}).items()}
     if set(close_clock)!=session_set or any(v.tzinfo is None for v in close_clock.values()):raise ValueError("complete authenticated XNYS close clock required")
@@ -464,17 +497,9 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
                 targets={t:(w*nav if available.get(t,start)<=day else D(0)) for t,w in weights.items() if t!="CASH"}
                 if any(target and day not in prices.get(t,{}) for t,target in targets.items()):raise ValueError("missing price at first scheduled rebalance after availability")
                 events_day.append({"type":"rebalance","cadence":cadence})
-                # Sells first; HIFO taxes and sell costs immediately reduce settled cash.
-                for t,ls in lots.items():
-                    value=sum(x.units for x in ls)*prices[t][day]; delta=value-targets.get(t,D(0))
-                    if delta>D(0):
-                        units=delta/prices[t][day]; gain,tax,detail=hifo_sell(ls,units,prices[t][day],day,D(str(profile["short_gain_rate"])),D(str(profile["long_gain_rate"])),gold_rate=D(str(profile["gold_gain_rate"])) if t=="GLD" else None);cost=delta*cost_bps/D(10000);cash+=delta-cost-tax;events_day.append({"type":"sell","ticker":t,"price":str(prices[t][day]),"units":str(units),"proceeds":str(delta),"realized_gain":str(gain),"cost":str(cost),"tax":str(tax),"lots":detail})
-                for t,target in targets.items():
-                    held=sum((x.units for x in lots.get(t,[])),D(0))
-                    if not held and not target:continue
-                    current=held*prices[t][day]; need=max(target-current,D(0))
-                    if need:
-                        units,cost,cash=funded_purchase(cash,need,prices[t][day],cost_bps);lots.setdefault(t,[]).append(Lot(units,prices[t][day]+cost/units if units else prices[t][day],day));events_day.append({"type":"buy","ticker":t,"units":str(units),"notional":str(units*prices[t][day]),"cost":str(cost)})
+                active={t:w for t,w in weights.items() if t=="CASH" or available.get(t,start)<=day}
+                cash,lots,trades=_rebalance_fixed_point(cash,sum((r["net"] for r in receivables),D(0)),lots,{t:prices[t][day] for t in active if t!="CASH"},active,available,day,cost_bps,profile)
+                events_day.extend(trades)
             prior_shares={t:sum((x.units for x in ls),D(0)) for t,ls in lots.items()}
             positions=[{"ticker":t,"shares":str(sum(x.units for x in ls)),"price":str(prices[t][day]),"lots":[{"units":str(x.units),"basis":str(x.basis_per_unit),"acquired":x.acquired.isoformat()} for x in ls]} for t,ls in lots.items()]
             nav=cash+sum(D(x["shares"])*D(x["price"]) for x in positions)+sum(r["net"] for r in receivables)

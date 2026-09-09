@@ -4,7 +4,7 @@ import math
 import pytest
 from pathlib import Path
 from whole_portfolio_robustness_v2_engine import *
-from whole_portfolio_robustness_v2_engine import _cell_ids, _rebalance_day
+from whole_portfolio_robustness_v2_engine import _cell_ids, _rebalance_day, _rebalance_fixed_point
 
 def good(delta=True):
     return {"net_cagr_delta_pp":0,"sharpe_delta":.1,"sortino_delta":.1,"max_drawdown_delta_pp":2 if delta else 0,"daily_cvar_95_delta_pp":0}
@@ -38,6 +38,39 @@ def test_hifo_and_no_loss_credit_and_gold_character():
 def test_funding_never_borrows():
     units,cost,cash=funded_purchase(D(100),D(200),D(10),D(10))
     assert cash==0 and units*10+cost==100
+
+def test_rebalance_targets_post_friction_nav_and_fees_do_not_enter_basis():
+    root=Path(__file__).parent;fixture=full_synthetic_fixture()
+    result=simulate(root,fixture,'BASELINE',D(10));first=result['ledger'][0];nav=D(first['nav'])
+    assert abs(nav-D(100000)/(D(1)+D('.001')*D('.86')))<D('.000001')
+    weights=derive_weights(root,'BASELINE')
+    for position in first['positions']:
+        assert abs(D(position['shares'])*D(position['price'])-weights[position['ticker']]*nav)<D('.000001')
+        assert all(D(lot['basis'])==D(position['price']) for lot in position['lots'])
+    july=next(row for row in result['calendar_ledger'] if row['date']=='2021-07-01')
+    sale=next(event for event in july['events'] if event['type']=='sell' and event['ticker']=='NVDA');lot=sale['lots'][0]
+    assert D(lot['gain'])==D(lot['units'])*(D(sale['price'])-D(lot['basis']))
+    assert D(lot['tax'])==D(lot['gain'])*D(lot['rate'])
+    zero=simulate(root,fixture,'BASELINE',D(0))['ledger'][0]
+    assert D(zero['nav'])==D(100000) and all(D(lot['basis'])==D(position['price']) for position in zero['positions'] for lot in position['lots'])
+    for bad in (True,D('-1'),D('NaN')):
+        with pytest.raises(ValueError):simulate(root,fixture,'BASELINE',bad)
+
+def test_fixed_point_allows_provisional_shortfall_but_rejects_final_shortfall():
+    root=Path(__file__).parent;fixture=full_synthetic_fixture();original=dict(fixture['prices']['NVDA'])
+    profile={'ordinary_income_rate':D('.32'),'qualified_dividend_rate':D('.20'),'qualified_dividend_fraction':D(0),'short_gain_rate':D('.32'),'long_gain_rate':D('.20'),'gold_gain_rate':D('.28')}
+    for day,value in fixture['prices']['NVDA'].items():
+        if day>='2021-07-01':fixture['prices']['NVDA'][day]=str(D(str(value))*20)
+    result=simulate(root,fixture,'BASELINE',D(10),profile,'QUARTERLY',FOREIGN_CASES[0]);row=next(x for x in result['ledger'] if x['date']=='2021-07-01');nav=D(row['nav'])
+    assert abs(nav-D('181307.168064881328718800860129927659184437878829177997151134'))<D('.000001')
+    assert abs(D(row['cash'])-D('25383.0035290833860206321204181898722858213030360849196011587'))<D('.000001')
+    weights=derive_weights(root,'BASELINE')
+    for position in row['positions']:assert abs(D(position['shares'])*D(position['price'])-weights[position['ticker']]*nav)<D('.000001')
+    assert not any(position['ticker']=='CEG' for position in row['positions'])
+    fixture['prices']['NVDA']=original
+    assert simulate(root,fixture,'BASELINE',D(10),profile,'QUARTERLY',FOREIGN_CASES[0])['ledger'][0]['nav']
+    with pytest.raises(ArithmeticError,match='fixed point invalid'):
+        _rebalance_fixed_point(D(100),D(0),{}, {'X':D(10)},{'X':D(2),'CASH':D(-1)},{},date(2025,1,2),D(0),profile)
 
 def test_dividend_ftc_and_entitlement():
     x=dividend_net(D(2),D(1),D('.1'),D('.8'),D('.15'),D('.24'))
@@ -141,7 +174,7 @@ def test_integrated_golden_initial_cost_weekend_payable_and_split():
     root=Path(__file__).parent;days=['2025-01-02','2025-01-03','2025-01-06'];tickers=[t for t in derive_weights(root,'BASELINE') if t!='CASH']
     fixture={'start':'2025-01-02','end':'2025-01-06','sessions':days,'session_closes':{d:d+'T21:00:00Z' for d in days},'prices':{t:{d:'100' for d in days} for t in tickers},'fed_business_days':['2025-01-01','2025-01-02'],'dff_records':[{'observation_date':'2024-12-31','published_at':'2025-01-01T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'TMO','ex_date':'2025-01-03','payable_date':'2025-01-04','gross_per_share':'1','withholding_rate':'0'}],'splits':[{'ticker':'NVDA','date':'2025-01-06','factor':'10'}]}
     result=simulate(root,fixture,profile={k:D(0) for k in ('ordinary_income_rate','qualified_dividend_rate','qualified_dividend_fraction','short_gain_rate','long_gain_rate','gold_gain_rate')},cost_bps=D(10))
-    assert D(result['ledger'][0]['nav'])==D('99912.5000')
+    assert abs(D(result['ledger'][0]['nav'])-D(100000)/(D(1)+D('.001')*D('.875')))<D('.000001')
     assert result['summary']['cumulative_twr']==pytest.approx(float(D(result['ledger'][-1]['nav'])/D(100000)-1))
     assert any(e['type']=='receivable_settlement' for e in result['calendar_ledger'][2]['events'])
     assert result['calendar_ledger'][2]['date']=='2025-01-04'

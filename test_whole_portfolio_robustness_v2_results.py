@@ -105,6 +105,49 @@ def test_independent_replay_etn_cases_and_malformed_actions():
     fixture['splits']=[split]
     assert _replay_simulation(fixture,CASES[0],cell,'BASELINE')
 
+def test_independent_replay_reconstructs_post_friction_targets_and_price_basis():
+    from test_whole_portfolio_robustness_v2_engine import full_synthetic_fixture
+    fixture=full_synthetic_fixture();cell='COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY'
+    replay=_replay_simulation(fixture,CASES[0],cell,'BASELINE');first=replay['ledger'][0]
+    assert abs(D(first['nav'])-D(100000)/(D(1)+D('.001')*D('.86')))<D('.000001')
+    assert all(D(lot['basis'])==D(position['price']) for position in first['_positions'] for lot in position['lots'])
+    july=next(row for row in replay['calendar_ledger'] if row['date']=='2021-07-01')
+    sale=next(event for event in july['events'] if event['type']=='sell' and event['ticker']=='NVDA');lot=sale['lots'][0]
+    assert D(lot['gain'])==D(lot['units'])*(D(sale['price'])-D(lot['basis']))
+    assert D(lot['tax'])==D(lot['gain'])*D(lot['rate'])
+
+def test_independent_replay_accepts_converged_shock_after_provisional_shortfall():
+    from test_whole_portfolio_robustness_v2_engine import full_synthetic_fixture
+    fixture=full_synthetic_fixture();original=dict(fixture['prices']['NVDA']);cell='COST_10_TAX_TAXABLE_HIGH_CADENCE_QUARTERLY'
+    positive=_replay_simulation(fixture,CASES[0],cell,'BASELINE')
+    for day,value in fixture['prices']['NVDA'].items():
+        if day>='2021-07-01':fixture['prices']['NVDA'][day]=str(D(str(value))*20)
+    replay=_replay_simulation(fixture,CASES[0],cell,'BASELINE');row=next(x for x in replay['ledger'] if x['date']=='2021-07-01')
+    assert abs(D(row['nav'])-D('181307.168064881328718800860129927659184437878829177997151134'))<D('.000001')
+    assert abs(D(row['cash'])-D('25383.0035290833860206321204181898722858213030360849196011587'))<D('.000001')
+    fixture['prices']['NVDA']=original
+    assert _replay_simulation(fixture,CASES[0],cell,'BASELINE')==positive
+
+def test_complete_ledgers_use_canonical_nav_grouping_and_reject_material_tampering():
+    from pathlib import Path
+    import json,yaml
+    import whole_portfolio_robustness_v2_engine as engine
+    from test_whole_portfolio_robustness_v2_engine import full_synthetic_fixture
+    prereg=yaml.safe_load(Path('research/whole_portfolio_robustness_v2/pre_registration.yaml').read_text());profiles={k:{name:D(value) for name,value in values.items()} for k,values in prereg['frictions']['tax_profile_parameters'].items()}
+    fixture=full_synthetic_fixture();original=dict(fixture['prices']['NVDA'])
+    cases=[('TAX_DEFERRED',D(0),'ANNUAL',False),('TAX_DEFERRED',D(10),'QUARTERLY',False),('TAXABLE_MID',D(0),'QUARTERLY',False),('TAX_DEFERRED',D(0),'QUARTERLY',True),('TAXABLE_MID',D(10),'ANNUAL',True)]
+    for profile,cost,cadence,shock in cases:
+        fixture['prices']['NVDA']=dict(original)
+        if shock:
+            for day,value in fixture['prices']['NVDA'].items():
+                if day>='2021-07-01':fixture['prices']['NVDA'][day]=str(D(str(value))*20)
+        artifact=json.loads(json.dumps(engine.simulate(Path('.'),fixture,'BASELINE',cost,profiles[profile],cadence,CASES[0]),allow_nan=False))
+        assert validate_ledger(artifact)==[]
+        row=artifact['ledger'][409];saved=row['nav'];row['nav']=str(D(saved)+D('.01'));assert any('NAV does not reconcile' in error for error in validate_ledger(artifact));row['nav']=saved
+        row['cash']=str(D(row['cash'])+D('.01'));assert validate_ledger(artifact);row['cash']=str(D(row['cash'])-D('.01'))
+        assert validate_ledger(artifact)==[]
+    fixture['prices']['NVDA']=original
+
 def test_fixed_evaluation_uses_replayed_operational_economics():
     from pathlib import Path
     import yaml
@@ -112,10 +155,13 @@ def test_fixed_evaluation_uses_replayed_operational_economics():
     from test_whole_portfolio_robustness_v2_engine import REGIMES,full_synthetic_fixture
     prereg=yaml.safe_load(Path('research/whole_portfolio_robustness_v2/pre_registration.yaml').read_text());cell=next(x for x in prereg['frictions']['cell_registry'] if x['cell_id']=='COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY');profile={k:D(v) for k,v in prereg['frictions']['tax_profile_parameters'][cell['tax_profile']].items()}
     result=engine.simulate(Path('.'),full_synthetic_fixture(),'BASELINE',D(10),profile,'QUARTERLY',CASES[0]);metrics=engine.fixed_evaluations(result['ledger'],REGIMES)['CALENDAR_2023']
-    assert metrics['cost_drag']==pytest.approx(.30491598718183627)
-    assert metrics['tax_drag']==pytest.approx(3.9731247866407537)
-    assert metrics['rebalance_count']==4
-    assert metrics['one_way_turnover']==pytest.approx(.0030288705385554133)
+    days=[x for x in result['calendar_ledger'] if '2023-01-03'<=x['date']<='2023-12-29'];events=[event for row in days for event in row['events']]
+    costs=sum((D(str(x.get('cost',0))) for x in events),D(0));taxes=sum((D(str(x.get('tax',0)))+D(str(x.get('withholding',0)))+D(str(x.get('us_tax',0))) for x in events),D(0));notional=sum((D(str(x.get('notional',x.get('proceeds',0)))) for x in events if x.get('type') in {'buy','sell'}),D(0))
+    anchor=D(next(x['nav'] for x in result['ledger'] if x['date']=='2022-12-30'));rebalances=sum(any(x.get('type')=='rebalance' for x in row['events']) for row in days)
+    assert costs==D('0.3057172696484120559175052198') and metrics['cost_drag']==pytest.approx(float(costs))
+    assert taxes==D('4.002144282150124469610132306') and metrics['tax_drag']==pytest.approx(float(taxes))
+    assert metrics['rebalance_count']==rebalances==4
+    assert metrics['one_way_turnover']==pytest.approx(float(notional/anchor))
     evaluations=engine.fixed_evaluations(result['ledger'],REGIMES)
     assert tuple(evaluations['walk_forward'])==('2022','2023','2024','2025','2026')
     independent=_fixed_evaluations(result['ledger'],REGIMES)

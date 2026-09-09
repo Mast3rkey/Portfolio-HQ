@@ -215,7 +215,9 @@ def validate_ledger(doc:dict)->list[str]:
             cash=D(str(r["cash"])); recv=sum((D(str(x["net"])) for x in r.get("receivables",[])),D(0))
             has_holdings="positions" in r
             positions=sum((D(str(x["shares"]))*D(str(x["price"])) for x in r.get("positions",[])),D(0))
-            nav=cash+recv+positions if has_holdings else D(str(r["nav"]))
+            # Preserve the producer's canonical Decimal grouping: cash, securities,
+            # then receivables. Decimal context rounding is intentionally strict.
+            nav=cash+positions+recv if has_holdings else D(str(r["nav"]))
             primitive_rows.append({"nav":str(nav)})
             if has_holdings and nav!=D(str(r["nav"])):e.append(f"row {i}: NAV does not reconcile")
             if cash<0:e.append(f"row {i}: borrowing/negative cash")
@@ -320,6 +322,39 @@ def _weights(variant:str)->dict[str,D]:
     weights["CASH"]=D(1)-sum(weights.values())
     return weights
 
+def _fixed_point_rebalance(cash:D,receivables:D,lots:dict[str,list[dict]],prices:dict[str,D],weights:dict[str,D],available:dict[str,date],day:date,cost:D,profile:dict[str,D])->tuple[D,dict[str,list[dict]],list[dict]]:
+    """Independent post-friction fixed-point reconstruction from pre-trade lots."""
+    pre=cash+receivables+sum((sum(x["units"] for x in ls)*prices[t] for t,ls in lots.items()),D(0));fee_rate=cost/D(10000)
+    def plan(target_nav:D):
+        trial={t:[dict(x) for x in ls] for t,ls in lots.items()};settled=cash;events=[];drag=D(0)
+        targets={t:(w*target_nav if available.get(t,day)<=day else D(0)) for t,w in weights.items() if t!="CASH"}
+        for ticker,ls in trial.items():
+            delta=sum(x["units"] for x in ls)*prices[ticker]-targets.get(ticker,D(0))
+            if delta>0:
+                left=delta/prices[ticker];details=[];tax=D(0);gain_total=D(0)
+                for lot in sorted(ls,key=lambda x:(x["basis"],x["acquired"]),reverse=True):
+                    take=min(lot["units"],left)
+                    if not take:continue
+                    gain=take*(prices[ticker]-lot["basis"]);rate=profile["gold_gain_rate"] if ticker=="GLD" else (profile["long_gain_rate"] if (day-lot["acquired"]).days>365 else profile["short_gain_rate"]);due=max(gain,D(0))*rate
+                    lot["units"]-=take;left-=take;tax+=due;gain_total+=max(gain,D(0));details.append({"units":str(take),"basis":str(lot["basis"]),"acquired":lot["acquired"].isoformat(),"rate":str(rate),"gain":str(gain),"tax":str(due)})
+                trial[ticker]=[x for x in ls if x["units"]];fee=delta*fee_rate;settled+=delta-fee-tax;drag+=fee+tax;events.append({"type":"sell","ticker":ticker,"price":str(prices[ticker]),"units":str(delta/prices[ticker]),"proceeds":str(delta),"realized_gain":str(gain_total),"cost":str(fee),"tax":str(tax),"lots":details})
+        for ticker,target in targets.items():
+            held=sum((x["units"] for x in trial.get(ticker,[])),D(0));need=max(target-held*prices[ticker],D(0))
+            if need:
+                fee=need*fee_rate
+                settled-=need+fee;drag+=fee;trial.setdefault(ticker,[]).append({"units":need/prices[ticker],"basis":prices[ticker],"acquired":day});events.append({"type":"buy","ticker":ticker,"units":str(need/prices[ticker]),"notional":str(need),"cost":str(fee)})
+        post=settled+receivables+sum((sum(x["units"] for x in ls)*prices[t] for t,ls in trial.items()),D(0))
+        return post,settled,trial,events,drag
+    target=pre
+    for _ in range(100):
+        *_,drag=plan(target);candidate=pre-drag
+        if abs(candidate-target)<=D("0.000001"):
+            post,settled,trial,events,_=plan(candidate)
+            if abs(post-candidate)>D("0.000001") or settled < -D("0.000001") or not post.is_finite() or post<=0:raise ArithmeticError("post-friction fixed point invalid")
+            return max(settled,D(0)),trial,events
+        target=candidate
+    raise ArithmeticError("post-friction fixed point did not converge")
+
 def _validated_actions(fixture:dict,start:date,end:date,sessions:set[date],known_tickers:set[str])->tuple[list[dict],list[dict]]:
     """Independently admit corporate-action primitives before replay."""
     dividends=fixture.get("dividends",[]);splits=fixture.get("splits",[])
@@ -413,21 +448,11 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
         if day.isoformat() in session_set:
             previous=[x for x in session_dates if x<day];rebalance=not previous or (day.year!=previous[-1].year if cadence=="ANNUAL" else (day.year,(day.month-1)//3)!=(previous[-1].year,(previous[-1].month-1)//3))
             if rebalance:
-                nav=cash+sum(sum(x["units"] for x in ls)*prices[t][day.isoformat()] for t,ls in lots.items())+sum(x["net"] for x in receivables);targets={t:(w*nav if available.get(t,start)<=day else D(0)) for t,w in weights.items() if t!="CASH"};events.append({"type":"rebalance","cadence":cadence})
-                for ticker,ls in list(lots.items()):
-                    price=prices[ticker][day.isoformat()];delta=sum(x["units"] for x in ls)*price-targets.get(ticker,D(0))
-                    if delta>0:
-                        left=delta/price;details=[];tax=D(0);gain_total=D(0)
-                        for lot in sorted(ls,key=lambda x:(x["basis"],x["acquired"]),reverse=True):
-                            take=min(lot["units"],left)
-                            if not take:continue
-                            gain=take*(price-lot["basis"]);rate_tax=profile["gold_gain_rate"] if ticker=="GLD" else (profile["long_gain_rate"] if (day-lot["acquired"]).days>365 else profile["short_gain_rate"]);due=max(gain,D(0))*rate_tax
-                            lot["units"]-=take;left-=take;tax+=due;gain_total+=max(gain,D(0));details.append({"units":str(take),"basis":str(lot["basis"]),"acquired":lot["acquired"].isoformat(),"rate":str(rate_tax),"gain":str(gain),"tax":str(due)})
-                        lots[ticker]=[x for x in ls if x["units"]];fee=delta*cost/D(10000);cash+=delta-fee-tax;events.append({"type":"sell","ticker":ticker,"price":str(price),"units":str(delta/price),"proceeds":str(delta),"realized_gain":str(gain_total),"cost":str(fee),"tax":str(tax),"lots":details})
-                for ticker,target in targets.items():
-                    held=sum((x["units"] for x in lots.get(ticker,[])),D(0));current=held*prices[ticker][day.isoformat()] if held else D(0);need=max(target-current,D(0))
-                    if need:
-                        fee_rate=cost/D(10000);spend=min(need,cash/(1+fee_rate));fee=spend*fee_rate;price=prices[ticker][day.isoformat()];units=spend/price;cash=cash-spend-fee;lots.setdefault(ticker,[]).append({"units":units,"basis":price+fee/units,"acquired":day});events.append({"type":"buy","ticker":ticker,"units":str(units),"notional":str(units*price),"cost":str(fee)})
+                targets={t:(w if available.get(t,start)<=day else D(0)) for t,w in weights.items() if t!="CASH"}
+                if any(weight and day.isoformat() not in prices.get(t,{}) for t,weight in targets.items()):raise ValueError("missing price at first scheduled rebalance after availability")
+                events.append({"type":"rebalance","cadence":cadence})
+                active={t:w for t,w in weights.items() if t=="CASH" or available.get(t,start)<=day}
+                cash,lots,trades=_fixed_point_rebalance(cash,sum(x["net"] for x in receivables),lots,{t:prices[t][day.isoformat()] for t in active if t!="CASH"},active,available,day,cost,profile);events.extend(trades)
             prior_shares={t:sum((x["units"] for x in ls),D(0)) for t,ls in lots.items()};positions=[{"ticker":t,"shares":str(sum(x["units"] for x in ls)),"price":str(prices[t][day.isoformat()]),"lots":[{"units":str(x["units"]),"basis":str(x["basis"]),"acquired":x["acquired"].isoformat()} for x in ls]} for t,ls in lots.items()]
             securities=sum((sum(x["units"] for x in lots[t])*prices[t][day.isoformat()] for t in lots),D(0));nav=cash+securities+sum(x["net"] for x in receivables);interval_rf=rf_index/prior_rf-1;prior_rf=rf_index
             row={"date":day.isoformat(),"nav":str(nav),"cash":str(cash),"risk_free_return":str(interval_rf),"_interest_credited":str(credited),"_positions":positions}
