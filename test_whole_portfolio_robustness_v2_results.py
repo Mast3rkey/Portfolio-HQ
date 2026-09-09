@@ -1,13 +1,15 @@
 from copy import deepcopy
+import pytest
 from whole_portfolio_robustness_v2_result_validator import *
-from whole_portfolio_robustness_v2_result_validator import _XNYS, _concentration, _derived_windows, _path_identity, _replay_simulation
+from whole_portfolio_robustness_v2_result_validator import _XNYS, _SUMMARY_FIELDS, _compare_metric_tree, _concentration, _derived_windows, _path_identity, _replay_simulation
 
 def test_replay_window_derivation_binds_predecessor_and_every_field():
     full=[]
     for item in _XNYS:
         if '2021-06-01'<=item['session']<='2026-07-31':
             full.append({'date':item['session'],'nav':str(100000+len(full)),
-                         'risk_free_return':'0.0001','concentration':{'effective_issuer_max':.06}})
+                         'risk_free_return':'0.0001','concentration':{'effective_issuer_max':.06},
+                         'operations':{'turnover_notional':'0','rebalance_count':'0','taxable_realized_gain':'0','cost_drag':'0','tax_drag':'0','cash_drag':'0'}})
     windows=_derived_windows(full);correction=windows['correction_replication']
     first=next(i for i,x in enumerate(full) if x['date']==correction[0]['date'])
     assert correction[0]['anchor_nav']==full[first-1]['nav']
@@ -34,10 +36,15 @@ def test_primitive_replay_rejects_source_and_stored_economic_mutations():
     assert [row for row in actual['calendar_ledger'] if row['events']]==expected['calendar_ledger']
     compact=[]
     for row in actual['ledger']:
-        keep={key:row[key] for key in ('date','nav','cash','risk_free_return')}
+        keep={key:row[key] for key in ('date','nav','cash','risk_free_return','operations')}
+        if 'anchor_operations' in row:keep['anchor_operations']=row['anchor_operations']
         if row.get('events'):keep.update(events=row['events'],positions=row['positions'],receivables=row['receivables'])
         compact.append(keep)
     assert compact==projection(expected['ledger'])
+    assert set(actual['summary'])==set(_SUMMARY_FIELDS)
+    claimed=deepcopy(actual['summary']);claimed['annualized_volatility']=True
+    assert _compare_metric_tree(actual['summary'],claimed,'summary')
+    del claimed['worst_year'];assert _compare_metric_tree(actual['summary'],claimed,'summary')
     for collection,key,value in ((fixture['dff_records'][0],'value','5'),(fixture['dividends'][0],'gross_per_share','2'),(fixture['splits'][0],'factor','2')):
         original=collection[key];collection[key]=value
         changed=_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
@@ -46,6 +53,18 @@ def test_primitive_replay_rejects_source_and_stored_economic_mutations():
         assert _replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')==expected
     mutated=deepcopy(compact);row=next(x for x in mutated if x.get('positions'));row['positions'][0]['lots'][0]['basis']='999999'
     assert mutated!=projection(expected['ledger'])
+
+def test_fixed_evaluation_uses_replayed_operational_economics():
+    from pathlib import Path
+    import yaml
+    import whole_portfolio_robustness_v2_engine as engine
+    from test_whole_portfolio_robustness_v2_engine import REGIMES,full_synthetic_fixture
+    prereg=yaml.safe_load(Path('research/whole_portfolio_robustness_v2/pre_registration.yaml').read_text());cell=next(x for x in prereg['frictions']['cell_registry'] if x['cell_id']=='COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY');profile={k:D(v) for k,v in prereg['frictions']['tax_profile_parameters'][cell['tax_profile']].items()}
+    result=engine.simulate(Path('.'),full_synthetic_fixture(),'BASELINE',D(10),profile,'QUARTERLY',CASES[0]);metrics=engine.fixed_evaluations(result['ledger'],REGIMES)['CALENDAR_2023']
+    assert metrics['cost_drag']==pytest.approx(.30491598718183627)
+    assert metrics['tax_drag']==pytest.approx(3.9731247866407537)
+    assert metrics['rebalance_count']==4
+    assert metrics['one_way_turnover']==pytest.approx(.0030288705385554133)
 
 def document():
     rows=[{'date':'2025-01-02','cash':'100000','positions':[],'receivables':[],'nav':'100000','events':[]}, {'date':'2025-01-03','cash':'100000','positions':[],'receivables':[],'nav':'100000','events':[],'interest_credited':'0'}]

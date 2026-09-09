@@ -20,6 +20,7 @@ _XNYS=json.loads((ROOT/"research/level1_sleeve_robustness/data/transformed/XNYS_
 _LOOK=yaml.safe_load((ROOT/"issuer_lookthrough.yaml").read_text())
 _WINDOW_BOUNDS={"full":("2021-06-01","2026-07-31"),"context":("2021-06-01","2023-12-29"),"correction_replication":("2024-04-02","2026-07-31")}
 _BOOTSTRAP_INDEX_CACHE: dict[int,np.ndarray]={}
+_SUMMARY_FIELDS=("cumulative_twr","net_twr_cagr","sharpe","sortino","max_drawdown","daily_cvar_95","annualized_volatility","downside_deviation","calmar","worst_month","worst_quarter","worst_year","recovery_days","one_way_turnover","rebalance_count","taxable_realized_gain","cost_drag","tax_drag","cash_drag")
 
 def _derived_windows(replay_path:list[dict], initial_nav:str="100000")->dict[str,list[dict]]:
     """Derive every registered window and its true predecessor NAV anchor."""
@@ -31,11 +32,12 @@ def _derived_windows(replay_path:list[dict], initial_nav:str="100000")->dict[str
         if not indices:raise ValueError(f"{name} replay window is empty")
         rows=[dict(replay_path[i]) for i in indices]
         rows[0]["anchor_nav"]=initial_nav if indices[0]==0 else replay_path[indices[0]-1]["nav"]
+        rows[0]["anchor_operations"]={k:"0" for k in rows[0]["operations"]} if indices[0]==0 else replay_path[indices[0]-1]["operations"]
         result[name]=rows
     return result
 
 def _path_identity(rows:list[dict])->list[tuple]:
-    return [(x.get("date"),x.get("nav"),x.get("risk_free_return"),x.get("concentration"),"anchor_nav" in x,x.get("anchor_nav")) for x in rows]
+    return rows
 
 def _concentration(nav:D,shares:dict[str,D],prices:dict[str,D])->dict[str,float]:
     values={t:float(u*prices[t]/nav) for t,u in shares.items() if u}
@@ -103,7 +105,8 @@ def _fixed_evaluations(rows:list[dict], regimes:list[dict])->dict:
             else:recovery=max(recovery,(dates[i]-dates[peak_i]).days)
         result={"cumulative_twr":nav[-1]/nav[0]-1,**base,"annualized_volatility":(sum((x-mean)**2 for x in returns)/(len(returns)-1))**.5*math.sqrt(252),"downside_deviation":(sum(min(x,0)**2 for x in returns)/len(returns))**.5*math.sqrt(252)}
         result["calmar"]=result["net_twr_cagr"]/abs(result["max_drawdown"]) if result["max_drawdown"]<0 else math.nan
-        result.update(worst_month=worst(lambda d:(d.year,d.month)),worst_quarter=worst(lambda d:(d.year,(d.month-1)//3)),worst_year=worst(lambda d:d.year),recovery_days=recovery,one_way_turnover=0.0,rebalance_count=0,taxable_realized_gain=0.0,cost_drag=0.0,tax_drag=0.0,cash_drag=0.0)
+        end=selected[-1]["operations"];start=selected[0]["anchor_operations"];ops={k:float(end[k])-float(start[k]) for k in end}
+        result.update(worst_month=worst(lambda d:(d.year,d.month)),worst_quarter=worst(lambda d:(d.year,(d.month-1)//3)),worst_year=worst(lambda d:d.year),recovery_days=recovery,one_way_turnover=ops["turnover_notional"]/nav[0],rebalance_count=int(ops["rebalance_count"]),taxable_realized_gain=ops["taxable_realized_gain"],cost_drag=ops["cost_drag"],tax_drag=ops["tax_drag"],cash_drag=ops["cash_drag"])
         return result
     out={}
     for regime in regimes:
@@ -111,6 +114,7 @@ def _fixed_evaluations(rows:list[dict], regimes:list[dict])->dict:
         if len(selected)<2:raise ValueError("missing fixed regime path")
         index=next(i for i,x in enumerate(rows) if x["date"]==selected[0]["date"])
         selected[0]["anchor_nav"]=rows[index-1]["nav"] if index else rows[0]["anchor_nav"]
+        selected[0]["anchor_operations"]=rows[index-1]["operations"] if index else rows[0]["anchor_operations"]
         out[regime["id"]]=complete(selected)
     years=sorted({date.fromisoformat(x["date"]).year for x in rows});walk={}
     for year in years:
@@ -265,6 +269,7 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
         if isinstance(value,bool) or not D(str(value)).is_finite() or published.tzinfo is None or not later or published.date()<later[0]:raise ValueError("invalid DFF primitive")
         records.append((published.astimezone(timezone.utc),D(str(value))))
     cash=D("100000");pending=D(0);pending_rf=D(0);rf_index=D(1);prior_rf=D(1);lots={};receivables=[];prior_shares={};calendar=[];ledger=[];day=start
+    op_keys=("turnover_notional","rebalance_count","taxable_realized_gain","cost_drag","tax_drag","cash_drag");operations={k:D(0) for k in op_keys}
     while day<=end:
         cutoff=datetime.combine(day,datetime.min.time(),timezone.utc);eligible=[x for x in records if x[0]<=cutoff]
         if not eligible:raise ValueError("missing lawful DFF")
@@ -306,6 +311,17 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
             row={"date":day.isoformat(),"nav":str(nav),"cash":str(cash),"risk_free_return":str(interval_rf),"_interest_credited":str(credited),"_positions":positions}
             if events:row.update(events=events,positions=positions,receivables=[{**x,"net":str(x["net"])} for x in receivables])
             ledger.append(row)
+        operations["cash_drag"]+=credited
+        for event in events:
+            kind=event.get("type")
+            if kind in {"buy","sell"}:operations["turnover_notional"]+=D(str(event.get("notional",event.get("proceeds",0))))
+            if kind=="rebalance":operations["rebalance_count"]+=1
+            if kind=="sell":operations["taxable_realized_gain"]+=D(str(event.get("realized_gain",0)))
+            operations["cost_drag"]+=D(str(event.get("cost",0)))
+            operations["tax_drag"]+=D(str(event.get("tax",0)))+D(str(event.get("withholding",0)))+D(str(event.get("us_tax",0)))
+        if day.isoformat() in session_set:
+            ledger[-1]["operations"]={k:str(v) for k,v in operations.items()}
+            if len(ledger)==1:ledger[-1]["anchor_operations"]={k:"0" for k in operations}
         if events:calendar.append({"date":day.isoformat(),"opening_eligible_cash":str(opening),"dff_percent":str(rate),"interest_credited":str(credited),"settled_cash":str(cash),"events":events,"receivables":[{**x,"net":str(x["net"])} for x in receivables]})
         day+=timedelta(days=1)
     return {"calendar_ledger":calendar,"calendar_day_count":(end-start).days+1,"ledger":ledger}
@@ -326,7 +342,9 @@ def validate_result(doc:dict, *, decision_only:bool=False)->list[str]:
                     for window,(start,end) in bounds.items():
                         dates=[x.get("date") for x in windows[window]]
                         expected=[x["session"] for x in _XNYS if start<=x["session"]<=end]
-                        if dates!=expected or any(isinstance(x.get("risk_free_return"),bool) or not _finite(float(x.get("risk_free_return",float("nan")))) for x in windows[window]) or "anchor_nav" not in windows[window][0]:errors.append(f"{case}/{cell}/{variant}/{window}: invalid dated primitives")
+                        concentration_keys={"direct_hhi","max_direct_name","effective_issuer_max","ai_platform_common_driver","semis_cluster","power_infra_cluster"};operation_keys={"turnover_notional","rebalance_count","taxable_realized_gain","cost_drag","tax_drag","cash_drag"}
+                        malformed=any(isinstance(x.get("risk_free_return"),bool) or not _finite(float(x.get("risk_free_return",float("nan")))) or set(x.get("concentration",{}))!=concentration_keys or any(not _finite(v) for v in x.get("concentration",{}).values()) or set(x.get("operations",{}))!=operation_keys or any(isinstance(v,bool) or not D(str(v)).is_finite() for v in x.get("operations",{}).values()) for x in windows[window])
+                        if dates!=expected or malformed or "anchor_nav" not in windows[window][0] or "anchor_operations" not in windows[window][0]:errors.append(f"{case}/{cell}/{variant}/{window}: invalid dated primitives")
         if errors:return errors
     evidence=doc.get("decision_evidence")
     if not isinstance(evidence,dict) or set(evidence.get("cell_ids",[]))!=set(f"COST_{c}_TAX_{t}_CADENCE_{q}" for c in ("0","10","25") for t in ("TAX_DEFERRED","TAXABLE_MID","TAXABLE_HIGH") for q in ("QUARTERLY","ANNUAL")):
@@ -413,18 +431,17 @@ def validate_study_bundle(bundle:dict)->list[str]:
                     if actual.get("ledger")!=projection(expected["ledger"]):raise ValueError("session cash/NAV/event/lot replay mismatch")
                     replay_full=[]
                     for i,row in enumerate(expected["ledger"]):
-                        item={"date":row["date"],"nav":row["nav"],"risk_free_return":row["risk_free_return"]};shares={x["ticker"]:D(x["shares"]) for x in row["_positions"]};prices={x["ticker"]:D(x["price"]) for x in row["_positions"]};item["concentration"]=_concentration(D(row["nav"]),shares,prices)
-                        if i==0:item["anchor_nav"]="100000"
+                        item={"date":row["date"],"nav":row["nav"],"risk_free_return":row["risk_free_return"],"operations":row["operations"]};shares={x["ticker"]:D(x["shares"]) for x in row["_positions"]};prices={x["ticker"]:D(x["price"]) for x in row["_positions"]};item["concentration"]=_concentration(D(row["nav"]),shares,prices)
+                        if i==0:item.update(anchor_nav="100000",anchor_operations=row["anchor_operations"])
                         replay_full.append(item)
                     expected_windows=_derived_windows(replay_full,"100000");stored=bundle["portfolio_paths"][case][cell][variant]
                     if set(stored)!=set(expected_windows):raise ValueError("registered window inventory mismatch")
                     for window,rows in expected_windows.items():
                         if _path_identity(stored[window])!=_path_identity(rows):raise ValueError(f"{window} path detached from primitive replay")
-                    stats=_path_stats(replay_full);claimed=actual.get("summary",{})
-                    for key in ("net_twr_cagr","sharpe","sortino","max_drawdown","daily_cvar_95"):
-                        if not _finite(claimed.get(key)) or abs(stats[key]-claimed[key])>1e-10:raise ValueError(f"summary {key} mismatch")
-                    cumulative=float(replay_full[-1]["nav"])/100000-1
-                    if not _finite(claimed.get("cumulative_twr")) or abs(cumulative-claimed["cumulative_twr"])>1e-10:raise ValueError("summary cumulative_twr mismatch")
+                    summary=_fixed_evaluations(replay_full,[{"id":"FULL","start":replay_full[0]["date"],"end":replay_full[-1]["date"]}])["FULL"];claimed=actual.get("summary",{})
+                    if set(claimed)!=set(_SUMMARY_FIELDS):raise ValueError("summary field inventory mismatch")
+                    mismatch=_compare_metric_tree({k:summary[k] for k in _SUMMARY_FIELDS},claimed,"summary")
+                    if mismatch:raise ValueError(mismatch[0])
                 except Exception as ex:return [f"{case}/{cell}/{variant}: {ex}"]
     return []
 

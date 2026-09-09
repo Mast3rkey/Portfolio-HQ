@@ -161,9 +161,28 @@ def complete_metrics(ledger:Sequence[Mapping], risk_free:Sequence[float]|None=No
     for i,value in enumerate(nav):
         if value>=peak: peak=value;peak_index=i
         else: recovery=max(recovery,(dates[i]-dates[peak_index]).days)
-    events=[e for row in ledger for e in row.get("events",[])]
-    result.update(recovery_days=recovery,one_way_turnover=sum(float(e.get("notional",e.get("proceeds",0))) for e in events if e.get("type") in {"buy","sell"})/nav[0],rebalance_count=sum(any(e.get("type")=="rebalance" for e in row.get("events",[])) for row in ledger),taxable_realized_gain=sum(float(e.get("realized_gain",0)) for e in events if e.get("type")=="sell"),cost_drag=sum(float(e.get("cost",0)) for e in events),tax_drag=sum(float(e.get("tax",0))+float(e.get("withholding",0))+float(e.get("us_tax",0)) for e in events),cash_drag=sum(float(row.get("interest_credited",0)) for row in ledger))
+    if "operations" in ledger[-1]:
+        start=ledger[0].get("anchor_operations",{k:0 for k in ledger[-1]["operations"]});ops={k:float(ledger[-1]["operations"][k])-float(start.get(k,0)) for k in ledger[-1]["operations"]}
+        result.update(recovery_days=recovery,one_way_turnover=ops["turnover_notional"]/nav[0],rebalance_count=int(ops["rebalance_count"]),taxable_realized_gain=ops["taxable_realized_gain"],cost_drag=ops["cost_drag"],tax_drag=ops["tax_drag"],cash_drag=ops["cash_drag"])
+    else:
+        events=[e for row in ledger for e in row.get("events",[])]
+        result.update(recovery_days=recovery,one_way_turnover=sum(float(e.get("notional",e.get("proceeds",0))) for e in events if e.get("type") in {"buy","sell"})/nav[0],rebalance_count=sum(any(e.get("type")=="rebalance" for e in row.get("events",[])) for row in ledger),taxable_realized_gain=sum(float(e.get("realized_gain",0)) for e in events if e.get("type")=="sell"),cost_drag=sum(float(e.get("cost",0)) for e in events),tax_drag=sum(float(e.get("tax",0))+float(e.get("withholding",0))+float(e.get("us_tax",0)) for e in events),cash_drag=sum(float(row.get("interest_credited",0)) for row in ledger))
     return result
+
+def _attach_operations(ledger:Sequence[dict],calendar:Sequence[Mapping])->None:
+    """Attach cumulative calendar economics once, without duplicating event ledgers."""
+    keys=("turnover_notional","rebalance_count","taxable_realized_gain","cost_drag","tax_drag","cash_drag");totals={k:D(0) for k in keys};by_date={}
+    for day in calendar:
+        totals["cash_drag"]+=D(str(day.get("interest_credited",0)))
+        for event in day.get("events",[]):
+            kind=event.get("type")
+            if kind in {"buy","sell"}:totals["turnover_notional"]+=D(str(event.get("notional",event.get("proceeds",0))))
+            if kind=="rebalance":totals["rebalance_count"]+=1
+            if kind=="sell":totals["taxable_realized_gain"]+=D(str(event.get("realized_gain",0)))
+            totals["cost_drag"]+=D(str(event.get("cost",0)))
+            totals["tax_drag"]+=D(str(event.get("tax",0)))+D(str(event.get("withholding",0)))+D(str(event.get("us_tax",0)))
+        by_date[day["date"]]={k:str(v) for k,v in totals.items()}
+    for row in ledger:row["operations"]=by_date[row["date"]]
 
 def concentration(ledger_row:Mapping, issuer_map:Mapping[str,Any]|None=None)->dict[str,float]:
     if "concentration" in ledger_row:return dict(ledger_row["concentration"])
@@ -181,7 +200,7 @@ def fixed_evaluations(ledger:Sequence[Mapping], regimes:Sequence[Mapping])->dict
     for r in regimes:
         rows=[dict(x) for x in ledger if r["start"]<=x["date"]<=r["end"]]
         if rows:
-            index=next(i for i,x in enumerate(ledger) if x["date"]==rows[0]["date"]);rows[0]["anchor_nav"]="100000" if index==0 else ledger[index-1]["nav"]
+            index=next(i for i,x in enumerate(ledger) if x["date"]==rows[0]["date"]);rows[0]["anchor_nav"]="100000" if index==0 else ledger[index-1]["nav"];rows[0]["anchor_operations"]={k:"0" for k in rows[0]["operations"]} if index==0 else ledger[index-1]["operations"]
         out[r["id"]]=complete_metrics(rows,[float(x["risk_free_return"]) for x in rows]) if len(rows)>=2 else None
     years=sorted({date.fromisoformat(x["date"]).year for x in ledger})
     out["walk_forward"]={str(y):complete_metrics([x for x in ledger if date.fromisoformat(x["date"]).year<=y],[float(x["risk_free_return"]) for x in ledger if date.fromisoformat(x["date"]).year<=y]) for y in years if len([x for x in ledger if date.fromisoformat(x["date"]).year<=y])>=2}
@@ -392,6 +411,8 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
         calendar_ledger.append({"date":day.isoformat(),"opening_eligible_cash":str(opening),"dff_percent":str(rates[day]),"interest_credited":str(credited_interest),"settled_cash":str(cash),"events":events_day,"receivables":[{**r,"net":str(r["net"])} for r in receivables]})
         events.extend({"date":day.isoformat(),**e} for e in events_day if day not in session_set)
         day+=timedelta(days=1)
+    _attach_operations(ledger,calendar_ledger)
+    if ledger:ledger[0]["anchor_operations"]={k:"0" for k in ledger[0]["operations"]}
     m=complete_metrics(ledger,[float(D(ledger[i].get("risk_free_return",0))) for i in range(len(ledger))]) if ledger else {}
     return {"schema_version":"2.1","variant":variant,"cell":{"cost_bps":str(cost_bps),"profile":dict((k,str(v)) for k,v in profile.items()),"cadence":cadence,"foreign_case":foreign_case},"initial_nav":"100000","calendar_ledger":calendar_ledger,"ledger":ledger,"events":events,"summary":m,"weights":{k:str(v) for k,v in weights.items()}}
 
@@ -414,17 +435,18 @@ def run_synthetic_study(root:Path, fixture:Mapping[str,Any])->dict[str,Any]:
                 result=simulate(root,fixture,variant,D(cell["one_way_cost_bps"]),profiles[cell["tax_profile"]],cell["rebalance_cadence"],case)
                 result["cell"]["tax_profile"]=cell["tax_profile"]
                 audit_rows=result["ledger"]
-                rows=[{**{k:row[k] for k in ("date","nav","risk_free_return")},"concentration":concentration(row,issuer)} for row in audit_rows]
+                rows=[{**{k:row[k] for k in ("date","nav","risk_free_return","operations")},"concentration":concentration(row,issuer)} for row in audit_rows]
                 def window(start,end):
                     selected=[x for x in rows if start<=x["date"]<=end]
                     first=next(i for i,x in enumerate(rows) if x["date"]==start)
-                    selected[0]={**selected[0],"anchor_nav":result["initial_nav"] if first==0 else rows[first-1]["nav"]}
+                    selected[0]={**selected[0],"anchor_nav":result["initial_nav"] if first==0 else rows[first-1]["nav"],"anchor_operations":{k:"0" for k in selected[0]["operations"]} if first==0 else rows[first-1]["operations"]}
                     return selected
                 windows={"full":window("2021-06-01","2026-07-31"),"context":window("2021-06-01","2023-12-29"),"correction_replication":window("2024-04-02","2026-07-31")}
                 paths[case][identity][variant]=windows
                 compact_ledger=[]
                 for row in audit_rows:
-                    keep={k:row[k] for k in ("date","nav","cash","risk_free_return")}
+                    keep={k:row[k] for k in ("date","nav","cash","risk_free_return","operations")}
+                    if "anchor_operations" in row:keep["anchor_operations"]=row["anchor_operations"]
                     if row.get("events"):keep.update(events=row["events"],positions=row["positions"],receivables=row["receivables"])
                     compact_ledger.append(keep)
                 compact_calendar=[row for row in result["calendar_ledger"] if row["events"]]

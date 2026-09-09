@@ -23,3 +23,8 @@ the independent validator replays all 1,887 calendar transitions from those prim
 compact path back to its exact case/cell/variant simulation. Fixed regimes, expanding-origin metrics,
 both registered bootstraps, pathwise concentration, standalone named gates, foreign vetoes and the
 ordered passing set are regenerated rather than accepted as caller assertions.
+
+Operational fields are cumulative primitive counters on each session row. Window metrics subtract the
+replayed predecessor counters: turnover is traded notional divided by the window anchor NAV; cost and tax
+drag are dollars; taxable realized gain is dollars without loss credit; cash drag is all calendar-day cash
+interest credits; and rebalance count counts scheduled rebalance events. Missing counters are not zero.
