@@ -469,9 +469,13 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
     prices={t:{date.fromisoformat(d):D(str(v)) for d,v in rows.items()} for t,rows in fixture["prices"].items()}
     for ticker,bars in fixture.get("crypto_bars",{}).items():prices[ticker]={date.fromisoformat(k):v for k,v in align_crypto(bars,sessions,close_clock).items()}
     available={t:date.fromisoformat(v) for t,v in fixture.get("available",{}).items()}; weights=derive_weights(root,variant)
-    days=[];cursor=start
+    # Lawful DFF coverage starts at the retained predecessor: the first valuation interval
+    # runs from that anchor, so its accrual days must be lawfully rated, never assumed zero.
+    days=[];cursor=expected_anchor
     while cursor<=end:days.append(cursor);cursor+=timedelta(days=1)
     rates=lawful_dff(fixture.get("dff_records",[]),days,{date.fromisoformat(x) for x in fixture.get("fed_business_days",[])})
+    initial_rf=D(1);cursor=expected_anchor
+    while cursor<start:initial_rf*=D(1)+rates[cursor]/D(100)/D(360);cursor+=timedelta(days=1)
     dividends,splits=_validated_actions(fixture,start,end,session_set,set(prices))
     cash=D('100000'); lots:dict[str,list[Lot]]={}; receivables=[]; ledger=[]; calendar_ledger=[]; events=[]; pending_interest=D(0); pending_rf=D(0); rf_index=D(1); prior_session_rf=D(1); prior_shares={}; day=start
     while day<=end:
@@ -508,7 +512,9 @@ def simulate(root:Path, fixture:Mapping[str,Any], variant="BASELINE", cost_bps=D
             positions=[{"ticker":t,"shares":str(sum(x.units for x in ls)),"price":str(prices[t][day]),"lots":[{"units":str(x.units),"basis":str(x.basis_per_unit),"acquired":x.acquired.isoformat()} for x in ls]} for t,ls in lots.items()]
             nav=cash+sum(D(x["shares"])*D(x["price"]) for x in positions)+sum(r["net"] for r in receivables)
             events.extend({"date":day.isoformat(),**e} for e in events_day)
-            interval_rf=rf_index/prior_session_rf-D(1);prior_session_rf=rf_index
+            # The initial anchor interval enters only the first emitted return; every later
+            # interval keeps its existing unscaled ratio, so validated values do not move.
+            interval_rf=(initial_rf if not ledger else D(1))*rf_index/prior_session_rf-D(1);prior_session_rf=rf_index
             ledger.append({"date":day.isoformat(),"anchor_nav":"100000" if not ledger else None,"anchor_date":expected_anchor.isoformat() if not ledger else None,"cash":str(cash),"opening_eligible_cash":str(opening),"interest_credited":str(credited_interest),"unposted_interest":str(pending_interest),"risk_free_return":str(interval_rf),"positions":positions,"receivables":[{**r,"net":str(r["net"])} for r in receivables],"events":events_day,"nav":str(nav),"external_flow":"0"})
         calendar_ledger.append({"date":day.isoformat(),"opening_eligible_cash":str(opening),"dff_percent":str(rates[day]),"interest_credited":str(credited_interest),"settled_cash":str(cash),"events":events_day,"receivables":[{**r,"net":str(r["net"])} for r in receivables]})
         events.extend({"date":day.isoformat(),**e} for e in events_day if day not in session_set)

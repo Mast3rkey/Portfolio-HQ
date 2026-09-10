@@ -4,7 +4,7 @@ import math
 import pytest
 from pathlib import Path
 from whole_portfolio_robustness_v2_engine import *
-from whole_portfolio_robustness_v2_engine import _cell_ids, _rebalance_day, _rebalance_fixed_point
+from whole_portfolio_robustness_v2_engine import _cell_ids, _rebalance_day, _rebalance_fixed_point, _xnys_predecessor
 
 def good(delta=True):
     return {"net_cagr_delta_pp":0,"sharpe_delta":.1,"sortino_delta":.1,"max_drawdown_delta_pp":2 if delta else 0,"daily_cvar_95_delta_pp":0}
@@ -150,6 +150,41 @@ def test_dff_publication_later_that_day_not_available_at_midnight():
              {'observation_date':'2024-12-31','published_at':'2025-01-02T16:15:00Z','value':'1'}]
     assert lawful_dff(records,[date(2025,1,3),date(2025,1,4)],fed)=={date(2025,1,3):D(1),date(2025,1,4):D(9)}
 
+def test_initial_predecessor_interval_compounds_lagged_dff_without_gap_or_double_count():
+    """The first emitted benchmark return covers the whole anchor-to-valuation interval."""
+    root=Path(__file__).parent;tickers=[t for t in derive_weights(root,'BASELINE') if t!='CASH']
+    days=['2021-06-01','2021-06-02','2021-06-03']
+    fed=['2021-05-27','2021-05-28','2021-06-01']
+    records=[{'observation_date':'2021-05-26','published_at':'2021-05-27T16:15:00Z','value':'2'},
+             {'observation_date':'2021-05-27','published_at':'2021-05-28T16:15:00Z','value':'3'}]
+    fixture={'start':days[0],'end':days[-1],'sessions':days,'session_closes':{d:d+'T21:00:00Z' for d in days},
+             'prices':{t:{d:'100' for d in days} for t in tickers},'fed_business_days':fed,'dff_records':records}
+    result=simulate(root,fixture,cost_bps=D(0))
+    anchor=date(2021,5,28)
+    assert _xnys_predecessor(root,date(2021,6,1))==anchor
+    rates=lawful_dff(records,[anchor+timedelta(days=i) for i in range(7)],{date.fromisoformat(x) for x in fed})
+    assert [rates[anchor+timedelta(days=i)] for i in range(5)]==[D(2),D(3),D(3),D(3),D(3)]
+    # Exactly the four accrual days from the anchor through the day before the first valuation.
+    expected=D(1)
+    for i in range(4):expected*=D(1)+rates[anchor+timedelta(days=i)]/D(100)/D(360)
+    assert D(result['ledger'][0]['risk_free_return'])==expected-D(1)!=D(0)
+    assert expected-D(1)!=(D(1)+D(2)/D(100)/D(360))*(D(1)+D(3)/D(100)/D(360))**2-D(1)  # no off-by-one short
+    assert expected-D(1)!=(D(1)+D(2)/D(100)/D(360))*(D(1)+D(3)/D(100)/D(360))**4-D(1)  # no off-by-one long
+    # Every later interval still covers only its own predecessor-to-valuation days: no double count.
+    assert D(result['ledger'][1]['risk_free_return'])==D(1)+rates[date(2021,6,1)]/D(100)/D(360)-D(1)
+    assert D(result['ledger'][2]['risk_free_return'])==D(1)+rates[date(2021,6,2)]/D(100)/D(360)-D(1)
+    chain=D(1)
+    for row in result['ledger']:chain*=D(1)+D(row['risk_free_return'])
+    telescoped=D(1)
+    for i in range((date.fromisoformat(days[-1])-anchor).days):telescoped*=D(1)+rates[anchor+timedelta(days=i)]/D(100)/D(360)
+    assert chain==telescoped
+    # Frozen cash timing is untouched: cash interest still starts accruing at the study start.
+    assert D(result['ledger'][0]['interest_credited'])==D(0)
+    assert result['calendar_ledger'][0]['date']==days[0]
+    # Uncovered initial interval must fail closed rather than silently accrue nothing.
+    uncovered=dict(fixture,dff_records=[records[1]])
+    with pytest.raises(ValueError,match='no lawfully available DFF'):simulate(root,uncovered,cost_bps=D(0))
+
 def test_multiple_passers_and_every_foreign_veto():
     standard={a:a in ALTERNATIVES[:2] for a in ALTERNATIVES}
     cases={c:dict(standard) for c in FOREIGN_CASES}
@@ -162,7 +197,7 @@ def test_integrated_simulation_derives_all_constructions_and_conserves():
     root=Path(__file__).parent
     tickers=[t for t in derive_weights(root,'BASELINE') if t!='CASH']
     days=['2025-01-02','2025-01-03']
-    fixture={'start':days[0],'end':days[-1],'sessions':days,'session_closes':{d:d+'T21:00:00Z' for d in days},'prices':{t:{d:'100' for d in days} for t in tickers},'fed_business_days':['2025-01-01','2025-01-02'],'dff_records':[{'observation_date':'2024-12-31','published_at':'2025-01-01T16:15:00Z','value':'5'}]}
+    fixture={'start':days[0],'end':days[-1],'sessions':days,'session_closes':{d:d+'T21:00:00Z' for d in days},'prices':{t:{d:'100' for d in days} for t in tickers},'fed_business_days':['2024-12-30','2025-01-01','2025-01-02'],'dff_records':[{'observation_date':'2024-12-27','published_at':'2024-12-30T16:15:00Z','value':'5'},{'observation_date':'2024-12-31','published_at':'2025-01-01T16:15:00Z','value':'5'}]}
     for variant in ('BASELINE',)+ALTERNATIVES:
         result=simulate(root,fixture,variant=variant,cost_bps=D(0))
         assert result['initial_nav']=='100000' and len(result['ledger'])==2
@@ -172,7 +207,7 @@ def test_integrated_simulation_derives_all_constructions_and_conserves():
 def test_integrated_golden_initial_cost_weekend_payable_and_split():
     import json
     root=Path(__file__).parent;days=['2025-01-02','2025-01-03','2025-01-06'];tickers=[t for t in derive_weights(root,'BASELINE') if t!='CASH']
-    fixture={'start':'2025-01-02','end':'2025-01-06','sessions':days,'session_closes':{d:d+'T21:00:00Z' for d in days},'prices':{t:{d:'100' for d in days} for t in tickers},'fed_business_days':['2025-01-01','2025-01-02'],'dff_records':[{'observation_date':'2024-12-31','published_at':'2025-01-01T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'TMO','ex_date':'2025-01-03','payable_date':'2025-01-04','gross_per_share':'1','withholding_rate':'0'}],'splits':[{'ticker':'NVDA','date':'2025-01-06','factor':'10'}]}
+    fixture={'start':'2025-01-02','end':'2025-01-06','sessions':days,'session_closes':{d:d+'T21:00:00Z' for d in days},'prices':{t:{d:'100' for d in days} for t in tickers},'fed_business_days':['2024-12-30','2025-01-01','2025-01-02'],'dff_records':[{'observation_date':'2024-12-27','published_at':'2024-12-30T16:15:00Z','value':'.25'},{'observation_date':'2024-12-31','published_at':'2025-01-01T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'TMO','ex_date':'2025-01-03','payable_date':'2025-01-04','gross_per_share':'1','withholding_rate':'0'}],'splits':[{'ticker':'NVDA','date':'2025-01-06','factor':'10'}]}
     result=simulate(root,fixture,profile={k:D(0) for k in ('ordinary_income_rate','qualified_dividend_rate','qualified_dividend_fraction','short_gain_rate','long_gain_rate','gold_gain_rate')},cost_bps=D(10))
     assert abs(D(result['ledger'][0]['nav'])-D(100000)/(D(1)+D('.001')*D('.875')))<D('.000001')
     assert result['summary']['cumulative_twr']==pytest.approx(float(D(result['ledger'][-1]['nav'])/D(100000)-1))
@@ -331,7 +366,7 @@ def full_synthetic_fixture():
             if day.isoformat() in prices[ticker]:last=prices[ticker][day.isoformat()]
             bars.append({'close_at':day.isoformat()+'T00:00:00Z','close':last});day+=timedelta(days=1)
         crypto_bars[ticker]=bars
-    return {'input_kind':'SYNTHETIC_TEST_ONLY','start':'2021-06-01','end':'2026-07-31','anchor_date':'2021-05-28','sessions':dates,'session_closes':{x['session']:x['close_utc'] for x in sessions},'prices':prices,'crypto_bars':crypto_bars,'available':{'CEG':'2022-02-02'},'fed_business_days':['2021-05-31'],'dff_records':[{'observation_date':'2021-05-28','published_at':'2021-05-31T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'ETN','ex_date':'2023-01-13','payable_date':'2023-01-14','gross_per_share':'1','withholding_rate':'.10'}],'splits':[{'ticker':'NVDA','date':'2024-06-10','factor':'10'}]}
+    return {'input_kind':'SYNTHETIC_TEST_ONLY','start':'2021-06-01','end':'2026-07-31','anchor_date':'2021-05-28','sessions':dates,'session_closes':{x['session']:x['close_utc'] for x in sessions},'prices':prices,'crypto_bars':crypto_bars,'available':{'CEG':'2022-02-02'},'fed_business_days':['2021-05-27','2021-05-31'],'dff_records':[{'observation_date':'2021-05-26','published_at':'2021-05-27T16:15:00Z','value':'.25'},{'observation_date':'2021-05-28','published_at':'2021-05-31T16:15:00Z','value':'.25'}],'dividends':[{'ticker':'ETN','ex_date':'2023-01-13','payable_date':'2023-01-14','gross_per_share':'1','withholding_rate':'.10'}],'splits':[{'ticker':'NVDA','date':'2024-06-10','factor':'10'}]}
 
 _FULL_BUNDLE=None
 def get_full_bundle():

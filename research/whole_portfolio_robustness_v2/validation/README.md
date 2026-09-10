@@ -36,3 +36,7 @@ are independently rebuilt from complete, ordered UTC daily bars against each pin
 price dictionaries are comparison claims, not replay inputs.
 The complete study's initial anchor date is independently derived as the immediately preceding retained
 XNYS session; a caller-supplied missing, malformed, merely-earlier, same-day or future date is rejected.
+Lawful DFF coverage therefore begins at that anchor date rather than at the first valuation: every accrual
+day of the initial anchor-to-valuation interval must resolve a lawfully available rate, that interval
+compounds into the first emitted `risk_free_return`, and an uncovered initial day fails the cell closed.
+Frozen cash timing is unchanged: settled-cash interest still begins accruing at the study start date.

@@ -1,4 +1,5 @@
 from copy import deepcopy
+from datetime import date
 import pytest
 from whole_portfolio_robustness_v2_result_validator import *
 from whole_portfolio_robustness_v2_result_validator import _XNYS, _SUMMARY_FIELDS, _compare_metric_tree, _compare_probability_claim, _concentration, _concentration_window_pass, _derived_windows, _fixed_evaluations, _path_identity, _path_stats, _replay_simulation
@@ -77,6 +78,30 @@ def test_primitive_replay_rejects_source_and_stored_economic_mutations():
     removed['close_at']=original;assert _replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')==expected
     mutated=deepcopy(compact);row=next(x for x in mutated if x.get('positions'));row['positions'][0]['lots'][0]['basis']='999999'
     assert mutated!=projection(expected['ledger'])
+
+def test_initial_interval_binds_engine_and_replay_and_requires_lawful_anchor_coverage():
+    """Both implementations compound the same anchor-to-first-valuation benchmark interval."""
+    from pathlib import Path
+    import yaml
+    import whole_portfolio_robustness_v2_engine as engine
+    from test_whole_portfolio_robustness_v2_engine import full_synthetic_fixture
+    fixture=full_synthetic_fixture();prereg=yaml.safe_load(Path('research/whole_portfolio_robustness_v2/pre_registration.yaml').read_text());cell=prereg['frictions']['cell_registry'][0]
+    profile={key:D(value) for key,value in prereg['frictions']['tax_profile_parameters'][cell['tax_profile']].items()}
+    expected=D(1)
+    for _ in range((date.fromisoformat(fixture['start'])-date.fromisoformat(fixture['anchor_date'])).days):expected*=D(1)+D('.25')/D(100)/D(360)
+    expected-=D(1)
+    actual=engine.simulate(Path('.'),fixture,'BASELINE',D(cell['one_way_cost_bps']),profile,cell['rebalance_cadence'],CASES[0])
+    replayed=_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+    assert actual['ledger'][0]['date']=='2021-06-01' and actual['ledger'][0]['anchor_date']=='2021-05-28'
+    assert D(actual['ledger'][0]['risk_free_return'])==expected!=D(0)
+    assert D(replayed['ledger'][0]['risk_free_return'])==expected
+    assert D(actual['ledger'][0]['interest_credited'])==D(0)  # frozen cash timing untouched
+    original=fixture['dff_records']
+    fixture['dff_records']=[original[1]]
+    with pytest.raises(ValueError,match='lawful'):engine.simulate(Path('.'),fixture,'BASELINE',D(cell['one_way_cost_bps']),profile,cell['rebalance_cadence'],CASES[0])
+    with pytest.raises(ValueError,match='lawful'):_replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')
+    fixture['dff_records']=original
+    assert _replay_simulation(fixture,CASES[0],cell['cell_id'],'BASELINE')==replayed
 
 def test_independent_replay_etn_cases_and_malformed_actions():
     from test_whole_portfolio_robustness_v2_engine import full_synthetic_fixture
@@ -261,6 +286,47 @@ def test_complete_synthetic_driver_result_replays_and_path_mutation_fails():
     assert validate_result(decision,decision_only=True);row['nav']=old
     evaluation=bundle['decision_evidence']['cases'][case][ALTS[0]]['evaluations']['baseline']['walk_forward'];evaluation['2021']=deepcopy(evaluation['2022'])
     assert validate_result(decision,decision_only=True);del evaluation['2021']
+
+def test_primary_window_registry_and_full_delta_are_independently_admitted():
+    """Every emitted primary window, including full, is bound to its own replayed paired paths."""
+    from test_whole_portfolio_robustness_v2_engine import get_full_bundle
+    bundle=get_full_bundle();case=CASES[0];alt=ALTS[0]
+    decision={k:bundle[k] for k in ('portfolio_paths','decision_evidence','foreign_case_gate_booleans','disposition')}
+    detail=bundle['decision_evidence']['cases'][case][alt];primary=detail['primary']
+    assert set(primary)=={'full','context','correction_replication'}
+    assert validate_result(decision,decision_only=True)==[]
+    pristine=deepcopy(primary);kept=deepcopy(primary['full']);outcome=deepcopy(decision['disposition'])
+    del primary['full']
+    assert any('primary window registry mismatch' in e for e in validate_result(decision,decision_only=True))
+    primary['full']={k:999999. for k in kept}
+    # Malformed evidence is rejected even though the claimed policy outcome is unchanged.
+    assert decision['disposition']==outcome
+    assert any('primary/full: metric/path mismatch' in e for e in validate_result(decision,decision_only=True))
+    primary['full']=deepcopy(kept)
+    assert validate_result(decision,decision_only=True)==[]
+    # The same admission binds every window through the focused replay route.
+    assert validate_decision_variant(bundle,case,alt)==[]
+    attacks={'delete':lambda:primary.pop('full'),
+             'falsify':lambda:primary.update(full={k:999999. for k in kept}),
+             'nan':lambda:primary.update(full={k:float('nan') for k in kept}),
+             'inf':lambda:primary.update(full={k:float('inf') for k in kept}),
+             'boolean':lambda:primary.update(full={k:True for k in kept}),
+             'string':lambda:primary.update(full={k:str(v) for k,v in kept.items()}),
+             'substitute':lambda:primary.update(full=deepcopy(primary['correction_replication'])),
+             'missing_metric':lambda:primary['full'].pop('sortino_delta'),
+             'extra_metric':lambda:primary['full'].update(invented_delta=1.),
+             'wrong_type':lambda:primary.update(full=list(kept.values())),
+             'extra_window':lambda:primary.update(extra_window=dict(kept)),
+             'perturbed':lambda:primary['full'].update(sharpe_delta=kept['sharpe_delta']+1e-6),
+             'context_perturbed':lambda:primary['context'].update(sharpe_delta=primary['context']['sharpe_delta']+1e-6)}
+    context=deepcopy(primary['context'])
+    for name,attack in attacks.items():
+        attack()
+        assert validate_decision_variant(bundle,case,alt),name
+        primary.pop('extra_window',None);primary['full']=deepcopy(kept);primary['context']=deepcopy(context)
+        assert validate_decision_variant(bundle,case,alt)==[],name
+    primary.clear();primary.update(pristine)  # leave the shared cached bundle byte-identical
+    assert primary==pristine and validate_decision_variant(bundle,case,alt)==[]
 
 def test_full_bundle_rejects_calendar_identity_lot_primary_concentration_and_detachment():
     import copy

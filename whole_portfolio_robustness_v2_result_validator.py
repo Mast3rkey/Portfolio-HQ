@@ -11,7 +11,7 @@ import numpy as np
 from decimal import Decimal as D, localcontext
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 ALTS=("BROAD_PLUS_5","DEFENSIVE_PLUS_5","CRYPTO_HALF","GOLD_PLUS_2","DIVERSIFIED_BALANCE")
 CASES=("STANDARD_AVAILABLE_CREDIT","ZERO_FOREIGN_TAX_CREDIT","ETN_25_PERCENT_IRISH_WITHHOLDING","JOINT_ZERO_CREDIT_AND_ETN_25_PERCENT_IRISH_WITHHOLDING")
@@ -116,6 +116,24 @@ def _paired_delta(base:list[dict],alt:list[dict])->dict[str,float]:
     result={"net_cagr_delta_pp":100*(a["net_twr_cagr"]-b["net_twr_cagr"]),"sharpe_delta":a["sharpe"]-b["sharpe"],"sortino_delta":a["sortino"]-b["sortino"],"max_drawdown_delta_pp":100*(a["max_drawdown"]-b["max_drawdown"]),"daily_cvar_95_delta_pp":100*(a["daily_cvar_95"]-b["daily_cvar_95"])}
     if not all(_finite(value) for value in result.values()):raise ValueError("nonfinite recomputed paired metric")
     return result
+
+PRIMARY_WINDOWS=("full","context","correction_replication")
+DELTA_KEYS=("net_cagr_delta_pp","sharpe_delta","sortino_delta","max_drawdown_delta_pp","daily_cvar_95_delta_pp")
+
+def _finite_number(value:Any)->bool:
+    return isinstance(value,(int,float)) and not isinstance(value,bool) and math.isfinite(value)
+
+def _primary_window_errors(claim:Any,base:Mapping[str,Any],alt:Mapping[str,Any])->list[str]:
+    """Admit every emitted primary-window delta only against its own replayed paired paths."""
+    if not isinstance(claim,dict) or set(claim)!=set(PRIMARY_WINDOWS):return ["primary window registry mismatch"]
+    errors=[]
+    for window in PRIMARY_WINDOWS:
+        value=claim[window]
+        if not isinstance(value,dict) or set(value)!=set(DELTA_KEYS):errors.append(f"primary/{window}: metric registry mismatch");continue
+        if any(not _finite_number(value[key]) for key in DELTA_KEYS):errors.append(f"primary/{window}: nonfinite or non-numeric metric");continue
+        actual=_paired_delta(base[window],alt[window])
+        if any(abs(actual[key]-value[key])>1e-10 for key in DELTA_KEYS):errors.append(f"primary/{window}: metric/path mismatch")
+    return errors
 
 def _bootstrap(base:list[dict],alt:list[dict])->dict[str,float]:
     br=[float(x["nav"])/(float(x["anchor_nav"]) if i==0 else float(base[i-1]["nav"]))-1 for i,x in enumerate(base)]
@@ -427,12 +445,18 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
         value=record.get("value");published=datetime.fromisoformat(record["published_at"].replace("Z","+00:00"));observed=date.fromisoformat(record["observation_date"]);later=sorted(x for x in fed if x>observed)
         if isinstance(value,bool) or not D(str(value)).is_finite() or published.tzinfo is None or not later or published.date()<later[0]:raise ValueError("invalid DFF primitive")
         records.append((published.astimezone(timezone.utc),D(str(value))))
+    def lawful_rate(when:date)->D:
+        cutoff=datetime.combine(when,datetime.min.time(),timezone.utc);eligible=[x for x in records if x[0]<=cutoff]
+        if not eligible:raise ValueError("missing lawful DFF")
+        return max(eligible,key=lambda x:x[0])[1]
+    # The first valuation interval runs from the retained predecessor anchor, so those
+    # accrual days require lawful rates and compound into the first emitted benchmark return.
+    initial_rf=D(1);cursor=date.fromisoformat(anchor)
+    while cursor<start:initial_rf*=D(1)+lawful_rate(cursor)/D(100)/D(360);cursor+=timedelta(days=1)
     cash=D("100000");pending=D(0);pending_rf=D(0);rf_index=D(1);prior_rf=D(1);lots={};receivables=[];prior_shares={};calendar=[];ledger=[];day=start
     op_keys=("turnover_notional","rebalance_count","taxable_realized_gain","cost_drag","tax_drag","cash_drag");operations={k:D(0) for k in op_keys}
     while day<=end:
-        cutoff=datetime.combine(day,datetime.min.time(),timezone.utc);eligible=[x for x in records if x[0]<=cutoff]
-        if not eligible:raise ValueError("missing lawful DFF")
-        rate=max(eligible,key=lambda x:x[0])[1];credited=pending;cash+=credited;rf_index*=1+pending_rf;opening=cash;gross_rate=rate/100
+        rate=lawful_rate(day);credited=pending;cash+=credited;rf_index*=1+pending_rf;opening=cash;gross_rate=rate/100
         with localcontext() as ctx:ctx.prec=60;pending=opening*(gross_rate-max(gross_rate,D(0))*profile["ordinary_income_rate"]-D(".0025"))/360
         pending_rf=gross_rate/360;events=[]
         for split in splits:
@@ -456,7 +480,7 @@ def _replay_simulation(fixture:dict, case:str, cell_id:str, variant:str)->dict:
                 active={t:w for t,w in weights.items() if t=="CASH" or available.get(t,start)<=day}
                 cash,lots,trades=_fixed_point_rebalance(cash,sum(x["net"] for x in receivables),lots,{t:prices[t][day.isoformat()] for t in active if t!="CASH"},active,available,day,cost,profile);events.extend(trades)
             prior_shares={t:sum((x["units"] for x in ls),D(0)) for t,ls in lots.items()};positions=[{"ticker":t,"shares":str(sum(x["units"] for x in ls)),"price":str(prices[t][day.isoformat()]),"lots":[{"units":str(x["units"]),"basis":str(x["basis"]),"acquired":x["acquired"].isoformat()} for x in ls]} for t,ls in lots.items()]
-            securities=sum((sum(x["units"] for x in lots[t])*prices[t][day.isoformat()] for t in lots),D(0));nav=cash+securities+sum(x["net"] for x in receivables);interval_rf=rf_index/prior_rf-1;prior_rf=rf_index
+            securities=sum((sum(x["units"] for x in lots[t])*prices[t][day.isoformat()] for t in lots),D(0));nav=cash+securities+sum(x["net"] for x in receivables);interval_rf=(initial_rf if not ledger else D(1))*rf_index/prior_rf-1;prior_rf=rf_index
             row={"date":day.isoformat(),"nav":str(nav),"cash":str(cash),"risk_free_return":str(interval_rf),"_interest_credited":str(credited),"_positions":positions}
             if not ledger:row["anchor_date"]=fixture["anchor_date"]
             if events:row.update(events=events,positions=positions,receivables=[{**x,"net":str(x["net"])} for x in receivables])
@@ -514,17 +538,14 @@ def validate_result(doc:dict, *, decision_only:bool=False)->list[str]:
                         finite=lambda x:isinstance(x,(int,float)) and not isinstance(x,bool) and math.isfinite(x)
                         def support(x):return all(finite(x[k]) for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta","max_drawdown_delta_pp","daily_cvar_95_delta_pp")) and x["net_cagr_delta_pp"]>=-.5 and x["sharpe_delta"]>=.05 and x["sortino_delta"]>=.05 and (x["max_drawdown_delta_pp"]>=2 or x["daily_cvar_95_delta_pp"]>=.1)
                         if any(x.get("window")!="correction_replication" or not all(finite(x.get(k)) for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta","max_drawdown_delta_pp","daily_cvar_95_delta_pp")) for x in cells):raise ValueError("nonfinite or wrong-window cell evidence")
+                        primary_id="COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY"
+                        window_errors=_primary_window_errors(detail.get("primary"),paths[case][primary_id]["BASELINE"],paths[case][primary_id][alt])
+                        if window_errors:raise ValueError("; ".join(window_errors))
                         primary=detail["primary"]["correction_replication"];context=detail["primary"]["context"];boot=detail["bootstrap"]
                         by_id={x["cell_id"]:x for x in cells}
                         for identity in evidence["cell_ids"]:
                             actual=_paired_delta(paths[case][identity]["BASELINE"]["correction_replication"],paths[case][identity][alt]["correction_replication"])
                             if any(abs(actual[k]-by_id[identity][k])>1e-10 for k in actual):raise ValueError("cell metric/path mismatch")
-                        primary_id="COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY"
-                        actual_primary=_paired_delta(paths[case][primary_id]["BASELINE"]["correction_replication"],paths[case][primary_id][alt]["correction_replication"])
-                        if any(abs(actual_primary[k]-primary[k])>1e-10 for k in actual_primary):raise ValueError("primary metric/path mismatch")
-                        actual_context=_paired_delta(paths[case][primary_id]["BASELINE"]["context"],paths[case][primary_id][alt]["context"])
-                        if any(abs(actual_context[k]-context[k])>1e-10 for k in actual_context):raise ValueError("context metric/path mismatch")
-                        if not all(finite(x.get(k)) for x in (primary,context) for k in ("net_cagr_delta_pp","sharpe_delta","sortino_delta","max_drawdown_delta_pp","daily_cvar_95_delta_pp")):raise ValueError("nonfinite primary/context evidence")
                         actual_boot=_bootstrap(paths[case][primary_id]["BASELINE"]["correction_replication"],paths[case][primary_id][alt]["correction_replication"])
                         mismatch=_compare_probability_claim(actual_boot,boot,"bootstrap")
                         if mismatch:raise ValueError(mismatch[0])
@@ -604,8 +625,7 @@ def validate_decision_variant(bundle:dict,case:str,alt:str)->list[str]:
     """Focused independent replay used for mutation diagnostics without replaying 432 simulations."""
     errors=[];primary="COST_10_TAX_TAXABLE_MID_CADENCE_QUARTERLY";detail=bundle["decision_evidence"]["cases"][case][alt];paths=bundle["portfolio_paths"][case][primary]
     try:
-        actual=_paired_delta(paths["BASELINE"]["correction_replication"],paths[alt]["correction_replication"])
-        if any(abs(actual[k]-detail["primary"]["correction_replication"][k])>1e-10 for k in actual):errors.append("primary metric/path mismatch")
+        errors.extend(_primary_window_errors(detail.get("primary"),paths["BASELINE"],paths[alt]))
         concentrations=[x["concentration"] for x in paths[alt]["correction_replication"]]
         if concentrations!=detail["concentration_path"]:errors.append("concentration/path mismatch")
         actual_boot=_bootstrap(paths["BASELINE"]["correction_replication"],paths[alt]["correction_replication"])
