@@ -45,7 +45,9 @@ from allocate import (
     write_state,
 )
 
-TODAY = datetime.date.today()
+# One deterministic test clock drives both fixture dates and allocate.date.  This
+# prevents collection/execution midnight rollover from changing freshness.
+TODAY = datetime.date(2026, 9, 9)
 FRESH = TODAY.isoformat()
 STALE = (TODAY - datetime.timedelta(days=A.STALE_MARGIN_DAYS + 1)).isoformat()
 EDGE = (TODAY - datetime.timedelta(days=A.STALE_MARGIN_DAYS)).isoformat()
@@ -83,7 +85,21 @@ def _metrics(roster):
 
 @pytest.fixture(autouse=True)
 def _no_network(monkeypatch):
+    class FixedTestDate(datetime.date):
+        @classmethod
+        def today(cls):
+            return cls(TODAY.year, TODAY.month, TODAY.day)
+    monkeypatch.setattr(A, "date", FixedTestDate)
     monkeypatch.setattr(A, "days_until_earnings", lambda t: None)
+    yield
+    monkeypatch.undo()
+    assert A.date is datetime.date
+
+
+def test_module_clock_is_shared_without_patching_datetime_globally():
+    assert A.date.today() == TODAY
+    assert A.date is not datetime.date
+    assert EDGE == (TODAY - datetime.timedelta(days=A.STALE_MARGIN_DAYS)).isoformat()
 
 
 @pytest.fixture
@@ -1306,7 +1322,7 @@ class TestCurrentDollarsRequireEveryRequiredState:
     proves the gate is fail-closed rather than fail-shut.
     """
 
-    TODAY = datetime.date.today().isoformat()
+    TODAY = TODAY.isoformat()
     STALE = "2026-01-01"
 
     def _run(self, cash_synced, margin_synced, shares, resolved):
@@ -1538,7 +1554,7 @@ class TestWriteBoundariesValidateBeforeTheyWrite:
 
 
 class TestTheMarginBufferIsRequiredNotOptional:
-    TODAY = datetime.date.today().isoformat()
+    TODAY = TODAY.isoformat()
 
     @pytest.mark.parametrize("block", [
         {"debt": 100.0, "synced_at": TODAY},                      # key absent
@@ -1588,7 +1604,7 @@ class TestEveryResolvedValueIsValidated:
 
 
 class TestTheLedgerRejectsPoisonFromASuppliedSet:
-    TODAY = datetime.date.today().isoformat()
+    TODAY = TODAY.isoformat()
 
     class _Client:
         def get_bars(self, *a, **k):
@@ -1641,7 +1657,7 @@ class TestTheComputedGatedTargetNeverReachesAnyRenderedSurface:
     figure, which is precisely the class the availability fact withholds.
     """
 
-    TODAY = datetime.date.today().isoformat()
+    TODAY = TODAY.isoformat()
     STALE = "2026-01-01"
 
     #: Chosen so that ``book * target_pct`` lands on a value that cannot occur by
@@ -1800,7 +1816,7 @@ class TestNoInternalValueEscapesTheResultBoundary:
     name marks it internal leaves plan(), whatever it is called.
     """
 
-    TODAY = datetime.date.today().isoformat()
+    TODAY = TODAY.isoformat()
     STALE = "2026-01-01"
 
     ROW_KEYS = ("buys", "trims", "underweight", "blocked", "no_add_gated",
@@ -1887,7 +1903,7 @@ class TestBookDerivedFiguresHonourTheirOwnDependencies:
     is what produced a printed 1.50x beside an UNAVAILABLE net equity.
     """
 
-    TODAY = datetime.date.today().isoformat()
+    TODAY = TODAY.isoformat()
     STALE = "2026-01-01"
 
     _plan = TestNoInternalValueEscapesTheResultBoundary._plan
@@ -2014,7 +2030,7 @@ class TestBookDerivedFiguresHonourTheirOwnDependencies:
 class TestTheOutputBoundaryIsExhaustiveAndFailsClosed:
     """The schema itself, before any individual defect."""
 
-    TODAY = datetime.date.today().isoformat()
+    TODAY = TODAY.isoformat()
     STALE = "2026-01-01"
 
     @staticmethod
@@ -2128,7 +2144,7 @@ class TestTheOutputBoundaryIsExhaustiveAndFailsClosed:
 class TestNoBookDerivedValueSurvivesInTheEmittedResult:
     """The three exact reproductions, plus recursive checks over the result."""
 
-    TODAY = datetime.date.today().isoformat()
+    TODAY = TODAY.isoformat()
     STALE = "2026-01-01"
 
     def _trim_case(self):
