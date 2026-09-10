@@ -5,6 +5,11 @@ connection. It reads the repository's own authoritative files and presents
 them. It never mutates holdings.yaml, targets.yaml, accepted decisions,
 workstreams, allocator behavior, or margin behavior. See
 docs/PORTFOLIO_HQ_DASHBOARD_DESIGN.md for the presentation/authority boundary.
+
+The ``owner`` subpackage adds one narrowly scoped, authenticated write surface:
+a quarantine inbox for owner-supplied chart images. It writes nowhere else, it
+adopts nothing it receives, and it changes no target, holding, policy or
+recommendation. See docs/PORTFOLIO_HQ_OWNER_INTERFACE.md.
 """
 
-__all__ = ["dashboard"]
+__all__ = ["dashboard", "owner"]
