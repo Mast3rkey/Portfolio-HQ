@@ -63,6 +63,17 @@ all" — and records its verdict and reasons. The interface then shows *why* a
 figure is missing and what would restore it. A stale cash or margin observation
 is shown as a dated historical observation, never as a current figure.
 
+### Bounded summaries
+
+Some canonical records carry very long narrative text — one workstream's
+`next_action` runs to ~59,000 characters. Shipping those whole put ~100 KB of
+prose on a phone for a summary view, so free-text summary fields are bounded at
+the export layer. Nothing is dropped silently: the shortened text travels with
+its true character count and a truncation flag, the page says a note was
+shortened and by how much, and the repository file named in the record remains
+the complete source. Every owner page is under 35 KB against real state, and a
+test fails if that regresses.
+
 ## 4. Private access
 
 Authentication is mandatory on **every** host, loopback included. With no token

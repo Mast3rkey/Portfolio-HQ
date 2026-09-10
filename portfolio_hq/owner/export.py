@@ -72,6 +72,14 @@ ACCEPTED_CHART_TIMEFRAMES = ("1D",)
 #: rows are accounting placeholders, not chartable instruments.
 _CHARTABLE_ASSET_CLASSES = frozenset({"equity", "fund", "crypto"})
 
+#: Free-text ceiling for owner-facing summary fields. Some canonical records
+#: carry very long narrative text -- one workstream's ``next_action`` is ~59 KB
+#: -- and shipping all of it would put ~100 KB of prose on a phone for a
+#: summary view. Long text is shortened here, never silently: the record keeps
+#: its true length and a truncation flag, the page says the text was shortened,
+#: and the repository file remains the complete source.
+_SUMMARY_TEXT_LIMIT = 400
+
 
 def _full_digests(repo_root: Path, rel_paths: list[str]) -> list[dict]:
     """Full 64-character SHA-256 for each canonical input.
@@ -96,6 +104,28 @@ def _full_digests(repo_root: Path, rel_paths: list[str]) -> list[dict]:
             "size_bytes": len(data),
         })
     return out
+
+
+def _summarize(value: object, limit: int = _SUMMARY_TEXT_LIMIT) -> dict:
+    """Bound one free-text field for the owner summary, disclosing the cut.
+
+    Returns the (possibly shortened) text, whether it was shortened, and the
+    true character count. Nothing is dropped silently and no field is rewritten
+    -- the shortened form is presentation only, and the canonical repository
+    file remains the complete text.
+    """
+    if value is None:
+        return {"text": None, "truncated": False, "full_length": 0}
+    text = str(value)
+    if len(text) <= limit:
+        return {"text": text, "truncated": False, "full_length": len(text)}
+    # Cut on a word boundary where one is nearby, so the summary does not end
+    # mid-token.
+    cut = text[:limit]
+    space = cut.rfind(" ")
+    if space > limit - 80:
+        cut = cut[:space]
+    return {"text": cut.rstrip() + "\u2026", "truncated": True, "full_length": len(text)}
 
 
 def _notices(model) -> dict:
@@ -426,10 +456,11 @@ def build_owner_export(repo_root: Path | str, *, now: datetime | None = None) ->
         "workstreams": [
             {
                 "id": w.ws_id,
-                "title": w.title,
+                "title": _summarize(w.title, 160)["text"],
                 "status": w.status,
                 "priority": w.priority,
-                "next_action": w.next_action,
+                "next_action": _summarize(w.next_action),
+                "source_file": model_mod.WORKSTREAMS_REL,
             }
             for w in model.workstreams
         ],

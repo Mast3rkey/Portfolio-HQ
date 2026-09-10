@@ -67,6 +67,28 @@ def _pct(value: object, digits: int = 2) -> str:
         return _esc(str(value))
 
 
+def _summary_html(field: object) -> str:
+    """Render a bounded free-text summary field, marking any shortening.
+
+    Accepts the ``{text, truncated, full_length}`` shape the export produces,
+    and tolerates a plain string so an older export still renders.
+    """
+    if not isinstance(field, dict):
+        return _esc(field or "—")
+    text = field.get("text")
+    if not text:
+        return '<span class="muted">—</span>'
+    body = _esc(text)
+    if field.get("truncated"):
+        try:
+            full_length = int(field.get("full_length") or 0)
+        except (TypeError, ValueError):
+            full_length = 0
+        note = f"(shortened from {full_length:,} characters)"
+        body += f' <span class="muted">{_esc(note)}</span>'
+    return body
+
+
 def _chip(text: str, tone: str = "neutral") -> str:
     return f'<span class="chip {_esc(tone)}">{_esc(text)}</span>'
 
@@ -494,15 +516,24 @@ def research_page(export: dict | None) -> str:
         f'<tr><th scope="row" data-label="Workstream">{_esc(w.get("id"))}</th>'
         f'<td data-label="Title">{_esc(w.get("title") or "—")}</td>'
         f'<td data-label="Status">{_esc(w.get("status") or "—")}</td>'
-        f'<td data-label="Next action">{_esc(w.get("next_action") or "—")}</td></tr>'
+        f'<td data-label="Next action">{_summary_html(w.get("next_action"))}</td></tr>'
         for w in workstreams
     )
+    shortened = sum(1 for w in workstreams
+                    if isinstance(w.get("next_action"), dict)
+                    and w["next_action"].get("truncated"))
+    source_file = next((w.get("source_file") for w in workstreams
+                        if w.get("source_file")), None)
     ws_body = (
         '<div class="scroll-x"><table class="grid">'
         '<caption class="sr-only">Workstreams</caption>'
         '<thead><tr><th scope="col">Workstream</th><th scope="col">Title</th>'
         '<th scope="col">Status</th><th scope="col">Next action</th></tr></thead>'
         f'<tbody>{ws_rows}</tbody></table></div>'
+        + (f'<p class="muted">{shortened} next-action note(s) were shortened for '
+           f'this summary. The complete text is in '
+           f'<code>{_esc(source_file or "operations/WORKSTREAMS.yaml")}</code>.</p>'
+           if shortened else "")
     ) if ws_rows else '<p class="muted">No workstreams were exported.</p>'
 
     body = (

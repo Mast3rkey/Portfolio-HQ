@@ -140,7 +140,9 @@ def _sample_export() -> dict:
         "workstreams": [
             {"id": "WS-0014", "title": "Cross-asset synthesis",
              "status": "proposed", "priority": "secondary",
-             "next_action": "await authorization"},
+             "next_action": {"text": "await authorization", "truncated": False,
+                             "full_length": 19},
+             "source_file": "operations/WORKSTREAMS.yaml"},
         ],
         "chart_request": {
             "eligible_tickers": ["BTC", "NVDA", "TSLA"],
@@ -1299,6 +1301,101 @@ def test_portfolio_page_reports_an_unknown_gated_share_honestly():
     assert "not available" in markup
     assert "it is not zero" in markup
     assert ">0.00%<" not in markup
+
+
+def test_summarize_bounds_text_without_hiding_the_cut():
+    from portfolio_hq.owner.export import _SUMMARY_TEXT_LIMIT, _summarize
+
+    short = _summarize("a short note")
+    assert short == {"text": "a short note", "truncated": False, "full_length": 12}
+    assert _summarize(None) == {"text": None, "truncated": False, "full_length": 0}
+
+    long_text = "word " * 400
+    cut = _summarize(long_text)
+    assert cut["truncated"] is True
+    assert cut["full_length"] == len(long_text), "the true length must be preserved"
+    assert len(cut["text"]) <= _SUMMARY_TEXT_LIMIT + 1  # +1 for the ellipsis
+    assert cut["text"].endswith("\u2026")
+    assert not cut["text"].rstrip("\u2026").endswith(" "), "cut on a word boundary"
+
+    exact = _summarize("x" * _SUMMARY_TEXT_LIMIT)
+    assert exact["truncated"] is False, "a field exactly at the limit is not cut"
+
+
+def test_export_bounds_long_narrative_fields():
+    """Some canonical next-action notes run to tens of thousands of characters.
+
+    Shipping them whole would put ~100 KB of prose on a phone for a summary
+    view, which the owner requirement explicitly rules out. They are shortened
+    — never silently: the true length and a truncation flag travel with them.
+    """
+    from portfolio_hq.owner.export import _SUMMARY_TEXT_LIMIT, build_owner_export
+
+    export = build_owner_export(REPO_ROOT, now=FIXED_NOW)
+    workstreams = export["workstreams"]
+    assert workstreams, "no workstreams were exported"
+    truncated = [w for w in workstreams if w["next_action"]["truncated"]]
+    assert truncated, "this repository has no long note to exercise the bound"
+    for row in workstreams:
+        field = row["next_action"]
+        assert set(field) == {"text", "truncated", "full_length"}
+        assert len(field["text"] or "") <= _SUMMARY_TEXT_LIMIT + 1
+        if field["truncated"]:
+            assert field["full_length"] > _SUMMARY_TEXT_LIMIT
+        assert row["source_file"] == "operations/WORKSTREAMS.yaml"
+
+
+def test_owner_pages_stay_light_enough_for_a_phone():
+    """A regression guard on payload weight, not a style preference.
+
+    Before the free-text bound the Research page was 141 KB, ~100 KB of which
+    was two workstream notes. Every owner page must stay well under a size a
+    phone on a slow connection would struggle with.
+    """
+    from portfolio_hq.owner.export import build_owner_export
+
+    export = build_owner_export(REPO_ROOT, now=FIXED_NOW)
+    empty_inbox = {"total": 0, "quarantined": 0, "duplicates": 0, "reviewed": 0,
+                   "latest_received_at": None}
+    pages = {
+        "home": render_mod.home_page(export, empty_inbox),
+        "portfolio": render_mod.portfolio_page(export),
+        "research": render_mod.research_page(export),
+        "charts": render_mod.charts_page(export, [], flash=None),
+    }
+    for name, markup in pages.items():
+        assert len(markup.encode("utf-8")) < 80 * 1024, (
+            f"the {name} page is {len(markup) / 1024:.0f} KB")
+    assert len(json.dumps(export).encode("utf-8")) < 96 * 1024, "the export is heavy"
+
+
+def test_research_page_discloses_that_notes_were_shortened():
+    export = _sample_export()
+    export["workstreams"] = [
+        {"id": "WS-0001", "title": "A workstream", "status": "in_progress",
+         "priority": "primary",
+         "next_action": {"text": "Begin the thing\u2026", "truncated": True,
+                         "full_length": 59525},
+         "source_file": "operations/WORKSTREAMS.yaml"},
+    ]
+    markup = render_mod.research_page(export)
+    assert "shortened from 59,525 characters" in markup
+    assert "1 next-action note(s) were shortened" in markup
+    assert "operations/WORKSTREAMS.yaml" in markup
+
+
+def test_research_page_renders_an_unshortened_note_without_a_notice():
+    export = _sample_export()
+    markup = render_mod.research_page(export)
+    assert "await authorization" in markup
+    assert "shortened from" not in markup
+
+
+def test_summary_field_renderer_tolerates_a_plain_string():
+    assert "plain text" in render_mod._summary_html("plain text")
+    assert "—" in render_mod._summary_html(None)
+    assert "—" in render_mod._summary_html({"text": None, "truncated": False,
+                                            "full_length": 0})
 
 
 def test_export_level2_matches_the_canonical_destination_roster():
