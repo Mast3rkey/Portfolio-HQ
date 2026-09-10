@@ -464,12 +464,19 @@ def research_page(export: dict | None) -> str:
         intel_body = _unavailable(intel.get("note"))
 
     decisions = export.get("decisions_index") or []
+    # The canonical catalog is in filing order (oldest first). The owner cares
+    # about what was decided lately, so sort newest-first for display before
+    # truncating -- otherwise "the most recent N" would show the oldest N.
+    # This is presentation ordering of already-canonical rows, not a second
+    # calculation: no field is derived, combined or altered.
+    recent = sorted(decisions, key=lambda d: str(d.get("date") or ""), reverse=True)
+    shown = recent[:60]
     dec_rows = "".join(
         f'<tr><th scope="row" data-label="Decision">{_esc(d.get("decision_id"))}</th>'
         f'<td data-label="Date">{_esc(d.get("date") or "—")}</td>'
         f'<td data-label="Status">{_esc(d.get("status") or "—")}</td>'
         f'<td data-label="Category">{_esc(d.get("category") or "—")}</td></tr>'
-        for d in decisions[:60]
+        for d in shown
     )
     dec_body = (
         '<div class="scroll-x"><table class="grid">'
@@ -477,9 +484,9 @@ def research_page(export: dict | None) -> str:
         '<thead><tr><th scope="col">Decision</th><th scope="col">Date</th>'
         '<th scope="col">Status</th><th scope="col">Category</th></tr></thead>'
         f'<tbody>{dec_rows}</tbody></table></div>'
-        f'<p class="muted">Showing the most recent {min(len(decisions), 60)} of '
-        f'{len(decisions)} accepted decisions. Full decision text stays in the '
-        f'repository and in the local Decision Explorer.</p>'
+        f'<p class="muted">Showing the {len(shown)} most recently dated of '
+        f'{len(decisions)} accepted decisions, newest first. Full decision text '
+        f'stays in the repository and in the local Decision Explorer.</p>'
     ) if dec_rows else '<p class="muted">No decisions were exported.</p>'
 
     workstreams = export.get("workstreams") or []

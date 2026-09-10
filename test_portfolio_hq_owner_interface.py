@@ -1049,6 +1049,51 @@ def test_portfolio_page_does_not_present_a_market_value(signed_in):
     assert b"no live price is used" in body
 
 
+def test_research_page_lists_decisions_newest_first_as_it_claims():
+    """The caption says "most recently dated"; the table must actually be that.
+
+    The canonical decision catalog is stored in filing order, oldest first, so
+    truncating it unsorted would show the *oldest* rows under a "most recent"
+    heading -- a claim the page would not be honouring.
+    """
+    export = _sample_export()
+    export["decisions_index"] = [
+        {"decision_id": f"DEC-{i:04d}", "date": f"2026-01-{i:02d}",
+         "status": "Accepted", "category": "x"}
+        for i in range(1, 29)
+    ]
+    markup = render_mod.research_page(export)
+    newest = markup.index("DEC-0028")
+    oldest = markup.index("DEC-0001")
+    assert newest < oldest, "the decision table is not newest-first"
+    assert "newest first" in markup
+    assert "Showing the 28 most recently dated of 28" in markup
+
+
+def test_research_page_truncates_to_the_newest_decisions(signed_in):
+    export = _sample_export()
+    export["decisions_index"] = [
+        {"decision_id": f"DEC-{i:04d}", "date": f"2026-{(i % 12) + 1:02d}-01",
+         "status": "Accepted", "category": "x"}
+        for i in range(1, 121)
+    ]
+    markup = render_mod.research_page(export)
+    assert "Showing the 60 most recently dated of 120" in markup
+    # A decision dated in the earliest month must fall outside the newest 60.
+    assert markup.count("<tr>") <= 70
+
+
+def test_research_page_survives_decisions_without_dates():
+    export = _sample_export()
+    export["decisions_index"] = [
+        {"decision_id": "NO-DATE", "date": None, "status": None, "category": None},
+        {"decision_id": "DATED", "date": "2026-05-01", "status": "Accepted",
+         "category": "x"},
+    ]
+    markup = render_mod.research_page(export)
+    assert "NO-DATE" in markup and "DATED" in markup
+
+
 def test_research_page_shows_freshness_and_decisions(signed_in):
     _, _, body = signed_in["client"].request("GET", "/research")
     assert b"Research coverage" in body and b"LLY" in body
