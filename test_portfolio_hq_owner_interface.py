@@ -257,7 +257,8 @@ def test_hosted_service_imports_no_investment_code():
         "'allocate','alpaca_client','margin_state','levels','pandas','numpy',"
         "'yfinance','earnings','crypto','indicators','regime_gate',"
         "'level1_policy_summary','portfolio_hq.dashboard.model',"
-        "'portfolio_hq.dashboard.render','portfolio_hq.owner.export'"
+        "'portfolio_hq.dashboard.render','portfolio_hq.owner.export',"
+        "'PIL','PIL.Image'"
         ") if m in sys.modules)))"
     )
     result = subprocess.run([sys.executable, "-c", program], cwd=str(REPO_ROOT),
@@ -271,6 +272,7 @@ def test_hosted_service_imports_no_investment_code():
     "portfolio_hq.owner.service",
     "portfolio_hq.owner.render",
     "portfolio_hq.owner.chart_inbox",
+    "portfolio_hq.owner.image_integrity",
     "portfolio_hq.owner.auth",
     "portfolio_hq.owner.export_io",
 ])
@@ -742,7 +744,7 @@ def test_upload_happy_path_quarantines_and_reports_back(signed_in):
 
 
 def test_upload_preserves_bytes_of_a_jpeg_too(signed_in):
-    image = jpeg_bytes(64, 40)
+    image = jpeg_bytes()
     body, content_type = multipart({}, {"chart": ("shot.jpeg", image)})
     signed_in["client"].request("POST", "/charts/upload", body,
                                 {"Content-Type": content_type})

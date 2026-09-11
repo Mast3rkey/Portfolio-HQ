@@ -32,8 +32,11 @@ import json
 import os
 import re
 import secrets
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
+
+from . import image_integrity
 
 # ── contract constants ───────────────────────────────────────────────────────
 
@@ -47,9 +50,11 @@ MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 
 #: Deliberately narrow. HEIC/HEIF, WebP, GIF, SVG, PDF and everything else are
 #: rejected rather than silently transcoded: this unit adds no image-decoding
-#: dependency, and a format we cannot verify from its own header is a format we
-#: cannot honestly quarantine. The owner re-saves as PNG or JPEG instead.
-SUPPORTED_MEDIA_TYPES = ("image/png", "image/jpeg")
+#: dependency, and a format whose completeness we cannot establish from its own
+#: bytes is a format we cannot honestly quarantine. The owner re-saves as PNG
+#: or JPEG instead. Defined once, in image_integrity, so the accepted set and
+#: the set actually verified can never drift apart.
+SUPPORTED_MEDIA_TYPES = image_integrity.SUPPORTED_MEDIA_TYPES
 
 _EXTENSION_FOR_MEDIA_TYPE = {"image/png": "png", "image/jpeg": "jpg"}
 _EXTENSIONS_MATCHING_MEDIA_TYPE = {
@@ -78,6 +83,10 @@ REJECTION_REASONS = (
 
 CHARTS_DIRNAME = "charts"
 RECORD_FILENAME = "intake.json"
+#: Private staging area, a sibling of charts/ so a completed intake moves
+#: into place with one same-filesystem rename. list_records() only scans
+#: charts/, so an in-flight intake is never visible to the index.
+STAGING_DIRNAME = ".incoming"
 
 _INTAKE_ID_RE = re.compile(r"\A[0-9]{8}T[0-9]{6}Z-[0-9a-f]{12}\Z")
 _TICKER_RE = re.compile(r"\A[A-Z0-9][A-Z0-9.\-]{0,11}\Z")
@@ -106,85 +115,14 @@ class ChartInboxStorageError(Exception):
 
 
 # ── content inspection (never trusts the filename) ──────────────────────────
+#
+# Delegated to image_integrity, which verifies the WHOLE byte stream rather
+# than a magic number and a dimension field. Reading IHDR dimensions proves an
+# image starts like a PNG; it does not prove the bytes form a complete image a
+# later reviewer can open. See that module for exactly what each format's check
+# does and does not establish.
 
-_PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
-
-
-def sniff_media_type(data: bytes) -> str | None:
-    """Return the media type implied by the payload's own leading bytes.
-
-    ``None`` means "not a format this inbox accepts". The client's filename,
-    extension and any declared Content-Type are irrelevant here by design.
-    """
-    if data.startswith(_PNG_MAGIC):
-        return "image/png"
-    if data.startswith(b"\xff\xd8\xff"):
-        return "image/jpeg"
-    return None
-
-
-def _png_dimensions(data: bytes) -> tuple[int, int] | None:
-    # 8-byte magic, then a length-13 'IHDR' chunk whose payload starts with
-    # big-endian uint32 width and height.
-    if len(data) < 33 or data[12:16] != b"IHDR":
-        return None
-    width = int.from_bytes(data[16:20], "big")
-    height = int.from_bytes(data[20:24], "big")
-    if width <= 0 or height <= 0:
-        return None
-    return width, height
-
-
-# SOF markers carrying frame dimensions. C4 (DHT), C8 (JPG extension) and CC
-# (DAC) share the 0xC0-0xCF range but are not frame headers.
-_JPEG_SOF_MARKERS = frozenset(
-    {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
-)
-
-
-def _jpeg_dimensions(data: bytes) -> tuple[int, int] | None:
-    i = 2  # skip SOI
-    n = len(data)
-    while i + 3 < n:
-        if data[i] != 0xFF:
-            return None  # desynchronised marker stream — treat as corrupt
-        marker = data[i + 1]
-        if marker == 0xFF:  # fill byte
-            i += 1
-            continue
-        if marker in (0xD8, 0x01) or 0xD0 <= marker <= 0xD7:  # standalone
-            i += 2
-            continue
-        if marker == 0xD9:  # EOI before any frame header
-            return None
-        seg_len = int.from_bytes(data[i + 2:i + 4], "big")
-        if seg_len < 2 or i + 2 + seg_len > n:
-            return None  # truncated segment
-        if marker in _JPEG_SOF_MARKERS:
-            if seg_len < 7:
-                return None
-            height = int.from_bytes(data[i + 5:i + 7], "big")
-            width = int.from_bytes(data[i + 7:i + 9], "big")
-            if width <= 0 or height <= 0:
-                return None
-            return width, height
-        i += 2 + seg_len
-    return None
-
-
-def image_dimensions(data: bytes, media_type: str) -> tuple[int, int] | None:
-    """Parse real pixel dimensions from the payload's own header.
-
-    ``None`` means the header is absent, truncated or self-inconsistent — i.e.
-    the payload is not a usable image even though its first bytes matched a
-    known magic number. This is the inbox's corruption check; it deliberately
-    needs no third-party image library.
-    """
-    if media_type == "image/png":
-        return _png_dimensions(data)
-    if media_type == "image/jpeg":
-        return _jpeg_dimensions(data)
-    return None
+sniff_media_type = image_integrity.sniff_media_type
 
 
 # ── identity and display-name handling ───────────────────────────────────────
@@ -222,10 +160,86 @@ def new_intake_id(now: datetime | None = None) -> str:
     return f"{stamp.strftime('%Y%m%dT%H%M%SZ')}-{secrets.token_hex(6)}"
 
 
-def _record_dir(inbox_root: Path, intake_id: str) -> Path:
-    if not _INTAKE_ID_RE.match(intake_id):
+def _validated_intake_id(intake_id: object) -> str:
+    text = "" if intake_id is None else str(intake_id)
+    if not _INTAKE_ID_RE.match(text):
         raise ValueError(f"refusing to build a path from intake id {intake_id!r}")
-    return Path(inbox_root) / CHARTS_DIRNAME / intake_id
+    return text
+
+
+def _assert_not_redirected(path: Path, label: str) -> None:
+    """Refuse a path that does not resolve to itself.
+
+    Containment is checked by *identity after resolution*, not by comparing
+    string prefixes: a prefix test is satisfied by a path that merely looks
+    contained while a symlinked component redirects the real write elsewhere.
+    """
+    if os.path.islink(path):
+        raise ChartInboxStorageError(
+            f"the chart inbox {label} is a symbolic link; refusing to write "
+            f"through it: {path}")
+    try:
+        resolved = os.path.realpath(path)
+    except OSError as exc:  # pragma: no cover - defensive
+        raise ChartInboxStorageError(
+            f"could not resolve the chart inbox {label}: {exc}") from exc
+    if resolved != str(path):
+        raise ChartInboxStorageError(
+            f"the chart inbox {label} resolves outside itself ({resolved}); "
+            f"refusing to write through a redirected path")
+
+
+def _charts_root(inbox_root: Path | str, *, create: bool) -> Path:
+    """The charts directory, resolved and proven to be contained.
+
+    ``inbox_root`` itself is resolved first and the result treated as
+    authoritative: an operator may legitimately point the inbox at a mounted
+    volume through a symlink. Everything *beneath* that resolved root must not
+    be redirected — ``Path.mkdir`` and ``open`` both follow a symlinked parent,
+    so a symlink at ``charts`` would otherwise place the generated intake
+    directory, the image and the record entirely outside the configured inbox.
+    """
+    try:
+        root = Path(os.path.realpath(Path(inbox_root)))
+    except OSError as exc:  # pragma: no cover - defensive
+        raise ChartInboxStorageError(
+            f"could not resolve the chart inbox root: {exc}") from exc
+    charts = root / CHARTS_DIRNAME
+    # Check BEFORE creating anything: mkdir(exist_ok=True) on a symlink to an
+    # existing directory succeeds silently and writes to the target.
+    if os.path.islink(charts):
+        raise ChartInboxStorageError(
+            f"the chart inbox 'charts' path is a symbolic link; refusing to "
+            f"write through it: {charts}")
+    if create:
+        try:
+            charts.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise ChartInboxStorageError(
+                f"could not create the chart inbox directory: {exc}") from exc
+    _assert_not_redirected(charts, "'charts' directory")
+    if create and not charts.is_dir():
+        raise ChartInboxStorageError(
+            f"the chart inbox 'charts' path is not a directory: {charts}")
+    return charts
+
+
+def _charts_root_for_read(inbox_root: Path | str) -> Path | None:
+    """The charts directory for read-only use, or ``None`` if unusable.
+
+    Fails closed in the same cases the write path refuses, so a redirected
+    inbox cannot make duplicate detection or the record listing report on a
+    directory the write path would never have used.
+    """
+    try:
+        charts = _charts_root(inbox_root, create=False)
+    except ChartInboxStorageError:
+        return None
+    return charts if charts.is_dir() else None
+
+
+def _record_dir(inbox_root: Path, intake_id: str) -> Path:
+    return _charts_root(inbox_root, create=False) / _validated_intake_id(intake_id)
 
 
 # ── read side ────────────────────────────────────────────────────────────────
@@ -236,8 +250,8 @@ def list_records(inbox_root: Path | str) -> list[dict]:
     The filesystem is the index: there is no separate database or manifest to
     drift out of sync with what is actually stored.
     """
-    charts = Path(inbox_root) / CHARTS_DIRNAME
-    if not charts.is_dir():
+    charts = _charts_root_for_read(inbox_root)
+    if charts is None:
         return []
     records: list[dict] = []
     for entry in sorted(charts.iterdir(), reverse=True):
@@ -322,6 +336,74 @@ def _validated_timeframe(value: object, allowed: frozenset[str] | None) -> str |
     return text
 
 
+def _publish_intake(inbox_root: Path | str, intake_id: str, record: dict, *,
+                    image: bytes | None, stored_filename: str | None) -> None:
+    """Write one intake so that it is either wholly present or wholly absent.
+
+    A chart inbox whose index is the filesystem cannot afford a half-written
+    intake. The original build order — create directory, write image, write
+    record — left the image bytes on disk when the record write failed late
+    (disk full, quota, I/O error), so the owner was told the chart was NOT
+    received while its bytes stayed behind, invisible to ``list_records`` and
+    ambiguous for future duplicate detection.
+
+    The intake is therefore assembled in a private staging directory and moved
+    into place with a single ``os.rename``, which is atomic within a
+    filesystem. Any failure before that rename removes the staging tree, so a
+    failed intake leaves nothing at all. Nothing outside the staging directory
+    this call created is ever removed.
+    """
+    charts = _charts_root(inbox_root, create=True)
+    final = charts / _validated_intake_id(intake_id)
+
+    # Claim-time collision check. Renaming a directory onto an existing *empty*
+    # directory would otherwise succeed silently, which would be an overwrite.
+    if os.path.lexists(final):
+        raise ChartInboxStorageError(f"intake directory already exists: {final}")
+
+    staging_root = charts.parent / STAGING_DIRNAME
+    staging = staging_root / f"{intake_id}.{secrets.token_hex(6)}"
+    try:
+        staging_root.mkdir(parents=True, exist_ok=True)
+        _assert_not_redirected(staging_root, "staging directory")
+        staging.mkdir(parents=False, exist_ok=False)
+    except OSError as exc:
+        raise ChartInboxStorageError(
+            f"could not stage the chart intake: {exc}") from exc
+
+    try:
+        if stored_filename is not None and image is not None:
+            # "xb" is O_CREAT|O_EXCL: an existing file is an error, never an
+            # overwrite, and O_EXCL refuses to follow a final-component
+            # symlink. The name is a fixed constant, so no client-supplied
+            # text reaches the filesystem.
+            with open(staging / stored_filename, "xb") as handle:
+                handle.write(image)
+        with open(staging / RECORD_FILENAME, "x", encoding="utf-8") as handle:
+            json.dump(record, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+        _assert_not_redirected(staging, "staged intake directory")
+        # The single publishing step. Before it nothing is visible to the
+        # index; after it the intake is complete.
+        os.rename(staging, final)
+    except OSError as exc:
+        _discard_staging(staging)
+        raise ChartInboxStorageError(
+            f"could not write the chart intake record: {exc}") from exc
+    except BaseException:
+        # Including a non-OSError failure mid-publish: still leave nothing.
+        _discard_staging(staging)
+        raise
+
+
+def _discard_staging(staging: Path) -> None:
+    """Remove exactly the staging directory this call created, and nothing else."""
+    try:
+        shutil.rmtree(staging, ignore_errors=True)
+    except Exception:  # pragma: no cover - rmtree already ignores errors
+        pass
+
+
 def ingest(
     inbox_root: Path | str,
     data: bytes,
@@ -350,26 +432,28 @@ def ingest(
             f"The upload is {len(data):,} bytes; the limit is {max_bytes:,} bytes.",
         )
 
-    media_type = sniff_media_type(data)
-    if media_type is None:
-        raise ChartIntakeRejected(
-            "unsupported_media_type",
-            "Only PNG and JPEG chart images are accepted, decided by inspecting "
-            "the file's own content. Re-save the chart as PNG or JPEG.",
-        )
-    dimensions = image_dimensions(data, media_type)
-    if dimensions is None:
+    # Verify the WHOLE byte stream, not just its opening fields. A payload that
+    # merely starts like an image, or carries a dimension header with no usable
+    # image behind it, is not evidence a reviewer could ever open.
+    try:
+        media_type, width, height = image_integrity.verify_complete_image(data)
+    except image_integrity.ImageIntegrityError as failure:
+        if failure.reason == "unsupported_media_type":
+            raise ChartIntakeRejected(
+                "unsupported_media_type",
+                "Only PNG and JPEG chart images are accepted, decided by "
+                "inspecting the file's own content. Re-save the chart as PNG "
+                "or JPEG.",
+            ) from failure
         raise ChartIntakeRejected(
             "corrupt_or_unreadable_image",
-            "The file starts like an image but its size header could not be "
-            "read, so it is truncated or corrupt.",
-        )
+            f"The file is not a complete, readable image: {failure.detail}.",
+        ) from failure
 
     # Validate the declared context BEFORE creating anything on disk.
     ticker = _validated_ticker(declared_ticker, allowed_tickers)
     timeframe = _validated_timeframe(declared_timeframe, allowed_timeframes)
 
-    width, height = dimensions
     content_sha256 = hashlib.sha256(data).hexdigest()
     safe_display, display_modified = sanitize_display_filename(display_filename)
     declared_ext = safe_display.rsplit(".", 1)[-1].lower() if "." in safe_display else ""
@@ -434,35 +518,9 @@ def ingest(
         ),
     }
 
-    directory = _record_dir(inbox_root, intake_id)
-    try:
-        # exist_ok=False: a colliding intake id must fail loudly, never
-        # silently reuse or overwrite an existing record directory.
-        directory.mkdir(parents=True, exist_ok=False)
-    except FileExistsError:
-        raise ChartInboxStorageError(
-            f"intake directory already exists: {directory}"
-        ) from None
-    except OSError as exc:
-        raise ChartInboxStorageError(
-            f"could not create the chart inbox directory: {exc}"
-        ) from exc
-
-    try:
-        if stored_filename is not None:
-            # "xb" is O_CREAT|O_EXCL: an existing file is an error, never an
-            # overwrite. The name is a fixed constant, so no client-supplied
-            # text reaches the filesystem.
-            with open(directory / stored_filename, "xb") as fh:
-                fh.write(data)
-        with open(directory / RECORD_FILENAME, "x", encoding="utf-8") as fh:
-            json.dump(record, fh, indent=2, sort_keys=True)
-            fh.write("\n")
-    except OSError as exc:
-        raise ChartInboxStorageError(
-            f"could not write the chart intake record: {exc}"
-        ) from exc
-
+    _publish_intake(inbox_root, intake_id, record,
+                    image=data if stored_filename is not None else None,
+                    stored_filename=stored_filename)
     return record
 
 
@@ -476,7 +534,10 @@ def read_image_bytes(inbox_root: Path | str, intake_id: str) -> tuple[bytes, str
     """
     if not _INTAKE_ID_RE.match(intake_id or ""):
         return None
-    directory = _record_dir(inbox_root, intake_id)
+    charts = _charts_root_for_read(inbox_root)
+    if charts is None:
+        return None
+    directory = charts / intake_id
     try:
         record = json.loads((directory / RECORD_FILENAME).read_text(encoding="utf-8"))
     except (OSError, ValueError):

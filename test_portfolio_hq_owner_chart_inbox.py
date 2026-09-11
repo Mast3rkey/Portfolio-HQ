@@ -9,6 +9,7 @@ receiving a chart adopts nothing.
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import struct
@@ -43,10 +44,47 @@ def png_bytes(width: int = 40, height: int = 24) -> bytes:
             + chunk(b"IEND", b""))
 
 
-def jpeg_bytes(width: int = 32, height: int = 18) -> bytes:
-    # A JPEG segment length counts the two length bytes plus the payload:
-    # 2 + len("JFIF\0") + 11 = 18. Getting this wrong desynchronises the
-    # marker walk, which is exactly what the parser is meant to reject.
+#: A real, complete, decodable 32x18 JPEG, embedded so the positive fixture is
+#: an actual image rather than a hand-assembled header.
+#:
+#: The previous fixture built SOI + APP0 + SOF0 + EOI — a frame header with no
+#: scan and no image data at all. It passed only because validation stopped at
+#: the first dimensions marker, and a positive fixture that is not a real image
+#: cannot demonstrate that real images are accepted. Pillow refuses it outright
+#: ("cannot identify image file"); ``header_only_jpeg_bytes`` below keeps it as
+#: a *negative* fixture, which is the only honest use for it.
+_REAL_JPEG_32x18_B64 = (
+    "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQY"
+    "GBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYa"
+    "KCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAAR"
+    "CAASACADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAA"
+    "AgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkK"
+    "FhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWG"
+    "h4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl"
+    "5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREA"
+    "AgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYk"
+    "NOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOE"
+    "hYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk"
+    "5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDwyx8PdPk/SuhsfD/T5P0rvrHw90+T9K6G"
+    "x8P9Pk/SjDYk8fLeIdtTgbHw90+T9K6Gx8P9Pk/Su+sfD/T5K249GS3jDMmSei+teyswp4am"
+    "61aVordn6DlnEDbSTMKxVePlH5V0Niq8fKPyoor5XDH8+Zb0OhsUXj5R+VSSgG9bIHGAPyoo"
+    "ry+Mf+Rav8S/Jn6Tkfxo/9k="
+)
+REAL_JPEG_SIZE = (32, 18)
+
+
+def jpeg_bytes() -> bytes:
+    """A complete, decodable JPEG of size ``REAL_JPEG_SIZE``."""
+    return base64.b64decode("".join(_REAL_JPEG_32x18_B64))
+
+
+def header_only_jpeg_bytes(width: int = 32, height: int = 18) -> bytes:
+    """SOI + APP0 + SOF0 + EOI: dimensions, but no scan and no image data.
+
+    A JPEG segment length counts the two length bytes plus the payload:
+    2 + len("JFIF\\0") + 11 = 18. This must be REJECTED — it is a header, not
+    an image.
+    """
     app0 = b"\xff\xe0" + struct.pack(">H", 18) + b"JFIF\x00" + bytes(11)
     sof0 = (b"\xff\xc0" + struct.pack(">H", 17) + b"\x08"
             + struct.pack(">HH", height, width) + b"\x03" + bytes(9))
@@ -138,7 +176,7 @@ def test_missing_inbox_lists_empty_rather_than_raising(tmp_path: Path):
 def test_jpeg_is_accepted_with_real_dimensions(inbox: Path):
     record = _ingest(inbox, jpeg_bytes(), display_filename="shot.jpg")
     assert record["media_type"] == "image/jpeg"
-    assert (record["image_width"], record["image_height"]) == (32, 18)
+    assert (record["image_width"], record["image_height"]) == REAL_JPEG_SIZE
     assert record["stored_relpath"].endswith("original.jpg")
 
 
@@ -385,6 +423,197 @@ def test_existing_image_file_is_never_overwritten(inbox: Path, monkeypatch):
     with pytest.raises(inbox_mod.ChartInboxStorageError):
         _ingest(inbox, png_bytes(9, 9), display_filename="again.png")
     assert (directory / "original.png").read_bytes() == sentinel
+
+
+# ── a failed intake publishes nothing (transactional storage) ───────────────
+
+def _assert_nothing_partial_anywhere(inbox: Path, expected_ids: list[str]) -> None:
+    """No orphan bytes, no abandoned directory, no staged remnant — anywhere.
+
+    Checked across the WHOLE inbox, not just ``charts/``: a leaked staging tree
+    is exactly as much of an orphan as a leaked intake directory, and only
+    looking where the index looks would miss it.
+    """
+    charts = inbox / "charts"
+    intake_dirs = sorted(d.name for d in charts.iterdir()
+                         if d.is_dir() and inbox_mod._INTAKE_ID_RE.match(d.name))
+    assert intake_dirs == sorted(expected_ids), "an abandoned intake directory remains"
+
+    images = sorted(path.relative_to(inbox).as_posix()
+                    for path in inbox.rglob("original.*"))
+    expected_images = sorted(f"charts/{i}/original.png" for i in expected_ids)
+    assert images == expected_images, "orphaned image bytes remain"
+
+    staging = inbox / inbox_mod.STAGING_DIRNAME
+    if staging.exists():
+        assert list(staging.iterdir()) == [], "a staged intake was abandoned"
+
+    for record_file in inbox.rglob(inbox_mod.RECORD_FILENAME):
+        json.loads(record_file.read_text())  # no partial/unparseable record
+
+
+def _fail_writing(filename: str):
+    """An ``open`` replacement that fails only for one filename."""
+    real_open = open
+
+    def guarded(file, mode="r", *args, **kwargs):
+        if str(file).endswith(filename) and any(f in mode for f in "wax+"):
+            raise OSError(28, "No space left on device")
+        return real_open(file, mode, *args, **kwargs)
+
+    return guarded
+
+
+def test_failure_after_the_image_is_written_leaves_nothing_behind(inbox: Path,
+                                                                  monkeypatch):
+    """The exact regression: the record write fails once the bytes are on disk.
+
+    Previously the directory and ``original.png`` survived the failure, so the
+    owner was told the chart was NOT received while its bytes stayed on the
+    volume — invisible to ``list_records`` and ambiguous for future duplicate
+    detection. A failed intake must publish nothing at all.
+    """
+    # An existing, successful intake that must survive the failure untouched.
+    survivor = _ingest(inbox, png_bytes(11, 7), display_filename="keep.png")
+    survivor_bytes = (inbox / survivor["stored_relpath"]).read_bytes()
+
+    monkeypatch.setattr("builtins.open", _fail_writing("intake.json"))
+    with pytest.raises(inbox_mod.ChartInboxStorageError):
+        _ingest(inbox, png_bytes(40, 24), display_filename="doomed.png")
+    monkeypatch.undo()
+
+    _assert_nothing_partial_anywhere(inbox, [survivor["intake_id"]])
+    assert (inbox / survivor["stored_relpath"]).read_bytes() == survivor_bytes
+    assert [r["intake_id"] for r in inbox_mod.list_records(inbox)] == \
+        [survivor["intake_id"]]
+
+    # A later clean retry behaves completely normally.
+    retry = _ingest(inbox, png_bytes(40, 24), display_filename="retry.png")
+    assert retry["state"] == inbox_mod.STATE_QUARANTINED
+    assert (inbox / retry["stored_relpath"]).read_bytes() == png_bytes(40, 24)
+    assert len(inbox_mod.list_records(inbox)) == 2
+
+
+def test_failure_while_publishing_leaves_nothing_behind(inbox: Path, monkeypatch):
+    """Failure at the single publishing step must also leave no trace."""
+    survivor = _ingest(inbox, png_bytes(9, 5), display_filename="keep.png")
+
+    def refuse(*args, **kwargs):
+        raise OSError(5, "Input/output error")
+
+    monkeypatch.setattr(inbox_mod.os, "rename", refuse)
+    with pytest.raises(inbox_mod.ChartInboxStorageError):
+        _ingest(inbox, png_bytes(40, 24), display_filename="doomed.png")
+    monkeypatch.undo()
+
+    assert [r["intake_id"] for r in inbox_mod.list_records(inbox)] == \
+        [survivor["intake_id"]]
+    _assert_nothing_partial_anywhere(inbox, [survivor["intake_id"]])
+
+
+def test_failure_writing_the_image_leaves_nothing_behind(inbox: Path, monkeypatch):
+    monkeypatch.setattr("builtins.open", _fail_writing("original.png"))
+    with pytest.raises(inbox_mod.ChartInboxStorageError):
+        _ingest(inbox, png_bytes(), display_filename="doomed.png")
+    monkeypatch.undo()
+    assert inbox_mod.list_records(inbox) == []
+    _assert_nothing_partial_anywhere(inbox, [])
+
+
+def test_an_in_flight_intake_is_invisible_to_the_index(inbox: Path):
+    """Staging must not sit where the filesystem index looks."""
+    _ingest(inbox, png_bytes(), display_filename="a.png")
+    staging = inbox / inbox_mod.STAGING_DIRNAME
+    charts = inbox / "charts"
+    assert inbox_mod.STAGING_DIRNAME != "charts"
+    assert staging.resolve().parent == charts.resolve().parent
+    # Even a leftover staged tree cannot be listed as a record.
+    forged = staging / "20260911T120000Z-abcdef123456.deadbeefcafe"
+    forged.mkdir(parents=True, exist_ok=True)
+    (forged / inbox_mod.RECORD_FILENAME).write_text('{"intake_id": "smuggled"}')
+    assert "smuggled" not in {r.get("intake_id") for r in inbox_mod.list_records(inbox)}
+
+
+# ── the storage boundary is containment-safe (no symlink redirection) ───────
+
+def test_a_symlinked_charts_root_is_refused_and_writes_nothing_outside(tmp_path: Path):
+    """``mkdir`` and ``open`` follow a symlinked parent.
+
+    With ``charts`` pointing elsewhere, the generated intake directory, the
+    image and the record were all created outside the configured inbox — while
+    the stored record still claimed an inbox-relative path.
+    """
+    inbox = tmp_path / "inbox"
+    outside = tmp_path / "outside"
+    inbox.mkdir()
+    outside.mkdir()
+    (inbox / "charts").symlink_to(outside, target_is_directory=True)
+
+    with pytest.raises(inbox_mod.ChartInboxStorageError) as excinfo:
+        _ingest(inbox, png_bytes(), display_filename="a.png")
+    assert "symbolic link" in str(excinfo.value)
+
+    assert list(outside.rglob("*")) == [], "bytes were written outside the inbox"
+    assert inbox_mod.list_records(inbox) == [], "a redirected inbox must not list"
+
+
+def test_a_symlinked_charts_root_fails_closed_on_every_read_path(tmp_path: Path):
+    inbox = tmp_path / "inbox"
+    outside = tmp_path / "outside"
+    inbox.mkdir()
+    outside.mkdir()
+    (inbox / "charts").symlink_to(outside, target_is_directory=True)
+
+    assert inbox_mod.list_records(inbox) == []
+    assert inbox_mod.inbox_summary(inbox)["total"] == 0
+    assert inbox_mod.find_by_content_hash(inbox, "0" * 64) is None
+    assert inbox_mod.read_image_bytes(inbox, "20260911T120000Z-abcdef123456") is None
+
+
+def test_a_symlink_planted_after_the_fact_is_still_refused(tmp_path: Path):
+    inbox = tmp_path / "inbox"
+    outside = tmp_path / "outside"
+    inbox.mkdir()
+    outside.mkdir()
+    first = _ingest(inbox, png_bytes(12, 8), display_filename="a.png")
+    assert first["state"] == inbox_mod.STATE_QUARANTINED
+
+    # Replace the real charts directory with a redirection.
+    genuine = inbox / "charts"
+    genuine.rename(tmp_path / "real_charts")
+    genuine.symlink_to(outside, target_is_directory=True)
+
+    with pytest.raises(inbox_mod.ChartInboxStorageError):
+        _ingest(inbox, png_bytes(40, 24), display_filename="b.png")
+    assert list(outside.rglob("*")) == []
+
+
+def test_a_symlinked_inbox_root_is_legitimate_and_still_works(tmp_path: Path):
+    """An operator may point the inbox at a mounted volume through a symlink.
+
+    Only redirection *beneath* the resolved root is refused; the root itself is
+    resolved and treated as authoritative.
+    """
+    real = tmp_path / "volume"
+    real.mkdir()
+    link = tmp_path / "inbox-link"
+    link.symlink_to(real, target_is_directory=True)
+
+    record = _ingest(link, png_bytes(), display_filename="a.png")
+    assert record["state"] == inbox_mod.STATE_QUARANTINED
+    assert (real / record["stored_relpath"]).read_bytes() == png_bytes()
+    assert len(inbox_mod.list_records(link)) == 1
+    assert inbox_mod.read_image_bytes(link, record["intake_id"])[0] == png_bytes()
+
+
+def test_ordinary_storage_is_unaffected_by_the_containment_checks(inbox: Path):
+    record = _ingest(inbox, png_bytes(33, 21), display_filename="normal.png")
+    stored = inbox / record["stored_relpath"]
+    assert stored.is_file()
+    assert not stored.is_symlink()
+    assert not stored.parent.is_symlink()
+    assert stored.resolve() == stored
+    assert (inbox / "charts").resolve() == (inbox / "charts")
 
 
 # ── declared context: only through an explicit, validated mechanism ─────────

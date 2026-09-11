@@ -113,18 +113,48 @@ leaking a session.
 
 Intake is *evidence receipt*, not adoption.
 
-* PNG and JPEG only, decided by inspecting the file's own leading bytes and
-  parsing its real dimension header. A client-supplied extension is never
-  trusted, never used to pick a storage path, and never used to choose the
-  media type; a mismatch is recorded and shown. HEIC/WebP/GIF/SVG/PDF are
-  refused — re-save as PNG or JPEG.
+* PNG and JPEG only, decided by inspecting the file's own bytes. A
+  client-supplied extension is never trusted, never used to pick a storage
+  path, and never used to choose the media type; a mismatch is recorded and
+  shown. HEIC/WebP/GIF/SVG/PDF are refused — re-save as PNG or JPEG.
+* **The whole byte stream is verified, not just its opening fields.** Reading a
+  dimension header proves an image *starts* like a PNG or JPEG; it does not
+  prove the bytes form a complete image a reviewer could open. `image_integrity.py`
+  therefore verifies every PNG chunk's CRC-32, requires IHDR-first / IEND-last /
+  contiguous IDAT, and actually decompresses the image data to check its length
+  against the size the header implies (Adam7 interlacing included); and it walks
+  the whole JPEG marker stream, requiring a frame header, at least one scan with
+  non-empty entropy-coded data (byte-stuffing and restart markers handled) and a
+  terminating EOI. Truncated, corrupt, short-raster and header-only files are
+  refused. This is standard-library only: a native image library on an
+  untrusted-input boundary is the wrong trade, and it would break the hosted
+  service's standard-library-only property. Where the two differ, the inbox is
+  deliberately **stricter** than a lenient decoder — some incomplete files still
+  render in Pillow and are still refused here, because evidence that silently
+  misrepresents itself is worse than no evidence.
 * Bounded size, checked twice: the request is refused on its declared
   `Content-Length` before a byte of payload is read, and the payload is
-  re-checked against the inbox ceiling.
+  re-checked against the inbox ceiling. A PNG declaring impossible dimensions is
+  refused from its header arithmetic, so a decompression bomb never sizes a
+  buffer from attacker-supplied numbers.
 * Storage identity is server-generated (UTC timestamp plus random hex) and
   matched against a strict pattern before it is ever joined to a path. The
   stored filename is a fixed constant. A hostile filename survives only as
   sanitised display text.
+* **Storage is contained, checked by resolution rather than by string prefix.**
+  `mkdir` and `open` both follow a symlinked *parent*, so a symlink at
+  `charts` would place the intake directory, the image and the record outside
+  the configured inbox while the record still claimed an inbox-relative path.
+  The charts directory is refused if it is a symlink or resolves anywhere but
+  to itself, and every read path fails closed the same way. A symlinked *inbox
+  root* remains legitimate — an operator may point it at a mounted volume — so
+  the root is resolved first and the result treated as authoritative.
+* **A failed intake publishes nothing.** The intake is assembled in a private
+  `.incoming/` staging directory and moved into place with a single atomic
+  rename; any failure removes the staging tree and nothing else. Previously a
+  late failure writing the record left the image bytes behind, so the owner was
+  told the chart was *not* received while its bytes stayed on the volume,
+  invisible to the index and ambiguous for future duplicate detection.
 * Directories are created with `exist_ok=False` and files opened `O_EXCL`, so a
   collision fails loudly instead of overwriting.
 * Bytes are retained **exactly** as received — the multipart splitter copies
