@@ -44,15 +44,10 @@ def png_bytes(width: int = 40, height: int = 24) -> bytes:
             + chunk(b"IEND", b""))
 
 
-#: A real, complete, decodable 32x18 JPEG, embedded so the positive fixture is
-#: an actual image rather than a hand-assembled header.
-#:
-#: The previous fixture built SOI + APP0 + SOF0 + EOI — a frame header with no
-#: scan and no image data at all. It passed only because validation stopped at
-#: the first dimensions marker, and a positive fixture that is not a real image
-#: cannot demonstrate that real images are accepted. Pillow refuses it outright
-#: ("cannot identify image file"); ``header_only_jpeg_bytes`` below keeps it as
-#: a *negative* fixture, which is the only honest use for it.
+#: A real, complete, decodable 32x18 JPEG. PNG is the only accepted format, so
+#: this is a *negative* fixture: it exists to prove that a perfectly sound JPEG
+#: is refused — by its own bytes, whatever it is named — and refused as an
+#: unsupported format rather than as a damaged file.
 _REAL_JPEG_32x18_B64 = (
     "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQY"
     "GBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYa"
@@ -70,32 +65,9 @@ _REAL_JPEG_32x18_B64 = (
     "61aVordn6DlnEDbSTMKxVePlH5V0Niq8fKPyoor5XDH8+Zb0OhsUXj5R+VSSgG9bIHGAPyoo"
     "ry+Mf+Rav8S/Jn6Tkfxo/9k="
 )
-REAL_JPEG_SIZE = (32, 18)
-
-
 def jpeg_bytes() -> bytes:
-    """A complete, decodable JPEG of size ``REAL_JPEG_SIZE``."""
+    """A complete, decodable 32x18 JPEG. Must always be REFUSED."""
     return base64.b64decode("".join(_REAL_JPEG_32x18_B64))
-
-
-def header_only_jpeg_bytes(width: int = 32, height: int = 18) -> bytes:
-    """SOI + APP0 + SOF0 + EOI: dimensions, but no scan and no image data.
-
-    The frame header's own component records are deliberately *valid* — three
-    components, legal sampling factors, legal table slots — so that the only
-    thing wrong with this payload is the missing scan. An earlier version
-    zero-filled them, which meant the frame header was independently malformed
-    and the missing scan was never the reason it was refused.
-
-    A JPEG segment length counts the two length bytes plus the payload:
-    2 + len("JFIF\\0") + 11 = 18. This must be REJECTED — it is a header, not
-    an image.
-    """
-    app0 = b"\xff\xe0" + struct.pack(">H", 18) + b"JFIF\x00" + bytes(11)
-    components = bytes([1, 0x11, 0, 2, 0x11, 0, 3, 0x11, 0])
-    sof0 = (b"\xff\xc0" + struct.pack(">H", 17) + b"\x08"
-            + struct.pack(">HH", height, width) + b"\x03" + components)
-    return b"\xff\xd8" + app0 + sof0 + b"\xff\xd9"
 
 
 @pytest.fixture
@@ -180,11 +152,26 @@ def test_missing_inbox_lists_empty_rather_than_raising(tmp_path: Path):
 
 # ── format handling: content decides, never the filename ────────────────────
 
-def test_jpeg_is_accepted_with_real_dimensions(inbox: Path):
-    record = _ingest(inbox, jpeg_bytes(), display_filename="shot.jpg")
-    assert record["media_type"] == "image/jpeg"
-    assert (record["image_width"], record["image_height"]) == REAL_JPEG_SIZE
-    assert record["stored_relpath"].endswith("original.jpg")
+def test_the_storage_extension_map_covers_exactly_the_accepted_formats():
+    """The map is keyed by *verified* media type, so it must track the accepted
+    set exactly. A stale entry for a format the gate no longer admits is dead
+    config that quietly suggests the inbox still handles it."""
+    assert set(inbox_mod._EXTENSION_FOR_MEDIA_TYPE) == set(
+        inbox_mod.SUPPORTED_MEDIA_TYPES)
+    assert set(inbox_mod._EXTENSIONS_MATCHING_MEDIA_TYPE) == set(
+        inbox_mod.SUPPORTED_MEDIA_TYPES)
+
+
+def test_a_sound_jpeg_is_refused_and_nothing_is_written(inbox: Path):
+    """PNG only. A JPEG is a fine file and still not admitted; the refusal says
+    so rather than calling it damaged, and no directory, record or payload is
+    created for it."""
+    with pytest.raises(inbox_mod.ChartIntakeRejected) as excinfo:
+        _ingest(inbox, jpeg_bytes(), display_filename="shot.jpg")
+    assert excinfo.value.reason == "unsupported_media_type"
+    assert "PNG only" in str(excinfo.value)
+    assert not (inbox / "charts").exists()
+    assert inbox_mod.list_records(inbox) == []
 
 
 @pytest.mark.parametrize("payload", [
@@ -203,12 +190,27 @@ def test_unsupported_formats_are_refused(inbox: Path, payload: bytes):
 
 
 def test_extension_is_never_trusted_to_decide_the_media_type(inbox: Path):
-    """A JPEG named .png is stored as a JPEG, and the mismatch is recorded."""
-    record = _ingest(inbox, jpeg_bytes(), display_filename="totally-a.png")
-    assert record["media_type"] == "image/jpeg"
-    assert record["stored_relpath"].endswith("original.jpg")
+    """A JPEG named .png is refused for what its bytes actually are.
+
+    This is the whole point of deciding format by content: narrowing to PNG
+    would be worthless if a .png filename were enough to get JPEG bytes past
+    the gate.
+    """
+    with pytest.raises(inbox_mod.ChartIntakeRejected) as excinfo:
+        _ingest(inbox, jpeg_bytes(), display_filename="totally-a.png")
+    assert excinfo.value.reason == "unsupported_media_type"
+    assert "own bytes are JPEG" in str(excinfo.value)
+    assert not (inbox / "charts").exists()
+
+
+def test_a_png_named_with_a_foreign_extension_is_still_accepted(inbox: Path):
+    """The rule is content-decides, in both directions: a real PNG is admitted
+    whatever it is called, and the filename mismatch is recorded."""
+    record = _ingest(inbox, png_bytes(), display_filename="chart.jpg")
+    assert record["media_type"] == "image/png"
+    assert record["stored_relpath"].endswith("original.png")
     assert record["declared_extension_matches_content"] is False
-    assert (inbox / record["stored_relpath"]).read_bytes() == jpeg_bytes()
+    assert (inbox / record["stored_relpath"]).read_bytes() == png_bytes()
 
 
 def test_matching_extension_is_reported_as_matching(inbox: Path):
@@ -260,10 +262,6 @@ def test_default_ceiling_is_bounded_and_declared():
     (b"\x89PNG\r\n\x1a\n" + b"\x00" * 8, "png header without IHDR"),
     (b"\x89PNG\r\n\x1a\n" + struct.pack(">I", 13) + b"IHDR"
      + struct.pack(">IIBBBBB", 0, 0, 8, 2, 0, 0, 0), "png with zero dimensions"),
-    (b"\xff\xd8\xff", "jpeg magic only"),
-    (b"\xff\xd8" + b"\xff\xc0" + struct.pack(">H", 17) + b"\x08"
-     + struct.pack(">HH", 0, 0) + b"\x03" + bytes(9), "jpeg with zero dimensions"),
-    (b"\xff\xd8" + b"\xff\xc0" + struct.pack(">H", 900), "jpeg truncated segment"),
 ])
 def test_corrupt_or_truncated_images_are_refused(inbox: Path, payload: bytes, label: str):
     with pytest.raises(inbox_mod.ChartIntakeRejected) as excinfo:
@@ -272,37 +270,21 @@ def test_corrupt_or_truncated_images_are_refused(inbox: Path, payload: bytes, la
     assert not (inbox / "charts").exists()
 
 
-def test_a_jpeg_advertising_a_size_with_no_usable_scan_is_refused(inbox: Path):
-    """The shape that reached storage before: a frame header exposing
-    dimensions, an empty scan header, one entropy byte and an EOI. It walks
-    like a JPEG and no decoder can open it."""
-    frame = b"\xff\xc0" + struct.pack(">H", 7) + b"\x08" + struct.pack(">HH", 18, 32)
-    payload = (b"\xff\xd8" + frame + b"\xff\xda" + struct.pack(">H", 2)
-               + b"\x42\xff\xd9")
+@pytest.mark.parametrize("payload,label", [
+    (b"\xff\xd8\xff", "jpeg magic only"),
+    (b"\xff\xd8" + b"\xff\xc0" + struct.pack(">H", 900), "jpeg truncated segment"),
+])
+def test_jpeg_payloads_are_refused_on_format_before_structure(
+        inbox: Path, payload: bytes, label: str):
+    """Damaged JPEGs are refused as *unsupported*, not as corrupt.
+
+    Their structure is never examined, which is the point: the inbox makes no
+    claim about JPEG structure any more, so it must not imply one by reporting
+    a JPEG as damaged.
+    """
     with pytest.raises(inbox_mod.ChartIntakeRejected) as excinfo:
-        _ingest(inbox, payload, display_filename="chart.jpg")
-    assert excinfo.value.reason == "corrupt_or_unreadable_image"
-    assert not (inbox / "charts").exists()
-
-
-def test_a_legal_but_unsupported_jpeg_variant_is_refused_as_unsupported(inbox: Path):
-    """Arithmetic-coded JPEG is valid and unreadable by common decoders. The
-    owner is told it is the wrong *variant*, not that their file is damaged."""
-    def segment(marker: int, body: bytes) -> bytes:
-        return bytes((0xFF, marker)) + struct.pack(">H", len(body) + 2) + body
-
-    quantisation = segment(0xDB, b"\x00" + bytes(64))
-    huffman = segment(0xC4, b"\x00" + bytes([1] + [0] * 15) + b"\x00")
-    # 0xFFC9 is SOF9: arithmetic-coded extended sequential.
-    frame = segment(0xC9, b"\x08" + struct.pack(">HH", 18, 32) + b"\x01"
-                    + bytes([1, 0x11, 0]))
-    scan = segment(0xDA, b"\x01" + bytes([1, 0x00]) + bytes([0, 63, 0]))
-    payload = (b"\xff\xd8" + quantisation + huffman + frame + scan
-               + b"\x42\xff\xd9")
-    with pytest.raises(inbox_mod.ChartIntakeRejected) as excinfo:
-        _ingest(inbox, payload, display_filename="chart.jpg")
-    assert excinfo.value.reason == "unsupported_media_type"
-    assert "arithmetic" in str(excinfo.value)
+        _ingest(inbox, payload, display_filename="broken.jpg")
+    assert excinfo.value.reason == "unsupported_media_type", label
     assert not (inbox / "charts").exists()
 
 

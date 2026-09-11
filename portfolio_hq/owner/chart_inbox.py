@@ -48,19 +48,20 @@ SCHEMA_VERSION = 1
 #: single request can never exhaust a small private host.
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 
-#: Deliberately narrow. HEIC/HEIF, WebP, GIF, SVG, PDF and everything else are
+#: PNG only. HEIC/HEIF, WebP, GIF, SVG, PDF, JPEG and everything else are
 #: rejected rather than silently transcoded: this unit adds no image-decoding
 #: dependency, and a format whose completeness we cannot establish from its own
-#: bytes is a format we cannot honestly quarantine. The owner re-saves as PNG
-#: or JPEG instead. Defined once, in image_integrity, so the accepted set and
-#: the set actually verified can never drift apart.
+#: bytes is a format we cannot honestly quarantine. PNG is the only format whose
+#: completeness the standard library can actually prove — see
+#: ``image_integrity``'s own module docstring for why JPEG was withdrawn rather
+#: than admitted on a structural check that could not guarantee decodability.
+#: The owner converts to PNG before uploading; the service never transcodes.
+#: Defined once, in image_integrity, so the accepted set and the set actually
+#: verified can never drift apart.
 SUPPORTED_MEDIA_TYPES = image_integrity.SUPPORTED_MEDIA_TYPES
 
-_EXTENSION_FOR_MEDIA_TYPE = {"image/png": "png", "image/jpeg": "jpg"}
-_EXTENSIONS_MATCHING_MEDIA_TYPE = {
-    "image/png": frozenset({"png"}),
-    "image/jpeg": frozenset({"jpg", "jpeg"}),
-}
+_EXTENSION_FOR_MEDIA_TYPE = {"image/png": "png"}
+_EXTENSIONS_MATCHING_MEDIA_TYPE = {"image/png": frozenset({"png"})}
 
 #: Persisted intake states. Closed vocabulary. This unit only ever writes these
 #: two. Post-intake review transitions are intentionally NOT implemented here —
@@ -439,11 +440,10 @@ def ingest(
         media_type, width, height = image_integrity.verify_complete_image(data)
     except image_integrity.ImageIntegrityError as failure:
         if failure.reason == "unsupported_media_type":
-            # Carry the verifier's own wording rather than a generic line: this
-            # reason covers both "that is not an image" and "that is a JPEG
-            # variant we decline to store", and telling an owner holding a
-            # perfectly good arithmetic-coded JPEG that only JPEG is accepted
-            # would be useless.
+            # Carry the verifier's own wording rather than a generic line: it
+            # distinguishes "those bytes are not an image at all" from "those
+            # bytes are a JPEG", and an owner holding a perfectly sound JPEG
+            # needs to be told to convert it, not that it is damaged.
             raise ChartIntakeRejected(
                 "unsupported_media_type",
                 f"Not accepted: {failure.detail}.",

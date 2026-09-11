@@ -113,47 +113,46 @@ leaking a session.
 
 Intake is *evidence receipt*, not adoption.
 
-* PNG and JPEG only, decided by inspecting the file's own bytes. A
-  client-supplied extension is never trusted, never used to pick a storage
-  path, and never used to choose the media type; a mismatch is recorded and
-  shown. HEIC/WebP/GIF/SVG/PDF are refused — re-save as PNG or JPEG.
-* **The whole byte stream is verified, not just its opening fields.** Reading a
-  dimension header proves an image *starts* like a PNG or JPEG; it does not
-  prove the bytes form a complete image a reviewer could open. `image_integrity.py`
-  therefore verifies every PNG chunk's CRC-32, requires IHDR-first / IEND-last /
-  contiguous IDAT, and actually decompresses the image data to check its length
-  against the size the header implies (Adam7 interlacing included); and it walks
-  the whole JPEG marker stream, requiring a single frame header, at least one
-  scan with non-empty entropy-coded data (byte-stuffing and restart markers
-  handled) and a terminating EOI. Truncated, corrupt, short-raster and
-  header-only files are refused. This is standard-library only: a native image
-  library on an untrusted-input boundary is the wrong trade, and it would break
-  the hosted service's standard-library-only property. Where the two differ, the
-  inbox is deliberately **stricter** than a lenient decoder — some incomplete
-  files still render in Pillow and are still refused here, because evidence that
-  silently misrepresents itself is worse than no evidence.
-* **A JPEG is admitted only if its structures are internally coherent**, because
-  a marker stream can be well-formed and still be something no decoder will
-  read. Dimensions live in the frame header, so a file can advertise a size
-  while its scan header selects nothing at all. The frame header's declared
-  length is therefore checked against its component count, component
-  identifiers must be unique, and sampling factors and table slots must be in
-  range; the scan header's declared length is checked against its selector
-  count, every selected component must be one the frame defined, no component
-  may be selected twice, the coefficient and successive-approximation fields
-  must be coherent for the frame's own mode, and every quantisation and entropy
-  table a scan uses must already be defined in the file.
-* **The admitted JPEG subset is narrower than the standard, on purpose.** Only
-  8-bit, Huffman-coded baseline (SOF0), extended sequential (SOF1) and
-  progressive (SOF2) frames with at most four colour components are accepted —
-  what browsers, phones, screenshot tools and trading platforms actually emit,
-  at every quality setting, with or without restart markers or chroma
-  subsampling. Lossless, differential, arithmetic-coded and 12-bit JPEG are
-  legal but are refused as *unsupported* rather than as damage, with the reason
-  saying so, because common decoders do not read them. PNG remains the
-  universal fallback for anything JPEG cannot carry. The direction of the
-  guarantee is the point: the inbox may refuse a file some lenient decoder would
-  render, but it must never accept a file the later review path cannot open.
+* **PNG only**, decided by inspecting the file's own bytes. A client-supplied
+  extension is never trusted, never used to pick a storage path, and never used
+  to choose the media type; a mismatch is recorded and shown. JPEG, HEIC/HEIF,
+  WebP, GIF, SVG and PDF are all refused — convert the chart to PNG first. A
+  JPEG named `.png` is refused for what its bytes actually are, and a real PNG
+  named `.jpg` is still accepted: content decides, in both directions.
+* **Why JPEG is not accepted.** Earlier revisions did accept it, on a
+  hand-written structural check that was tightened twice under review. That
+  check could validate every frame and scan header field, every table
+  declaration and every marker boundary — and still not establish the one thing
+  that matters, because a JPEG's image lives in a Huffman-coded bitstream only a
+  decoder can read. A 141-byte payload declaring a 65535×65535 frame with one
+  entropy byte satisfied every structural rule while a real decoder refused it
+  outright as a decompression bomb. The options were a home-grown JPEG codec on
+  an untrusted-input boundary, a native decoder inside a service whose whole
+  deployment contract rests on being standard-library-only, or withdrawing a
+  guarantee that could not be met. The guarantee was withdrawn, and the JPEG
+  parser removed rather than left as dead security-critical code.
+* **PNG completeness is genuinely proven**, which is why it is the one format
+  kept. `image_integrity.py` verifies every chunk's CRC-32, requires
+  IHDR-first / IEND-last / contiguous IDAT, and actually decompresses the image
+  data to check its length against the size the header implies (Adam7
+  interlacing included). Truncated, corrupt, short-raster and header-only PNGs
+  are refused. This works because PNG's compression is `zlib` and `zlib` is in
+  the standard library — no native image library ever touches the
+  untrusted-input boundary, and the hosted service stays standard-library-only.
+  Where the two differ, the inbox is deliberately **stricter** than a lenient
+  decoder: some incomplete files still render in Pillow and are still refused
+  here, because evidence that silently misrepresents itself is worse than no
+  evidence. The direction of the guarantee is the point — the inbox may refuse a
+  file some decoder would render, but must never accept one the later review
+  path cannot open.
+* **Preparing a chart batch: convert locally, then upload.** The service never
+  transcodes; doing so inside the hosted runtime would mean putting an image
+  encoder on the untrusted boundary and would silently change the bytes the
+  receipt hash covers. Conversion belongs on your own machine, before intake:
+  download the charts to a local folder, convert any JPEG to PNG there (Claude
+  Code or Codex can do this over the folder), leave the originals untouched, and
+  upload the resulting PNG batch. The inbox verifies each converted file on its
+  own bytes exactly as it would any other PNG.
 * Bounded size, checked twice: the request is refused on its declared
   `Content-Length` before a byte of payload is read, and the payload is
   re-checked against the inbox ceiling. A PNG declaring impossible dimensions is

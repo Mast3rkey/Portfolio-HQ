@@ -547,8 +547,8 @@ def research_page(export: dict | None) -> str:
 _REJECTION_HELP = {
     "empty_payload": "The file had no content. Pick the image again.",
     "payload_too_large": "The image is too large. Export it at a smaller size.",
-    "unsupported_media_type": "Only PNG and JPEG are accepted. Re-save the chart "
-                              "as PNG or JPEG and upload again.",
+    "unsupported_media_type": "PNG is the only accepted format. Convert the "
+                              "chart to PNG and upload again.",
     "corrupt_or_unreadable_image": "The file looks damaged or incomplete. "
                                    "Re-capture the chart and upload again.",
     "invalid_ticker": "Pick an instrument from the list.",
@@ -609,8 +609,9 @@ def charts_page(export: dict | None, records: list[dict], *,
 
     upload = f"""
 <form method="post" action="/charts/upload" enctype="multipart/form-data" class="stack">
-  <label for="chart">Chart image (PNG or JPEG)</label>
-  <input id="chart" name="chart" type="file" accept="image/png,image/jpeg" required>
+  <label for="chart">Chart image (PNG)</label>
+  <input id="chart" name="chart" type="file" accept="image/png" required>
+  <p class="muted">PNG only. A PNG is refused unless its own bytes are a complete, undamaged PNG, whatever the file is named. Convert a JPEG chart to PNG on your own machine first; this service never converts anything for you.</p>
   {ticker_field}
   {tf_field}
   <button type="submit">Upload chart</button>

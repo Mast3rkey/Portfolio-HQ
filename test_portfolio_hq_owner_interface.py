@@ -743,13 +743,25 @@ def test_upload_happy_path_quarantines_and_reports_back(signed_in):
     assert stored.read_bytes() == image, "HTTP transport altered the image bytes"
 
 
-def test_upload_preserves_bytes_of_a_jpeg_too(signed_in):
-    image = jpeg_bytes()
-    body, content_type = multipart({}, {"chart": ("shot.jpeg", image)})
-    signed_in["client"].request("POST", "/charts/upload", body,
-                                {"Content-Type": content_type})
-    record = inbox_mod.list_records(signed_in["inbox"])[0]
-    assert (signed_in["inbox"] / record["stored_relpath"]).read_bytes() == image
+def test_uploading_a_jpeg_is_refused_over_http_and_stores_nothing(signed_in):
+    """End to end: the narrowed format contract holds at the HTTP boundary, and
+    the owner is told to convert rather than that their chart is broken."""
+    body, content_type = multipart({}, {"chart": ("shot.jpeg", jpeg_bytes())})
+    status, _, page = signed_in["client"].request(
+        "POST", "/charts/upload", body, {"Content-Type": content_type})
+    assert status == 400
+    assert b"Not accepted" in page and b"PNG only" in page
+    assert inbox_mod.list_records(signed_in["inbox"]) == []
+    assert not (signed_in["inbox"] / "charts").exists()
+
+
+def test_a_jpeg_renamed_png_is_refused_over_http_too(signed_in):
+    body, content_type = multipart({}, {"chart": ("chart.png", jpeg_bytes())})
+    status, _, page = signed_in["client"].request(
+        "POST", "/charts/upload", body, {"Content-Type": content_type})
+    assert status == 400
+    assert b"own bytes are JPEG" in page
+    assert inbox_mod.list_records(signed_in["inbox"]) == []
 
 
 def test_duplicate_upload_is_reported_and_stores_no_second_copy(signed_in):
@@ -768,7 +780,7 @@ def test_unsupported_upload_is_reported_and_stores_nothing(signed_in):
     status, _, page = signed_in["client"].request(
         "POST", "/charts/upload", body, {"Content-Type": content_type})
     assert status == 400
-    assert b"Not accepted" in page and b"PNG and JPEG" in page
+    assert b"Not accepted" in page and b"PNG only" in page
     assert inbox_mod.list_records(signed_in["inbox"]) == []
 
 
@@ -1109,7 +1121,8 @@ def test_charts_page_explains_the_quarantine_workflow(signed_in):
     assert b"Send a chart" in body
     assert b"Quarantined" in body
     assert b"does not change any holding, target, sleeve weight" in body
-    assert b'accept="image/png,image/jpeg"' in body
+    assert b'accept="image/png"' in body
+    assert b"Convert a JPEG chart to PNG on your own machine first" in body
     for ticker in (b"NVDA", b"TSLA", b"BTC"):
         assert b"<option value=\"" + ticker in body
 
