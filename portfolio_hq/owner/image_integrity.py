@@ -25,12 +25,34 @@ matters for an evidence-receipt boundary:
   ``IDAT`` stream is actually decompressed and its length checked against the
   size the ``IHDR`` header implies (Adam7 interlacing included). A truncated,
   corrupt, or header-only PNG cannot pass: the arithmetic does not work out.
-* **JPEG — structural completeness is proven; pixel validity is not.** The
-  marker stream is walked in full: a frame header, at least one scan, non-empty
-  entropy-coded data with correct byte-stuffing and restart handling, and a
-  terminating ``EOI``. A header-only or truncated JPEG cannot pass. This does
-  not verify Huffman tables decode to sensible pixels, which would require a
-  full decoder; it is deliberately the container-level guarantee.
+* **JPEG — structural readability is proven; pixel validity is not.** The
+  marker stream is walked in full: a single frame header, at least one scan,
+  non-empty entropy-coded data with correct byte-stuffing and restart handling,
+  and a terminating ``EOI``. Every structure a decoder must consume is also
+  checked for internal coherence — the frame header's declared length against
+  its component count, unique component identifiers, in-range sampling factors
+  and table slots; the scan header's declared length against its selector
+  count, every selected component defined by the frame, no component selected
+  twice, coefficient and successive-approximation fields coherent for the
+  frame's own mode, and every quantisation and entropy table referenced by a
+  scan actually defined earlier in the file. A header-only, truncated, or
+  structurally incoherent JPEG cannot pass. This does not verify the Huffman
+  streams decode to sensible pixels, which would require a full decoder; it is
+  deliberately the container-level guarantee.
+
+  **The admitted JPEG subset is narrower than the standard, on purpose.** Only
+  8-bit, Huffman-coded baseline (SOF0), extended sequential (SOF1) and
+  progressive (SOF2) frames with at most four colour components are accepted —
+  what browsers, phones, screenshot tools and trading platforms actually emit.
+  Lossless, differential, arithmetic-coded and 12-bit JPEG are legal but are
+  refused explicitly, as ``unsupported_media_type`` rather than as damage,
+  because common decoders do not read them and storing evidence a reviewer
+  cannot open is the one failure this module exists to prevent. PNG remains the
+  universal fallback for anything JPEG cannot carry.
+
+The direction of the guarantee matters and is deliberate: this module is
+allowed to reject a file some lenient decoder would render, but it must never
+accept a file the later review path cannot open. Strictness is the safe error.
 
 ``test_portfolio_hq_owner_image_integrity.py`` cross-checks these verdicts
 against a real decoder (Pillow, already present transitively via matplotlib) on
@@ -61,12 +83,34 @@ _PNG_ALLOWED_DEPTHS = {0: {1, 2, 4, 8, 16}, 2: {8, 16}, 3: {1, 2, 4, 8},
 _ADAM7_PASSES = ((0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 4, 4, 4),
                  (0, 2, 2, 4), (1, 2, 2, 2), (0, 1, 1, 2))
 
-# Frame headers carrying dimensions. C4 (DHT), C8 (JPG) and CC (DAC) sit in the
-# same 0xC0-0xCF range but are not frame headers.
-_JPEG_SOF_MARKERS = frozenset(
-    {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
+# Frame headers this inbox admits: baseline sequential (C0), extended
+# sequential (C1) and progressive (C2). All three are Huffman-coded, and these
+# are the forms browsers, phones, screenshot tools and trading platforms
+# actually emit.
+_JPEG_ADMITTED_SOF = frozenset({0xC0, 0xC1, 0xC2})
+#: Legal JPEG frame headers outside the admitted subset: lossless (C3/C7/CB/CF),
+#: differential (C5-C7/CD-CF) and arithmetic-coded (C9-CF). Common decoders do
+#: not read these, so admitting them would mean storing evidence a reviewer
+#: could not open. They are refused explicitly rather than waved through.
+_JPEG_OTHER_SOF = frozenset(
+    {0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
 )
+# C4 (DHT), C8 (JPG) and CC (DAC) sit in the same 0xC0-0xCF range but are not
+# frame headers.
+_JPEG_SOF_MARKERS = _JPEG_ADMITTED_SOF | _JPEG_OTHER_SOF
+
 _JPEG_SOI, _JPEG_EOI, _JPEG_SOS, _JPEG_TEM = 0xD8, 0xD9, 0xDA, 0x01
+_JPEG_DHT, _JPEG_DQT, _JPEG_DRI = 0xC4, 0xDB, 0xDD
+_JPEG_PROGRESSIVE_SOF = 0xC2
+
+#: Sample precision the admitted subset carries. Twelve-bit JPEG is legal but
+#: needs a decoder built for it, which the common ones are not.
+_JPEG_SAMPLE_PRECISION = 8
+#: Frame component ceiling. The spec allows up to 255; real images carry 1
+#: (greyscale), 3 (YCbCr) or 4 (CMYK/YCCK), and decoders cap well below 255.
+_JPEG_MAX_FRAME_COMPONENTS = 4
+#: Scan component ceiling. This one *is* the spec's own limit (Ns is 1-4).
+_JPEG_MAX_SCAN_COMPONENTS = 4
 
 
 class ImageIntegrityError(Exception):
@@ -86,6 +130,17 @@ class ImageIntegrityError(Exception):
 
 def _corrupt(detail: str) -> ImageIntegrityError:
     return ImageIntegrityError("corrupt_or_unreadable_image", detail)
+
+
+def _unsupported_jpeg(detail: str) -> ImageIntegrityError:
+    """A well-formed JPEG outside the admitted subset.
+
+    Deliberately *not* ``corrupt_or_unreadable_image``: the file is not
+    damaged, it is a variant this inbox declines to store because a reviewer's
+    decoder would not read it. Saying so plainly is the point — the owner needs
+    to know to re-save, not to think their file is broken.
+    """
+    return ImageIntegrityError("unsupported_media_type", detail)
 
 
 def sniff_media_type(data: bytes) -> str | None:
@@ -258,11 +313,201 @@ def _scan_entropy_coded_data(data: bytes, start: int) -> int:
     raise _corrupt("the JPEG scan data is not terminated — the file is truncated")
 
 
+def _parse_jpeg_frame(marker: int, segment: bytes) -> tuple[int, int, dict[int, int]]:
+    """Validate one SOF segment.
+
+    Returns ``(width, height, {component_id: quantisation_table_slot})``. The
+    length check is exact rather than a lower bound: a frame header that
+    declares three colour components but carries room for one is a header no
+    decoder can act on, however plausible its opening fields look.
+    """
+    if marker not in _JPEG_ADMITTED_SOF:
+        raise _unsupported_jpeg(
+            f"this JPEG uses the 0xFF{marker:02X} frame variant (lossless, "
+            "differential or arithmetic-coded), which common decoders do not "
+            "read; re-save the chart as a baseline or progressive JPEG, or as "
+            "PNG")
+    if len(segment) < 6:
+        raise _corrupt("the JPEG frame header is too short to describe an image")
+    precision = segment[0]
+    if precision != _JPEG_SAMPLE_PRECISION:
+        raise _unsupported_jpeg(
+            f"this JPEG declares {precision}-bit samples; only 8-bit JPEG is "
+            "accepted, so re-save the chart as PNG")
+    height = int.from_bytes(segment[1:3], "big")
+    width = int.from_bytes(segment[3:5], "big")
+    if width == 0 or height == 0:
+        raise _corrupt("the JPEG declares a zero dimension")
+    count = segment[5]
+    if count == 0:
+        raise _corrupt("the JPEG frame header declares no colour components")
+    if count > _JPEG_MAX_FRAME_COMPONENTS:
+        raise _unsupported_jpeg(
+            f"this JPEG declares {count} colour components; up to "
+            f"{_JPEG_MAX_FRAME_COMPONENTS} are accepted, so re-save the chart "
+            "as PNG")
+    if len(segment) != 6 + 3 * count:
+        raise _corrupt(
+            "the JPEG frame header's length contradicts the number of colour "
+            "components it declares — the header is malformed")
+    components: dict[int, int] = {}
+    for index in range(count):
+        identifier, sampling, quantisation = segment[6 + 3 * index:9 + 3 * index]
+        if identifier in components:
+            raise _corrupt(
+                "the JPEG frame header declares the same colour component "
+                "twice")
+        horizontal, vertical = sampling >> 4, sampling & 0x0F
+        if not 1 <= horizontal <= 4 or not 1 <= vertical <= 4:
+            raise _corrupt(
+                "the JPEG frame header declares an out-of-range sampling "
+                "factor")
+        if quantisation > 3:
+            raise _corrupt(
+                "the JPEG frame header points at a quantisation table slot "
+                "that cannot exist")
+        components[identifier] = quantisation
+    return width, height, components
+
+
+def _parse_quantisation_tables(segment: bytes) -> set[int]:
+    """Validate one DQT segment. Returns the table slots it defines."""
+    defined: set[int] = set()
+    offset = 0
+    while offset < len(segment):
+        precision, slot = segment[offset] >> 4, segment[offset] & 0x0F
+        if precision > 1 or slot > 3:
+            raise _corrupt("the JPEG declares an out-of-range quantisation table")
+        width = 64 * (precision + 1)
+        if offset + 1 + width > len(segment):
+            raise _corrupt("a JPEG quantisation table is cut short")
+        defined.add(slot)
+        offset += 1 + width
+    return defined
+
+
+def _parse_huffman_tables(segment: bytes) -> set[tuple[int, int]]:
+    """Validate one DHT segment. Returns the ``(class, slot)`` pairs defined."""
+    defined: set[tuple[int, int]] = set()
+    offset = 0
+    while offset < len(segment):
+        table_class, slot = segment[offset] >> 4, segment[offset] & 0x0F
+        if table_class > 1 or slot > 3:
+            raise _corrupt("the JPEG declares an out-of-range Huffman table")
+        if offset + 17 > len(segment):
+            raise _corrupt("a JPEG Huffman table header is cut short")
+        code_count = sum(segment[offset + 1:offset + 17])
+        if offset + 17 + code_count > len(segment):
+            raise _corrupt("a JPEG Huffman table is cut short")
+        defined.add((table_class, slot))
+        offset += 17 + code_count
+    return defined
+
+
+def _parse_jpeg_scan(segment: bytes, frame_components: dict[int, int],
+                     huffman_tables: set[tuple[int, int]],
+                     progressive: bool) -> None:
+    """Validate one SOS segment against the frame it belongs to.
+
+    A scan header is where "looks like a JPEG" and "a decoder can read this"
+    diverge most sharply: dimensions live in the frame header, so a file can
+    advertise a size while its scan selects nothing, selects a component the
+    frame never defined, or declares a coefficient range its own frame mode
+    forbids. Each of those is checked here.
+    """
+    if not segment:
+        raise _corrupt(
+            "the JPEG scan header is empty — it selects no image data, so "
+            "nothing can be decoded")
+    count = segment[0]
+    if count == 0:
+        raise _corrupt("the JPEG scan header selects no colour components")
+    if count > _JPEG_MAX_SCAN_COMPONENTS:
+        raise _corrupt(
+            "the JPEG scan header selects more colour components than a scan "
+            "may carry")
+    if len(segment) != 4 + 2 * count:
+        raise _corrupt(
+            "the JPEG scan header's length contradicts the number of "
+            "components it selects — the header is malformed")
+
+    selected: set[int] = set()
+    entropy_slots: list[tuple[int, int]] = []
+    for index in range(count):
+        identifier, tables = segment[1 + 2 * index:3 + 2 * index]
+        if identifier not in frame_components:
+            raise _corrupt(
+                "the JPEG scan selects a colour component its frame header "
+                "never defined")
+        if identifier in selected:
+            raise _corrupt(
+                "the JPEG scan selects the same colour component twice")
+        selected.add(identifier)
+        entropy_slots.append((tables >> 4, tables & 0x0F))
+
+    spectral_start = segment[1 + 2 * count]
+    spectral_end = segment[2 + 2 * count]
+    approximation = segment[3 + 2 * count]
+    high, low = approximation >> 4, approximation & 0x0F
+
+    if progressive:
+        if spectral_start > 63 or spectral_end > 63 or spectral_start > spectral_end:
+            raise _corrupt(
+                "the JPEG progressive scan declares a coefficient range no "
+                "decoder can read")
+        if spectral_start == 0 and spectral_end != 0:
+            raise _corrupt(
+                "the JPEG progressive scan mixes the DC coefficient with AC "
+                "coefficients, which is not decodable")
+        if spectral_start != 0 and count != 1:
+            raise _corrupt(
+                "the JPEG progressive AC scan selects more than one colour "
+                "component, which is not decodable")
+        if high > 13 or low > 13:
+            raise _corrupt(
+                "the JPEG progressive scan declares an out-of-range successive "
+                "approximation")
+    elif (spectral_start, spectral_end, high, low) != (0, 63, 0, 0):
+        raise _corrupt(
+            "the JPEG sequential scan carries progressive-only coefficient "
+            "fields, contradicting its own frame header")
+
+    # Entropy tables must already be defined. libjpeg and every decoder built
+    # on it fail here too, so checking it is the difference between "the shape
+    # is plausible" and "this can actually be read back".
+    dc_scan = spectral_start == 0
+    # A progressive DC *refinement* scan (Ah > 0) is coded without tables, and a
+    # progressive scan only ever touches one half of the coefficients; demanding
+    # both tables from either would reject most of every real progressive file.
+    needs_dc_table = dc_scan and not (progressive and high > 0)
+    needs_ac_table = not progressive or not dc_scan
+    for dc_slot, ac_slot in entropy_slots:
+        if dc_slot > 3 or ac_slot > 3:
+            raise _corrupt(
+                "the JPEG scan points at an entropy table slot that cannot "
+                "exist")
+        if needs_dc_table and (0, dc_slot) not in huffman_tables:
+            raise _corrupt(
+                "the JPEG scan uses a DC Huffman table the file never defines")
+        if needs_ac_table and (1, ac_slot) not in huffman_tables:
+            raise _corrupt(
+                "the JPEG scan uses an AC Huffman table the file never defines")
+
+
 def _verify_jpeg(data: bytes) -> tuple[int, int]:
-    """Verify a complete JPEG marker stream. Returns ``(width, height)``."""
+    """Verify a complete, readable JPEG marker stream.
+
+    Returns ``(width, height)``. Beyond walking the marker stream to its
+    ``EOI``, every structure a decoder must consume is checked for internal
+    coherence: see ``_parse_jpeg_frame`` and ``_parse_jpeg_scan``.
+    """
     size = len(data)
     offset = 2  # past SOI
     dimensions: tuple[int, int] | None = None
+    frame_components: dict[int, int] = {}
+    progressive = False
+    quantisation_tables: set[int] = set()
+    huffman_tables: set[tuple[int, int]] = set()
     scans = 0
     entropy_bytes = 0
     seen_eoi = False
@@ -293,13 +538,34 @@ def _verify_jpeg(data: bytes) -> tuple[int, int]:
         segment = data[offset + 2:offset + segment_length]
 
         if marker in _JPEG_SOF_MARKERS:
-            if len(segment) < 5:
-                raise _corrupt("the JPEG frame header is too short")
-            height = int.from_bytes(segment[1:3], "big")
-            width = int.from_bytes(segment[3:5], "big")
-            if width <= 0 or height <= 0:
-                raise _corrupt("the JPEG declares a zero dimension")
+            if dimensions is not None:
+                raise _corrupt(
+                    "the JPEG carries more than one frame header — a decoder "
+                    "cannot tell which image it describes")
+            width, height, frame_components = _parse_jpeg_frame(marker, segment)
             dimensions = (width, height)
+            progressive = marker == _JPEG_PROGRESSIVE_SOF
+        elif marker == _JPEG_DQT:
+            quantisation_tables |= _parse_quantisation_tables(segment)
+        elif marker == _JPEG_DHT:
+            huffman_tables |= _parse_huffman_tables(segment)
+        elif marker == _JPEG_DRI:
+            if len(segment) != 2:
+                raise _corrupt(
+                    "the JPEG restart-interval header is the wrong size")
+        elif marker == _JPEG_SOS:
+            if dimensions is None:
+                raise _corrupt(
+                    "the JPEG begins a scan before any frame header — there is "
+                    "no image for it to describe")
+            missing = {slot for slot in frame_components.values()
+                       if slot not in quantisation_tables}
+            if missing:
+                raise _corrupt(
+                    "the JPEG scan needs a quantisation table the file never "
+                    "defines")
+            _parse_jpeg_scan(segment, frame_components, huffman_tables,
+                             progressive)
 
         offset += segment_length
 

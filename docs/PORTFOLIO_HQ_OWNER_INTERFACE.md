@@ -123,15 +123,37 @@ Intake is *evidence receipt*, not adoption.
   therefore verifies every PNG chunk's CRC-32, requires IHDR-first / IEND-last /
   contiguous IDAT, and actually decompresses the image data to check its length
   against the size the header implies (Adam7 interlacing included); and it walks
-  the whole JPEG marker stream, requiring a frame header, at least one scan with
-  non-empty entropy-coded data (byte-stuffing and restart markers handled) and a
-  terminating EOI. Truncated, corrupt, short-raster and header-only files are
-  refused. This is standard-library only: a native image library on an
-  untrusted-input boundary is the wrong trade, and it would break the hosted
-  service's standard-library-only property. Where the two differ, the inbox is
-  deliberately **stricter** than a lenient decoder — some incomplete files still
-  render in Pillow and are still refused here, because evidence that silently
-  misrepresents itself is worse than no evidence.
+  the whole JPEG marker stream, requiring a single frame header, at least one
+  scan with non-empty entropy-coded data (byte-stuffing and restart markers
+  handled) and a terminating EOI. Truncated, corrupt, short-raster and
+  header-only files are refused. This is standard-library only: a native image
+  library on an untrusted-input boundary is the wrong trade, and it would break
+  the hosted service's standard-library-only property. Where the two differ, the
+  inbox is deliberately **stricter** than a lenient decoder — some incomplete
+  files still render in Pillow and are still refused here, because evidence that
+  silently misrepresents itself is worse than no evidence.
+* **A JPEG is admitted only if its structures are internally coherent**, because
+  a marker stream can be well-formed and still be something no decoder will
+  read. Dimensions live in the frame header, so a file can advertise a size
+  while its scan header selects nothing at all. The frame header's declared
+  length is therefore checked against its component count, component
+  identifiers must be unique, and sampling factors and table slots must be in
+  range; the scan header's declared length is checked against its selector
+  count, every selected component must be one the frame defined, no component
+  may be selected twice, the coefficient and successive-approximation fields
+  must be coherent for the frame's own mode, and every quantisation and entropy
+  table a scan uses must already be defined in the file.
+* **The admitted JPEG subset is narrower than the standard, on purpose.** Only
+  8-bit, Huffman-coded baseline (SOF0), extended sequential (SOF1) and
+  progressive (SOF2) frames with at most four colour components are accepted —
+  what browsers, phones, screenshot tools and trading platforms actually emit,
+  at every quality setting, with or without restart markers or chroma
+  subsampling. Lossless, differential, arithmetic-coded and 12-bit JPEG are
+  legal but are refused as *unsupported* rather than as damage, with the reason
+  saying so, because common decoders do not read them. PNG remains the
+  universal fallback for anything JPEG cannot carry. The direction of the
+  guarantee is the point: the inbox may refuse a file some lenient decoder would
+  render, but it must never accept a file the later review path cannot open.
 * Bounded size, checked twice: the request is refused on its declared
   `Content-Length` before a byte of payload is read, and the payload is
   re-checked against the inbox ceiling. A PNG declaring impossible dimensions is

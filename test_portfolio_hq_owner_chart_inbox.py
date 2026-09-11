@@ -81,13 +81,20 @@ def jpeg_bytes() -> bytes:
 def header_only_jpeg_bytes(width: int = 32, height: int = 18) -> bytes:
     """SOI + APP0 + SOF0 + EOI: dimensions, but no scan and no image data.
 
+    The frame header's own component records are deliberately *valid* — three
+    components, legal sampling factors, legal table slots — so that the only
+    thing wrong with this payload is the missing scan. An earlier version
+    zero-filled them, which meant the frame header was independently malformed
+    and the missing scan was never the reason it was refused.
+
     A JPEG segment length counts the two length bytes plus the payload:
     2 + len("JFIF\\0") + 11 = 18. This must be REJECTED — it is a header, not
     an image.
     """
     app0 = b"\xff\xe0" + struct.pack(">H", 18) + b"JFIF\x00" + bytes(11)
+    components = bytes([1, 0x11, 0, 2, 0x11, 0, 3, 0x11, 0])
     sof0 = (b"\xff\xc0" + struct.pack(">H", 17) + b"\x08"
-            + struct.pack(">HH", height, width) + b"\x03" + bytes(9))
+            + struct.pack(">HH", height, width) + b"\x03" + components)
     return b"\xff\xd8" + app0 + sof0 + b"\xff\xd9"
 
 
@@ -262,6 +269,40 @@ def test_corrupt_or_truncated_images_are_refused(inbox: Path, payload: bytes, la
     with pytest.raises(inbox_mod.ChartIntakeRejected) as excinfo:
         _ingest(inbox, payload, display_filename="broken.png")
     assert excinfo.value.reason == "corrupt_or_unreadable_image", label
+    assert not (inbox / "charts").exists()
+
+
+def test_a_jpeg_advertising_a_size_with_no_usable_scan_is_refused(inbox: Path):
+    """The shape that reached storage before: a frame header exposing
+    dimensions, an empty scan header, one entropy byte and an EOI. It walks
+    like a JPEG and no decoder can open it."""
+    frame = b"\xff\xc0" + struct.pack(">H", 7) + b"\x08" + struct.pack(">HH", 18, 32)
+    payload = (b"\xff\xd8" + frame + b"\xff\xda" + struct.pack(">H", 2)
+               + b"\x42\xff\xd9")
+    with pytest.raises(inbox_mod.ChartIntakeRejected) as excinfo:
+        _ingest(inbox, payload, display_filename="chart.jpg")
+    assert excinfo.value.reason == "corrupt_or_unreadable_image"
+    assert not (inbox / "charts").exists()
+
+
+def test_a_legal_but_unsupported_jpeg_variant_is_refused_as_unsupported(inbox: Path):
+    """Arithmetic-coded JPEG is valid and unreadable by common decoders. The
+    owner is told it is the wrong *variant*, not that their file is damaged."""
+    def segment(marker: int, body: bytes) -> bytes:
+        return bytes((0xFF, marker)) + struct.pack(">H", len(body) + 2) + body
+
+    quantisation = segment(0xDB, b"\x00" + bytes(64))
+    huffman = segment(0xC4, b"\x00" + bytes([1] + [0] * 15) + b"\x00")
+    # 0xFFC9 is SOF9: arithmetic-coded extended sequential.
+    frame = segment(0xC9, b"\x08" + struct.pack(">HH", 18, 32) + b"\x01"
+                    + bytes([1, 0x11, 0]))
+    scan = segment(0xDA, b"\x01" + bytes([1, 0x00]) + bytes([0, 63, 0]))
+    payload = (b"\xff\xd8" + quantisation + huffman + frame + scan
+               + b"\x42\xff\xd9")
+    with pytest.raises(inbox_mod.ChartIntakeRejected) as excinfo:
+        _ingest(inbox, payload, display_filename="chart.jpg")
+    assert excinfo.value.reason == "unsupported_media_type"
+    assert "arithmetic" in str(excinfo.value)
     assert not (inbox / "charts").exists()
 
 

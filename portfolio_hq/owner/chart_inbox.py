@@ -439,11 +439,14 @@ def ingest(
         media_type, width, height = image_integrity.verify_complete_image(data)
     except image_integrity.ImageIntegrityError as failure:
         if failure.reason == "unsupported_media_type":
+            # Carry the verifier's own wording rather than a generic line: this
+            # reason covers both "that is not an image" and "that is a JPEG
+            # variant we decline to store", and telling an owner holding a
+            # perfectly good arithmetic-coded JPEG that only JPEG is accepted
+            # would be useless.
             raise ChartIntakeRejected(
                 "unsupported_media_type",
-                "Only PNG and JPEG chart images are accepted, decided by "
-                "inspecting the file's own content. Re-save the chart as PNG "
-                "or JPEG.",
+                f"Not accepted: {failure.detail}.",
             ) from failure
         raise ChartIntakeRejected(
             "corrupt_or_unreadable_image",
