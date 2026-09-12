@@ -9,7 +9,7 @@ from http.server import ThreadingHTTPServer
 
 import pytest
 
-from portfolio_hq.owner import chart_evidence, chart_inbox
+from portfolio_hq.owner import chart_evidence, chart_inbox, render
 from portfolio_hq.owner import service as service_mod
 from portfolio_hq.owner.export_io import write_export
 from test_portfolio_hq_owner_chart_inbox import png_bytes
@@ -203,3 +203,15 @@ def test_authenticated_chart_evidence_and_malformed_confirmation_do_not_disconne
         assert client.request("POST", "/charts/upload", body, {"Content-Type": content_type})[0] == 200
     finally:
         server.shutdown(); server.server_close(); thread.join()
+
+
+def test_expanded_evidence_uses_a_full_width_phone_reading_surface(tmp_path: Path):
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    evidence = chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)
+    page = render.charts_page({}, chart_inbox.list_records(tmp_path / "inbox"), evidence=evidence)
+    css = (Path(render.__file__).parent / "assets" / "owner.css").read_text()
+    assert 'class="evidence-cell"' in page
+    assert 'class="evidence-panel"' in page
+    assert "table.grid td.evidence-cell {\n    display: block;" in css
+    assert ".evidence-panel .chip" in css and "white-space: normal;" in css
+    assert "Optional advisory reference" in page
