@@ -663,6 +663,7 @@ def _evidence_detail(value: dict) -> str:
     return (f'<span class="chip ok">independently reviewed — private advisory reference</span>'
             f'<details><summary>Read private advisory evidence</summary>'
             f'<p><strong>Reviewer:</strong> {_esc(value.get("reviewer"))}<br>'
+            f'<strong>Review ID:</strong> {_esc(value.get("review_id"))}<br>'
             f'<strong>Reviewed:</strong> {_esc(value.get("reviewed_at"))}<br>'
             f'<strong>Recorded export-attribution time:</strong> {_esc(value.get("export_attribution_time"))}</p>'
             f'<h3>Visible facts</h3>{_evidence_list(value.get("facts"))}'
@@ -671,6 +672,8 @@ def _evidence_detail(value: dict) -> str:
             f'<h3>Uncertainties</h3>{_evidence_list(value.get("uncertainties"))}'
             f'<h3>Prohibited uses</h3>{_evidence_list(value.get("prohibited_uses"))}'
             f'<h3>Review scope</h3>{scope}<h3>Supplied limitations</h3>{limits}'
+            f'<p><strong>Bound draft SHA-256:</strong> <code>{_esc(value.get("draft_sha256"))}</code><br>'
+            f'<strong>Bound review SHA-256:</strong> <code>{_esc(value.get("review_sha256"))}</code></p>'
             '<p class="muted">Private advisory reference only. It is not accepted governance, current market data, or an allocation recommendation; it clears no actionable gate and proves no thesis break.</p>'
             '</details>')
 

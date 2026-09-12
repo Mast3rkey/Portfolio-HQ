@@ -18,7 +18,8 @@ def _artifacts(inbox: Path, *, reviewer="independent-ai", mutate=None):
         "ticker": "NVDA", "intake_id": receipt["intake_id"], "visible_timeframe": "1D",
         "retained_image_sha256": receipt["content_sha256"], "receipt_sha256": "a" * 64,
         "visible_export_attribution_timestamp": "2026-09-11T15:34:00-04:00"},
-        "content": {"visible_facts": [{"id": "f", "text": "synthetic fact"}],
+        "content": {"visible_facts": [{"id": "f", "text": "synthetic fact", "source": {
+                         "intake_id": receipt["intake_id"], "retained_image_sha256": receipt["content_sha256"]}}],
                     "observations": [], "inferences": [], "uncertainties": ["unknown feed"]},
         "prohibited_uses": ["no allocation"], "provenance": {"draft_independent_reviewer": "draft-ai"}}
     draft = {"document_type": "private_advisory_chart_evidence_draft",
@@ -26,16 +27,18 @@ def _artifacts(inbox: Path, *, reviewer="independent-ai", mutate=None):
     if mutate: mutate(record)
     analysis = inbox.parent / "analysis.json"; analysis.write_text(json.dumps(draft))
     data = analysis.read_bytes()
-    review = {"schema_version": 1, "review_kind": "independent_private_analytical_artifact_review",
+    review = {"schema_version": 1, "review_id": "synthetic-review-1", "review_kind": "independent_private_analytical_artifact_review",
       "reviewer": reviewer, "reviewed_at_utc": "2026-09-12T00:00:00Z",
-      "verdict": "CLEAN_FOR_PRIVATE_ADVISORY_REFERENCE", "material_corrections_required": False,
+      "verdict": "CLEAN_FOR_PRIVATE_ADVISORY_REFERENCE", "severity_counts": {"BLOCKING": 0, "MAJOR": 0, "MINOR": 0},
+      "findings": [], "material_corrections_required": False,
       "principal_acceptance": None, "portfolio_policy_acceptance": False,
-      "reviewed_artifact": {"filename": "chart-evidence-draft.json", "byte_size": len(data),
-                              "sha256": hashlib.sha256(data).hexdigest()},
+      "reviewed_artifact": {"filename": "private-review.zip", "byte_size": 1,
+                              "sha256": "not-the-analysis", "files": {"chart-evidence-draft.json": {
+                                  "byte_size": len(data), "sha256": hashlib.sha256(data).hexdigest()}}},
       "records": [{"record_id": "r1", "ticker": "NVDA", "intake_id": receipt["intake_id"],
         "retained_image_sha256": receipt["content_sha256"], "receipt_sha256": "a" * 64,
         "visible_timeframe": "1D", "mechanical_result": "pass",
-        "image_claim_review_result": "supported within stated limits"}], "limitations": ["hash regeneration incomplete"]}
+        "image_claim_review_result": "supported within stated limits", "claimed_ids_reviewed": ["f"], "findings": []}], "limitations": ["hash regeneration incomplete"]}
     review_path = inbox.parent / "review.json"; review_path.write_text(json.dumps(review))
     return receipt, analysis, review_path
 
@@ -47,9 +50,11 @@ def test_matching_external_review_binds_daily_receipt_to_1d_evidence(tmp_path: P
     assert found[receipt["intake_id"]]["export_attribution_time"].endswith("-04:00")
 
 
-def test_self_review_and_wrong_image_hash_fail_closed(tmp_path: Path):
+def test_reviewer_name_is_not_a_trust_signal_and_wrong_image_hash_fails_closed(tmp_path: Path):
     receipt, analysis, review = _artifacts(tmp_path / "inbox", reviewer="draft-ai")
-    assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+    # The separately provisioned artifact is the trust boundary; comparing
+    # strings to the pending draft reviewer would neither prove nor disprove it.
+    assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "reviewed"
     receipt, analysis, review = _artifacts(tmp_path / "other")
     payload = json.loads(review.read_text()); payload["records"][0]["retained_image_sha256"] = "0" * 64
     review.write_text(json.dumps(payload))
@@ -62,4 +67,22 @@ def test_malformed_duplicate_key_and_oversized_artifacts_degrade_safely(tmp_path
     found = chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)
     assert found[receipt["intake_id"]]["state"] == "unverified"
     analysis.write_bytes(b" " * (chart_evidence.MAX_ARTIFACT_BYTES + 1))
+    assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+
+
+def test_missing_reviewer_and_major_finding_fail_closed(tmp_path: Path):
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    payload = json.loads(review.read_text()); payload["reviewer"] = ""
+    review.write_text(json.dumps(payload))
+    assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+    _, analysis, review = _artifacts(tmp_path / "other")
+    payload = json.loads(review.read_text()); payload["findings"] = [{"severity": "MAJOR"}]
+    payload["severity_counts"]["MAJOR"] = 1; review.write_text(json.dumps(payload))
+    assert all(v["state"] == "unverified" for v in chart_evidence.reviewed_evidence(tmp_path / "other", analysis, review).values())
+
+
+def test_bad_nested_type_does_not_raise(tmp_path: Path):
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    payload = json.loads(review.read_text()); payload["reviewed_artifact"] = []
+    review.write_text(json.dumps(payload))
     assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"

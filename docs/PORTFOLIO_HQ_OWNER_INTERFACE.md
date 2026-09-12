@@ -228,11 +228,11 @@ These are read-only, private runtime inputs and must not be committed. The
 service accepts only the documented draft format and separate review format,
 rejects duplicate-key, non-finite, malformed, missing and oversized JSON, and
 fails closed per receipt. It verifies the exact draft byte length and SHA-256
-named by the review, then binds record id, intake id, ticker, `1D`/established
+at `reviewed_artifact.files["chart-evidence-draft.json"]`, then binds record id, intake id, ticker, `1D`/established
 `Daily` equivalence, review image hash, and the actual retained image bytes.
 A draft's own claim never proves review; a matching hash binds bytes, **not** a
-reviewer identity or signature. The reviewer must differ from the draft's named
-independent reviewer. Unbound inputs remain "unavailable or unverified", never
+reviewer identity or signature; an external operator-provisioned review is the
+trust boundary, not a comparison of reviewer-name strings. Unbound inputs remain "unavailable or unverified", never
 receive the independently-reviewed badge, and chart intake continues to work.
 
 The receipt remains quarantined and unchanged. Even a bound display is a
