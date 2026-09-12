@@ -3,12 +3,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from pathlib import Path
+from http.server import ThreadingHTTPServer
 
 import pytest
 
 from portfolio_hq.owner import chart_evidence, chart_inbox
+from portfolio_hq.owner import service as service_mod
+from portfolio_hq.owner.export_io import write_export
 from test_portfolio_hq_owner_chart_inbox import png_bytes
+from test_portfolio_hq_owner_interface import Client, _sample_export, multipart, TOKEN
 
 
 def _artifacts(inbox: Path, *, reviewer="independent-ai", mutate=None):
@@ -43,7 +48,7 @@ def _artifacts(inbox: Path, *, reviewer="independent-ai", mutate=None):
       "records": [{"record_id": "r1", "ticker": "NVDA", "intake_id": receipt["intake_id"],
         "retained_image_sha256": receipt["content_sha256"], "receipt_sha256": "a" * 64,
         "visible_timeframe": "1D", "visible_export_attribution_timestamp": "2026-09-11T15:34:00-04:00", "mechanical_result": "pass",
-        "image_claim_review_result": "supported within stated limits", "claimed_ids_reviewed": ["f", "o", "i"], "findings": []}], "limitations": ["hash regeneration incomplete"]}
+        "image_claim_review_result": "supported within stated limits", "claimed_ids_reviewed": ["f", "o", "i"], "findings": []}], "limitations": ["hash regeneration incomplete"], "methods": ["synthetic mechanical review"]}
     review_path = inbox.parent / "review.json"; review_path.write_text(json.dumps(review))
     return receipt, analysis, review_path
 
@@ -131,3 +136,70 @@ def test_claim_source_reference_mismatch_fails_closed(tmp_path: Path):
         byte_size=len(data), sha256=hashlib.sha256(data).hexdigest())
     review.write_text(json.dumps(review_payload))
     assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+
+
+@pytest.mark.parametrize("target,value", [
+    ("identity_and_capture.visible_timeframe", []),
+    ("identity_and_capture.visible_timeframe", {}),
+    ("content.uncertainties", 42),
+    ("prohibited_uses", 42),
+])
+def test_malformed_draft_display_or_timeframe_fields_fail_closed(tmp_path: Path, target: str, value):
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    draft = json.loads(analysis.read_text()); record = draft["records"][0]
+    parent, _, key = target.rpartition(".")
+    for part in parent.split(".") if parent else ():
+        record = record[part]
+    record[key] = value
+    analysis.write_text(json.dumps(draft)); data = analysis.read_bytes()
+    review_data = json.loads(review.read_text())
+    review_data["reviewed_artifact"]["files"]["chart-evidence-draft.json"].update(
+        byte_size=len(data), sha256=hashlib.sha256(data).hexdigest())
+    review.write_text(json.dumps(review_data))
+    assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+
+
+@pytest.mark.parametrize("field,value", [("limitations", 42), ("methods", [42])])
+def test_malformed_review_display_fields_fail_closed(tmp_path: Path, field: str, value):
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    payload = json.loads(review.read_text()); payload[field] = value; review.write_text(json.dumps(payload))
+    assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+
+
+def test_duplicate_draft_identity_fails_all_badges_closed(tmp_path: Path):
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    draft = json.loads(analysis.read_text()); draft["records"].append(draft["records"][0])
+    analysis.write_text(json.dumps(draft)); data = analysis.read_bytes()
+    review_data = json.loads(review.read_text())
+    review_data["reviewed_artifact"]["files"]["chart-evidence-draft.json"].update(
+        byte_size=len(data), sha256=hashlib.sha256(data).hexdigest())
+    review.write_text(json.dumps(review_data))
+    assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+
+
+def test_authenticated_chart_evidence_and_malformed_confirmation_do_not_disconnect(tmp_path: Path):
+    """The optional reader cannot turn a GET or upload confirmation into a 500."""
+    inbox = tmp_path / "inbox"; export = tmp_path / "export.json"; write_export(export, _sample_export())
+    receipt, analysis, review = _artifacts(inbox)
+    config = service_mod.build_config(inbox_root=inbox, export_path=export, host="127.0.0.1",
+                                      env={"PORTFOLIO_HQ_OWNER_TOKEN": TOKEN}, analysis_path=analysis, review_path=review)
+    server = ThreadingHTTPServer(("127.0.0.1", 0), service_mod._make_handler(config))
+    thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+    try:
+        client = Client(server.server_address[1])
+        assert client.request("GET", "/charts", use_cookie=False)[0] == 303
+        assert client.request("GET", f'/charts/image/{receipt["intake_id"]}', use_cookie=False)[0] == 303
+        assert client.sign_in()[0] == 303
+        status, _, page = client.request("GET", "/charts")
+        assert status == 200 and b"independently reviewed" in page
+        assert client.request("GET", f'/charts/image/{receipt["intake_id"]}')[0] == 200
+        draft = json.loads(analysis.read_text()); draft["records"][0]["identity_and_capture"]["visible_timeframe"] = []
+        analysis.write_text(json.dumps(draft)); data = analysis.read_bytes()
+        review_data = json.loads(review.read_text())
+        review_data["reviewed_artifact"]["files"]["chart-evidence-draft.json"].update(byte_size=len(data), sha256=hashlib.sha256(data).hexdigest())
+        review.write_text(json.dumps(review_data))
+        assert client.request("GET", "/charts")[0] == 200
+        body, content_type = multipart({"ticker": "NVDA", "timeframe": "1D"}, {"chart": ("new.png", png_bytes(3, 2))})
+        assert client.request("POST", "/charts/upload", body, {"Content-Type": content_type})[0] == 200
+    finally:
+        server.shutdown(); server.server_close(); thread.join()

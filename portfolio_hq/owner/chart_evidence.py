@@ -50,7 +50,7 @@ def _read_json(path: Path | None) -> tuple[dict | None, bytes | None, str]:
     try:
         value = json.loads(data.decode("utf-8"), object_pairs_hook=_pairs,
                            parse_constant=_constant)
-    except (UnicodeDecodeError, ValueError, json.JSONDecodeError):
+    except (UnicodeDecodeError, ValueError, json.JSONDecodeError, RecursionError):
         return None, None, "malformed"
     return (value, data, "ok") if isinstance(value, dict) else (None, None, "malformed")
 
@@ -65,7 +65,13 @@ def _same_text(*values: object) -> bool:
 
 def _daily_equivalent(intake: object, evidence: object) -> bool:
     # The established receipt spelling is Daily; supported evidence spells it 1D.
+    if not isinstance(intake, str) or not isinstance(evidence, str):
+        return False
     return (intake == evidence) or ({intake, evidence} == {"Daily", "1D"})
+
+
+def _string_list(value: object, *, limit: int = MAX_CLAIMS_PER_RECORD) -> bool:
+    return isinstance(value, list) and len(value) <= limit and all(_text(item) for item in value)
 
 
 def _timezone_date(value: object) -> bool:
@@ -100,6 +106,8 @@ def _clean_review(review: dict, draft_bytes: bytes) -> tuple[dict, str] | None:
             and review.get("material_corrections_required") is False
             and review.get("principal_acceptance") is None
             and review.get("portfolio_policy_acceptance") is False
+            and _string_list(review.get("limitations"))
+            and _string_list(review.get("methods"))
             and entry.get("byte_size") == len(draft_bytes)
             and entry.get("sha256") == digest):
         return None
@@ -140,6 +148,23 @@ def _claim_ids(content: dict, identity: dict) -> set[str] | None:
     return ids
 
 
+def _unambiguous_draft_records(records: list) -> bool:
+    """Reject ambiguity before any per-record reviewed badge is assigned."""
+    record_ids: set[str] = set()
+    intake_ids: set[str] = set()
+    for record in records:
+        if not isinstance(record, dict):
+            return False
+        identity = record.get("identity_and_capture")
+        record_id = record.get("record_id")
+        intake_id = identity.get("intake_id") if isinstance(identity, dict) else None
+        if not _text(record_id) or not _text(intake_id) or record_id in record_ids or intake_id in intake_ids:
+            return False
+        record_ids.add(record_id)
+        intake_ids.add(intake_id)
+    return True
+
+
 def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
                       review_path: Path | None) -> dict[str, dict]:
     """Return display annotations, never mutating receipts or portfolio state."""
@@ -155,7 +180,8 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
     if not (draft.get("document_type") == "private_advisory_chart_evidence_draft"
             and draft.get("status") == "AWAITING_CHATGPT_INDEPENDENT_REVIEW"
             and isinstance(draft.get("records"), list)
-            and len(draft["records"]) <= MAX_RECORDS and clean):
+            and len(draft["records"]) <= MAX_RECORDS
+            and _unambiguous_draft_records(draft["records"]) and clean):
         for value in result.values():
             value["reason"] = "Private analysis and review are not independently bound."
         return result
@@ -169,8 +195,6 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
                 or item["record_id"] in reviewed:
             return result
         reviewed[item["record_id"]] = item
-    draft_ids: set[str] = set()
-    intake_ids: set[str] = set()
     for draft_record in draft["records"]:
         if not isinstance(draft_record, dict):
             continue
@@ -179,9 +203,8 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
             continue
         record_id = draft_record.get("record_id")
         intake_id = identity.get("intake_id")
-        if not _text(record_id) or not _text(intake_id) or record_id in draft_ids or intake_id in intake_ids:
+        if not _text(record_id) or not _text(intake_id):
             continue
-        draft_ids.add(record_id); intake_ids.add(intake_id)
         receipt = next((r for r in records if r.get("intake_id") == intake_id), None)
         check = reviewed.get(record_id)
         if not receipt or not isinstance(check, dict) or check.get("findings") != []:
@@ -189,6 +212,9 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
         image = chart_inbox.read_image_bytes(inbox_root, intake_id)
         claims = _claim_ids(content, identity)
         claimed = check.get("claimed_ids_reviewed")
+        if not _string_list(content.get("uncertainties")) \
+                or not _string_list(draft_record.get("prohibited_uses")):
+            continue
         if not image or claims is None or not isinstance(claimed, list) \
                 or len(claimed) != len(claims) or any(not _text(item) for item in claimed) \
                 or len(set(claimed)) != len(claimed) or set(claimed) != claims:
