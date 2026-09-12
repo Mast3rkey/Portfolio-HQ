@@ -134,6 +134,61 @@ def test_review_timestamp_requires_a_real_zone(tmp_path: Path, stamp: str, expec
     assert found[receipt["intake_id"]]["state"] == expected
 
 
+def _with_counts(tmp_path: Path, slug: str, counts):
+    """Bind a coherent fixture, then replace only its severity mapping."""
+    receipt, analysis, review = _artifacts(tmp_path / slug)
+    payload = json.loads(review.read_text()); payload["severity_counts"] = counts
+    review.write_text(json.dumps(payload))
+    found = chart_evidence.reviewed_evidence(tmp_path / slug, analysis, review)
+    return found[receipt["intake_id"]]["state"]
+
+
+def test_extra_declared_severity_contradicts_a_clean_verdict(tmp_path: Path):
+    """A review declaring CRITICAL: 1 is not clean, whatever its verdict says."""
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    payload = json.loads(review.read_text())
+    payload["severity_counts"]["CRITICAL"] = 1
+    review.write_text(json.dumps(payload))
+    found = chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)
+    assert found[receipt["intake_id"]]["state"] == "unverified"
+
+
+@pytest.mark.parametrize("slug,counts,expected", [
+    # The supported mapping, and only it, is clean.
+    ("supported", {"BLOCKING": 0, "MAJOR": 0, "MINOR": 0}, "reviewed"),
+    ("reordered", {"MINOR": 0, "BLOCKING": 0, "MAJOR": 0}, "reviewed"),
+    # An unsupported severity is rejected even when it declares nothing.
+    ("extra_zero", {"BLOCKING": 0, "MAJOR": 0, "MINOR": 0, "CRITICAL": 0}, "unverified"),
+    ("extra_unknown", {"BLOCKING": 0, "MAJOR": 0, "MINOR": 0, "UNKNOWN": 1}, "unverified"),
+    ("extra_lowercase", {"BLOCKING": 0, "MAJOR": 0, "MINOR": 0, "minor": 0}, "unverified"),
+    ("extra_malformed", {"BLOCKING": 0, "MAJOR": 0, "MINOR": 0, "CRITICAL": {}}, "unverified"),
+    # A missing severity leaves part of the review unstated.
+    ("missing_blocking", {"MAJOR": 0, "MINOR": 0}, "unverified"),
+    ("missing_major", {"BLOCKING": 0, "MINOR": 0}, "unverified"),
+    ("missing_minor", {"BLOCKING": 0, "MAJOR": 0}, "unverified"),
+    ("empty", {}, "unverified"),
+    # A supported severity must carry a real, non-Boolean integer zero.
+    ("nonzero", {"BLOCKING": 0, "MAJOR": 1, "MINOR": 0}, "unverified"),
+    ("negative", {"BLOCKING": -1, "MAJOR": 0, "MINOR": 0}, "unverified"),
+    ("bool_false", {"BLOCKING": False, "MAJOR": 0, "MINOR": 0}, "unverified"),
+    ("bool_true", {"BLOCKING": True, "MAJOR": 0, "MINOR": 0}, "unverified"),
+    ("float_zero", {"BLOCKING": 0.0, "MAJOR": 0, "MINOR": 0}, "unverified"),
+    ("string_zero", {"BLOCKING": "0", "MAJOR": 0, "MINOR": 0}, "unverified"),
+    ("null", {"BLOCKING": None, "MAJOR": 0, "MINOR": 0}, "unverified"),
+    ("nested", {"BLOCKING": {"count": 0}, "MAJOR": 0, "MINOR": 0}, "unverified"),
+    ("listed", {"BLOCKING": [0], "MAJOR": 0, "MINOR": 0}, "unverified"),
+    # The mapping itself may be malformed; none of these may raise.
+    ("not_a_mapping", [0, 0, 0], "unverified"),
+    ("scalar", 0, "unverified"),
+    ("text", "clean", "unverified"),
+    ("none", None, "unverified"),
+])
+def test_severity_mapping_must_match_the_supported_schema(
+        tmp_path: Path, slug: str, counts, expected: str):
+    """Only an exact, all-zero supported mapping is clean; nothing else raises."""
+    assert _with_counts(tmp_path, slug, counts) == expected
+
+
 @pytest.mark.parametrize("field,value", [
     ("ticker", "TSLA"), ("intake_id", "20260912T000000Z-abcdef123456"),
     ("visible_timeframe", "4H"),

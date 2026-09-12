@@ -92,6 +92,23 @@ def _timezone_date(value: object) -> bool:
         return False
 
 
+_SEVERITIES = ("BLOCKING", "MAJOR", "MINOR")
+
+
+def _clean_counts(counts: object) -> bool:
+    """Schema v1 declares exactly these severities, and a clean review zeroes them.
+
+    The mapping must match the supported set exactly.  A missing severity leaves
+    part of the review unstated, and an extra one declares a severity this reader
+    cannot interpret -- a review carrying "CRITICAL": 1 alongside a clean verdict
+    contradicts itself, so neither shape may be read as clean.
+    """
+    if not isinstance(counts, dict) or set(counts) != set(_SEVERITIES):
+        return False
+    return all(isinstance(counts[name], int) and not isinstance(counts[name], bool)
+               and counts[name] == 0 for name in _SEVERITIES)
+
+
 def _clean_review(review: dict, draft_bytes: bytes) -> tuple[dict, str] | None:
     artifact = review.get("reviewed_artifact")
     if not isinstance(artifact, dict):
@@ -102,9 +119,7 @@ def _clean_review(review: dict, draft_bytes: bytes) -> tuple[dict, str] | None:
     if not isinstance(entry, dict) or not isinstance(counts, dict):
         return None
     digest = hashlib.sha256(draft_bytes).hexdigest()
-    clean_counts = all(counts.get(name) == 0 and isinstance(counts.get(name), int)
-                       and not isinstance(counts.get(name), bool)
-                       for name in ("BLOCKING", "MAJOR", "MINOR"))
+    clean_counts = _clean_counts(counts)
     if not (review.get("schema_version") == 1
             and review.get("review_kind") == "independent_private_analytical_artifact_review"
             and _text(review.get("review_id")) and _text(review.get("reviewer"))
