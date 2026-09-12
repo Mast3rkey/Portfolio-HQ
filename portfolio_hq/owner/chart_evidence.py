@@ -9,11 +9,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import datetime
 from pathlib import Path
 
 from . import chart_inbox
 
 MAX_ARTIFACT_BYTES = 2 * 1024 * 1024
+MAX_RECORDS = 512
+MAX_CLAIMS_PER_RECORD = 256
 
 
 class _DuplicateKey(ValueError):
@@ -65,6 +68,16 @@ def _daily_equivalent(intake: object, evidence: object) -> bool:
     return (intake == evidence) or ({intake, evidence} == {"Daily", "1D"})
 
 
+def _timezone_date(value: object) -> bool:
+    text = _text(value)
+    if not text:
+        return False
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).tzinfo is not None
+    except ValueError:
+        return False
+
+
 def _clean_review(review: dict, draft_bytes: bytes) -> tuple[dict, str] | None:
     artifact = review.get("reviewed_artifact")
     if not isinstance(artifact, dict):
@@ -81,7 +94,7 @@ def _clean_review(review: dict, draft_bytes: bytes) -> tuple[dict, str] | None:
     if not (review.get("schema_version") == 1
             and review.get("review_kind") == "independent_private_analytical_artifact_review"
             and _text(review.get("review_id")) and _text(review.get("reviewer"))
-            and _text(review.get("reviewed_at_utc"))
+            and _timezone_date(review.get("reviewed_at_utc"))
             and review.get("verdict") == "CLEAN_FOR_PRIVATE_ADVISORY_REFERENCE"
             and clean_counts and review.get("findings") == []
             and review.get("material_corrections_required") is False
@@ -94,20 +107,36 @@ def _clean_review(review: dict, draft_bytes: bytes) -> tuple[dict, str] | None:
 
 
 def _claim_ids(content: dict, identity: dict) -> set[str] | None:
+    """Validate source claims plus inference bases and return all reviewed IDs."""
     ids: set[str] = set()
     for group in ("visible_facts", "observations"):
         claims = content.get(group)
-        if not isinstance(claims, list):
+        if not isinstance(claims, list) or len(claims) > MAX_CLAIMS_PER_RECORD:
             return None
         for claim in claims:
-            if not isinstance(claim, dict) or not _text(claim.get("id")):
+            if not isinstance(claim, dict) or not _text(claim.get("id")) or not _text(claim.get("text")):
                 return None
             source = claim.get("source")
             if not isinstance(source, dict) or not _same_text(
                     source.get("intake_id"), identity.get("intake_id")) or not _same_text(
                     source.get("retained_image_sha256"), identity.get("retained_image_sha256")):
                 return None
+            if claim["id"] in ids:
+                return None
             ids.add(claim["id"])
+    inferences = content.get("inferences")
+    if not isinstance(inferences, list) or len(inferences) > MAX_CLAIMS_PER_RECORD:
+        return None
+    for inference in inferences:
+        if not isinstance(inference, dict) or not _text(inference.get("id")) \
+                or not _text(inference.get("text")) or not _text(inference.get("status")):
+            return None
+        basis = inference.get("basis")
+        if not isinstance(basis, list) or not basis or any(not _text(item) for item in basis):
+            return None
+        if not set(basis).issubset(ids) or inference["id"] in ids:
+            return None
+        ids.add(inference["id"])
     return ids
 
 
@@ -125,36 +154,51 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
     clean = _clean_review(review, draft_bytes)
     if not (draft.get("document_type") == "private_advisory_chart_evidence_draft"
             and draft.get("status") == "AWAITING_CHATGPT_INDEPENDENT_REVIEW"
-            and isinstance(draft.get("records"), list) and clean):
+            and isinstance(draft.get("records"), list)
+            and len(draft["records"]) <= MAX_RECORDS and clean):
         for value in result.values():
             value["reason"] = "Private analysis and review are not independently bound."
         return result
     artifact, draft_hash = clean
     review_records = review.get("records")
-    if not isinstance(review_records, list):
+    if not isinstance(review_records, list) or len(review_records) > MAX_RECORDS:
         return result
-    reviewed = {r.get("record_id"): r for r in review_records if isinstance(r, dict)}
+    reviewed: dict[str, dict] = {}
+    for item in review_records:
+        if not isinstance(item, dict) or not _text(item.get("record_id")) \
+                or item["record_id"] in reviewed:
+            return result
+        reviewed[item["record_id"]] = item
+    draft_ids: set[str] = set()
+    intake_ids: set[str] = set()
     for draft_record in draft["records"]:
         if not isinstance(draft_record, dict):
             continue
         identity, content = draft_record.get("identity_and_capture"), draft_record.get("content")
         if not isinstance(identity, dict) or not isinstance(content, dict):
             continue
+        record_id = draft_record.get("record_id")
         intake_id = identity.get("intake_id")
+        if not _text(record_id) or not _text(intake_id) or record_id in draft_ids or intake_id in intake_ids:
+            continue
+        draft_ids.add(record_id); intake_ids.add(intake_id)
         receipt = next((r for r in records if r.get("intake_id") == intake_id), None)
-        check = reviewed.get(draft_record.get("record_id"))
+        check = reviewed.get(record_id)
         if not receipt or not isinstance(check, dict) or check.get("findings") != []:
             continue
         image = chart_inbox.read_image_bytes(inbox_root, intake_id)
         claims = _claim_ids(content, identity)
         claimed = check.get("claimed_ids_reviewed")
-        if not image or claims is None or not isinstance(claimed, list) or set(claimed) != claims:
+        if not image or claims is None or not isinstance(claimed, list) \
+                or len(claimed) != len(claims) or any(not _text(item) for item in claimed) \
+                or len(set(claimed)) != len(claimed) or set(claimed) != claims:
             continue
         actual_hash = hashlib.sha256(image[0]).hexdigest()
         if not (_same_text(identity.get("ticker"), receipt.get("declared_ticker"), check.get("ticker"))
                 and _same_text(identity.get("intake_id"), receipt.get("intake_id"), check.get("intake_id"))
                 and _same_text(identity.get("retained_image_sha256"), receipt.get("content_sha256"), check.get("retained_image_sha256"), actual_hash)
                 and _same_text(identity.get("receipt_sha256"), check.get("receipt_sha256"))
+                and _same_text(identity.get("visible_export_attribution_timestamp"), check.get("visible_export_attribution_timestamp"))
                 and _daily_equivalent(receipt.get("declared_timeframe"), identity.get("visible_timeframe"))
                 and identity.get("visible_timeframe") == check.get("visible_timeframe") == "1D"
                 and check.get("mechanical_result") == "pass"
