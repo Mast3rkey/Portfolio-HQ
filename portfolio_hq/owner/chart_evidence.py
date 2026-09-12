@@ -228,10 +228,14 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
         intake_id = identity.get("intake_id")
         if not _text(record_id) or not _text(intake_id):
             continue
-        receipt = next((r for r in records if r.get("intake_id") == intake_id), None)
+        # One read supplies both the bytes that are hashed and the fields that
+        # are validated and displayed, so the receipt described below is exactly
+        # the receipt weighed here.
+        stored = chart_inbox.read_receipt(inbox_root, intake_id)
         check = reviewed.get(record_id)
-        if not receipt or not isinstance(check, dict) or check.get("findings") != []:
+        if stored is None or not isinstance(check, dict) or check.get("findings") != []:
             continue
+        receipt_bytes, receipt = stored
         image = chart_inbox.read_image_bytes(inbox_root, intake_id)
         claims = _claim_ids(content, identity)
         claimed = check.get("claimed_ids_reviewed")
@@ -246,7 +250,8 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
         if not (_same_text(identity.get("ticker"), receipt.get("declared_ticker"), check.get("ticker"))
                 and _same_text(identity.get("intake_id"), receipt.get("intake_id"), check.get("intake_id"))
                 and _same_text(identity.get("retained_image_sha256"), receipt.get("content_sha256"), check.get("retained_image_sha256"), actual_hash)
-                and _same_text(identity.get("receipt_sha256"), check.get("receipt_sha256"))
+                and _same_text(identity.get("receipt_sha256"), check.get("receipt_sha256"),
+                               hashlib.sha256(receipt_bytes).hexdigest())
                 and _same_text(identity.get("visible_export_attribution_timestamp"), check.get("visible_export_attribution_timestamp"))
                 and _daily_equivalent(receipt.get("declared_timeframe"), identity.get("visible_timeframe"))
                 and identity.get("visible_timeframe") == check.get("visible_timeframe") == "1D"

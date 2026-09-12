@@ -372,7 +372,8 @@ def _make_handler(config: OwnerServiceConfig):
                 self._html(200, render.charts_page(self._export(),
                                                    chart_inbox.list_records(inbox),
                                                    evidence=chart_evidence.reviewed_evidence(
-                                                       inbox, config.analysis_path, config.review_path)))
+                                                       inbox, config.analysis_path, config.review_path),
+                                                   image_links=chart_inbox.viewable_image_ids(inbox)))
             elif path.startswith("/charts/image/"):
                 self._serve_chart_image(path[len("/charts/image/"):])
             else:
@@ -516,6 +517,7 @@ def _make_handler(config: OwnerServiceConfig):
                 self._export(), chart_inbox.list_records(config.inbox_root),
                 evidence=chart_evidence.reviewed_evidence(
                     config.inbox_root, config.analysis_path, config.review_path),
+                image_links=chart_inbox.viewable_image_ids(config.inbox_root),
                 flash=flash))
 
         def _serve_chart_image(self, intake_id: str) -> None:

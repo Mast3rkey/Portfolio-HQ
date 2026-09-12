@@ -558,6 +558,7 @@ _REJECTION_HELP = {
 
 def charts_page(export: dict | None, records: list[dict], *,
                 evidence: dict[str, dict] | None = None,
+                image_links: dict[str, str] | None = None,
                 flash: dict | None = None) -> str:
     request = (export or {}).get("chart_request") or {}
     tickers = request.get("eligible_tickers") or []
@@ -635,7 +636,8 @@ def charts_page(export: dict | None, records: list[dict], *,
       read here without changing the quarantined intake state.</li>
 </ol>
 <p class="muted">Uploading a chart does not change any holding, target, sleeve weight, policy, cap, margin setting or recommendation, and never creates an order.</p>""")
-        + _card("Charts received", _records_table(records, evidence or {}))
+        + _card("Charts received",
+                _records_table(records, evidence or {}, image_links or {}))
     )
     return page("Charts", "/charts", body)
 
@@ -679,7 +681,23 @@ def _evidence_detail(value: dict) -> str:
             '</details></div>')
 
 
-def _records_table(records: list[dict], evidence: dict[str, dict]) -> str:
+def _retained_original_link(record: dict, image_links: dict[str, str]) -> str:
+    """Offer the retained original only where one can really be opened.
+
+    A duplicate keeps no bytes of its own, so its row points at the original it
+    was recognised against.  The caller resolves that, and only lists a row here
+    once the bytes are genuinely there -- an unresolved row says so plainly
+    instead of advertising a link that is certain to 404.
+    """
+    target = image_links.get(str(record.get("intake_id")))
+    if not target:
+        return ('<p class="muted">No retained original is available to open '
+                'for this row.</p>')
+    return f'<p><a href="/charts/image/{_esc(target)}">View retained original</a></p>'
+
+
+def _records_table(records: list[dict], evidence: dict[str, dict],
+                   image_links: dict[str, str]) -> str:
     if not records:
         return '<p class="muted">No charts have been uploaded yet.</p>'
     rows = []
@@ -709,7 +727,7 @@ def _records_table(records: list[dict], evidence: dict[str, dict]) -> str:
             f'<td data-label="Content hash"><code>{_esc(digest[:12])}</code></td>'
             f'<td data-label="Notes">{_esc("; ".join(flags) or "—")}</td></tr>'
             f'<tr><td colspan="8" class="evidence-cell" data-label="Private advisory evidence">'
-            f'<p><a href="/charts/image/{_esc(record.get("intake_id"))}">View retained original</a></p>'
+            f'{_retained_original_link(record, image_links)}'
             f'{_evidence_detail(evidence.get(str(record.get("intake_id")), {}))}</td></tr>'
         )
     return (

@@ -21,9 +21,13 @@ def _artifacts(inbox: Path, *, reviewer="independent-ai", mutate=None):
     receipt = chart_inbox.ingest(inbox, image, display_filename="chart.png",
         declared_ticker="NVDA", declared_timeframe="Daily",
         allowed_tickers=frozenset({"NVDA"}), allowed_timeframes=frozenset({"Daily"}))
+    # The receipt hash the evidence declares is the hash of the receipt actually
+    # stored, so a fixture binds the real bytes rather than a placeholder.
+    receipt_sha = hashlib.sha256(
+        chart_inbox.read_receipt(inbox, receipt["intake_id"])[0]).hexdigest()
     record = {"record_id": "r1", "lifecycle": {}, "identity_and_capture": {
         "ticker": "NVDA", "intake_id": receipt["intake_id"], "visible_timeframe": "1D",
-        "retained_image_sha256": receipt["content_sha256"], "receipt_sha256": "a" * 64,
+        "retained_image_sha256": receipt["content_sha256"], "receipt_sha256": receipt_sha,
         "visible_export_attribution_timestamp": "2026-09-11T15:34:00-04:00"},
         "content": {"visible_facts": [{"id": "f", "text": "synthetic fact", "source": {
                          "intake_id": receipt["intake_id"], "retained_image_sha256": receipt["content_sha256"]}}],
@@ -46,7 +50,7 @@ def _artifacts(inbox: Path, *, reviewer="independent-ai", mutate=None):
                               "sha256": "not-the-analysis", "files": {"chart-evidence-draft.json": {
                                   "byte_size": len(data), "sha256": hashlib.sha256(data).hexdigest()}}},
       "records": [{"record_id": "r1", "ticker": "NVDA", "intake_id": receipt["intake_id"],
-        "retained_image_sha256": receipt["content_sha256"], "receipt_sha256": "a" * 64,
+        "retained_image_sha256": receipt["content_sha256"], "receipt_sha256": receipt_sha,
         "visible_timeframe": "1D", "visible_export_attribution_timestamp": "2026-09-11T15:34:00-04:00", "mechanical_result": "pass",
         "image_claim_review_result": "supported within stated limits", "claimed_ids_reviewed": ["f", "o", "i"], "findings": []}], "limitations": ["hash regeneration incomplete"], "methods": ["synthetic mechanical review"]}
     review_path = inbox.parent / "review.json"; review_path.write_text(json.dumps(review))
@@ -251,6 +255,223 @@ def test_duplicate_draft_identity_fails_all_badges_closed(tmp_path: Path):
         byte_size=len(data), sha256=hashlib.sha256(data).hexdigest())
     review.write_text(json.dumps(review_data))
     assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+
+
+def _receipt_path(inbox: Path, intake_id: str) -> Path:
+    return inbox / chart_inbox.CHARTS_DIRNAME / intake_id / chart_inbox.RECORD_FILENAME
+
+
+def test_declared_receipt_hash_is_the_hash_of_the_stored_receipt_bytes(tmp_path: Path):
+    """The positive case binds exact bytes, not a repeated string."""
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    found = chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)
+    assert found[receipt["intake_id"]]["state"] == "reviewed"
+    stored = _receipt_path(tmp_path / "inbox", receipt["intake_id"]).read_bytes()
+    declared = json.loads(analysis.read_text())["records"][0]["identity_and_capture"]["receipt_sha256"]
+    assert declared == hashlib.sha256(stored).hexdigest()
+    # Both artifacts repeating the same wrong hash must not manufacture a binding.
+    draft = json.loads(analysis.read_text())
+    draft["records"][0]["identity_and_capture"]["receipt_sha256"] = "b" * 64
+    analysis.write_text(json.dumps(draft)); data = analysis.read_bytes()
+    payload = json.loads(review.read_text())
+    payload["records"][0]["receipt_sha256"] = "b" * 64
+    payload["reviewed_artifact"]["files"]["chart-evidence-draft.json"].update(
+        byte_size=len(data), sha256=hashlib.sha256(data).hexdigest())
+    review.write_text(json.dumps(payload))
+    assert chart_evidence.reviewed_evidence(
+        tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+
+
+@pytest.mark.parametrize("slug,field,value", [
+    ("received_at", "received_at", "2099-01-01T00:00:00Z"),
+    ("influence", "influence", "this receipt now claims influence"),
+    ("ticker", "declared_ticker", "TSLA"),
+    ("content_hash", "content_sha256", "d" * 64),
+    ("state", "state", "duplicate"),
+])
+def test_material_receipt_mutation_after_review_fails_closed(
+        tmp_path: Path, slug: str, field: str, value: str):
+    """A receipt edited after review no longer matches what was reviewed."""
+    receipt, analysis, review = _artifacts(tmp_path / slug)
+    path = _receipt_path(tmp_path / slug, receipt["intake_id"])
+    before = path.read_bytes()
+    doc = json.loads(before); doc[field] = value; path.write_text(json.dumps(doc))
+    assert path.read_bytes() != before, "the mutation must actually change the bytes"
+    assert chart_evidence.reviewed_evidence(
+        tmp_path / slug, analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+
+
+def test_a_single_changed_receipt_byte_fails_closed(tmp_path: Path):
+    """Re-serialising the same fields with different whitespace is enough."""
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    path = _receipt_path(tmp_path / "inbox", receipt["intake_id"])
+    before = path.read_bytes()
+    path.write_bytes(before + b" ")
+    assert chart_evidence.reviewed_evidence(
+        tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
+    path.write_bytes(before)
+    assert chart_evidence.reviewed_evidence(
+        tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "reviewed"
+
+
+@pytest.mark.parametrize("slug,payload", [
+    ("malformed", b"{not json"),
+    ("duplicate_key", b'{"intake_id": "a", "intake_id": "b"}'),
+    ("not_a_mapping", b"[]"),
+    ("empty", b""),
+    ("not_utf8", b"\xff\xfe\x00"),
+])
+def test_unreadable_receipt_fails_closed_without_raising(
+        tmp_path: Path, slug: str, payload: bytes):
+    """Nothing reads as reviewed, and no shape of broken receipt raises.
+
+    Some of these the enumeration itself cannot parse, so the row drops out
+    entirely; a duplicate-keyed receipt parses last-wins there but is still
+    rejected on the byte-verified read.  Either way no annotation survives.
+    """
+    receipt, analysis, review = _artifacts(tmp_path / slug)
+    path = _receipt_path(tmp_path / slug, receipt["intake_id"])
+    assert chart_evidence.reviewed_evidence(
+        tmp_path / slug, analysis, review)[receipt["intake_id"]]["state"] == "reviewed"
+    path.write_bytes(payload)
+    assert chart_inbox.read_receipt(tmp_path / slug, receipt["intake_id"]) is None
+    found = chart_evidence.reviewed_evidence(tmp_path / slug, analysis, review)
+    assert all(value["state"] == "unverified" for value in found.values())
+    assert found.get(receipt["intake_id"], {"state": "unverified"})["state"] == "unverified"
+
+
+def test_oversized_receipt_is_rejected_even_though_it_parses(tmp_path: Path):
+    """The bound is load-bearing: this receipt is valid JSON the row still shows."""
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    path = _receipt_path(tmp_path / "inbox", receipt["intake_id"])
+    doc = json.loads(path.read_text())
+    doc["padding"] = "x" * chart_inbox.MAX_RECEIPT_BYTES
+    path.write_text(json.dumps(doc))
+    assert path.stat().st_size > chart_inbox.MAX_RECEIPT_BYTES
+    # Enumeration still lists the row, so this is the bound rejecting it.
+    assert len(chart_inbox.list_records(tmp_path / "inbox")) == 1
+    assert chart_inbox.read_receipt(tmp_path / "inbox", receipt["intake_id"]) is None
+    found = chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)
+    assert found[receipt["intake_id"]]["state"] == "unverified"
+
+
+def test_missing_receipt_fails_closed(tmp_path: Path):
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    _receipt_path(tmp_path / "inbox", receipt["intake_id"]).unlink()
+    found = chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)
+    assert all(v["state"] == "unverified" for v in found.values())
+
+
+def test_read_receipt_returns_bytes_and_the_record_they_parse_to(tmp_path: Path):
+    """Validation and display metadata derive from the bytes that were hashed."""
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    raw, record = chart_inbox.read_receipt(tmp_path / "inbox", receipt["intake_id"])
+    assert raw == _receipt_path(tmp_path / "inbox", receipt["intake_id"]).read_bytes()
+    assert record == json.loads(raw.decode("utf-8"))
+    # Every receipt field the reader validates against comes from this record.
+    for field in ("intake_id", "declared_ticker", "declared_timeframe", "content_sha256"):
+        assert record[field] == receipt[field]
+    assert chart_inbox.read_receipt(tmp_path / "inbox", "not-an-id") is None
+    assert chart_inbox.read_receipt(tmp_path / "inbox", "20260910T120000Z-000000000000") is None
+
+
+def _dup_inbox(inbox: Path):
+    """One retained original plus a duplicate recognised against it."""
+    image = png_bytes()
+    kw = dict(display_filename="chart.png", declared_ticker="NVDA",
+              declared_timeframe="Daily", allowed_tickers=frozenset({"NVDA"}),
+              allowed_timeframes=frozenset({"Daily"}))
+    original = chart_inbox.ingest(inbox, image, **kw)
+    duplicate = chart_inbox.ingest(inbox, image, **kw)
+    assert duplicate["state"] == chart_inbox.STATE_DUPLICATE
+    assert duplicate["duplicate_of"] == original["intake_id"]
+    return image, original, duplicate
+
+
+def test_duplicate_row_links_to_the_original_it_was_recognised_against(tmp_path: Path):
+    inbox = tmp_path / "inbox"
+    image, original, duplicate = _dup_inbox(inbox)
+    links = chart_inbox.viewable_image_ids(inbox)
+    assert links[original["intake_id"]] == original["intake_id"]
+    assert links[duplicate["intake_id"]] == original["intake_id"]
+    page = render.charts_page({}, chart_inbox.list_records(inbox), image_links=links)
+    assert f'/charts/image/{original["intake_id"]}' in page
+    # The duplicate's own id is never offered: it holds no bytes.
+    assert f'/charts/image/{duplicate["intake_id"]}' not in page
+    assert chart_inbox.read_image_bytes(inbox, duplicate["intake_id"]) is None
+    # And no second copy was created for it.
+    dup_dir = inbox / chart_inbox.CHARTS_DIRNAME / duplicate["intake_id"]
+    assert sorted(p.name for p in dup_dir.iterdir()) == [chart_inbox.RECORD_FILENAME]
+
+
+@pytest.mark.parametrize("slug,break_it", [
+    ("missing", lambda rec: rec.pop("duplicate_of")),
+    ("null", lambda rec: rec.update(duplicate_of=None)),
+    ("malformed", lambda rec: rec.update(duplicate_of="../../../etc/passwd")),
+    ("not_an_id", lambda rec: rec.update(duplicate_of="not-an-id")),
+    ("wrong_type", lambda rec: rec.update(duplicate_of=["x"])),
+    ("unknown", lambda rec: rec.update(duplicate_of="20260910T120000Z-abcdef123456")),
+])
+def test_unresolvable_duplicate_reference_offers_no_link(
+        tmp_path: Path, slug: str, break_it):
+    inbox = tmp_path / slug
+    _, original, duplicate = _dup_inbox(inbox)
+    path = inbox / chart_inbox.CHARTS_DIRNAME / duplicate["intake_id"] / chart_inbox.RECORD_FILENAME
+    doc = json.loads(path.read_text()); break_it(doc); path.write_text(json.dumps(doc))
+    links = chart_inbox.viewable_image_ids(inbox)
+    assert duplicate["intake_id"] not in links
+    page = render.charts_page({}, chart_inbox.list_records(inbox), image_links=links)
+    assert "No retained original is available to open" in page
+
+
+def test_duplicate_pointing_at_another_duplicate_offers_no_link(tmp_path: Path):
+    """A duplicate is not a retained original, so chaining resolves to nothing."""
+    inbox = tmp_path / "inbox"
+    _, original, duplicate = _dup_inbox(inbox)
+    path = inbox / chart_inbox.CHARTS_DIRNAME / duplicate["intake_id"] / chart_inbox.RECORD_FILENAME
+    doc = json.loads(path.read_text()); doc["duplicate_of"] = duplicate["intake_id"]
+    path.write_text(json.dumps(doc))
+    assert duplicate["intake_id"] not in chart_inbox.viewable_image_ids(inbox)
+
+
+def test_no_link_when_the_originals_image_is_gone(tmp_path: Path):
+    inbox = tmp_path / "inbox"
+    _, original, duplicate = _dup_inbox(inbox)
+    (inbox / chart_inbox.CHARTS_DIRNAME / original["intake_id"] / "original.png").unlink()
+    links = chart_inbox.viewable_image_ids(inbox)
+    assert original["intake_id"] not in links and duplicate["intake_id"] not in links
+    page = render.charts_page({}, chart_inbox.list_records(inbox), image_links=links)
+    assert "/charts/image/" not in page
+    assert "No retained original is available to open" in page
+
+
+def test_duplicate_link_serves_the_exact_original_bytes_over_http(tmp_path: Path):
+    """The offered route really returns the original's retained bytes."""
+    inbox = tmp_path / "inbox"; export = tmp_path / "export.json"
+    write_export(export, _sample_export())
+    image, original, duplicate = _dup_inbox(inbox)
+    config = service_mod.build_config(inbox_root=inbox, export_path=export, host="127.0.0.1",
+                                      env={"PORTFOLIO_HQ_OWNER_TOKEN": TOKEN})
+    server = ThreadingHTTPServer(("127.0.0.1", 0), service_mod._make_handler(config))
+    thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+    try:
+        client = Client(server.server_address[1])
+        # Anonymous access stays redirected, for the offered link too.
+        assert client.request("GET", f'/charts/image/{original["intake_id"]}',
+                              use_cookie=False)[0] == 303
+        assert client.sign_in()[0] == 303
+        status, _, page = client.request("GET", "/charts")
+        assert status == 200
+        offered = f'/charts/image/{original["intake_id"]}'.encode()
+        assert offered in page
+        assert f'/charts/image/{duplicate["intake_id"]}'.encode() not in page
+        status, headers, payload = client.request("GET", offered.decode())
+        assert status == 200 and headers["Content-Type"] == "image/png"
+        assert payload == image, "the duplicate's link must serve the original bytes"
+        # The duplicate's own id still 404s; the page simply never offers it.
+        assert client.request("GET", f'/charts/image/{duplicate["intake_id"]}')[0] == 404
+    finally:
+        server.shutdown(); server.server_close(); thread.join()
 
 
 def test_authenticated_chart_evidence_and_malformed_confirmation_do_not_disconnect(tmp_path: Path):
