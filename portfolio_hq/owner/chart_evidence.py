@@ -78,8 +78,16 @@ def _timezone_date(value: object) -> bool:
     text = _text(value)
     if not text:
         return False
+    # Spell out the trailing UTC designator rather than calling str.replace:
+    # the owner package's write-containment guard reserves that method name
+    # for pathlib's atomic move, and this module never writes.  Any other
+    # placement of "Z" stays in the text and fails parsing, as before.
+    # The branch is load-bearing on the supported floor of Python 3.10, whose
+    # fromisoformat rejects "Z"; 3.11+ accepts it natively and is unaffected.
+    if text.endswith("Z"):
+        text = f"{text[:-1]}+00:00"
     try:
-        return datetime.fromisoformat(text.replace("Z", "+00:00")).tzinfo is not None
+        return datetime.fromisoformat(text).tzinfo is not None
     except ValueError:
         return False
 

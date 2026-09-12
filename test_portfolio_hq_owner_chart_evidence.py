@@ -113,6 +113,27 @@ def test_invalid_review_date_and_unhashable_nested_values_fail_closed(tmp_path: 
     assert all(v["state"] == "unverified" for v in chart_evidence.reviewed_evidence(tmp_path / "third", analysis, review).values())
 
 
+@pytest.mark.parametrize("stamp,expected", [
+    # A trailing Z and an explicit numeric offset both carry a zone.
+    ("2026-09-12T00:00:00Z", "reviewed"),
+    ("2026-09-12T00:00:00+00:00", "reviewed"),
+    ("2026-09-12T00:00:00-04:00", "reviewed"),
+    # A naive stamp carries none, and any other placement of Z is not a zone.
+    ("2026-09-12T00:00:00", "unverified"),
+    ("2026-09-12T00:00:00ZZ", "unverified"),
+    ("Z2026-09-12T00:00:00", "unverified"),
+    ("2026-09-12T00:00:00+00:00Z", "unverified"),
+    ("Z", "unverified"),
+])
+def test_review_timestamp_requires_a_real_zone(tmp_path: Path, stamp: str, expected: str):
+    """Only a genuine UTC designator or numeric offset counts as zoned."""
+    receipt, analysis, review = _artifacts(tmp_path / stamp.replace(":", "_"))
+    payload = json.loads(review.read_text()); payload["reviewed_at_utc"] = stamp
+    review.write_text(json.dumps(payload))
+    found = chart_evidence.reviewed_evidence(tmp_path / stamp.replace(":", "_"), analysis, review)
+    assert found[receipt["intake_id"]]["state"] == expected
+
+
 @pytest.mark.parametrize("field,value", [
     ("ticker", "TSLA"), ("intake_id", "20260912T000000Z-abcdef123456"),
     ("visible_timeframe", "4H"),
