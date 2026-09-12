@@ -557,6 +557,7 @@ _REJECTION_HELP = {
 
 
 def charts_page(export: dict | None, records: list[dict], *,
+                evidence: dict[str, dict] | None = None,
                 flash: dict | None = None) -> str:
     request = (export or {}).get("chart_request") or {}
     tickers = request.get("eligible_tickers") or []
@@ -633,12 +634,48 @@ def charts_page(export: dict | None, records: list[dict], *,
       that has not been built yet.</li>
 </ol>
 <p class="muted">Uploading a chart does not change any holding, target, sleeve weight, policy, cap, margin setting or recommendation, and never creates an order.</p>""")
-        + _card("Charts received", _records_table(records))
+        + _card("Charts received", _records_table(records, evidence or {}))
     )
     return page("Charts", "/charts", body)
 
 
-def _records_table(records: list[dict]) -> str:
+def _evidence_list(items: object, *, inference: bool = False) -> str:
+    if not isinstance(items, list) or not items:
+        return "<p class=\"muted\">None supplied.</p>"
+    text = []
+    for item in items:
+        if isinstance(item, dict):
+            value = item.get("text")
+            if inference:
+                value = f"Tentative: {value or '—'}"
+        else:
+            value = item
+        text.append(f"<li>{_esc(value)}</li>")
+    return "<ul>" + "".join(text) + "</ul>"
+
+
+def _evidence_detail(value: dict) -> str:
+    if value.get("state") != "reviewed":
+        return (f'<span class="muted">Analysis unavailable or unverified: '
+                f'{_esc(value.get("reason") or "not independently bound")}</span>')
+    limits = _evidence_list(value.get("limitations"))
+    scope = _evidence_list(value.get("review_scope"))
+    return (f'<span class="chip ok">independently reviewed — private advisory reference</span>'
+            f'<details><summary>Read private advisory evidence</summary>'
+            f'<p><strong>Reviewer:</strong> {_esc(value.get("reviewer"))}<br>'
+            f'<strong>Reviewed:</strong> {_esc(value.get("reviewed_at"))}<br>'
+            f'<strong>Recorded export-attribution time:</strong> {_esc(value.get("export_attribution_time"))}</p>'
+            f'<h3>Visible facts</h3>{_evidence_list(value.get("facts"))}'
+            f'<h3>Observations</h3>{_evidence_list(value.get("observations"))}'
+            f'<h3>Tentative inferences</h3>{_evidence_list(value.get("inferences"), inference=True)}'
+            f'<h3>Uncertainties</h3>{_evidence_list(value.get("uncertainties"))}'
+            f'<h3>Prohibited uses</h3>{_evidence_list(value.get("prohibited_uses"))}'
+            f'<h3>Review scope</h3>{scope}<h3>Supplied limitations</h3>{limits}'
+            '<p class="muted">Private advisory reference only. It is not accepted governance, current market data, or an allocation recommendation; it clears no actionable gate and proves no thesis break.</p>'
+            '</details>')
+
+
+def _records_table(records: list[dict], evidence: dict[str, dict]) -> str:
     if not records:
         return '<p class="muted">No charts have been uploaded yet.</p>'
     rows = []
@@ -667,6 +704,9 @@ def _records_table(records: list[dict]) -> str:
             f'<td data-label="Type">{_esc(record.get("media_type"))} · {_esc(dim_text)}</td>'
             f'<td data-label="Content hash"><code>{_esc(digest[:12])}</code></td>'
             f'<td data-label="Notes">{_esc("; ".join(flags) or "—")}</td></tr>'
+            f'<tr><td colspan="8" data-label="Private advisory evidence">'
+            f'<p><a href="/charts/image/{_esc(record.get("intake_id"))}">View retained original</a></p>'
+            f'{_evidence_detail(evidence.get(str(record.get("intake_id")), {}))}</td></tr>'
         )
     return (
         '<div class="scroll-x"><table class="grid">'

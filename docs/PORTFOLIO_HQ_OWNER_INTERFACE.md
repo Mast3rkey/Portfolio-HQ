@@ -50,8 +50,11 @@ dashboard model. It therefore *cannot* compute a portfolio figure, correct or
 otherwise. A test imports the service in a clean subprocess and fails if any of
 those modules appears in `sys.modules`.
 
-Concretely, the running service reads exactly two paths — the export file and
-the inbox directory — and writes exactly one: inside the inbox.
+Concretely, the running service reads the export file and inbox directory, and
+may additionally read two **explicit operator-configured private JSON files**:
+the analytical draft and a separate independent review. It writes exactly one
+place: inside the inbox. The optional files are never upload targets and no
+path named inside them is followed.
 
 ## 3. Unavailable means unavailable
 
@@ -209,6 +212,35 @@ python -m portfolio_hq.owner serve \
     --inbox  var/owner/inbox \
     --host 127.0.0.1 --port 8080
 ```
+
+### Optional independently reviewed chart evidence
+
+The chart page can read a retained receipt alongside private advisory evidence
+when the operator supplies both paths at startup:
+
+```bash
+python -m portfolio_hq.owner serve --export var/owner/export.json --inbox var/owner/inbox \
+  --chart-analysis /private/chart-evidence-draft.json \
+  --chart-review /private/independent-review.json
+```
+
+These are read-only, private runtime inputs and must not be committed. The
+service accepts only the documented draft format and separate review format,
+rejects duplicate-key, non-finite, malformed, missing and oversized JSON, and
+fails closed per receipt. It verifies the exact draft byte length and SHA-256
+named by the review, then binds record id, intake id, ticker, `1D`/established
+`Daily` equivalence, review image hash, and the actual retained image bytes.
+A draft's own claim never proves review; a matching hash binds bytes, **not** a
+reviewer identity or signature. The reviewer must differ from the draft's named
+independent reviewer. Unbound inputs remain "unavailable or unverified", never
+receive the independently-reviewed badge, and chart intake continues to work.
+
+The receipt remains quarantined and unchanged. Even a bound display is a
+**PRIVATE ADVISORY REFERENCE**, not governance acceptance, current market data,
+an allocation recommendation, an actionable gate clearance, or a thesis-break
+finding. The page shows supplied limitations, including unknown indicators,
+uncertified market cutoffs and Daily-bar completion, non-authoritative image
+prices, unknown crypto construction, and dated/not-refreshed research context.
 
 `var/` is gitignored: the export and the inbox are runtime state, never
 repository truth, and are never committed.
