@@ -47,6 +47,9 @@ SCHEMA_VERSION = 1
 #: high-resolution tablet screenshot while keeping the bound small enough that a
 #: single request can never exhaust a small private host.
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+# A receipt is a small flat record. Reading one byte past the bound is enough to
+# recognise an oversized file without pulling it into memory.
+MAX_RECEIPT_BYTES = 64 * 1024
 
 #: PNG only. HEIC/HEIF, WebP, GIF, SVG, PDF, JPEG and everything else are
 #: rejected rather than silently transcoded: this unit adds no image-decoding
@@ -527,15 +530,55 @@ def ingest(
     return record
 
 
-def read_image_bytes(inbox_root: Path | str, intake_id: str) -> tuple[bytes, str] | None:
-    """Retained bytes plus media type for one quarantined intake.
+def _no_duplicate_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate receipt key: {key}")
+        result[key] = value
+    return result
 
-    Returns ``None`` when the id is unknown, malformed, or refers to a
-    duplicate marker (which holds no bytes of its own). The path is rebuilt
-    from the validated id and the record's own fixed filename constant; the
-    stored record can never redirect a read outside the inbox.
+
+def read_receipt(inbox_root: Path | str, intake_id: str) -> tuple[bytes, dict] | None:
+    """The exact stored receipt bytes together with the record they parse to.
+
+    One read serves both, so a caller that hashes the bytes is guaranteed to be
+    describing the same receipt it then reads fields from -- there is no second
+    read in between for the file to change under.  Returns ``None`` for an
+    unknown, unreadable, oversized, malformed or duplicate-keyed receipt, so
+    every such receipt fails closed rather than being partially trusted.
     """
     if not _INTAKE_ID_RE.match(intake_id or ""):
+        return None
+    charts = _charts_root_for_read(inbox_root)
+    if charts is None:
+        return None
+    try:
+        with (charts / intake_id / RECORD_FILENAME).open("rb") as handle:
+            data = handle.read(MAX_RECEIPT_BYTES + 1)
+    except OSError:
+        return None
+    if len(data) > MAX_RECEIPT_BYTES:
+        return None
+    try:
+        record = json.loads(data.decode("utf-8"), object_pairs_hook=_no_duplicate_keys)
+    except (UnicodeDecodeError, ValueError, RecursionError):
+        return None
+    return (data, record) if isinstance(record, dict) else None
+
+
+def _retained_original(inbox_root: Path | str,
+                       intake_id: object) -> tuple[Path, str] | None:
+    """Where one intake's retained original lives, and its media type.
+
+    ``None`` when the intake is unknown, malformed, unreadable, or a duplicate
+    marker, which keeps no bytes of its own.  The path is rebuilt from the
+    validated id and the fixed filename for the record's own media type, so the
+    stored record can never redirect a read outside the inbox.  Both the route
+    and the page's link decision resolve through here, so what is offered and
+    what is served cannot drift apart.
+    """
+    if not isinstance(intake_id, str) or not _INTAKE_ID_RE.match(intake_id):
         return None
     charts = _charts_root_for_read(inbox_root)
     if charts is None:
@@ -550,9 +593,46 @@ def read_image_bytes(inbox_root: Path | str, intake_id: str) -> tuple[bytes, str
     media_type = record.get("media_type")
     if media_type not in SUPPORTED_MEDIA_TYPES:
         return None
-    filename = f"original.{_EXTENSION_FOR_MEDIA_TYPE[media_type]}"
+    return directory / f"original.{_EXTENSION_FOR_MEDIA_TYPE[media_type]}", media_type
+
+
+def viewable_image_ids(inbox_root: Path | str) -> dict[str, str]:
+    """For each row, the intake id whose retained original it may actually open.
+
+    A duplicate holds no bytes of its own, so it resolves to the original it was
+    recognised against -- and only when that really is a retained record whose
+    image is still on disk.  A row with nothing to open is simply absent, so the
+    page can say so rather than advertise a link that is certain to 404.
+    """
+    viewable: dict[str, str] = {}
+    for record in list_records(inbox_root):
+        intake_id = record.get("intake_id")
+        if not isinstance(intake_id, str) or not _INTAKE_ID_RE.match(intake_id):
+            continue
+        if record.get("state") == STATE_QUARANTINED:
+            target = intake_id
+        elif record.get("state") == STATE_DUPLICATE:
+            target = record.get("duplicate_of")
+        else:
+            continue
+        original = _retained_original(inbox_root, target)
+        if original is not None and original[0].is_file():
+            viewable[intake_id] = str(target)
+    return viewable
+
+
+def read_image_bytes(inbox_root: Path | str, intake_id: str) -> tuple[bytes, str] | None:
+    """Retained bytes plus media type for one quarantined intake.
+
+    Returns ``None`` when the id is unknown, malformed, or refers to a
+    duplicate marker (which holds no bytes of its own).
+    """
+    original = _retained_original(inbox_root, intake_id)
+    if original is None:
+        return None
+    path, media_type = original
     try:
-        return (directory / filename).read_bytes(), media_type
+        return path.read_bytes(), media_type
     except OSError:
         return None
 
