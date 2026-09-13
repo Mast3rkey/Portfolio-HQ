@@ -369,11 +369,14 @@ def _make_handler(config: OwnerServiceConfig):
             elif path == "/research":
                 self._html(200, render.research_page(self._export()))
             elif path == "/charts":
-                self._html(200, render.charts_page(self._export(),
-                                                   chart_inbox.list_records(inbox),
+                # One receipt snapshot serves the rendered rows, the evidence
+                # decision and the link decisions for this request.
+                view = chart_inbox.snapshot(inbox)
+                self._html(200, render.charts_page(self._export(), list(view.records),
                                                    evidence=chart_evidence.reviewed_evidence(
-                                                       inbox, config.analysis_path, config.review_path),
-                                                   image_links=chart_inbox.viewable_image_ids(inbox)))
+                                                       inbox, config.analysis_path,
+                                                       config.review_path, snapshot=view),
+                                                   image_links=view.image_links))
             elif path.startswith("/charts/image/"):
                 self._serve_chart_image(path[len("/charts/image/"):])
             else:
@@ -513,11 +516,15 @@ def _make_handler(config: OwnerServiceConfig):
             self._charts_flash(flash, 200)
 
         def _charts_flash(self, flash: dict, status: int) -> None:
+            # The upload confirmation renders from one snapshot too, so the
+            # confirmed row and its evidence state describe the same receipts.
+            view = chart_inbox.snapshot(config.inbox_root)
             self._html(status, render.charts_page(
-                self._export(), chart_inbox.list_records(config.inbox_root),
+                self._export(), list(view.records),
                 evidence=chart_evidence.reviewed_evidence(
-                    config.inbox_root, config.analysis_path, config.review_path),
-                image_links=chart_inbox.viewable_image_ids(config.inbox_root),
+                    config.inbox_root, config.analysis_path, config.review_path,
+                    snapshot=view),
+                image_links=view.image_links,
                 flash=flash))
 
         def _serve_chart_image(self, intake_id: str) -> None:

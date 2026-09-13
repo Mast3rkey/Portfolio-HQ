@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import threading
+from contextlib import contextmanager
 from pathlib import Path
 from http.server import ThreadingHTTPServer
 
@@ -341,18 +342,24 @@ def test_unreadable_receipt_fails_closed_without_raising(
 
 
 def test_oversized_receipt_is_rejected_even_though_it_parses(tmp_path: Path):
-    """The bound is load-bearing: this receipt is valid JSON the row still shows."""
+    """The bound is load-bearing: this receipt is valid JSON a lenient read accepts.
+
+    The snapshot is strict, so a receipt it cannot vouch for contributes no row
+    at all rather than a row shown as fact.  The lenient enumeration still finds
+    it, which is what makes the bound, and not a parse error, the thing
+    excluding it.
+    """
     receipt, analysis, review = _artifacts(tmp_path / "inbox")
     path = _receipt_path(tmp_path / "inbox", receipt["intake_id"])
     doc = json.loads(path.read_text())
     doc["padding"] = "x" * chart_inbox.MAX_RECEIPT_BYTES
     path.write_text(json.dumps(doc))
     assert path.stat().st_size > chart_inbox.MAX_RECEIPT_BYTES
-    # Enumeration still lists the row, so this is the bound rejecting it.
     assert len(chart_inbox.list_records(tmp_path / "inbox")) == 1
     assert chart_inbox.read_receipt(tmp_path / "inbox", receipt["intake_id"]) is None
+    assert chart_inbox.snapshot(tmp_path / "inbox").records == ()
     found = chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)
-    assert found[receipt["intake_id"]]["state"] == "unverified"
+    assert found == {}
 
 
 def test_missing_receipt_fails_closed(tmp_path: Path):
@@ -500,6 +507,148 @@ def test_authenticated_chart_evidence_and_malformed_confirmation_do_not_disconne
         assert client.request("POST", "/charts/upload", body, {"Content-Type": content_type})[0] == 200
     finally:
         server.shutdown(); server.server_close(); thread.join()
+
+
+TAMPERED_RECEIVED_AT = "2099-01-01T00:00:00Z"
+
+
+@contextmanager
+def _running_owner_service(tmp_path: Path):
+    """A signed-in client against one bound fixture, for request-level checks."""
+    inbox = tmp_path / "inbox"; export = tmp_path / "export.json"
+    write_export(export, _sample_export())
+    receipt, analysis, review = _artifacts(inbox)
+    config = service_mod.build_config(
+        inbox_root=inbox, export_path=export, host="127.0.0.1",
+        env={"PORTFOLIO_HQ_OWNER_TOKEN": TOKEN},
+        analysis_path=analysis, review_path=review)
+    server = ThreadingHTTPServer(("127.0.0.1", 0), service_mod._make_handler(config))
+    thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+    try:
+        client = Client(server.server_address[1])
+        assert client.sign_in()[0] == 303
+        yield client, inbox, receipt
+    finally:
+        server.shutdown(); server.server_close(); thread.join()
+
+
+def _upload(client):
+    body, content_type = multipart({"ticker": "NVDA", "timeframe": "1D"},
+                                   {"chart": ("new.png", png_bytes(3, 2))})
+    return client.request("POST", "/charts/upload", body,
+                          {"Content-Type": content_type})
+
+
+@pytest.mark.parametrize("journey", ["get", "upload"])
+def test_each_request_takes_exactly_one_receipt_snapshot(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, journey: str):
+    """No second inbox read exists for a receipt to change between.
+
+    An upload still enumerates once inside ``ingest`` to recognise a duplicate,
+    which happens before anything is rendered.  What matters is that nothing
+    reads the inbox again after the snapshot the page is built from.
+    """
+    with _running_owner_service(tmp_path) as (client, _inbox, _receipt):
+        order: list[str] = []
+        real_snapshot, real_list = chart_inbox.snapshot, chart_inbox.list_records
+        monkeypatch.setattr(chart_inbox, "snapshot",
+                            lambda root: (order.append("snapshot") or real_snapshot(root)))
+        monkeypatch.setattr(chart_inbox, "list_records",
+                            lambda root: (order.append("list_records") or real_list(root)))
+        status = (client.request("GET", "/charts") if journey == "get" else _upload(client))[0]
+        assert status == 200
+        assert order.count("snapshot") == 1, order
+        assert order[-1] == "snapshot", order
+        assert order.count("list_records") == (1 if journey == "upload" else 0), order
+
+
+@pytest.mark.parametrize("journey", ["get", "upload"])
+def test_receipt_swapped_at_the_snapshot_read_cannot_badge_changed_metadata(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, journey: str):
+    """Changed receipt metadata and a reviewed badge can never share a row.
+
+    The receipt is rewritten immediately before the request's one read and
+    restored immediately after, so the request sees the changed bytes.  Whatever
+    it renders, it must not present those bytes as independently reviewed.
+    """
+    with _running_owner_service(tmp_path) as (client, inbox, receipt):
+        path = inbox / chart_inbox.CHARTS_DIRNAME / receipt["intake_id"] / chart_inbox.RECORD_FILENAME
+        reviewed_bytes = path.read_bytes()
+        tampered = json.dumps({**json.loads(reviewed_bytes),
+                               "received_at": TAMPERED_RECEIVED_AT}).encode()
+        real_read = chart_inbox.read_receipt
+
+        def swapping(root, intake_id):
+            path.write_bytes(tampered)
+            try:
+                return real_read(root, intake_id)
+            finally:
+                path.write_bytes(reviewed_bytes)
+
+        monkeypatch.setattr(chart_inbox, "read_receipt", swapping)
+        status, _, page = (client.request("GET", "/charts") if journey == "get"
+                           else _upload(client))
+        assert status == 200
+        assert TAMPERED_RECEIVED_AT.encode() in page, "the request did read the changed bytes"
+        assert b"independently reviewed" not in page, \
+            "changed receipt bytes must never carry a reviewed badge"
+
+
+@pytest.mark.parametrize("journey", ["get", "upload"])
+def test_receipt_changed_after_the_snapshot_cannot_reach_the_rendered_page(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, journey: str):
+    """A change landing after the one read belongs to the next request, not this one."""
+    with _running_owner_service(tmp_path) as (client, inbox, receipt):
+        path = inbox / chart_inbox.CHARTS_DIRNAME / receipt["intake_id"] / chart_inbox.RECORD_FILENAME
+        reviewed_bytes = path.read_bytes()
+        tampered = json.dumps({**json.loads(reviewed_bytes),
+                               "received_at": TAMPERED_RECEIVED_AT}).encode()
+        real_snapshot = chart_inbox.snapshot
+
+        def then_tamper(root):
+            view = real_snapshot(root)
+            path.write_bytes(tampered)
+            return view
+
+        monkeypatch.setattr(chart_inbox, "snapshot", then_tamper)
+        status, _, page = (client.request("GET", "/charts") if journey == "get"
+                           else _upload(client))
+        assert status == 200
+        assert TAMPERED_RECEIVED_AT.encode() not in page
+        assert b"independently reviewed" in page, "the snapshot it read really was reviewed"
+        # The change is on disk, so the next request reports it honestly.
+        assert path.read_bytes() == tampered
+        status, _, later = client.request("GET", "/charts")
+        assert status == 200
+        assert TAMPERED_RECEIVED_AT.encode() in later
+        assert b"independently reviewed" not in later
+
+
+def test_snapshot_rows_and_receipt_bytes_are_the_same_read(tmp_path: Path):
+    """Every displayed row parses from exactly the bytes kept beside it."""
+    receipt, _analysis, _review = _artifacts(tmp_path / "inbox")
+    view = chart_inbox.snapshot(tmp_path / "inbox")
+    assert [r["intake_id"] for r in view.records] == [receipt["intake_id"]]
+    for record in view.records:
+        raw = view.receipts[record["intake_id"]]
+        assert json.loads(raw.decode("utf-8")) == record
+        assert raw == _receipt_path(tmp_path / "inbox", record["intake_id"]).read_bytes()
+    assert view.image_links == {receipt["intake_id"]: receipt["intake_id"]}
+    assert chart_inbox.viewable_image_ids(tmp_path / "inbox") == view.image_links
+
+
+def test_evidence_given_a_snapshot_reads_no_receipt_of_its_own(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """Passing a snapshot is what makes the badge describe the rendered rows."""
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    view = chart_inbox.snapshot(tmp_path / "inbox")
+    monkeypatch.setattr(chart_inbox, "read_receipt",
+                        lambda *a, **k: pytest.fail("re-read the receipt"))
+    monkeypatch.setattr(chart_inbox, "list_records",
+                        lambda *a, **k: pytest.fail("re-enumerated the inbox"))
+    found = chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review,
+                                             snapshot=view)
+    assert found[receipt["intake_id"]]["state"] == "reviewed"
 
 
 def test_expanded_evidence_uses_a_full_width_phone_reading_surface(tmp_path: Path):

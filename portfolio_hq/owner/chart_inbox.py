@@ -35,6 +35,7 @@ import secrets
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import NamedTuple
 
 from . import image_integrity
 
@@ -596,16 +597,48 @@ def _retained_original(inbox_root: Path | str,
     return directory / f"original.{_EXTENSION_FOR_MEDIA_TYPE[media_type]}", media_type
 
 
-def viewable_image_ids(inbox_root: Path | str) -> dict[str, str]:
-    """For each row, the intake id whose retained original it may actually open.
+class InboxSnapshot(NamedTuple):
+    """One request's single, coherent view of the inbox.
 
-    A duplicate holds no bytes of its own, so it resolves to the original it was
-    recognised against -- and only when that really is a retained record whose
-    image is still on disk.  A row with nothing to open is simply absent, so the
-    page can say so rather than advertise a link that is certain to 404.
+    ``records`` are the rows a page displays, ``receipts`` holds the exact bytes
+    each of those rows was parsed from, and ``image_links`` says which retained
+    original each row may open.  All three come from the same pass, so a page
+    cannot show one version of a receipt beside a judgement made about another.
     """
-    viewable: dict[str, str] = {}
-    for record in list_records(inbox_root):
+
+    records: tuple[dict, ...]
+    receipts: dict[str, bytes]
+    image_links: dict[str, str]
+
+
+def snapshot(inbox_root: Path | str) -> InboxSnapshot:
+    """Read the inbox once and serve every consumer of that request from it.
+
+    Each receipt is read exactly once, through the same bounded, duplicate-key
+    rejecting reader that the evidence check hashes, so the displayed metadata
+    and the bytes weighed against an external review are the same bytes.  A
+    receipt that cannot be read coherently contributes no row at all rather than
+    a row the reader cannot vouch for.
+    """
+    charts = _charts_root_for_read(inbox_root)
+    records: list[dict] = []
+    receipts: dict[str, bytes] = {}
+    if charts is not None:
+        for entry in sorted(charts.iterdir(), reverse=True):
+            if not entry.is_dir() or not _INTAKE_ID_RE.match(entry.name):
+                continue
+            loaded = read_receipt(inbox_root, entry.name)
+            if loaded is None:
+                continue
+            data, record = loaded
+            records.append(record)
+            intake_id = record.get("intake_id")
+            if isinstance(intake_id, str):
+                receipts[intake_id] = data
+    records.sort(key=lambda r: str(r.get("received_at", "")), reverse=True)
+
+    image_links: dict[str, str] = {}
+    for record in records:
         intake_id = record.get("intake_id")
         if not isinstance(intake_id, str) or not _INTAKE_ID_RE.match(intake_id):
             continue
@@ -617,8 +650,19 @@ def viewable_image_ids(inbox_root: Path | str) -> dict[str, str]:
             continue
         original = _retained_original(inbox_root, target)
         if original is not None and original[0].is_file():
-            viewable[intake_id] = str(target)
-    return viewable
+            image_links[intake_id] = str(target)
+    return InboxSnapshot(tuple(records), receipts, image_links)
+
+
+def viewable_image_ids(inbox_root: Path | str) -> dict[str, str]:
+    """For each row, the intake id whose retained original it may actually open.
+
+    A duplicate holds no bytes of its own, so it resolves to the original it was
+    recognised against -- and only when that really is a retained record whose
+    image is still on disk.  A row with nothing to open is simply absent, so the
+    page can say so rather than advertise a link that is certain to 404.
+    """
+    return snapshot(inbox_root).image_links
 
 
 def read_image_bytes(inbox_root: Path | str, intake_id: str) -> tuple[bytes, str] | None:

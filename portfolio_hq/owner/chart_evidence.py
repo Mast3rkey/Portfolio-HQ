@@ -189,11 +189,18 @@ def _unambiguous_draft_records(records: list) -> bool:
 
 
 def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
-                      review_path: Path | None) -> dict[str, dict]:
-    """Return display annotations, never mutating receipts or portfolio state."""
+                      review_path: Path | None, *,
+                      snapshot: chart_inbox.InboxSnapshot | None = None) -> dict[str, dict]:
+    """Return display annotations, never mutating receipts or portfolio state.
+
+    A caller that also renders the rows passes the snapshot it rendered from, so
+    the receipt a badge is awarded to is the receipt on screen.  Called without
+    one, this takes its own snapshot and is internally consistent the same way.
+    """
     draft, draft_bytes, draft_state = _read_json(analysis_path)
     review, review_bytes, review_state = _read_json(review_path)
-    records = chart_inbox.list_records(inbox_root)
+    view = chart_inbox.snapshot(inbox_root) if snapshot is None else snapshot
+    records = view.records
     unavailable = f"Private analysis is {draft_state}; independent review is {review_state}."
     result = {str(r.get("intake_id")): {"state": "unverified", "reason": unavailable}
               for r in records if isinstance(r.get("intake_id"), str)}
@@ -228,14 +235,15 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
         intake_id = identity.get("intake_id")
         if not _text(record_id) or not _text(intake_id):
             continue
-        # One read supplies both the bytes that are hashed and the fields that
-        # are validated and displayed, so the receipt described below is exactly
-        # the receipt weighed here.
-        stored = chart_inbox.read_receipt(inbox_root, intake_id)
+        # The row on screen and the bytes hashed here come from the one snapshot
+        # this request was rendered from, so a receipt cannot be displayed in one
+        # version and judged in another.
+        receipt_bytes = view.receipts.get(intake_id)
+        receipt = next((r for r in records if r.get("intake_id") == intake_id), None)
         check = reviewed.get(record_id)
-        if stored is None or not isinstance(check, dict) or check.get("findings") != []:
+        if receipt_bytes is None or receipt is None or not isinstance(check, dict) \
+                or check.get("findings") != []:
             continue
-        receipt_bytes, receipt = stored
         image = chart_inbox.read_image_bytes(inbox_root, intake_id)
         claims = _claim_ids(content, identity)
         claimed = check.get("claimed_ids_reviewed")
