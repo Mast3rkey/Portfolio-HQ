@@ -121,6 +121,53 @@ def test_review_schema_version_requires_an_integer_not_a_boolean(
     assert found[receipt["intake_id"]]["state"] == expected
 
 
+@pytest.mark.parametrize("size_kind", ["integer", "float", "boolean", "string", "missing"])
+def test_reviewed_artifact_byte_size_requires_an_integer(
+        tmp_path: Path, size_kind: str):
+    receipt, analysis, review = _artifacts(tmp_path / size_kind)
+    payload = json.loads(review.read_text())
+    entry = payload["reviewed_artifact"]["files"]["chart-evidence-draft.json"]
+    size = len(analysis.read_bytes())
+    if size_kind == "integer":
+        entry["byte_size"] = size
+    elif size_kind == "float":
+        entry["byte_size"] = float(size)
+    elif size_kind == "boolean":
+        entry["byte_size"] = True
+    elif size_kind == "string":
+        entry["byte_size"] = str(size)
+    else:
+        entry.pop("byte_size")
+    review.write_text(json.dumps(payload))
+    found = chart_evidence.reviewed_evidence(tmp_path / size_kind, analysis, review)
+    assert found[receipt["intake_id"]]["state"] == (
+        "reviewed" if size_kind == "integer" else "unverified")
+
+
+def test_image_verification_obeys_one_request_byte_budget(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    inbox = tmp_path / "inbox"
+    receipt, analysis, review = _artifacts(inbox)
+    size = receipt["byte_size"]
+
+    monkeypatch.setattr(chart_evidence, "MAX_IMAGE_VERIFICATION_BYTES_PER_REQUEST", size)
+    monkeypatch.setattr(chart_inbox, "read_image_bytes",
+                        lambda *a, **k: pytest.fail("read beyond request budget"))
+    found = chart_evidence.reviewed_evidence(inbox, analysis, review)
+    assert found[receipt["intake_id"]]["state"] == "unverified"
+
+
+def test_retained_image_reader_honors_explicit_byte_bound(tmp_path: Path):
+    inbox = tmp_path / "inbox"
+    receipt, _analysis, _review = _artifacts(inbox)
+    size = receipt["byte_size"]
+    assert chart_inbox.read_image_bytes(
+        inbox, receipt["intake_id"], max_bytes=size - 1) is None
+    image = chart_inbox.read_image_bytes(
+        inbox, receipt["intake_id"], max_bytes=size)
+    assert image is not None and len(image[0]) == size
+
+
 def test_invalid_review_date_and_unhashable_nested_values_fail_closed(tmp_path: Path):
     receipt, analysis, review = _artifacts(tmp_path / "inbox")
     payload = json.loads(review.read_text()); payload["reviewed_at_utc"] = "not-a-date"

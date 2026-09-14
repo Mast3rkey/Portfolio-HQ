@@ -674,7 +674,8 @@ def viewable_image_ids(inbox_root: Path | str) -> dict[str, str]:
     return snapshot(inbox_root).image_links
 
 
-def read_image_bytes(inbox_root: Path | str, intake_id: str) -> tuple[bytes, str] | None:
+def read_image_bytes(inbox_root: Path | str, intake_id: str, *,
+                     max_bytes: int | None = None) -> tuple[bytes, str] | None:
     """Retained bytes plus media type for one quarantined intake.
 
     Returns ``None`` when the id is unknown, malformed, or refers to a
@@ -685,7 +686,15 @@ def read_image_bytes(inbox_root: Path | str, intake_id: str) -> tuple[bytes, str
         return None
     path, media_type = original
     try:
-        return path.read_bytes(), media_type
+        if max_bytes is None:
+            return path.read_bytes(), media_type
+        if type(max_bytes) is not int or max_bytes < 0:
+            return None
+        with path.open("rb") as handle:
+            data = handle.read(max_bytes + 1)
+        if len(data) > max_bytes:
+            return None
+        return data, media_type
     except OSError:
         return None
 

@@ -17,6 +17,12 @@ from . import chart_inbox
 MAX_ARTIFACT_BYTES = 2 * 1024 * 1024
 MAX_RECORDS = 512
 MAX_CLAIMS_PER_RECORD = 256
+# A Charts response may show a large inbox, but optional review badges must not
+# turn one page load into an unbounded re-read of every retained original.  The
+# reader spends this fixed per-request budget in draft order; records beyond it
+# remain visibly unverified.  Each individual read is bounded too, so a
+# tampered size declaration cannot evade the aggregate ceiling.
+MAX_IMAGE_VERIFICATION_BYTES_PER_REQUEST = 64 * 1024 * 1024
 
 
 class _DuplicateKey(ValueError):
@@ -132,6 +138,7 @@ def _clean_review(review: dict, draft_bytes: bytes) -> tuple[dict, str] | None:
             and review.get("portfolio_policy_acceptance") is False
             and _string_list(review.get("limitations"))
             and _string_list(review.get("methods"))
+            and type(entry.get("byte_size")) is int
             and entry.get("byte_size") == len(draft_bytes)
             and entry.get("sha256") == digest):
         return None
@@ -227,6 +234,7 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
                 or item["record_id"] in reviewed:
             return result
         reviewed[item["record_id"]] = item
+    image_read_budget = MAX_IMAGE_VERIFICATION_BYTES_PER_REQUEST
     for draft_record in draft["records"]:
         if not isinstance(draft_record, dict):
             continue
@@ -246,13 +254,23 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
         if stored is None or not isinstance(check, dict) or check.get("findings") != []:
             continue
         receipt_bytes, receipt = stored
-        image = chart_inbox.read_image_bytes(inbox_root, intake_id)
+        declared_size = receipt.get("byte_size")
+        if type(declared_size) is not int or declared_size <= 0 \
+                or declared_size >= image_read_budget:
+            continue
+        # read_image_bytes reads at most declared_size + 1 bytes.  Charge that
+        # worst case before the read, including when a tampered image exceeds
+        # its receipt declaration and is rejected.
+        image_read_budget -= declared_size + 1
+        image = chart_inbox.read_image_bytes(
+            inbox_root, intake_id, max_bytes=declared_size)
         claims = _claim_ids(content, identity)
         claimed = check.get("claimed_ids_reviewed")
         if not _string_list(content.get("uncertainties")) \
                 or not _string_list(draft_record.get("prohibited_uses")):
             continue
-        if not image or claims is None or not isinstance(claimed, list) \
+        if not image or len(image[0]) != declared_size \
+                or claims is None or not isinstance(claimed, list) \
                 or len(claimed) != len(claims) or any(not _text(item) for item in claimed) \
                 or len(set(claimed)) != len(claimed) or set(claimed) != claims:
             continue
