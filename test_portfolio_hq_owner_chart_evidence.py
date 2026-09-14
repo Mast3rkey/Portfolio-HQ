@@ -103,6 +103,24 @@ def test_bad_nested_type_does_not_raise(tmp_path: Path):
     assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
 
 
+@pytest.mark.parametrize("version,expected", [
+    (1, "reviewed"),
+    (True, "unverified"),
+    (False, "unverified"),
+    (1.0, "unverified"),
+    ("1", "unverified"),
+    (None, "unverified"),
+])
+def test_review_schema_version_requires_an_integer_not_a_boolean(
+        tmp_path: Path, version, expected: str):
+    receipt, analysis, review = _artifacts(tmp_path / str(version))
+    payload = json.loads(review.read_text())
+    payload["schema_version"] = version
+    review.write_text(json.dumps(payload))
+    found = chart_evidence.reviewed_evidence(tmp_path / str(version), analysis, review)
+    assert found[receipt["intake_id"]]["state"] == expected
+
+
 def test_invalid_review_date_and_unhashable_nested_values_fail_closed(tmp_path: Path):
     receipt, analysis, review = _artifacts(tmp_path / "inbox")
     payload = json.loads(review.read_text()); payload["reviewed_at_utc"] = "not-a-date"
