@@ -120,7 +120,8 @@ def _clean_review(review: dict, draft_bytes: bytes) -> tuple[dict, str] | None:
         return None
     digest = hashlib.sha256(draft_bytes).hexdigest()
     clean_counts = _clean_counts(counts)
-    if not (review.get("schema_version") == 1
+    if not (type(review.get("schema_version")) is int
+            and review.get("schema_version") == 1
             and review.get("review_kind") == "independent_private_analytical_artifact_review"
             and _text(review.get("review_id")) and _text(review.get("reviewer"))
             and _timezone_date(review.get("reviewed_at_utc"))
