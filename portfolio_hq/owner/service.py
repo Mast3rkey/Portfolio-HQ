@@ -20,11 +20,12 @@ What this service can and cannot reach
   brokerage client, or ``portfolio_hq.dashboard.model``, so it cannot compute a
   portfolio number even by mistake. ``test_portfolio_hq_owner_interface.py``
   asserts this from the module import graph.
-* It reads exactly two paths: the presentation export file and the chart inbox
-  directory. It never opens ``holdings.yaml``, ``targets.yaml``, ``gates.yaml``,
-  ``governance/`` or ``intelligence/``.
-* It writes exactly one place: beneath the configured chart inbox root, through
-  ``chart_inbox.ingest``, which derives every path from a server-generated id.
+* It reads only explicitly configured runtime paths: the presentation export,
+  chart inbox, optional chart evidence files, and private account-staging root.
+  It never opens repository holdings, targets, gates, governance or intelligence.
+* It writes beneath two explicit private roots: chart intake through
+  ``chart_inbox`` and manual account versions/reviews through ``account_staging``.
+  Both derive storage paths from server-generated identifiers.
 * There is no order path, no brokerage call, no Stage-1 surface, and no route
   that mutates repository state.
 
@@ -45,13 +46,14 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from . import auth as auth_mod
-from . import chart_evidence, chart_inbox, render
+from . import account_staging, chart_evidence, chart_inbox, render
 from .export_io import load_export
 
 #: Slack above the image ceiling for multipart framing and the small text
 #: fields. A request larger than this is refused before its body is read.
 _FIELD_SLACK_BYTES = 64 * 1024
 MAX_REQUEST_BYTES = chart_inbox.MAX_UPLOAD_BYTES + _FIELD_SLACK_BYTES
+MAX_ACCOUNT_REQUEST_BYTES = account_staging.MAX_SUBMISSION_BYTES + _FIELD_SLACK_BYTES
 
 _MAX_MULTIPART_PARTS = 8
 _MAX_TEXT_FIELD_BYTES = 256
@@ -76,6 +78,7 @@ class OwnerServiceConfig:
     token: str
     inbox_root: Path
     export_path: Path
+    account_root: Path
     analysis_path: Path | None = None
     review_path: Path | None = None
     secure_cookie: bool = True
@@ -98,6 +101,7 @@ def build_config(
     *,
     inbox_root: Path | str,
     export_path: Path | str,
+    account_root: Path | str | None = None,
     host: str = "127.0.0.1",
     env: dict | None = None,
     analysis_path: Path | str | None = None,
@@ -115,6 +119,7 @@ def build_config(
         token=token,
         inbox_root=Path(inbox_root),
         export_path=Path(export_path),
+        account_root=Path(account_root) if account_root else Path(inbox_root) / "accounts",
         analysis_path=Path(analysis_path) if analysis_path else None,
         review_path=Path(review_path) if review_path else None,
         secure_cookie=not is_loopback_host(host),
@@ -214,6 +219,7 @@ def _make_handler(config: OwnerServiceConfig):
     # is irrelevant. (One process only: a multi-instance deployment would need
     # a shared lock, which this single-owner interface does not use.)
     intake_lock = threading.Lock()
+    account_lock = threading.Lock()
 
     class OwnerHandler(BaseHTTPRequestHandler):
         server_version = "PortfolioHQOwner/1.0"
@@ -310,7 +316,7 @@ def _make_handler(config: OwnerServiceConfig):
                 return False
             return bool(parsed.netloc) and parsed.netloc == host
 
-        def _read_body(self) -> bytes | None:
+        def _read_body(self, max_bytes: int = MAX_REQUEST_BYTES) -> bytes | None:
             raw_length = self.headers.get("Content-Length")
             if raw_length is None:
                 return None
@@ -318,7 +324,7 @@ def _make_handler(config: OwnerServiceConfig):
                 length = int(raw_length)
             except ValueError:
                 return None
-            if length < 0 or length > MAX_REQUEST_BYTES:
+            if length < 0 or length > max_bytes:
                 return None
             chunks: list[bytes] = []
             remaining = length
@@ -379,6 +385,11 @@ def _make_handler(config: OwnerServiceConfig):
                                                    image_links=view.image_links))
             elif path.startswith("/charts/image/"):
                 self._serve_chart_image(path[len("/charts/image/"):])
+            elif path == "/accounts":
+                self._html(200, render.accounts_page(account_staging.snapshot(
+                    config.account_root).records))
+            elif path.startswith("/accounts/original/"):
+                self._serve_account_original(path[len("/accounts/original/"):])
             else:
                 self._deny(404, "There is no page at that address.")
 
@@ -398,6 +409,12 @@ def _make_handler(config: OwnerServiceConfig):
                 return
             if path == "/charts/upload":
                 self._handle_upload()
+                return
+            if path == "/accounts/submit":
+                self._handle_account_submit()
+                return
+            if path.startswith("/accounts/review/"):
+                self._handle_account_review(path[len("/accounts/review/"):])
                 return
             self._deny(404, "There is no page at that address.")
 
@@ -542,6 +559,74 @@ def _make_handler(config: OwnerServiceConfig):
             self._send(200, data, media_type,
                        (("Content-Disposition", "inline"),))
 
+        def _handle_account_submit(self) -> None:
+            if not self._same_origin():
+                self._deny(403, "Cross-site form submissions are refused.")
+                return
+            body = self._read_body(MAX_ACCOUNT_REQUEST_BYTES)
+            if body is None:
+                self.close_connection = True
+                self._deny(413, "The account submission was unreadable or exceeded 2 MiB.")
+                return
+            content_type = self.headers.get("Content-Type", "")
+            exact = body
+            if content_type.split(";", 1)[0].strip().lower() == "multipart/form-data":
+                upload = parse_multipart(body, content_type).get("account")
+                if not isinstance(upload, UploadedFile):
+                    self._accounts_flash("No account JSON file was included.", 400)
+                    return
+                exact = upload.content
+            elif content_type.split(";", 1)[0].strip().lower() != "application/json":
+                self._accounts_flash("Submission must be JSON or a JSON file upload.", 400)
+                return
+            try:
+                with account_lock:
+                    record = account_staging.ingest(config.account_root, exact)
+            except account_staging.AccountSubmissionRejected as exc:
+                self._accounts_flash(f"Submission rejected: {exc}", 400)
+                return
+            except account_staging.AccountStorageError as exc:
+                self.log_error("account staging storage failure: %s", exc)
+                self._accounts_flash("The submission was not retained because private storage failed.", 500)
+                return
+            self._accounts_flash(
+                f"Exact submission retained as {record['submission_id']}; review is still required.", 200)
+
+        def _handle_account_review(self, submission_id: str) -> None:
+            if not self._same_origin():
+                self._deny(403, "Cross-site form submissions are refused.")
+                return
+            body = self._read_body(4096)
+            if body is None:
+                self._accounts_flash("The review request could not be read.", 400)
+                return
+            from urllib.parse import parse_qs
+            values = parse_qs(body[:2048].decode("utf-8", "replace"))
+            decision = (values.get("decision") or [""])[0]
+            reviewer = (values.get("reviewer") or [""])[0]
+            try:
+                with account_lock:
+                    account_staging.review(config.account_root, submission_id,
+                                           decision, reviewer)
+            except (account_staging.AccountReviewRejected,
+                    account_staging.AccountStorageError) as exc:
+                self._accounts_flash(f"Review not recorded: {exc}", 409)
+                return
+            self._accounts_flash(f"{decision.title()} review recorded for the exact retained version.", 200)
+
+        def _accounts_flash(self, message: str, status: int) -> None:
+            self._html(status, render.accounts_page(
+                account_staging.snapshot(config.account_root).records,
+                flash=message))
+
+        def _serve_account_original(self, submission_id: str) -> None:
+            data = account_staging.original(config.account_root, submission_id)
+            if data is None:
+                self._deny(404, "No intact retained account submission with that reference.")
+                return
+            self._send(200, data, "application/json; charset=utf-8",
+                       (("Content-Disposition", "attachment; filename=account-submission.json"),))
+
         def log_message(self, fmt, *args):  # keep the console quiet-ish
             return
 
@@ -552,6 +637,7 @@ def serve(
     *,
     inbox_root: Path | str,
     export_path: Path | str,
+    account_root: Path | str | None = None,
     host: str = "127.0.0.1",
     port: int = 8080,
     env: dict | None = None,
@@ -560,6 +646,7 @@ def serve(
 ) -> None:
     """Start the private owner interface (blocking). Ctrl-C to stop."""
     config = build_config(inbox_root=inbox_root, export_path=export_path,
+                          account_root=account_root,
                           host=host, env=env, analysis_path=analysis_path,
                           review_path=review_path)
     Path(config.inbox_root).mkdir(parents=True, exist_ok=True)

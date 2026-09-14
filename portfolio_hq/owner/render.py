@@ -35,6 +35,7 @@ _NAV = (
     ("/portfolio", "Portfolio"),
     ("/research", "Research"),
     ("/charts", "Charts"),
+    ("/accounts", "Account staging"),
 )
 
 
@@ -105,6 +106,109 @@ def _kv_rows(pairs) -> str:
         for label, value in pairs
     )
     return f'<dl class="kv-list">{rows}</dl>'
+
+
+def accounts_page(records: object, flash: str | None = None) -> str:
+    """Render private manual-input receipts and byte-bound review history."""
+    safe_records = records if isinstance(records, (list, tuple)) else ()
+    notice = _card("Submission result", f"<p>{_esc(flash)}</p>", tone="warning") if flash else ""
+    upload = (
+        '<p>Upload a UTF-8 JSON document containing dated holdings and valuations, cash, '
+        'debt/margin, and protected-capital observations. Freshness must be stated as '
+        '<code>current</code>, <code>stale</code>, or <code>unknown</code>; this interface '
+        'does not invent a freshness cutoff.</p>'
+        '<form method="post" action="/accounts/submit" enctype="multipart/form-data">'
+        '<label>Account observation JSON <input type="file" name="account" '
+        'accept="application/json,.json" required></label>'
+        '<button type="submit">Retain exact version</button></form>'
+        '<p class="muted">Staging only: no allocation, policy adoption, brokerage call, '
+        'order, or executable authority. Production account facts must remain in configured '
+        'private runtime storage, never the repository or presentation export.</p>'
+    )
+    cards = []
+    for record in safe_records:
+        if not isinstance(record, dict):
+            continue
+        submission_id = record.get("submission_id")
+        issues = record.get("issues") if isinstance(record.get("issues"), list) else []
+        issue_html = "".join(
+            f'<li><strong>{_esc(item.get("code"))}</strong>: {_esc(item.get("message"))}</li>'
+            for item in issues if isinstance(item, dict)
+        ) or '<li>No validation discrepancy was found. This does not establish freshness or correctness.</li>'
+        normalized = record.get("normalized") if isinstance(record.get("normalized"), dict) else {}
+        labels = {"holdings": "holdings", "cash": "cash", "debt_margin": "debt margin",
+                  "protected_capital": "protected capital"}
+        counts = ", ".join(f"{len(normalized.get(key) or [])} {_esc(labels[key])}"
+                           for key in labels)
+        observation_rows = []
+        for holding in normalized.get("holdings") or []:
+            if not isinstance(holding, dict):
+                continue
+            valuation = holding.get("valuation")
+            valuation_text = "missing — not zero"
+            if isinstance(valuation, dict):
+                valuation_text = (f'{valuation.get("unit_price")} {valuation.get("currency")} per unit; '
+                                  f'as of {valuation.get("observed_at")}; {valuation.get("freshness")}')
+            observation_rows.append(("Holding", holding.get("ticker"),
+                                     f'quantity {holding.get("quantity")}', holding.get("observed_at"),
+                                     holding.get("freshness"), valuation_text))
+        for section, identity_key, amount_key in (
+                ("cash", "account_id", "balance"),
+                ("debt_margin", "account_id", "balance"),
+                ("protected_capital", "evidence_id", "amount")):
+            for item in normalized.get(section) or []:
+                if isinstance(item, dict):
+                    value = f'{item.get(amount_key)} {item.get("currency")}'
+                    if section == "protected_capital":
+                        value += f'; basis: {item.get("basis")}'
+                    observation_rows.append((labels[section].title(), item.get(identity_key), value,
+                                             item.get("observed_at"), item.get("freshness"), "—"))
+        observations = "".join(
+            f'<tr><td data-label="Kind">{_esc(kind)}</td><th scope="row" data-label="Identity">{_esc(identity)}</th>'
+            f'<td data-label="Supplied value">{_esc(value)}</td><td data-label="Observed at">{_esc(when)}</td>'
+            f'<td data-label="Freshness">{_chip(str(freshness), "warning" if freshness == "stale" else "neutral")}</td>'
+            f'<td data-label="Valuation">{_esc(valuation)}</td></tr>'
+            for kind, identity, value, when, freshness, valuation in observation_rows
+        )
+        observations_table = (
+            '<div class="scroll-x"><table class="grid"><caption class="sr-only">Supplied account observations</caption>'
+            '<thead><tr><th>Kind</th><th>Identity</th><th>Supplied value</th><th>Observed at</th>'
+            '<th>Supplied freshness</th><th>Dated valuation</th></tr></thead>'
+            f'<tbody>{observations}</tbody></table></div>' if observations else
+            '<p class="unavailable">No usable supplied observations.</p>')
+        reviews = record.get("reviews") if isinstance(record.get("reviews"), list) else []
+        history = "".join(
+            '<li>{decision} by {reviewer} at {when}<br><span class="muted">{meaning}</span></li>'.format(
+                decision=_esc(review.get("decision")), reviewer=_esc(review.get("reviewer")),
+                when=_esc(review.get("reviewed_at")), meaning=_esc(review.get("meaning")))
+            for review in reviews if isinstance(review, dict)
+        ) or '<li>No review decision recorded.</li>'
+        review_form = (
+            f'<form method="post" action="/accounts/review/{_esc(submission_id)}">'
+            '<label>Reviewer identifier <input name="reviewer" required maxlength="128"></label>'
+            '<button name="decision" value="confirmed" type="submit">Confirm exact version</button>'
+            '<button name="decision" value="rejected" type="submit">Reject exact version</button>'
+            '</form>'
+        )
+        body = _kv_rows((
+            ("Server receipt", _esc(submission_id)),
+            ("Client identity", _esc(record.get("client_submission_id"))),
+            ("Received", _esc(record.get("received_at"))),
+            ("Exact bytes", f'{_esc(record.get("byte_size"))} bytes; SHA-256 <code>{_esc(record.get("submission_sha256"))}</code>'),
+            ("Supplied observations", _esc(counts)),
+        ))
+        body += (f'<p><a href="/accounts/original/{_esc(submission_id)}">Retrieve retained original</a></p>'
+                 f'<h3>Supplied observations</h3>{observations_table}'
+                 f'<h3>Validation and discrepancies</h3><ul>{issue_html}</ul>'
+                 f'<h3>Immutable review history</h3><ul>{history}</ul>{review_form}'
+                 '<p class="muted">Confirmation is data confirmation for these exact bytes only. '
+                 'It is not independent engineering approval, accepted policy, or authority to execute.</p>')
+        cards.append(_card(f"Account version {_esc(submission_id)}", body))
+    if not cards:
+        cards.append(_card("Retained versions", _unavailable(
+            "No manual account submission has been retained in this private runtime root.")))
+    return page("Account staging", "/accounts", notice + _card("Submit a manual account version", upload)
+                + "".join(cards))
 
 
 # ── shell ────────────────────────────────────────────────────────────────────

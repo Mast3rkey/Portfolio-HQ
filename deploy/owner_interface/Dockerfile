@@ -20,7 +20,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HOST=0.0.0.0 \
     PORT=8080 \
     PORTFOLIO_HQ_OWNER_EXPORT=/data/export.json \
-    PORTFOLIO_HQ_OWNER_INBOX=/data/inbox
+    PORTFOLIO_HQ_OWNER_INBOX=/data/inbox \
+    PORTFOLIO_HQ_OWNER_ACCOUNTS=/data/accounts
 
 WORKDIR /app
 
@@ -32,8 +33,8 @@ WORKDIR /app
 COPY portfolio_hq/__init__.py /app/portfolio_hq/__init__.py
 COPY portfolio_hq/owner /app/portfolio_hq/owner
 
-# Persistent volume: the chart inbox lives here. An ephemeral filesystem would
-# discard received charts on restart.
+# Persistent volume: chart intake and manual-account staging live here. An
+# ephemeral filesystem would discard received private evidence on restart.
 VOLUME ["/data"]
 
 RUN useradd --create-home --uid 10001 owner \
@@ -52,4 +53,5 @@ sys.exit(0 if b'ok' in urllib.request.urlopen(url, timeout=4).read() else 1)"
 CMD python -m portfolio_hq.owner serve \
       --host "${HOST}" --port "${PORT}" \
       --export "${PORTFOLIO_HQ_OWNER_EXPORT}" \
-      --inbox "${PORTFOLIO_HQ_OWNER_INBOX}"
+      --inbox "${PORTFOLIO_HQ_OWNER_INBOX}" \
+      --accounts "${PORTFOLIO_HQ_OWNER_ACCOUNTS}"

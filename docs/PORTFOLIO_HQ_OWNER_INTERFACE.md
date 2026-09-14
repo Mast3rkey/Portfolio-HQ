@@ -26,7 +26,7 @@ smuggled in by loosening the existing server:
 | Methods | `GET` only; everything else `405` | `GET` and `POST` only |
 | Bind | loopback only, enforced in the CLI | loopback **or** a private host |
 | Authentication | none (loopback is the boundary) | **mandatory, on every host** |
-| Writes | nothing | only inside the chart inbox directory |
+| Writes | nothing | only inside configured chart-inbox and account-staging roots |
 | Portfolio calculation | reuses canonical functions in-process | none at all; reads a prebuilt export |
 
 **The existing dashboard is unchanged by this unit.** It was not rebound,
@@ -50,10 +50,11 @@ dashboard model. It therefore *cannot* compute a portfolio figure, correct or
 otherwise. A test imports the service in a clean subprocess and fails if any of
 those modules appears in `sys.modules`.
 
-Concretely, the running service reads the export file and inbox directory, and
+Concretely, the running service reads the export file, inbox directory and
+explicit private account-staging root, and
 may additionally read two **explicit operator-configured private JSON files**:
-the analytical draft and a separate independent review. It writes exactly one
-place: inside the inbox. The optional files are never upload targets and no
+the analytical draft and a separate independent review. It writes exactly two
+scoped private runtime surfaces: the chart inbox and account-staging root. The optional files are never upload targets and no
 path named inside them is followed.
 
 ## 3. Unavailable means unavailable
@@ -199,7 +200,75 @@ Intake is *evidence receipt*, not adoption.
 **Not in this unit:** chart interpretation, review-state transitions, and any
 path from a chart to a recommendation. No production chart batch is requested.
 
-## 6. Running it
+## 6. Private manual account staging
+
+The authenticated **Account staging** page accepts a manually prepared UTF-8
+JSON file containing holdings and quantities, dated per-holding valuation
+observations, cash, debt/margin observations, and protected-capital evidence.
+This is private input staging and discrepancy review, not a second allocator:
+the hosted service does not calculate an allocation, adopt a reserve, combine
+cash accounts, call a broker, or change repository truth.
+
+Every observation supplies its own timezone-aware timestamp and an explicit
+`current`, `stale`, or `unknown` freshness assertion. The interface displays
+those assertions but does not invent a new age cutoff. Zero is a valid explicit
+number; omitted sections, missing valuations, explicit staleness, conflicting
+duplicate identities, and unavailable evidence are not converted to zero or
+otherwise filled in. Missing or explicitly stale evidence is a material
+discrepancy and blocks confirmation of that version.
+
+The account-staging root is a second, explicit private runtime write surface,
+separate from the chart inbox. A successful submission is stored under a
+server-generated identifier with its **exact original bytes**, byte length and
+SHA-256. Its receipt includes validated display data and discrepancy outcomes.
+The authenticated owner can retrieve the retained original and see review
+history after restart. Normal HTTP routes provide no overwrite or deletion.
+The service proves that the serialized receipt fits its bounded read contract
+before publishing either file; a valid-looking submission that would overflow
+that derived bound is rejected without an accepted version. On every read it
+reconstructs client identity, normalized observations and discrepancies from
+the retained original, validates the complete receipt and review schemas, and
+refuses redirected or non-regular submission, receipt and review files before
+opening them.
+
+A reviewer may reject a specific version, or confirm it only when no material
+discrepancy remains. Each review is a new immutable record independently bound
+to both the original submission hash and the receipt hash. Changed account
+content needs a new client identity, server receipt and review; confirmation of
+one version cannot certify another. Confirmation means only that the supplied
+data version was confirmed. It is **not** independent engineering approval,
+portfolio-policy adoption, a freshness certification, or executable authority.
+
+The JSON schema is intentionally small and direct:
+
+```json
+{
+  "schema_version": 1,
+  "client_submission_id": "manual-snapshot-2026-09-14",
+  "submitted_at": "2026-09-14T12:00:00Z",
+  "holdings": [{
+    "ticker": "SYNTH", "quantity": 0,
+    "observed_at": "2026-09-14T11:00:00Z", "freshness": "unknown",
+    "valuation": {"unit_price": 12.5, "currency": "USD",
+                  "observed_at": "2026-09-14T10:00:00Z", "freshness": "unknown"}
+  }],
+  "cash": [{"account_id": "cash-1", "balance": 0, "currency": "USD",
+            "observed_at": "2026-09-14T11:00:00Z", "freshness": "unknown"}],
+  "debt_margin": [{"account_id": "margin-1", "balance": 0, "currency": "USD",
+                   "observed_at": "2026-09-14T11:00:00Z", "freshness": "unknown"}],
+  "protected_capital": [{"evidence_id": "reserve-1", "amount": 0,
+                         "currency": "USD", "basis": "synthetic example",
+                         "observed_at": "2026-09-14T11:00:00Z",
+                         "freshness": "unknown"}]
+}
+```
+
+The example is synthetic and does not represent an owner account. Duplicate
+JSON keys, non-finite numbers, Boolean values in numeric fields, malformed or
+timezone-less timestamps, duplicate item identities and oversized input fail
+closed without publishing a receipt.
+
+## 7. Running it
 
 ```bash
 # 1. Build the presentation export from an accepted repository state.
@@ -210,6 +279,7 @@ export PORTFOLIO_HQ_OWNER_TOKEN="$(python -c 'import secrets; print(secrets.toke
 python -m portfolio_hq.owner serve \
     --export var/owner/export.json \
     --inbox  var/owner/inbox \
+    --accounts var/owner/accounts \
     --host 127.0.0.1 --port 8080
 ```
 
@@ -242,14 +312,14 @@ finding. The page shows supplied limitations, including unknown indicators,
 uncertified market cutoffs and Daily-bar completion, non-authoritative image
 prices, unknown crypto construction, and dated/not-refreshed research context.
 
-`var/` is gitignored: the export and the inbox are runtime state, never
-repository truth, and are never committed.
+`var/` is gitignored: the export, inbox and account staging are runtime state,
+never repository truth, and are never committed.
 
 Rebuild the export whenever the accepted repository state changes. A missing or
 unreadable export does not stop the service — the interface says plainly that it
 has not been built, and chart intake still works.
 
-## 7. Deploying to a private host
+## 8. Deploying to a private host
 
 The runtime half needs **only the Python standard library**, so it runs on any
 small private host. `deploy/owner_interface/Dockerfile` builds it provider-neutrally.
@@ -263,10 +333,11 @@ docker run --rm -p 8080:8080 \
 ```
 
 The image reads `HOST` (default `0.0.0.0`), `PORT` (default `8080`),
-`PORTFOLIO_HQ_OWNER_EXPORT` (default `/data/export.json`) and
-`PORTFOLIO_HQ_OWNER_INBOX` (default `/data/inbox`). Mount a **persistent**
-volume at `/data`: the chart inbox lives there, and an ephemeral filesystem
-would discard received charts on restart.
+`PORTFOLIO_HQ_OWNER_EXPORT` (default `/data/export.json`),
+`PORTFOLIO_HQ_OWNER_INBOX` (default `/data/inbox`) and
+`PORTFOLIO_HQ_OWNER_ACCOUNTS` (default `/data/accounts`). Mount a
+**persistent** volume at `/data`: the chart inbox and private manual-account
+history live there, and an ephemeral filesystem would discard them on restart.
 
 ### The exact remaining step, which needs the principal
 
@@ -288,12 +359,12 @@ cannot be done from inside this repository without provisioning and secrets:
 No credential was collected, no infrastructure was purchased or provisioned, and
 no hosted URL is claimed to exist.
 
-## 8. What this interface still does not do
+## 9. What this interface still does not do
 
 * No live account, brokerage connection or credential of any kind.
 * No allocation check, order, or Stage-1 arming — **Stage 1 remains UNARMED and
   NOT EXECUTABLE**, untouched by this unit.
 * No chart interpretation and no path from a chart to a recommendation.
-* No staged account-entry/import flow: that belongs to the later final
-  account-review stage, not here.
+* No adoption of staged account data into holdings, allocation, policy, or any
+  executable surface; final integration remains separate.
 * No second allocator, and no portfolio figure computed in the browser.

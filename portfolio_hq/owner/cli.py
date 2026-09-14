@@ -8,8 +8,8 @@
         --export var/owner/export.json --inbox var/owner/inbox
 
 ``export`` reads repository state and writes exactly the one output file it is
-given. ``serve`` never reads repository state at all: it reads the export file
-and the inbox directory, and writes only inside the inbox.
+given. ``serve`` never reads repository state: it reads configured private
+runtime inputs and writes only inside the chart inbox and account-staging root.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_EXPORT = "var/owner/export.json"
 DEFAULT_INBOX = "var/owner/inbox"
+DEFAULT_ACCOUNTS = "var/owner/accounts"
 
 
 def cmd_export(args: argparse.Namespace) -> int:
@@ -59,6 +60,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
     inbox_root = Path(args.inbox)
     try:
         serve(inbox_root=inbox_root, export_path=export_path,
+              account_root=args.accounts,
               host=args.host, port=args.port, analysis_path=args.chart_analysis,
               review_path=args.chart_review)
     except auth_mod.OwnerAuthNotConfigured as exc:
@@ -91,7 +93,10 @@ def build_parser() -> argparse.ArgumentParser:
                         "chart inbox still works.")
     s.add_argument("--inbox", default=DEFAULT_INBOX,
                    help=f"Chart inbox directory (default: {DEFAULT_INBOX}). This is "
-                        "the only path the service writes to.")
+                        "the chart-specific private write root.")
+    s.add_argument("--accounts", default=DEFAULT_ACCOUNTS,
+                   help=f"Private manual-account staging root (default: {DEFAULT_ACCOUNTS}). "
+                        "Exact submissions and bound review history are written only here.")
     s.add_argument("--chart-analysis", default=None,
                    help="Optional operator-provisioned private chart analysis JSON; read only.")
     s.add_argument("--chart-review", default=None,

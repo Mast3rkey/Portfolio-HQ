@@ -997,7 +997,7 @@ def test_no_owner_module_writes_outside_the_inbox(tmp_path: Path):
                 writers.append(path.name)
     # Writing is confined to the inbox, the export writer, and the CLI/service
     # bootstrap that creates the inbox directory itself.
-    assert set(writers) <= {"chart_inbox.py", "export_io.py", "service.py"}, writers
+    assert set(writers) <= {"account_staging.py", "chart_inbox.py", "export_io.py", "service.py"}, writers
 
 
 # ── owner-facing presentation contract ──────────────────────────────────────

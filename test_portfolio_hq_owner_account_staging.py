@@ -1,0 +1,268 @@
+"""Adversarial synthetic tests for private manual-account staging."""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+from pathlib import Path
+
+import pytest
+
+from portfolio_hq.owner import account_staging, render
+from test_portfolio_hq_owner_interface import multipart, owner_env, signed_in  # noqa: F401
+
+
+def synthetic_document(*, identity="synthetic-v1", holding_freshness="current",
+                       include_protected=True, basis="synthetic fixture"):
+    doc = {
+        "schema_version": 1,
+        "client_submission_id": identity,
+        "submitted_at": "2026-09-14T12:00:00Z",
+        "holdings": [{"ticker": "SYNTH", "quantity": 0,
+                      "observed_at": "2026-09-14T11:00:00Z",
+                      "freshness": holding_freshness,
+                      "valuation": {"unit_price": 12.5, "currency": "USD",
+                                    "observed_at": "2026-09-14T10:00:00Z",
+                                    "freshness": holding_freshness}}],
+        "cash": [{"account_id": "synthetic-cash", "balance": 0,
+                  "currency": "USD", "observed_at": "2026-09-14T11:00:00Z",
+                  "freshness": "current"}],
+        "debt_margin": [{"account_id": "synthetic-margin", "balance": 0,
+                         "currency": "USD", "observed_at": "2026-09-14T11:00:00Z",
+                         "freshness": "unknown"}],
+        "protected_capital": ([{"evidence_id": "synthetic-reserve", "amount": 25,
+                                "currency": "USD", "observed_at": "2026-09-14T11:00:00Z",
+                                "freshness": "current", "basis": basis}]
+                              if include_protected else []),
+    }
+    return json.dumps(doc, separators=(",", ":")).encode()
+
+
+def sized_document(size: int, *, identity: str) -> bytes:
+    seed = synthetic_document(identity=identity, basis="")
+    assert len(seed) <= size
+    result = synthetic_document(identity=identity, basis="x" * (size - len(seed)))
+    assert len(result) == size
+    return result
+
+
+def test_exact_bytes_receipt_zero_and_restart_persistence(tmp_path: Path):
+    original = synthetic_document()
+    receipt = account_staging.ingest(tmp_path, original)
+    assert receipt["byte_size"] == len(original)
+    assert receipt["submission_sha256"] == hashlib.sha256(original).hexdigest()
+    assert receipt["normalized"]["holdings"][0]["quantity"] == 0
+    assert receipt["normalized"]["cash"][0]["balance"] == 0
+    restarted = account_staging.snapshot(tmp_path)
+    assert restarted.originals[receipt["submission_id"]] == original
+    assert restarted.records[0]["reviews"] == []
+
+
+def test_receipt_bound_is_enforced_before_publication_and_near_boundary_roundtrips(tmp_path):
+    # Exact independent-review reproduction: valid input below 2 MiB whose
+    # normalized receipt used to exceed the reader's 128 KiB ceiling.
+    overflowing = sized_document(131_833, identity="receipt-overflow")
+    with pytest.raises(account_staging.AccountSubmissionRejected, match="receipt larger"):
+        account_staging.ingest(tmp_path / "overflow", overflowing)
+    assert account_staging.snapshot(tmp_path / "overflow").records == ()
+
+    accepted = sized_document(130_500, identity="receipt-near-boundary")
+    receipt = account_staging.ingest(tmp_path / "accepted", accepted)
+    view = account_staging.snapshot(tmp_path / "accepted")
+    receipt_path = (tmp_path / "accepted" / "submissions" / receipt["submission_id"]
+                    / "receipt.json")
+    assert account_staging.MAX_RECEIPT_BYTES - receipt_path.stat().st_size < 1024
+    assert view.originals[receipt["submission_id"]] == accepted
+    assert account_staging.original(tmp_path / "accepted", receipt["submission_id"]) == accepted
+
+
+@pytest.mark.parametrize("mutator", [
+    lambda b: b.replace(b'"quantity":0', b'"quantity":true'),
+    lambda b: b.replace(b'"quantity":0', b'"quantity":NaN'),
+    lambda b: b.replace(b'"schema_version":1', b'"schema_version":1,"schema_version":1'),
+    lambda b: b.replace(b'"observed_at":"2026-09-14T11:00:00Z"', b'"observed_at":"missing"', 1),
+])
+def test_malformed_nonfinite_boolean_duplicate_key_and_invalid_date_fail_closed(tmp_path, mutator):
+    with pytest.raises(account_staging.AccountSubmissionRejected):
+        account_staging.ingest(tmp_path, mutator(synthetic_document()))
+    assert account_staging.snapshot(tmp_path).records == ()
+
+
+def test_missing_stale_duplicate_identity_and_changed_content(tmp_path: Path):
+    stale = account_staging.ingest(tmp_path, synthetic_document(
+        identity="stale", holding_freshness="stale", include_protected=False))
+    codes = {issue["code"] for issue in stale["issues"]}
+    assert {"stale_holding", "missing_protected_capital"} <= codes
+    with pytest.raises(account_staging.AccountReviewRejected, match="material discrepancies"):
+        account_staging.review(tmp_path, stale["submission_id"], "confirmed", "reviewer-1")
+    rejected = account_staging.review(tmp_path, stale["submission_id"], "rejected", "reviewer-1")
+    assert rejected["decision"] == "rejected"
+    with pytest.raises(account_staging.AccountSubmissionRejected, match="already used"):
+        account_staging.ingest(tmp_path, synthetic_document(identity="stale"))
+
+
+def test_confirmation_binds_exact_submission_and_receipt_and_tampering_hides_record(tmp_path: Path):
+    receipt = account_staging.ingest(tmp_path, synthetic_document())
+    review = account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    assert review["submission_sha256"] == receipt["submission_sha256"]
+    directory = tmp_path / "submissions" / receipt["submission_id"]
+    (directory / "submission.json").write_bytes(synthetic_document(identity="changed"))
+    assert account_staging.snapshot(tmp_path).records == ()
+    assert account_staging.original(tmp_path, receipt["submission_id"]) is None
+
+
+def test_tampered_receipt_or_review_binding_is_not_trusted(tmp_path: Path):
+    receipt = account_staging.ingest(tmp_path, synthetic_document())
+    review = account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    directory = tmp_path / "submissions" / receipt["submission_id"]
+    review_path = directory / "reviews" / f"{review['review_id']}.json"
+    altered = json.loads(review_path.read_text())
+    altered["receipt_sha256"] = "0" * 64
+    review_path.write_text(json.dumps(altered))
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == []
+    receipt_path = directory / "receipt.json"
+    stored = json.loads(receipt_path.read_text())
+    stored["byte_size"] += 1
+    receipt_path.write_text(json.dumps(stored))
+    assert account_staging.snapshot(tmp_path).records == ()
+
+
+def test_receipt_identity_is_reconstructed_from_original_and_cannot_be_reused(tmp_path: Path):
+    receipt = account_staging.ingest(tmp_path, synthetic_document())
+    directory = tmp_path / "submissions" / receipt["submission_id"]
+    receipt_path = directory / "receipt.json"
+    forged = json.loads(receipt_path.read_text())
+    forged["client_submission_id"] = "forged-client"
+    receipt_path.write_text(json.dumps(forged, sort_keys=True, separators=(",", ":")) + "\n")
+    assert account_staging.snapshot(tmp_path).records == ()
+    with pytest.raises(account_staging.AccountReviewRejected, match="binding is invalid"):
+        account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    with pytest.raises(account_staging.AccountSubmissionRejected, match="already used"):
+        account_staging.ingest(tmp_path, synthetic_document())
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda review: review.update(decision="confirmed"),
+    lambda review: review.update(review_id="wrong-id"),
+    lambda review: review.update(schema_version=True),
+])
+def test_review_semantics_are_reconstructed_not_trusted(tmp_path: Path, mutation):
+    stale = json.loads(synthetic_document(identity="stale-review",
+                                          holding_freshness="stale"))
+    stale["cash"][0]["freshness"] = "stale"
+    stale["debt_margin"][0]["freshness"] = "stale"
+    stale["protected_capital"][0]["freshness"] = "stale"
+    receipt = account_staging.ingest(
+        tmp_path, json.dumps(stale, separators=(",", ":")).encode())
+    assert len(receipt["issues"]) == 4
+    review = account_staging.review(tmp_path, receipt["submission_id"], "rejected", "reviewer-1")
+    path = (tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+            / f"{review['review_id']}.json")
+    forged = json.loads(path.read_text())
+    mutation(forged)
+    path.write_text(json.dumps(forged, sort_keys=True, separators=(",", ":")) + "\n")
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == []
+
+
+def test_oversize_bounded_read_and_symlink_containment(tmp_path: Path):
+    with pytest.raises(account_staging.AccountSubmissionRejected, match="2 MiB"):
+        account_staging.ingest(tmp_path, b"{" + b" " * account_staging.MAX_SUBMISSION_BYTES)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    root = tmp_path / "runtime"
+    root.mkdir()
+    os.symlink(outside, root / "submissions")
+    with pytest.raises(account_staging.AccountStorageError, match="symbolic link"):
+        account_staging.ingest(root, synthetic_document())
+    assert list(outside.iterdir()) == []
+
+
+def test_persisted_oversize_and_redirected_review_history_fail_closed(tmp_path: Path):
+    receipt = account_staging.ingest(tmp_path, synthetic_document())
+    directory = tmp_path / "submissions" / receipt["submission_id"]
+    receipt_path = directory / "receipt.json"
+    receipt_path.write_bytes(b" " * (account_staging.MAX_RECEIPT_BYTES + 1))
+    assert account_staging.snapshot(tmp_path).records == ()
+
+    second = account_staging.ingest(tmp_path, synthetic_document(identity="review-link"))
+    second_dir = tmp_path / "submissions" / second["submission_id"]
+    (second_dir / "reviews").rmdir()
+    outside = tmp_path / "outside-reviews"
+    outside.mkdir()
+    os.symlink(outside, second_dir / "reviews")
+    with pytest.raises(account_staging.AccountStorageError, match="redirected"):
+        account_staging.review(tmp_path, second["submission_id"], "confirmed", "reviewer-1")
+    assert list(outside.iterdir()) == []
+
+
+def test_review_file_symlink_is_rejected_without_opening_external_target(tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document())
+    review = account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    review_path = (tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+                   / f"{review['review_id']}.json")
+    outside = tmp_path / "external-review.json"
+    review_path.rename(outside)
+    review_path.symlink_to(outside)
+    opened = []
+    real_open = Path.open
+
+    def recording_open(path, *args, **kwargs):
+        opened.append(path)
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", recording_open)
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == []
+    assert outside not in opened
+    assert review_path not in opened
+
+
+def test_huge_integer_is_controlled_rejection_in_domain_and_authenticated_http(signed_in):
+    huge = synthetic_document(identity="huge-number").replace(b'"quantity":0',
+                                                                      b'"quantity":1' + b"0" * 400)
+    with pytest.raises(account_staging.AccountSubmissionRejected, match="numeric range"):
+        account_staging.ingest(signed_in["config"].account_root, huge)
+    status, _, page = signed_in["client"].request(
+        "POST", "/accounts/submit", huge, {"Content-Type": "application/json"})
+    assert status == 400
+    assert b"outside the supported finite numeric range" in page
+    assert account_staging.snapshot(signed_in["config"].account_root).records == ()
+
+
+def test_authenticated_http_journey_cross_origin_and_html_escaping(signed_in):
+    client = signed_in["client"]
+    original = synthetic_document(identity="synthetic-html")
+    body, content_type = multipart({}, {"account": ("<account>.json", original)})
+    status, _, page = client.request("POST", "/accounts/submit", body,
+                                     {"Content-Type": content_type})
+    assert status == 200
+    assert b"Exact submission retained" in page
+    records = account_staging.snapshot(signed_in["config"].account_root).records
+    submission_id = records[0]["submission_id"]
+    status, _, retained = client.request("GET", f"/accounts/original/{submission_id}")
+    assert status == 200 and retained == original
+    status, _, _ = client.request("POST", f"/accounts/review/{submission_id}",
+                                  b"decision=confirmed&reviewer=%3Cowner%3E",
+                                  {"Content-Type": "application/x-www-form-urlencoded"})
+    assert status == 409  # unknown debt freshness is not itself invented as stale; no missing material issue
+    # The fixture has no material issue; reviewer syntax, not HTML, is rejected.
+    status, _, page = client.request("POST", f"/accounts/review/{submission_id}",
+                                     b"decision=confirmed&reviewer=owner-1",
+                                     {"Content-Type": "application/x-www-form-urlencoded"})
+    assert status == 200 and b"data confirmation only" in page
+    status, _, _ = client.request("POST", "/accounts/submit", body,
+                                  {"Content-Type": content_type,
+                                   "Origin": "https://attacker.invalid"})
+    assert status == 403
+
+
+def test_anonymous_denial_and_scriptless_responsive_render(owner_env):
+    status, headers, _ = owner_env["client"].request("GET", "/accounts", use_cookie=False)
+    assert status == 303 and headers["Location"] == "/login"
+    markup = render.accounts_page([{
+        "submission_id": "id<script>", "client_submission_id": "<b>bad</b>",
+        "received_at": "now", "byte_size": 1, "submission_sha256": "x",
+        "normalized": {}, "issues": [{"code": "<x>", "message": "<script>"}],
+        "reviews": [],
+    }])
+    assert "<script>" not in markup and "&lt;script&gt;" in markup
+    assert 'name="viewport"' in markup and "<script" not in markup
