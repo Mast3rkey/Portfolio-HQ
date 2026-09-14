@@ -235,15 +235,15 @@ def reviewed_evidence(inbox_root: Path | str, analysis_path: Path | None,
         intake_id = identity.get("intake_id")
         if not _text(record_id) or not _text(intake_id):
             continue
-        # The row on screen and the bytes hashed here come from the one snapshot
-        # this request was rendered from, so a receipt cannot be displayed in one
-        # version and judged in another.
-        receipt_bytes = view.receipts.get(intake_id)
-        receipt = next((r for r in records if r.get("intake_id") == intake_id), None)
+        # The bytes hashed here and the record they parsed to arrive as one pair
+        # from the snapshot this request rendered, and that record object is the
+        # row on screen -- so a receipt cannot be displayed in one version and
+        # judged in another, whatever else claims its id.
+        stored = view.receipts.get(intake_id)
         check = reviewed.get(record_id)
-        if receipt_bytes is None or receipt is None or not isinstance(check, dict) \
-                or check.get("findings") != []:
+        if stored is None or not isinstance(check, dict) or check.get("findings") != []:
             continue
+        receipt_bytes, receipt = stored
         image = chart_inbox.read_image_bytes(inbox_root, intake_id)
         claims = _claim_ids(content, identity)
         claimed = check.get("claimed_ids_reviewed")

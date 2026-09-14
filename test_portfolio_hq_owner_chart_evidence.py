@@ -510,6 +510,7 @@ def test_authenticated_chart_evidence_and_malformed_confirmation_do_not_disconne
 
 
 TAMPERED_RECEIVED_AT = "2099-01-01T00:00:00Z"
+IMPOSTOR_RECEIVED_AT = "2099-12-31T23:59:59Z"
 
 
 @contextmanager
@@ -630,11 +631,83 @@ def test_snapshot_rows_and_receipt_bytes_are_the_same_read(tmp_path: Path):
     view = chart_inbox.snapshot(tmp_path / "inbox")
     assert [r["intake_id"] for r in view.records] == [receipt["intake_id"]]
     for record in view.records:
-        raw = view.receipts[record["intake_id"]]
+        raw, paired = view.receipts[record["intake_id"]]
+        # The pair holds the very row on screen, not an equal copy of it.
+        assert paired is record
         assert json.loads(raw.decode("utf-8")) == record
         assert raw == _receipt_path(tmp_path / "inbox", record["intake_id"]).read_bytes()
     assert view.image_links == {receipt["intake_id"]: receipt["intake_id"]}
     assert chart_inbox.viewable_image_ids(tmp_path / "inbox") == view.image_links
+
+
+def _receipt_claiming_another_id(inbox: Path, victim_id: str, *,
+                                 directory: str = "20991231T235959Z-ffffffffffff",
+                                 received_at: str = IMPOSTOR_RECEIVED_AT) -> Path:
+    """A second valid-format directory whose receipt keeps the victim's id."""
+    rogue = inbox / chart_inbox.CHARTS_DIRNAME / directory
+    rogue.mkdir(parents=True)
+    doc = json.loads(_receipt_path(inbox, victim_id).read_bytes())
+    doc["received_at"] = received_at
+    (rogue / chart_inbox.RECORD_FILENAME).write_text(json.dumps(doc))
+    return rogue
+
+
+def test_a_receipt_claiming_another_intakes_id_contributes_no_row(tmp_path: Path):
+    """A receipt speaks only for the directory it is stored in."""
+    receipt, analysis, review = _artifacts(tmp_path / "inbox")
+    _receipt_claiming_another_id(tmp_path / "inbox", receipt["intake_id"])
+    view = chart_inbox.snapshot(tmp_path / "inbox")
+    assert [r["intake_id"] for r in view.records] == [receipt["intake_id"]]
+    assert list(view.receipts) == [receipt["intake_id"]]
+    raw, paired = view.receipts[receipt["intake_id"]]
+    assert paired is view.records[0]
+    assert raw == _receipt_path(tmp_path / "inbox", receipt["intake_id"]).read_bytes()
+    assert IMPOSTOR_RECEIVED_AT not in json.dumps(view.records)
+    found = chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)
+    assert found[receipt["intake_id"]]["state"] == "reviewed"
+    assert len(found) == 1
+
+
+def test_every_snapshot_row_owns_its_own_id_and_bytes(tmp_path: Path):
+    """No two rows can claim one id, so no id-keyed badge can cover two rows."""
+    receipt, _analysis, _review = _artifacts(tmp_path / "inbox")
+    for directory in ("20991231T235959Z-ffffffffffff", "20200101T000000Z-aaaaaaaaaaaa"):
+        _receipt_claiming_another_id(tmp_path / "inbox", receipt["intake_id"],
+                                     directory=directory)
+    view = chart_inbox.snapshot(tmp_path / "inbox")
+    ids = [r["intake_id"] for r in view.records]
+    assert len(ids) == len(set(ids)) == 1
+    for record in view.records:
+        raw, paired = view.receipts[record["intake_id"]]
+        assert paired is record and json.loads(raw.decode("utf-8")) == record
+
+
+@pytest.mark.parametrize("journey", ["get", "upload"])
+def test_a_receipt_claiming_another_id_is_never_badged_over_http(
+        tmp_path: Path, journey: str):
+    """The genuine row stays reviewed; the impostor never appears or is badged."""
+    with _running_owner_service(tmp_path) as (client, inbox, receipt):
+        _receipt_claiming_another_id(inbox, receipt["intake_id"])
+        status, _, page = (client.request("GET", "/charts") if journey == "get"
+                           else _upload(client))
+        assert status == 200
+        assert page.count(b"independently reviewed") == 1, \
+            "exactly one row may carry the badge"
+        assert IMPOSTOR_RECEIVED_AT.encode() not in page, \
+            "a receipt under someone else's id must not be displayed as that intake"
+
+
+def test_legitimate_duplicate_uploads_are_unaffected(tmp_path: Path):
+    """Real duplicates carry their own ids, so the identity check never bites."""
+    inbox = tmp_path / "inbox"
+    _image, original, duplicate = _dup_inbox(inbox)
+    view = chart_inbox.snapshot(inbox)
+    ids = sorted(r["intake_id"] for r in view.records)
+    assert ids == sorted([original["intake_id"], duplicate["intake_id"]])
+    assert view.image_links[duplicate["intake_id"]] == original["intake_id"]
+    for record in view.records:
+        raw, paired = view.receipts[record["intake_id"]]
+        assert paired is record and json.loads(raw.decode("utf-8")) == record
 
 
 def test_evidence_given_a_snapshot_reads_no_receipt_of_its_own(

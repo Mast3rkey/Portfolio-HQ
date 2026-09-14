@@ -600,14 +600,16 @@ def _retained_original(inbox_root: Path | str,
 class InboxSnapshot(NamedTuple):
     """One request's single, coherent view of the inbox.
 
-    ``records`` are the rows a page displays, ``receipts`` holds the exact bytes
-    each of those rows was parsed from, and ``image_links`` says which retained
-    original each row may open.  All three come from the same pass, so a page
-    cannot show one version of a receipt beside a judgement made about another.
+    ``records`` are the rows a page displays, ``receipts`` maps an intake id to
+    the exact bytes read for it paired with the very record object that appears
+    in ``records``, and ``image_links`` says which retained original each row may
+    open.  All three come from the same pass, and pairing the bytes with the
+    record rather than storing them apart means a row and the bytes it is judged
+    on cannot be separated by any later lookup.
     """
 
     records: tuple[dict, ...]
-    receipts: dict[str, bytes]
+    receipts: dict[str, tuple[bytes, dict]]
     image_links: dict[str, str]
 
 
@@ -619,10 +621,17 @@ def snapshot(inbox_root: Path | str) -> InboxSnapshot:
     and the bytes weighed against an external review are the same bytes.  A
     receipt that cannot be read coherently contributes no row at all rather than
     a row the reader cannot vouch for.
+
+    A receipt also speaks only for the directory it is stored in.  One claiming
+    another intake's id is dropped: pages key annotations by id, so a record
+    under someone else's name could otherwise be displayed beside a judgement
+    made about that other intake's bytes.  Because every surviving row's id is
+    its own directory name, and directory names are unique, no two rows can
+    claim the same id.
     """
     charts = _charts_root_for_read(inbox_root)
     records: list[dict] = []
-    receipts: dict[str, bytes] = {}
+    receipts: dict[str, tuple[bytes, dict]] = {}
     if charts is not None:
         for entry in sorted(charts.iterdir(), reverse=True):
             if not entry.is_dir() or not _INTAKE_ID_RE.match(entry.name):
@@ -631,10 +640,10 @@ def snapshot(inbox_root: Path | str) -> InboxSnapshot:
             if loaded is None:
                 continue
             data, record = loaded
+            if record.get("intake_id") != entry.name:
+                continue
             records.append(record)
-            intake_id = record.get("intake_id")
-            if isinstance(intake_id, str):
-                receipts[intake_id] = data
+            receipts[entry.name] = (data, record)
     records.sort(key=lambda r: str(r.get("received_at", "")), reverse=True)
 
     image_links: dict[str, str] = {}
