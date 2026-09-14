@@ -598,6 +598,9 @@ def _make_handler(config: OwnerServiceConfig):
                 return
             body = self._read_body(4096)
             if body is None:
+                # The oversized declared body was deliberately not consumed.
+                # Close so its bytes cannot become a second HTTP/1.1 request.
+                self.close_connection = True
                 self._accounts_flash("The review request could not be read.", 400)
                 return
             from urllib.parse import parse_qs

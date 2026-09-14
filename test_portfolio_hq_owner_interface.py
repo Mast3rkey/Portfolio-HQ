@@ -14,6 +14,7 @@ import ast
 import hashlib
 import http.client
 import json
+import socket
 import subprocess
 import sys
 import threading
@@ -709,6 +710,36 @@ def test_a_normal_connection_stays_reusable(signed_in):
             assert json.loads(payload) == {"status": "ok"}
     finally:
         conn.close()
+
+
+def test_oversized_account_review_closes_without_parsing_unread_body(signed_in):
+    """An unread review body cannot desynchronise the persistent connection."""
+    client = signed_in["client"]
+    # Make the unread bytes themselves look like a complete second request. If
+    # the handler incorrectly keeps HTTP/1.1 alive, the server may parse it.
+    smuggled = b"GET /healthz HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n"
+    body = smuggled + b"x" * (4097 - len(smuggled))
+    request = (
+        b"POST /accounts/review/not-an-id HTTP/1.1\r\n"
+        + f"Host: 127.0.0.1:{client.port}\r\n".encode()
+        + f"Cookie: {client.cookie}\r\n".encode()
+        + b"Content-Type: application/x-www-form-urlencoded\r\n"
+        + f"Content-Length: {len(body)}\r\n\r\n".encode()
+        + body
+    )
+    with socket.create_connection(("127.0.0.1", client.port), timeout=20) as connection:
+        connection.sendall(request)
+        received = bytearray()
+        while True:
+            chunk = connection.recv(64 * 1024)
+            if not chunk:
+                break
+            received.extend(chunk)
+    response = bytes(received)
+    assert response.startswith(b"HTTP/1.1 400")
+    assert b"Connection: close\r\n" in response
+    assert response.count(b"HTTP/1.1") == 1
+    assert b'{"status":"ok"}' not in response
 
 
 def test_security_headers_are_present_on_pages(signed_in):
