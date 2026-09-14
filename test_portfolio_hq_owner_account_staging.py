@@ -164,6 +164,53 @@ def test_review_semantics_are_reconstructed_not_trusted(tmp_path: Path, mutation
     assert account_staging.snapshot(tmp_path).records[0]["reviews"] == []
 
 
+@pytest.mark.parametrize(("field", "value"), [
+    ("decision", []), ("decision", {}), ("review_id", []),
+    ("submission_id", {}), ("reviewer", []), ("reviewed_at", {}),
+    ("submission_sha256", []), ("receipt_sha256", {}), ("meaning", []),
+])
+def test_wrong_persisted_review_field_types_are_ignored_without_crashing(
+        tmp_path: Path, field, value):
+    receipt = account_staging.ingest(tmp_path, synthetic_document())
+    review = account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    path = (tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+            / f"{review['review_id']}.json")
+    malformed = json.loads(path.read_text())
+    malformed[field] = value
+    path.write_text(json.dumps(malformed, separators=(",", ":")))
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == []
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda receipt: receipt["normalized"]["holdings"][0].update(quantity=False),
+    lambda receipt: receipt["normalized"]["cash"][0].update(balance=False),
+    lambda receipt: receipt["normalized"]["debt_margin"][0].update(balance=False),
+    lambda receipt: receipt["normalized"]["protected_capital"][0].update(amount=False),
+    lambda receipt: receipt["normalized"].update(schema_version=False),
+    lambda receipt: receipt["authority"].update(data_only=1),
+])
+def test_nested_receipt_types_must_exactly_match_original_derived_types(tmp_path, mutation):
+    receipt = account_staging.ingest(tmp_path, synthetic_document())
+    path = tmp_path / "submissions" / receipt["submission_id"] / "receipt.json"
+    malformed = json.loads(path.read_text())
+    mutation(malformed)
+    path.write_text(json.dumps(malformed, sort_keys=True, separators=(",", ":")) + "\n")
+    assert account_staging.snapshot(tmp_path).records == ()
+    with pytest.raises(account_staging.AccountReviewRejected, match="binding is invalid"):
+        account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+
+
+def test_legitimate_integer_and_float_numeric_forms_remain_distinct_and_accepted(tmp_path):
+    integer = account_staging.ingest(tmp_path, synthetic_document(identity="integer-zero"))
+    floating_doc = json.loads(synthetic_document(identity="float-zero"))
+    floating_doc["holdings"][0]["quantity"] = 0.0
+    floating = account_staging.ingest(
+        tmp_path, json.dumps(floating_doc, separators=(",", ":")).encode())
+    records = {record["submission_id"]: record for record in account_staging.snapshot(tmp_path).records}
+    assert type(records[integer["submission_id"]]["normalized"]["holdings"][0]["quantity"]) is int
+    assert type(records[floating["submission_id"]]["normalized"]["holdings"][0]["quantity"]) is float
+
+
 def test_oversize_bounded_read_and_symlink_containment(tmp_path: Path):
     with pytest.raises(account_staging.AccountSubmissionRejected, match="2 MiB"):
         account_staging.ingest(tmp_path, b"{" + b" " * account_staging.MAX_SUBMISSION_BYTES)
@@ -226,6 +273,24 @@ def test_huge_integer_is_controlled_rejection_in_domain_and_authenticated_http(s
     assert status == 400
     assert b"outside the supported finite numeric range" in page
     assert account_staging.snapshot(signed_in["config"].account_root).records == ()
+
+
+def test_malformed_review_cannot_break_authenticated_accounts_page_or_flash(signed_in):
+    root = signed_in["config"].account_root
+    original = synthetic_document(identity="malformed-review-page")
+    receipt = account_staging.ingest(root, original)
+    review = account_staging.review(root, receipt["submission_id"], "confirmed", "reviewer-1")
+    path = root / "submissions" / receipt["submission_id"] / "reviews" / f"{review['review_id']}.json"
+    malformed = json.loads(path.read_text())
+    malformed["decision"] = []
+    path.write_text(json.dumps(malformed, separators=(",", ":")))
+
+    status, _, page = signed_in["client"].request("GET", "/accounts")
+    assert status == 200 and b"No review decision recorded" in page
+    status, _, page = signed_in["client"].request(
+        "POST", "/accounts/submit", original, {"Content-Type": "application/json"})
+    assert status == 400 and b"Submission rejected" in page
+    assert b"No review decision recorded" in page
 
 
 def test_authenticated_http_journey_cross_origin_and_html_escaping(signed_in):

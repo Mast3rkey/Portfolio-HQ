@@ -229,7 +229,9 @@ that derived bound is rejected without an accepted version. On every read it
 reconstructs client identity, normalized observations and discrepancies from
 the retained original, validates the complete receipt and review schemas, and
 refuses redirected or non-regular submission, receipt and review files before
-opening them.
+opening them. Receipt comparison is recursively JSON-type-strict: Boolean
+values cannot stand in for numeric zero or one, while legitimately supplied
+integer and floating-point forms remain distinct and accepted.
 
 A reviewer may reject a specific version, or confirm it only when no material
 discrepancy remains. Each review is a new immutable record independently bound

@@ -339,9 +339,10 @@ def _valid_receipt(receipt: object, normalized: dict, issues: list[dict],
             and isinstance(receipt.get("submission_sha256"), str)
             and bool(_SHA256_RE.fullmatch(receipt["submission_sha256"]))
             and receipt["submission_sha256"] == hashlib.sha256(original).hexdigest()
-            and receipt.get("normalized") == normalized and receipt.get("issues") == issues
+            and _same_json_value(receipt.get("normalized"), normalized)
+            and _same_json_value(receipt.get("issues"), issues)
             and receipt.get("state") == "awaiting_review"
-            and receipt.get("authority") == _AUTHORITY)
+            and _same_json_value(receipt.get("authority"), _AUTHORITY))
 
 
 def _valid_timestamp(value: object) -> bool:
@@ -350,6 +351,22 @@ def _valid_timestamp(value: object) -> bool:
     except AccountSubmissionRejected:
         return False
     return True
+
+
+def _same_json_value(left: object, right: object) -> bool:
+    """Compare JSON trees without Python's Boolean/integer coercion.
+
+    Python considers ``False == 0`` and ``True == 1``. Persisted evidence may
+    not use that convenience because its JSON types are part of the receipt
+    schema. Canonical JSON keeps those types distinct while preserving the
+    legitimate input distinction between an explicitly supplied ``0`` and
+    ``0.0``.
+    """
+    try:
+        return json.dumps(left, sort_keys=True, separators=(",", ":")) == json.dumps(
+            right, sort_keys=True, separators=(",", ":"))
+    except (TypeError, ValueError, RecursionError):
+        return False
 
 
 def _verified(runtime_root, submission_id: str):
@@ -429,7 +446,7 @@ def _valid_review(review: object, path: Path, receipt: dict,
             and isinstance(review_id, str) and bool(_ID_RE.fullmatch(review_id))
             and path.name == f"{review_id}.json"
             and review.get("submission_id") == receipt["submission_id"]
-            and decision in {"confirmed", "rejected"}
+            and isinstance(decision, str) and decision in {"confirmed", "rejected"}
             and not (decision == "confirmed" and material)
             and isinstance(reviewer, str) and bool(_CLIENT_ID_RE.fullmatch(reviewer))
             and _valid_timestamp(review.get("reviewed_at"))
