@@ -160,7 +160,8 @@ def _claim_ids(content: dict, identity: dict) -> set[str] | None:
         return None
     for inference in inferences:
         if not isinstance(inference, dict) or not _text(inference.get("id")) \
-                or not _text(inference.get("text")) or not _text(inference.get("status")):
+                or not _text(inference.get("text")) \
+                or inference.get("status") != "tentative":
             return None
         basis = inference.get("basis")
         if not isinstance(basis, list) or not basis or any(not _text(item) for item in basis):
