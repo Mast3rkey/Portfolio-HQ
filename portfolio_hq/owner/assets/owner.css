@@ -165,6 +165,22 @@ table.grid code { font-size: .82em; overflow-wrap: anywhere; }
     content: attr(data-label); color: var(--ink-dim); font-size: .76rem;
     text-transform: uppercase; letter-spacing: .4px;
   }
+  /* An expanded advisory panel is one full-width reading surface, not another
+     label/value pair. Keeping it out of the receipt grid prevents its badge
+     and disclosure from being squeezed into the value column on a phone. */
+  table.grid td.evidence-cell {
+    display: block;
+    padding: 10px;
+  }
+  table.grid td.evidence-cell::before { display: none; }
+  .evidence-panel { min-width: 0; }
+  .evidence-panel .chip {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .evidence-panel details { margin-top: 10px; }
 }
 
 .stack { display: grid; gap: 10px; }

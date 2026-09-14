@@ -45,7 +45,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from . import auth as auth_mod
-from . import chart_inbox, render
+from . import chart_evidence, chart_inbox, render
 from .export_io import load_export
 
 #: Slack above the image ceiling for multipart framing and the small text
@@ -76,6 +76,8 @@ class OwnerServiceConfig:
     token: str
     inbox_root: Path
     export_path: Path
+    analysis_path: Path | None = None
+    review_path: Path | None = None
     secure_cookie: bool = True
 
     @property
@@ -98,6 +100,8 @@ def build_config(
     export_path: Path | str,
     host: str = "127.0.0.1",
     env: dict | None = None,
+    analysis_path: Path | str | None = None,
+    review_path: Path | str | None = None,
 ) -> OwnerServiceConfig:
     """Resolve configuration, or raise ``OwnerAuthNotConfigured``.
 
@@ -111,6 +115,8 @@ def build_config(
         token=token,
         inbox_root=Path(inbox_root),
         export_path=Path(export_path),
+        analysis_path=Path(analysis_path) if analysis_path else None,
+        review_path=Path(review_path) if review_path else None,
         secure_cookie=not is_loopback_host(host),
     )
 
@@ -363,8 +369,14 @@ def _make_handler(config: OwnerServiceConfig):
             elif path == "/research":
                 self._html(200, render.research_page(self._export()))
             elif path == "/charts":
-                self._html(200, render.charts_page(self._export(),
-                                                   chart_inbox.list_records(inbox)))
+                # One receipt snapshot serves the rendered rows, the evidence
+                # decision and the link decisions for this request.
+                view = chart_inbox.snapshot(inbox)
+                self._html(200, render.charts_page(self._export(), list(view.records),
+                                                   evidence=chart_evidence.reviewed_evidence(
+                                                       inbox, config.analysis_path,
+                                                       config.review_path, snapshot=view),
+                                                   image_links=view.image_links))
             elif path.startswith("/charts/image/"):
                 self._serve_chart_image(path[len("/charts/image/"):])
             else:
@@ -504,8 +516,15 @@ def _make_handler(config: OwnerServiceConfig):
             self._charts_flash(flash, 200)
 
         def _charts_flash(self, flash: dict, status: int) -> None:
+            # The upload confirmation renders from one snapshot too, so the
+            # confirmed row and its evidence state describe the same receipts.
+            view = chart_inbox.snapshot(config.inbox_root)
             self._html(status, render.charts_page(
-                self._export(), chart_inbox.list_records(config.inbox_root),
+                self._export(), list(view.records),
+                evidence=chart_evidence.reviewed_evidence(
+                    config.inbox_root, config.analysis_path, config.review_path,
+                    snapshot=view),
+                image_links=view.image_links,
                 flash=flash))
 
         def _serve_chart_image(self, intake_id: str) -> None:
@@ -536,10 +555,13 @@ def serve(
     host: str = "127.0.0.1",
     port: int = 8080,
     env: dict | None = None,
+    analysis_path: Path | str | None = None,
+    review_path: Path | str | None = None,
 ) -> None:
     """Start the private owner interface (blocking). Ctrl-C to stop."""
     config = build_config(inbox_root=inbox_root, export_path=export_path,
-                          host=host, env=env)
+                          host=host, env=env, analysis_path=analysis_path,
+                          review_path=review_path)
     Path(config.inbox_root).mkdir(parents=True, exist_ok=True)
     httpd = ThreadingHTTPServer((host, port), _make_handler(config))
     bound_host, bound_port = httpd.server_address[0], httpd.server_address[1]

@@ -59,7 +59,8 @@ def cmd_serve(args: argparse.Namespace) -> int:
     inbox_root = Path(args.inbox)
     try:
         serve(inbox_root=inbox_root, export_path=export_path,
-              host=args.host, port=args.port)
+              host=args.host, port=args.port, analysis_path=args.chart_analysis,
+              review_path=args.chart_review)
     except auth_mod.OwnerAuthNotConfigured as exc:
         # Fail closed and say exactly why, rather than starting an
         # unauthenticated instance that would expose private information.
@@ -91,6 +92,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--inbox", default=DEFAULT_INBOX,
                    help=f"Chart inbox directory (default: {DEFAULT_INBOX}). This is "
                         "the only path the service writes to.")
+    s.add_argument("--chart-analysis", default=None,
+                   help="Optional operator-provisioned private chart analysis JSON; read only.")
+    s.add_argument("--chart-review", default=None,
+                   help="Optional separately provisioned independent review JSON; read only.")
     s.add_argument("--host", default="127.0.0.1",
                    help="Bind host (default: 127.0.0.1). A non-loopback bind is "
                         "supported for private hosting and requires TLS "

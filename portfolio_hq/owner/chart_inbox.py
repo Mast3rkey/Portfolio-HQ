@@ -35,6 +35,7 @@ import secrets
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import NamedTuple
 
 from . import image_integrity
 
@@ -47,6 +48,9 @@ SCHEMA_VERSION = 1
 #: high-resolution tablet screenshot while keeping the bound small enough that a
 #: single request can never exhaust a small private host.
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+# A receipt is a small flat record. Reading one byte past the bound is enough to
+# recognise an oversized file without pulling it into memory.
+MAX_RECEIPT_BYTES = 64 * 1024
 
 #: PNG only. HEIC/HEIF, WebP, GIF, SVG, PDF, JPEG and everything else are
 #: rejected rather than silently transcoded: this unit adds no image-decoding
@@ -527,15 +531,55 @@ def ingest(
     return record
 
 
-def read_image_bytes(inbox_root: Path | str, intake_id: str) -> tuple[bytes, str] | None:
-    """Retained bytes plus media type for one quarantined intake.
+def _no_duplicate_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate receipt key: {key}")
+        result[key] = value
+    return result
 
-    Returns ``None`` when the id is unknown, malformed, or refers to a
-    duplicate marker (which holds no bytes of its own). The path is rebuilt
-    from the validated id and the record's own fixed filename constant; the
-    stored record can never redirect a read outside the inbox.
+
+def read_receipt(inbox_root: Path | str, intake_id: str) -> tuple[bytes, dict] | None:
+    """The exact stored receipt bytes together with the record they parse to.
+
+    One read serves both, so a caller that hashes the bytes is guaranteed to be
+    describing the same receipt it then reads fields from -- there is no second
+    read in between for the file to change under.  Returns ``None`` for an
+    unknown, unreadable, oversized, malformed or duplicate-keyed receipt, so
+    every such receipt fails closed rather than being partially trusted.
     """
     if not _INTAKE_ID_RE.match(intake_id or ""):
+        return None
+    charts = _charts_root_for_read(inbox_root)
+    if charts is None:
+        return None
+    try:
+        with (charts / intake_id / RECORD_FILENAME).open("rb") as handle:
+            data = handle.read(MAX_RECEIPT_BYTES + 1)
+    except OSError:
+        return None
+    if len(data) > MAX_RECEIPT_BYTES:
+        return None
+    try:
+        record = json.loads(data.decode("utf-8"), object_pairs_hook=_no_duplicate_keys)
+    except (UnicodeDecodeError, ValueError, RecursionError):
+        return None
+    return (data, record) if isinstance(record, dict) else None
+
+
+def _retained_original(inbox_root: Path | str,
+                       intake_id: object) -> tuple[Path, str] | None:
+    """Where one intake's retained original lives, and its media type.
+
+    ``None`` when the intake is unknown, malformed, unreadable, or a duplicate
+    marker, which keeps no bytes of its own.  The path is rebuilt from the
+    validated id and the fixed filename for the record's own media type, so the
+    stored record can never redirect a read outside the inbox.  Both the route
+    and the page's link decision resolve through here, so what is offered and
+    what is served cannot drift apart.
+    """
+    if not isinstance(intake_id, str) or not _INTAKE_ID_RE.match(intake_id):
         return None
     charts = _charts_root_for_read(inbox_root)
     if charts is None:
@@ -550,9 +594,107 @@ def read_image_bytes(inbox_root: Path | str, intake_id: str) -> tuple[bytes, str
     media_type = record.get("media_type")
     if media_type not in SUPPORTED_MEDIA_TYPES:
         return None
-    filename = f"original.{_EXTENSION_FOR_MEDIA_TYPE[media_type]}"
+    return directory / f"original.{_EXTENSION_FOR_MEDIA_TYPE[media_type]}", media_type
+
+
+class InboxSnapshot(NamedTuple):
+    """One request's single, coherent view of the inbox.
+
+    ``records`` are the rows a page displays, ``receipts`` maps an intake id to
+    the exact bytes read for it paired with the very record object that appears
+    in ``records``, and ``image_links`` says which retained original each row may
+    open.  All three come from the same pass, and pairing the bytes with the
+    record rather than storing them apart means a row and the bytes it is judged
+    on cannot be separated by any later lookup.
+    """
+
+    records: tuple[dict, ...]
+    receipts: dict[str, tuple[bytes, dict]]
+    image_links: dict[str, str]
+
+
+def snapshot(inbox_root: Path | str) -> InboxSnapshot:
+    """Read the inbox once and serve every consumer of that request from it.
+
+    Each receipt is read exactly once, through the same bounded, duplicate-key
+    rejecting reader that the evidence check hashes, so the displayed metadata
+    and the bytes weighed against an external review are the same bytes.  A
+    receipt that cannot be read coherently contributes no row at all rather than
+    a row the reader cannot vouch for.
+
+    A receipt also speaks only for the directory it is stored in.  One claiming
+    another intake's id is dropped: pages key annotations by id, so a record
+    under someone else's name could otherwise be displayed beside a judgement
+    made about that other intake's bytes.  Because every surviving row's id is
+    its own directory name, and directory names are unique, no two rows can
+    claim the same id.
+    """
+    charts = _charts_root_for_read(inbox_root)
+    records: list[dict] = []
+    receipts: dict[str, tuple[bytes, dict]] = {}
+    if charts is not None:
+        for entry in sorted(charts.iterdir(), reverse=True):
+            if not entry.is_dir() or not _INTAKE_ID_RE.match(entry.name):
+                continue
+            loaded = read_receipt(inbox_root, entry.name)
+            if loaded is None:
+                continue
+            data, record = loaded
+            if record.get("intake_id") != entry.name:
+                continue
+            records.append(record)
+            receipts[entry.name] = (data, record)
+    records.sort(key=lambda r: str(r.get("received_at", "")), reverse=True)
+
+    image_links: dict[str, str] = {}
+    for record in records:
+        intake_id = record.get("intake_id")
+        if not isinstance(intake_id, str) or not _INTAKE_ID_RE.match(intake_id):
+            continue
+        if record.get("state") == STATE_QUARANTINED:
+            target = intake_id
+        elif record.get("state") == STATE_DUPLICATE:
+            target = record.get("duplicate_of")
+        else:
+            continue
+        original = _retained_original(inbox_root, target)
+        if original is not None and original[0].is_file():
+            image_links[intake_id] = str(target)
+    return InboxSnapshot(tuple(records), receipts, image_links)
+
+
+def viewable_image_ids(inbox_root: Path | str) -> dict[str, str]:
+    """For each row, the intake id whose retained original it may actually open.
+
+    A duplicate holds no bytes of its own, so it resolves to the original it was
+    recognised against -- and only when that really is a retained record whose
+    image is still on disk.  A row with nothing to open is simply absent, so the
+    page can say so rather than advertise a link that is certain to 404.
+    """
+    return snapshot(inbox_root).image_links
+
+
+def read_image_bytes(inbox_root: Path | str, intake_id: str, *,
+                     max_bytes: int | None = None) -> tuple[bytes, str] | None:
+    """Retained bytes plus media type for one quarantined intake.
+
+    Returns ``None`` when the id is unknown, malformed, or refers to a
+    duplicate marker (which holds no bytes of its own).
+    """
+    original = _retained_original(inbox_root, intake_id)
+    if original is None:
+        return None
+    path, media_type = original
     try:
-        return (directory / filename).read_bytes(), media_type
+        if max_bytes is None:
+            return path.read_bytes(), media_type
+        if type(max_bytes) is not int or max_bytes < 0:
+            return None
+        with path.open("rb") as handle:
+            data = handle.read(max_bytes + 1)
+        if len(data) > max_bytes:
+            return None
+        return data, media_type
     except OSError:
         return None
 

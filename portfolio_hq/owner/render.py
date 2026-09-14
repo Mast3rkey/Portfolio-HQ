@@ -557,6 +557,8 @@ _REJECTION_HELP = {
 
 
 def charts_page(export: dict | None, records: list[dict], *,
+                evidence: dict[str, dict] | None = None,
+                image_links: dict[str, str] | None = None,
                 flash: dict | None = None) -> str:
     request = (export or {}).get("chart_request") or {}
     tickers = request.get("eligible_tickers") or []
@@ -629,16 +631,73 @@ def charts_page(export: dict | None, records: list[dict], *,
       with its hash, size, dimensions and receipt time.</li>
   <li><strong>Quarantined.</strong> It is held as unreviewed, untrusted evidence.
       Nothing reads it automatically.</li>
-  <li><strong>Reviewed later.</strong> Interpretation is a separate, reviewed step
-      that has not been built yet.</li>
+  <li><strong>Optional advisory reference.</strong> When separately provisioned
+      analysis and independent-review artifacts bind to this receipt, they can be
+      read here without changing the quarantined intake state.</li>
 </ol>
 <p class="muted">Uploading a chart does not change any holding, target, sleeve weight, policy, cap, margin setting or recommendation, and never creates an order.</p>""")
-        + _card("Charts received", _records_table(records))
+        + _card("Charts received",
+                _records_table(records, evidence or {}, image_links or {}))
     )
     return page("Charts", "/charts", body)
 
 
-def _records_table(records: list[dict]) -> str:
+def _evidence_list(items: object, *, inference: bool = False) -> str:
+    if not isinstance(items, list) or not items:
+        return "<p class=\"muted\">None supplied.</p>"
+    text = []
+    for item in items:
+        if isinstance(item, dict):
+            value = item.get("text")
+            if inference:
+                value = f"Tentative: {value or '—'}"
+        else:
+            value = item
+        text.append(f"<li>{_esc(value)}</li>")
+    return "<ul>" + "".join(text) + "</ul>"
+
+
+def _evidence_detail(value: dict) -> str:
+    if value.get("state") != "reviewed":
+        return (f'<span class="muted">Analysis unavailable or unverified: '
+                f'{_esc(value.get("reason") or "not independently bound")}</span>')
+    limits = _evidence_list(value.get("limitations"))
+    scope = _evidence_list(value.get("review_scope"))
+    return (f'<div class="evidence-panel"><span class="chip ok">independently reviewed — private advisory reference</span>'
+            f'<details><summary>Read private advisory evidence</summary>'
+            f'<p><strong>Reviewer:</strong> {_esc(value.get("reviewer"))}<br>'
+            f'<strong>Review ID:</strong> {_esc(value.get("review_id"))}<br>'
+            f'<strong>Reviewed:</strong> {_esc(value.get("reviewed_at"))}<br>'
+            f'<strong>Recorded export-attribution time:</strong> {_esc(value.get("export_attribution_time"))}</p>'
+            f'<h3>Visible facts</h3>{_evidence_list(value.get("facts"))}'
+            f'<h3>Observations</h3>{_evidence_list(value.get("observations"))}'
+            f'<h3>Tentative inferences</h3>{_evidence_list(value.get("inferences"), inference=True)}'
+            f'<h3>Uncertainties</h3>{_evidence_list(value.get("uncertainties"))}'
+            f'<h3>Prohibited uses</h3>{_evidence_list(value.get("prohibited_uses"))}'
+            f'<h3>Review scope</h3>{scope}<h3>Supplied limitations</h3>{limits}'
+            f'<p><strong>Bound draft SHA-256:</strong> <code>{_esc(value.get("draft_sha256"))}</code><br>'
+            f'<strong>Bound review SHA-256:</strong> <code>{_esc(value.get("review_sha256"))}</code></p>'
+            '<p class="muted">Private advisory reference only. It is not accepted governance, current market data, or an allocation recommendation; it clears no actionable gate and proves no thesis break.</p>'
+            '</details></div>')
+
+
+def _retained_original_link(record: dict, image_links: dict[str, str]) -> str:
+    """Offer the retained original only where one can really be opened.
+
+    A duplicate keeps no bytes of its own, so its row points at the original it
+    was recognised against.  The caller resolves that, and only lists a row here
+    once the bytes are genuinely there -- an unresolved row says so plainly
+    instead of advertising a link that is certain to 404.
+    """
+    target = image_links.get(str(record.get("intake_id")))
+    if not target:
+        return ('<p class="muted">No retained original is available to open '
+                'for this row.</p>')
+    return f'<p><a href="/charts/image/{_esc(target)}">View retained original</a></p>'
+
+
+def _records_table(records: list[dict], evidence: dict[str, dict],
+                   image_links: dict[str, str]) -> str:
     if not records:
         return '<p class="muted">No charts have been uploaded yet.</p>'
     rows = []
@@ -667,6 +726,9 @@ def _records_table(records: list[dict]) -> str:
             f'<td data-label="Type">{_esc(record.get("media_type"))} · {_esc(dim_text)}</td>'
             f'<td data-label="Content hash"><code>{_esc(digest[:12])}</code></td>'
             f'<td data-label="Notes">{_esc("; ".join(flags) or "—")}</td></tr>'
+            f'<tr><td colspan="8" class="evidence-cell" data-label="Private advisory evidence">'
+            f'{_retained_original_link(record, image_links)}'
+            f'{_evidence_detail(evidence.get(str(record.get("intake_id")), {}))}</td></tr>'
         )
     return (
         '<div class="scroll-x"><table class="grid">'
