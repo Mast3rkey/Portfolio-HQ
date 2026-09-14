@@ -300,25 +300,38 @@ def _safe_regular_file(path: Path) -> bool:
 
 
 def _existing_client_ids(runtime_root: Path | str) -> set[str]:
-    """Recover identities from retained originals, never mutable receipt claims."""
+    """Recover identities from retained originals, never mutable receipt claims.
+
+    Once a server-identified entry exists, inability to reconstruct its original
+    is ambiguous rather than evidence that an identity is free. Fail closed so
+    damaged storage cannot authorize a duplicate submission.
+    """
     try:
         root = _root(runtime_root, create=False)
         entries = tuple(root.iterdir())
-    except (AccountStorageError, OSError):
-        return set()
+    except AccountStorageError:
+        raise
+    except OSError as exc:
+        raise AccountStorageError(
+            "could not enumerate retained account identities") from exc
     identities = set()
     for entry in entries:
-        if not entry.is_dir() or not _ID_RE.fullmatch(entry.name) \
-                or os.path.islink(entry) or os.path.realpath(entry) != str(entry):
+        if not _ID_RE.fullmatch(entry.name):
             continue
+        if os.path.islink(entry) or not entry.is_dir() \
+                or os.path.realpath(entry) != str(entry):
+            raise AccountStorageError(
+                "cannot prove a retained account identity is unused: entry is redirected or nonregular")
         path = entry / SUBMISSION_FILENAME
         data = _bounded(path, MAX_SUBMISSION_BYTES) if _safe_regular_file(path) else None
         if data is None:
-            continue
+            raise AccountStorageError(
+                "cannot prove a retained account identity is unused: original is unavailable")
         try:
             normalized, _ = validate(data)
-        except AccountSubmissionRejected:
-            continue
+        except AccountSubmissionRejected as exc:
+            raise AccountStorageError(
+                "cannot prove a retained account identity is unused: original is invalid") from exc
         identities.add(normalized["client_submission_id"])
     return identities
 
@@ -455,9 +468,9 @@ def _valid_review(review: object, path: Path, receipt: dict,
             and review.get("meaning") == _REVIEW_MEANING)
 
 
-def review(runtime_root: Path | str, submission_id: str, decision: str,
+def review(runtime_root: Path | str, submission_id: str, decision: object,
            reviewer: str) -> dict:
-    if decision not in {"confirmed", "rejected"}:
+    if not isinstance(decision, str) or decision not in {"confirmed", "rejected"}:
         raise AccountReviewRejected("decision must be confirmed or rejected")
     try:
         reviewer = _text(reviewer, "reviewer", pattern=_CLIENT_ID_RE)

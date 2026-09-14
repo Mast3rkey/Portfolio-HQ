@@ -101,6 +101,18 @@ def test_missing_stale_duplicate_identity_and_changed_content(tmp_path: Path):
         account_staging.ingest(tmp_path, synthetic_document(identity="stale"))
 
 
+@pytest.mark.parametrize("decision", [
+    [], {}, [[]], {"nested": []}, set(), 1, True, None, 1.0, "other",
+])
+def test_public_review_api_rejects_every_wrong_decision_type_without_writing(
+        tmp_path: Path, decision):
+    receipt = account_staging.ingest(tmp_path, synthetic_document())
+    reviews = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    with pytest.raises(account_staging.AccountReviewRejected, match="decision must be"):
+        account_staging.review(tmp_path, receipt["submission_id"], decision, "reviewer-1")
+    assert list(reviews.iterdir()) == []
+
+
 def test_confirmation_binds_exact_submission_and_receipt_and_tampering_hides_record(tmp_path: Path):
     receipt = account_staging.ingest(tmp_path, synthetic_document())
     review = account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
@@ -209,6 +221,71 @@ def test_legitimate_integer_and_float_numeric_forms_remain_distinct_and_accepted
     records = {record["submission_id"]: record for record in account_staging.snapshot(tmp_path).records}
     assert type(records[integer["submission_id"]]["normalized"]["holdings"][0]["quantity"]) is int
     assert type(records[floating["submission_id"]]["normalized"]["holdings"][0]["quantity"]) is float
+
+
+def _one_retained_directory(root: Path) -> Path:
+    entries = list((root / "submissions").iterdir())
+    assert len(entries) == 1
+    return entries[0]
+
+
+@pytest.mark.parametrize("damage", ["invalid_json", "oversized", "symlink", "nonregular"])
+def test_damaged_retained_original_blocks_all_new_identity_claims(tmp_path: Path, damage):
+    first = synthetic_document(identity="dup-a")
+    account_staging.ingest(tmp_path, first)
+    directory = _one_retained_directory(tmp_path)
+    original = directory / "submission.json"
+    if damage == "invalid_json":
+        original.write_bytes(b"{invalid")
+    elif damage == "oversized":
+        original.write_bytes(b" " * (account_staging.MAX_SUBMISSION_BYTES + 1))
+    elif damage == "symlink":
+        external = tmp_path / "external-original.json"
+        original.rename(external)
+        original.symlink_to(external)
+    else:
+        original.unlink()
+        original.mkdir()
+    with pytest.raises(account_staging.AccountStorageError, match="cannot prove"):
+        account_staging.ingest(tmp_path, first)
+    assert _one_retained_directory(tmp_path) == directory
+
+
+def test_redirected_or_nonregular_retained_entry_blocks_new_identity(tmp_path: Path):
+    account_staging.ingest(tmp_path, synthetic_document(identity="dup-a"))
+    directory = _one_retained_directory(tmp_path)
+    external = tmp_path / "external-entry"
+    directory.rename(external)
+    directory.symlink_to(external, target_is_directory=True)
+    with pytest.raises(account_staging.AccountStorageError, match="redirected or nonregular"):
+        account_staging.ingest(tmp_path, synthetic_document(identity="distinct-b"))
+    assert list((tmp_path / "submissions").iterdir()) == [directory]
+    assert directory.is_symlink()
+    assert {path.name for path in external.iterdir()} == {
+        "submission.json", "receipt.json", "reviews"}
+
+
+def test_retained_original_read_error_blocks_new_identity(tmp_path: Path, monkeypatch):
+    account_staging.ingest(tmp_path, synthetic_document(identity="dup-a"))
+    original = _one_retained_directory(tmp_path) / "submission.json"
+    real_open = Path.open
+
+    def denied(path, *args, **kwargs):
+        if path == original and (not args or args[0] == "rb"):
+            raise PermissionError("synthetic denied read")
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", denied)
+    with pytest.raises(account_staging.AccountStorageError, match="original is unavailable"):
+        account_staging.ingest(tmp_path, synthetic_document(identity="distinct-b"))
+    assert _one_retained_directory(tmp_path).name == original.parent.name
+
+
+def test_valid_unrelated_retained_entry_allows_a_distinct_identity(tmp_path: Path):
+    first = account_staging.ingest(tmp_path, synthetic_document(identity="identity-a"))
+    second = account_staging.ingest(tmp_path, synthetic_document(identity="identity-b"))
+    assert first["submission_id"] != second["submission_id"]
+    assert len(account_staging.snapshot(tmp_path).records) == 2
 
 
 def test_oversize_bounded_read_and_symlink_containment(tmp_path: Path):
