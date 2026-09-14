@@ -219,6 +219,24 @@ def test_claim_source_reference_mismatch_fails_closed(tmp_path: Path):
     assert chart_evidence.reviewed_evidence(tmp_path / "inbox", analysis, review)[receipt["intake_id"]]["state"] == "unverified"
 
 
+@pytest.mark.parametrize("status,expected", [
+    ("tentative", "reviewed"),
+    ("rejected", "unverified"),
+    ("confirmed", "unverified"),
+    ("unsupported", "unverified"),
+    ("", "unverified"),
+    (42, "unverified"),
+])
+def test_inference_status_must_match_the_rendered_tentative_state(
+        tmp_path: Path, status, expected: str):
+    """A reviewed badge never relabels a differently classified inference."""
+    receipt, analysis, review = _artifacts(
+        tmp_path / str(status),
+        mutate=lambda record: record["content"]["inferences"][0].update(status=status))
+    found = chart_evidence.reviewed_evidence(tmp_path / str(status), analysis, review)
+    assert found[receipt["intake_id"]]["state"] == expected
+
+
 @pytest.mark.parametrize("target,value", [
     ("identity_and_capture.visible_timeframe", []),
     ("identity_and_capture.visible_timeframe", {}),
@@ -538,6 +556,28 @@ def _upload(client):
                                    {"chart": ("new.png", png_bytes(3, 2))})
     return client.request("POST", "/charts/upload", body,
                           {"Content-Type": content_type})
+
+
+@pytest.mark.parametrize("journey", ["get", "upload"])
+def test_non_tentative_inference_is_unverified_on_each_rendering_path(
+        tmp_path: Path, journey: str):
+    """Both request paths fail closed before rendering a misleading label."""
+    with _running_owner_service(tmp_path) as (client, inbox, receipt):
+        analysis = inbox.parent / "analysis.json"
+        review = inbox.parent / "review.json"
+        draft = json.loads(analysis.read_text())
+        draft["records"][0]["content"]["inferences"][0]["status"] = "rejected"
+        analysis.write_text(json.dumps(draft))
+        data = analysis.read_bytes()
+        review_data = json.loads(review.read_text())
+        review_data["reviewed_artifact"]["files"]["chart-evidence-draft.json"].update(
+            byte_size=len(data), sha256=hashlib.sha256(data).hexdigest())
+        review.write_text(json.dumps(review_data))
+        status, _, page = (client.request("GET", "/charts") if journey == "get"
+                           else _upload(client))
+        assert status == 200
+        assert b"independently reviewed" not in page
+        assert b"Tentative: synthetic inference" not in page
 
 
 @pytest.mark.parametrize("journey", ["get", "upload"])
