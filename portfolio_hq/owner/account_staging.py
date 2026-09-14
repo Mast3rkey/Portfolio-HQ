@@ -36,8 +36,8 @@ _CLIENT_ID_RE = re.compile(r"\A[A-Za-z0-9][A-Za-z0-9._:-]{0,127}\Z")
 _TICKER_RE = re.compile(r"\A[A-Z0-9][A-Z0-9.\-]{0,15}\Z")
 _CURRENCY_RE = re.compile(r"\A[A-Z]{3}\Z")
 _SHA256_RE = re.compile(r"\A[0-9a-f]{64}\Z")
-_AUTHORITY = {"data_only": True, "policy_adopted": False,
-              "engineering_approved": False, "executable": False}
+_AUTHORITY_ITEMS = (("data_only", True), ("policy_adopted", False),
+                    ("engineering_approved", False), ("executable", False))
 _REVIEW_MEANING = (
     "data confirmation only; not engineering approval, policy adoption, or executable authority"
 )
@@ -226,8 +226,17 @@ def _root(runtime_root: Path | str, *, create: bool) -> Path:
     if os.path.islink(child):
         raise AccountStorageError("account submissions directory is a symbolic link")
     if create:
-        child.mkdir(parents=True, exist_ok=True)
-    if not child.is_dir() or os.path.realpath(child) != str(child):
+        try:
+            child.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise AccountStorageError(
+                "could not create the account submissions directory") from exc
+    try:
+        available = child.is_dir() and os.path.realpath(child) == str(child)
+    except OSError as exc:
+        raise AccountStorageError(
+            "could not inspect the account submissions directory") from exc
+    if not available:
         raise AccountStorageError("account submissions directory is unavailable or redirected")
     return child
 
@@ -255,7 +264,7 @@ def ingest(runtime_root: Path | str, data: bytes) -> dict:
                "received_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
                "submission_sha256": digest, "byte_size": len(data),
                "normalized": normalized, "issues": issues,
-               "state": "awaiting_review", "authority": _AUTHORITY}
+               "state": "awaiting_review", "authority": dict(_AUTHORITY_ITEMS)}
     receipt_bytes = (json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n").encode()
     if len(receipt_bytes) > MAX_RECEIPT_BYTES:
         raise AccountSubmissionRejected(
@@ -263,8 +272,13 @@ def ingest(runtime_root: Path | str, data: bytes) -> dict:
     staging_root = root.parent / STAGING_DIRNAME
     if os.path.islink(staging_root):
         raise AccountStorageError("account staging directory is a symbolic link")
-    staging_root.mkdir(mode=0o700, exist_ok=True)
-    if os.path.realpath(staging_root) != str(staging_root):
+    try:
+        staging_root.mkdir(mode=0o700, exist_ok=True)
+        staging_redirected = os.path.realpath(staging_root) != str(staging_root)
+    except OSError as exc:
+        raise AccountStorageError(
+            "could not create or inspect the account staging directory") from exc
+    if staging_redirected:
         raise AccountStorageError("account staging directory is redirected")
     staging = staging_root / submission_id
     final = root / submission_id
@@ -355,7 +369,7 @@ def _valid_receipt(receipt: object, normalized: dict, issues: list[dict],
             and _same_json_value(receipt.get("normalized"), normalized)
             and _same_json_value(receipt.get("issues"), issues)
             and receipt.get("state") == "awaiting_review"
-            and _same_json_value(receipt.get("authority"), _AUTHORITY))
+            and _same_json_value(receipt.get("authority"), dict(_AUTHORITY_ITEMS)))
 
 
 def _valid_timestamp(value: object) -> bool:

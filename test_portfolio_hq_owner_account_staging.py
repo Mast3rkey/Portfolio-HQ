@@ -58,6 +58,28 @@ def test_exact_bytes_receipt_zero_and_restart_persistence(tmp_path: Path):
     assert restarted.records[0]["reviews"] == []
 
 
+def test_returned_nested_objects_cannot_mutate_storage_templates_or_later_receipts(tmp_path):
+    original = synthetic_document(identity="mutable-return", holding_freshness="stale",
+                                  include_protected=False)
+    first = account_staging.ingest(tmp_path, original)
+    receipt_path = tmp_path / "submissions" / first["submission_id"] / "receipt.json"
+    persisted = receipt_path.read_bytes()
+    first["authority"]["executable"] = True
+    first["normalized"]["holdings"][0]["quantity"] = False
+    first["issues"][0]["severity"] = "not-material"
+
+    assert receipt_path.read_bytes() == persisted
+    stored = account_staging.snapshot(tmp_path).records[0]
+    assert stored["authority"] == {"data_only": True, "policy_adopted": False,
+                                    "engineering_approved": False, "executable": False}
+    assert stored["normalized"]["holdings"][0]["quantity"] == 0
+    assert stored["issues"][0]["severity"] == "material"
+
+    later = account_staging.ingest(tmp_path, synthetic_document(identity="later-receipt"))
+    assert later["authority"]["executable"] is False
+    assert account_staging.snapshot(tmp_path).records[0]["authority"]["executable"] is False
+
+
 def test_receipt_bound_is_enforced_before_publication_and_near_boundary_roundtrips(tmp_path):
     # Exact independent-review reproduction: valid input below 2 MiB whose
     # normalized receipt used to exceed the reader's 128 KiB ceiling.
@@ -286,6 +308,52 @@ def test_valid_unrelated_retained_entry_allows_a_distinct_identity(tmp_path: Pat
     second = account_staging.ingest(tmp_path, synthetic_document(identity="identity-b"))
     assert first["submission_id"] != second["submission_id"]
     assert len(account_staging.snapshot(tmp_path).records) == 2
+
+
+def test_submissions_regular_file_is_controlled_storage_failure(tmp_path: Path):
+    (tmp_path / "submissions").write_text("not a directory")
+    with pytest.raises(account_staging.AccountStorageError, match="could not create"):
+        account_staging.ingest(tmp_path, synthetic_document())
+
+
+def test_root_creation_oserror_is_controlled_storage_failure(tmp_path: Path, monkeypatch):
+    target = tmp_path / "runtime" / "submissions"
+    real_mkdir = Path.mkdir
+
+    def denied(path, *args, **kwargs):
+        if path == target:
+            raise PermissionError("synthetic read-only root")
+        return real_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", denied)
+    with pytest.raises(account_staging.AccountStorageError, match="could not create"):
+        account_staging.ingest(tmp_path / "runtime", synthetic_document())
+
+
+def test_staging_directory_oserror_is_controlled_storage_failure(tmp_path: Path, monkeypatch):
+    target = tmp_path / account_staging.STAGING_DIRNAME
+    real_mkdir = Path.mkdir
+
+    def denied(path, *args, **kwargs):
+        if path == target:
+            raise PermissionError("synthetic read-only staging root")
+        return real_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", denied)
+    with pytest.raises(account_staging.AccountStorageError, match="account staging directory"):
+        account_staging.ingest(tmp_path, synthetic_document())
+    assert account_staging.snapshot(tmp_path).records == ()
+
+
+def test_authenticated_submit_renders_controlled_root_storage_failure(signed_in):
+    root = signed_in["config"].account_root
+    root.mkdir(parents=True)
+    (root / "submissions").write_text("not a directory")
+    status, _, page = signed_in["client"].request(
+        "POST", "/accounts/submit", synthetic_document(),
+        {"Content-Type": "application/json"})
+    assert status == 500
+    assert b"not retained because private storage failed" in page
 
 
 def test_oversize_bounded_read_and_symlink_containment(tmp_path: Path):
