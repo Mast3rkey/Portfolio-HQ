@@ -502,3 +502,122 @@ def test_cli_refuses_an_unserializable_envelope_instead_of_raising(monkeypatch, 
     assert code == 2 and printed["actionable"] is False
     assert printed["blocked_reasons"] == [
         "output.canonical_result.x is not JSON-serializable: object"]
+
+
+def test_level1_sleeve_view_reports_governed_targets_and_observed_gaps(tmp_path):
+    _, _, supplement = _setup(tmp_path)
+    result = _run(tmp_path, supplement)
+    level1 = result["level1"]
+    assert result["actionable"] is True and level1["dollars_known"] is True
+    assert level1["status"] == "CURRENT_ACCEPTED_POLICY_SNAPSHOT"
+    assert level1["policy_source"] == "targets.yaml"
+
+    # Percentages are the accepted policy, copied not recomputed.
+    summary = __import__("level1_policy_summary").load_policy_summary(ROOT / "targets.yaml")
+    for name, sleeve in level1["sleeves"].items():
+        assert sleeve["governed_target_pct"] == summary["sleeves_pct"][name]
+        assert sleeve["members"] == summary["members"][name]
+
+    # The fixture holds only cash plus one off-roster ticker.
+    cash_sleeve = level1["sleeves"]["cash_and_reserve"]
+    assert cash_sleeve["current_value"] == 100000.0
+    assert cash_sleeve["exposure_basis"] == "tracked cash balance"
+    # Overweight cash shows as a negative gap against a 5% governed weight.
+    assert cash_sleeve["gap_value"] < 0
+    equity = level1["sleeves"]["direct_equity"]
+    assert equity["current_value"] == 0.0 and equity["gap_value"] > 0
+    assert equity["target_value"] == pytest.approx(
+        result["canonical_result"]["book"] * 63.25 / 100)
+
+
+def test_level1_uses_the_governed_mapping_not_an_asset_class_rollup(tmp_path):
+    """GLD and SPY are both funds but sit in different accepted sleeves."""
+    _, _, supplement = _setup(tmp_path)
+    level1 = _run(tmp_path, supplement)["level1"]
+    broad = set(level1["sleeves"]["broad_market_funds"]["members"])
+    gold = set(level1["sleeves"]["gold_defensive"]["members"])
+    assert "GLD" in gold and "GLD" not in broad
+    assert {"SPY", "VEA", "VWO"} <= broad
+    assert not broad & gold
+
+
+def test_level1_withholds_dollars_when_the_book_is_unavailable(tmp_path):
+    _, _, supplement = _setup(tmp_path)
+    supplement.pop("buffer")  # book becomes unavailable, per the canonical rule
+    result = _run(tmp_path, supplement)
+    assert result["canonical_result"]["book"] is None
+    level1 = result["level1"]
+    assert level1["dollars_known"] is False
+    assert "book is unavailable" in level1["withheld_reason"]
+    for sleeve in level1["sleeves"].values():
+        # Policy survives; every observed and derived dollar is withheld.
+        assert sleeve["governed_target_pct"] and sleeve["members"]
+        assert sleeve["current_value"] is None and sleeve["current_pct"] is None
+        assert sleeve["target_value"] is None and sleeve["gap_value"] is None
+
+
+def test_level1_discloses_holdings_outside_the_accepted_roster(tmp_path):
+    _, _, supplement = _setup(tmp_path)
+    level1 = _run(tmp_path, supplement)["level1"]
+    assert level1["unassigned_holdings"] == {"SYNTH": 100.0}
+    for sleeve in level1["sleeves"].values():
+        assert "SYNTH" not in sleeve["members"]
+
+
+def test_level1_never_redistributes_the_unallocated_policy_weight(tmp_path):
+    _, _, supplement = _setup(tmp_path)
+    level1 = _run(tmp_path, supplement)["level1"]
+    assert level1["unallocated_policy_pct"] == "0.75"
+    assert level1["reconciliation"]["assigned_pct"] == "99.25"
+    assigned = sum(float(s["governed_target_pct"]) for s in level1["sleeves"].values())
+    assert assigned == pytest.approx(99.25)
+
+
+def test_non_actionable_envelope_still_carries_the_level1_key(tmp_path):
+    _, _, supplement = _setup(tmp_path)
+    supplement["schema_version"] = 99
+    result = _run(tmp_path, supplement)
+    assert result["actionable"] is False
+    assert result["canonical_result"] is None and result["level1"] is None
+
+
+def test_sleeve_policy_module_is_byte_verified_and_code_bound(tmp_path, monkeypatch):
+    """The sleeve mapping must carry the allocator's own provenance."""
+    _, _, supplement = _setup(tmp_path)
+    assert "level1_policy_summary.py" in private_allocation.EXECUTION_FILES
+    baseline = _run(tmp_path, supplement)
+    assert "level1_policy_summary.py" in baseline["provenance"]["policy"]["execution_sha256"]
+
+    import level1_policy_summary
+    monkeypatch.setattr(level1_policy_summary, "build_policy_summary",
+                        lambda *a, **k: pytest.fail("patched sleeve policy ran"))
+    result = _run(tmp_path, supplement)
+    assert result["blocked_reasons"] == [
+        "loaded code does not match the named commit: "
+        "level1_policy_summary.py:build_policy_summary"]
+
+
+def test_level1_withholds_only_the_undefined_percentage_at_a_zero_book(tmp_path):
+    """A zero book makes a share OF the book undefined, not the dollars.
+
+    Reachable through confirmed evidence, not a contrived state: holdings
+    exactly offset by margin debt give book == 0 with no staging issue and an
+    actionable run. decimal raises ZeroDivisionError rather than ValueError, so
+    an unguarded division here would leave the controlled envelope entirely.
+    """
+    account = _account()                        # SYNTH qty 1 @ 100 -> invested 100
+    account["cash"][0]["balance"] = 0
+    account["debt_margin"][0]["balance"] = 100  # book = 100 + 0 - 100
+    _, _, supplement = _setup(tmp_path, account)
+    result = _run(tmp_path, supplement)
+    assert result["canonical_result"] is not None, result["blocked_reasons"]
+    assert result["canonical_result"]["book"] == 0
+    level1 = result["level1"]
+    assert level1["dollars_known"] is True
+    for name, sleeve in level1["sleeves"].items():
+        assert sleeve["target_value"] == 0.0
+        assert sleeve["current_pct"] is None, name
+        assert sleeve["gap_value"] == -sleeve["current_value"]
+    # SYNTH is off-roster, so no sleeve claims the one held position.
+    assert level1["unassigned_holdings"] == {"SYNTH": 100.0}
+    assert level1["sleeves"]["direct_equity"]["current_value"] == 0.0

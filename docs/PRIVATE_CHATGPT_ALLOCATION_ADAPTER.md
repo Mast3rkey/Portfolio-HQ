@@ -103,6 +103,22 @@ because the adapter injects both the market metrics and the earnings provider â€
 and in-process self-verification cannot prove `run` or the binding function
 itself, so a fresh process remains the strongest guarantee.
 
+The envelope also carries a `level1` sleeve view: the accepted sleeve policy
+read from the same verified `targets.yaml` bytes through
+`level1_policy_summary`, joined to the values this run observed, giving each
+sleeve its governed target percent, members, current value and percent, target
+value, and gap. `allocate.plan()` already answers Level 2 per instrument; this
+is the same facts grouped for a whole-portfolio review and adds no policy. The
+governed mapping is used rather than an `asset_class` rollup, which would be
+wrong because the accepted policy separates SPY/VEA/VWO from GLD although both
+are funds. Cash and reserve are synthetic destination rows, so that sleeve's
+exposure is the tracked cash balance; holdings outside the accepted roster are
+disclosed under `unassigned_holdings` rather than folded into a sleeve, and the
+unallocated policy weight is reported rather than redistributed. Every sleeve
+dollar figure inherits the allocator's own availability and is `null` with a
+stated reason when the book is unknown, never estimated. `level1` is `null` in
+a non-actionable envelope, so the shape never varies.
+
 The envelope contains the actual canonical result, actionability and blocked
 reasons, discrepancies, limitations, exact evidence hashes, source commit SHA,
 and hashes for `targets.yaml`, `gates.yaml`, and `issuer_lookthrough.yaml`.
