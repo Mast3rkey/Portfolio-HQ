@@ -388,8 +388,12 @@ def _make_handler(config: OwnerServiceConfig):
             elif path.startswith("/charts/image/"):
                 self._serve_chart_image(path[len("/charts/image/"):])
             elif path == "/accounts":
-                self._html(200, render.accounts_page(account_staging.snapshot(
-                    config.account_root).records))
+                try:
+                    records = account_staging.snapshot(config.account_root).records
+                except account_staging.AccountStorageError as exc:
+                    self._account_storage_unavailable(exc)
+                    return
+                self._html(200, render.accounts_page(records))
             elif path.startswith("/accounts/original/"):
                 self._serve_account_original(path[len("/accounts/original/"):])
             else:
@@ -620,9 +624,21 @@ def _make_handler(config: OwnerServiceConfig):
             self._accounts_flash(f"{decision.title()} review recorded for the exact retained version.", 200)
 
         def _accounts_flash(self, message: str, status: int) -> None:
-            self._html(status, render.accounts_page(
-                account_staging.snapshot(config.account_root).records,
-                flash=message))
+            try:
+                records = account_staging.snapshot(config.account_root).records
+            except account_staging.AccountStorageError as exc:
+                self._account_storage_unavailable(exc)
+                return
+            self._html(status, render.accounts_page(records, flash=message))
+
+        def _account_storage_unavailable(self, failure: Exception) -> None:
+            self.log_error("account staging read failure: %s", failure)
+            self._html(500, render.error_page(
+                500,
+                "Private account staging is unavailable because its storage "
+                "could not be read. No account state is being shown.",
+                signed_in=True,
+            ))
 
         def _serve_account_original(self, submission_id: str) -> None:
             data = account_staging.original(config.account_root, submission_id)

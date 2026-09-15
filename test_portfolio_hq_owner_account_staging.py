@@ -353,7 +353,8 @@ def test_authenticated_submit_renders_controlled_root_storage_failure(signed_in)
         "POST", "/accounts/submit", synthetic_document(),
         {"Content-Type": "application/json"})
     assert status == 500
-    assert b"not retained because private storage failed" in page
+    assert b"storage could not be read" in page
+    assert b"No account state is being shown" in page
 
 
 def test_oversize_bounded_read_and_symlink_containment(tmp_path: Path):
@@ -384,6 +385,8 @@ def test_persisted_oversize_and_redirected_review_history_fail_closed(tmp_path: 
     os.symlink(outside, second_dir / "reviews")
     with pytest.raises(account_staging.AccountStorageError, match="redirected"):
         account_staging.review(tmp_path, second["submission_id"], "confirmed", "reviewer-1")
+    with pytest.raises(account_staging.AccountStorageError, match="redirected"):
+        account_staging.snapshot(tmp_path)
     assert list(outside.iterdir()) == []
 
 
@@ -406,6 +409,74 @@ def test_review_file_symlink_is_rejected_without_opening_external_target(tmp_pat
     assert account_staging.snapshot(tmp_path).records[0]["reviews"] == []
     assert outside not in opened
     assert review_path not in opened
+
+
+def test_snapshot_top_level_enumeration_failure_is_controlled_and_blocks_ingest(
+        tmp_path, monkeypatch):
+    account_staging.ingest(tmp_path, synthetic_document(identity="retained-before-error"))
+    submissions = tmp_path / "submissions"
+    before = {entry.name for entry in os.scandir(submissions)}
+    real_iterdir = Path.iterdir
+
+    def unavailable(path):
+        if path == submissions:
+            raise OSError("synthetic submissions enumeration failure")
+        return real_iterdir(path)
+
+    monkeypatch.setattr(Path, "iterdir", unavailable)
+    with pytest.raises(account_staging.AccountStorageError, match="enumerate retained"):
+        account_staging.snapshot(tmp_path)
+    with pytest.raises(account_staging.AccountStorageError, match="enumerate retained"):
+        account_staging.ingest(tmp_path, synthetic_document(identity="new-while-unavailable"))
+    assert {entry.name for entry in os.scandir(submissions)} == before
+
+
+def test_snapshot_translates_synthetic_root_iterdir_oserror(tmp_path, monkeypatch):
+    class UnavailableDirectory:
+        def iterdir(self):
+            raise OSError("synthetic root iterdir failure")
+
+    monkeypatch.setattr(account_staging, "_root", lambda *_args, **_kwargs: UnavailableDirectory())
+    with pytest.raises(account_staging.AccountStorageError, match="enumerate retained"):
+        account_staging.snapshot(tmp_path)
+
+
+def test_review_history_enumeration_failure_blocks_snapshot_and_new_review(
+        tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="history-unavailable"))
+    account_staging.review(tmp_path, receipt["submission_id"], "rejected", "reviewer-1")
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    before = {entry.name for entry in os.scandir(review_root)}
+    real_iterdir = Path.iterdir
+
+    def unavailable(path):
+        if path == review_root:
+            raise OSError("synthetic review enumeration failure")
+        return real_iterdir(path)
+
+    monkeypatch.setattr(Path, "iterdir", unavailable)
+    with pytest.raises(account_staging.AccountStorageError, match="enumerate review history"):
+        account_staging.snapshot(tmp_path)
+    with pytest.raises(account_staging.AccountStorageError, match="enumerate review history"):
+        account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-2")
+    assert {entry.name for entry in os.scandir(review_root)} == before
+
+
+def test_authenticated_accounts_get_and_flash_surface_snapshot_storage_failure(
+        signed_in, monkeypatch):
+    def unavailable(_root):
+        raise account_staging.AccountStorageError("synthetic enumeration failure")
+
+    monkeypatch.setattr(account_staging, "snapshot", unavailable)
+    status, _, page = signed_in["client"].request("GET", "/accounts")
+    assert status == 500
+    assert b"storage could not be read" in page
+    assert b"No account state is being shown" in page
+
+    status, _, page = signed_in["client"].request(
+        "POST", "/accounts/submit", b"{}", {"Content-Type": "application/json"})
+    assert status == 500
+    assert b"storage could not be read" in page
 
 
 def test_huge_integer_is_controlled_rejection_in_domain_and_authenticated_http(signed_in):

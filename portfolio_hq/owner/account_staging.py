@@ -425,12 +425,28 @@ def _verified(runtime_root, submission_id: str):
 
 
 def snapshot(runtime_root: Path | str) -> Snapshot:
+    child = Path(os.path.realpath(Path(runtime_root))) / SUBMISSIONS_DIRNAME
     try:
         root = _root(runtime_root, create=False)
     except AccountStorageError:
-        return Snapshot((), {})
+        # A never-used runtime root has no retained state. Any existing but
+        # unavailable submissions directory is storage failure, not an empty
+        # account that can safely be shown as current.
+        try:
+            child.lstat()
+        except FileNotFoundError:
+            return Snapshot((), {})
+        except OSError as exc:
+            raise AccountStorageError(
+                "could not inspect the account submissions directory") from exc
+        raise
+    try:
+        entries = sorted(root.iterdir(), reverse=True)
+    except OSError as exc:
+        raise AccountStorageError(
+            "could not enumerate retained account submissions") from exc
     records, originals = [], {}
-    for entry in sorted(root.iterdir(), reverse=True):
+    for entry in entries:
         if not entry.is_dir() or not _ID_RE.fullmatch(entry.name):
             continue
         verified = _verified(runtime_root, entry.name)
@@ -438,23 +454,37 @@ def snapshot(runtime_root: Path | str) -> Snapshot:
             continue
         directory, original, receipt_bytes, receipt = verified
         reviews = []
-        review_root = directory / REVIEWS_DIRNAME
-        if review_root.is_dir() and not os.path.islink(review_root):
-            for path in sorted(review_root.iterdir()):
-                data = _bounded(path, MAX_REVIEW_BYTES) if _safe_regular_file(path) else None
-                if not data:
-                    continue
-                try:
-                    review = json.loads(data, object_pairs_hook=_pairs, parse_constant=_constant)
-                except (ValueError, UnicodeDecodeError, RecursionError):
-                    continue
-                if _valid_review(review, path, receipt, receipt_bytes):
-                    reviews.append(review)
+        for path in _review_paths(directory):
+            data = _bounded(path, MAX_REVIEW_BYTES) if _safe_regular_file(path) else None
+            if not data:
+                continue
+            try:
+                review = json.loads(data, object_pairs_hook=_pairs, parse_constant=_constant)
+            except (ValueError, UnicodeDecodeError, RecursionError):
+                continue
+            if _valid_review(review, path, receipt, receipt_bytes):
+                reviews.append(review)
         shown = dict(receipt)
         shown["reviews"] = reviews
         records.append(shown)
         originals[entry.name] = original
     return Snapshot(tuple(records), originals)
+
+
+def _review_paths(directory: Path) -> list[Path]:
+    """Return review entries, or fail when history cannot be enumerated."""
+    review_root = directory / REVIEWS_DIRNAME
+    try:
+        mode = review_root.stat(follow_symlinks=False).st_mode
+        redirected = os.path.realpath(review_root) != str(review_root)
+    except OSError as exc:
+        raise AccountStorageError("review history directory is unavailable") from exc
+    if os.path.islink(review_root) or not stat.S_ISDIR(mode) or redirected:
+        raise AccountStorageError("review history directory is redirected or nonregular")
+    try:
+        return sorted(review_root.iterdir())
+    except OSError as exc:
+        raise AccountStorageError("could not enumerate review history") from exc
 
 
 def _valid_review(review: object, path: Path, receipt: dict,
@@ -505,9 +535,9 @@ def review(runtime_root: Path | str, submission_id: str, decision: object,
               "receipt_sha256": hashlib.sha256(receipt_bytes).hexdigest(),
               "meaning": _REVIEW_MEANING}
     path = directory / REVIEWS_DIRNAME / f"{review_id}.json"
-    review_root = directory / REVIEWS_DIRNAME
-    if os.path.islink(review_root) or os.path.realpath(review_root) != str(review_root):
-        raise AccountStorageError("review history directory is redirected")
+    # A decision must not be added while prior history is unavailable: doing
+    # so could present a partial history as the basis for a new confirmation.
+    _review_paths(directory)
     try:
         with path.open("x", encoding="utf-8") as handle:
             json.dump(record, handle, sort_keys=True, separators=(",", ":"))
