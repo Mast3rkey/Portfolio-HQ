@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import subprocess
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -52,7 +53,7 @@ def _parse_timestamp(value: Any, label: str) -> datetime:
 
 def _observation_age(value: Any, label: str, as_of: datetime) -> tuple[str, float]:
     """Return original precision and age; date-only values use calendar days."""
-    if isinstance(value, str) and "T" not in value:
+    if isinstance(value, str) and re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
         try:
             observed = date.fromisoformat(value)
         except ValueError as exc:
@@ -101,7 +102,7 @@ def _informational_age(value: Any, label: str, as_of: datetime) -> float:
 
 
 def _observation_date(value: str, label: str) -> date:
-    if "T" not in value:
+    if re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
         return date.fromisoformat(value)
     return _parse_timestamp(value, label).date()
 
@@ -403,11 +404,12 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
                     next_date = date.fromisoformat(row["next_date"])
                 except (TypeError, ValueError) as exc:
                     raise AllocationEvidenceError(f"earnings[{i}].next_date is invalid") from exc
-                if next_date < max(as_of.date(), _observation_date(
-                        row["observed_at"], f"earnings[{i}].observed_at")):
+                if next_date < _observation_date(
+                        row["observed_at"], f"earnings[{i}].observed_at"):
                     raise AllocationEvidenceError(
                         f"earnings[{i}].next_date predates its observation")
-                earnings[tk] = ((next_date - as_of.date()).days if age <= 2 else None)
+                earnings[tk] = ((next_date - as_of.date()).days
+                                if age <= 2 and next_date >= as_of.date() else None)
             else:
                 earnings[tk] = None  # canonically allowed, disclosed unknown
         if earnings.keys() != eligible_market:

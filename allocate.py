@@ -166,7 +166,7 @@ def _state_age_days(synced_at, *, as_of: date | datetime | None = None) -> float
         raw = str(synced_at)
         # Preserve an upstream observation's precision.  Legacy state remains
         # date-only; private callers may supply an exact aware timestamp.
-        if "T" in raw:
+        if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", raw):
             parsed = datetime.fromisoformat(raw[:-1] + "+00:00" if raw.endswith("Z") else raw)
             if parsed.tzinfo is None:
                 return None

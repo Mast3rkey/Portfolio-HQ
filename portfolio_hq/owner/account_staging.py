@@ -130,16 +130,18 @@ def _observation_time(value, label: str) -> str:
     therefore remain timezone-aware instants.
     """
     text = _text(value, label)
-    if "T" in text:
-        return _timestamp(text, label)
-    try:
-        parsed = date.fromisoformat(text)
-    except ValueError as exc:
-        raise AccountSubmissionRejected(
-            f"{label} must be an ISO-8601 date or timezone-aware timestamp") from exc
-    if parsed.isoformat() != text:
-        raise AccountSubmissionRejected(f"{label} must be a canonical ISO-8601 date")
-    return text
+    if re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", text):
+        try:
+            parsed = date.fromisoformat(text)
+        except ValueError as exc:
+            raise AccountSubmissionRejected(f"{label} must be a valid ISO-8601 date") from exc
+        if parsed.isoformat() != text:
+            raise AccountSubmissionRejected(f"{label} must be a canonical ISO-8601 date")
+        return text
+    # Delegate every non-date shape to the pre-existing timestamp contract.
+    # datetime.fromisoformat accepts uppercase T, lowercase t, and a space;
+    # old immutable receipts using any of those forms must remain verifiable.
+    return _timestamp(text, label)
 
 
 def _freshness(value, label: str) -> str:

@@ -297,6 +297,38 @@ def test_date_only_account_evidence_survives_to_provenance(tmp_path):
     assert result["provenance"]["observations"][0]["valuation_observed_at"] == "2026-09-15"
 
 
+@pytest.mark.parametrize("separator", [" ", "t"])
+def test_legacy_observation_timestamp_separators_survive_real_plan(tmp_path, separator):
+    account = _account(identity=f"legacy-separator-{ord(separator)}")
+    observed = f"2026-09-15{separator}11:00:00+00:00"
+    account["holdings"][0]["observed_at"] = observed
+    account["holdings"][0]["valuation"]["observed_at"] = observed
+    account["cash"][0]["observed_at"] = observed
+    account["debt_margin"][0]["observed_at"] = observed
+    _, _, supplement = _setup(tmp_path, account)
+    result = _run(tmp_path, supplement)
+    assert result["actionable"]
+    assert result["provenance"]["observations"][0]["quantity_observed_at"] == observed
+
+
+def test_expired_historically_valid_earnings_is_canonical_unknown(tmp_path):
+    _, _, supplement = _setup(tmp_path)
+    ticker = supplement["earnings"][0]["ticker"]
+    supplement["earnings"][0].update(
+        observed_at="2026-09-10", next_date="2026-09-11")
+    result = _run(tmp_path, supplement)
+    assert result["actionable"]
+    rows = (result["canonical_result"]["buys"] +
+            result["canonical_result"]["underweight"] +
+            result["canonical_result"]["blocked"])
+    assert any(row["ticker"] == ticker and
+               row.get("earn_flag") == "earnings:unavailable" for row in rows)
+    evidence = next(row for row in result["provenance"]["earnings"]
+                    if row["ticker"] == ticker)
+    assert evidence["observed_at"] == "2026-09-10"
+    assert evidence["next_date"] == "2026-09-11"
+
+
 def test_past_next_earnings_is_rejected(tmp_path):
     _, _, supplement = _setup(tmp_path)
     supplement["earnings"][0]["next_date"] = "2026-09-14"

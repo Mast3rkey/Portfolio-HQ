@@ -46,6 +46,9 @@ regime evidence becomes informational unknown rather than blocking otherwise
 current book evidence. Future or malformed evidence still fails closed.
 Original strings are retained in returned provenance: exact-time observations
 are not converted to dates and date-only values are not promoted to invented instants.
+The staging boundary continues to accept every aware timestamp separator its
+pre-date-support ISO parser accepted, including uppercase `T`, lowercase `t`,
+and a space, so previously valid immutable receipts remain verifiable.
 Only USD evidence is currently actionable; another currency is reported as
 unavailable because this adapter has no authorized FX conversion. Every nonzero
 holding needs a dated unit valuation. Non-roster holdings remain explicit
