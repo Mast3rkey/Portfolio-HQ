@@ -233,7 +233,7 @@ def page(title: str, active: str, body: str, *, signed_in: bool = True) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="referrer" content="no-referrer">
+<meta name="referrer" content="same-origin">
 <meta name="color-scheme" content="dark light">
 <title>{_esc(title)} — Portfolio-HQ</title>
 <style>{css}</style>

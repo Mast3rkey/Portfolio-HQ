@@ -61,7 +61,9 @@ _READ_CHUNK = 64 * 1024
 
 _SECURITY_HEADERS = (
     ("X-Content-Type-Options", "nosniff"),
-    ("Referrer-Policy", "no-referrer"),
+    # Preserve same-origin referrers so native same-origin form POSTs carry a
+    # usable Origin, while suppressing referrer information cross-origin.
+    ("Referrer-Policy", "same-origin"),
     ("X-Frame-Options", "DENY"),
     ("Cache-Control", "no-store"),
     # No script source is allowed at all: the interface ships no JavaScript.

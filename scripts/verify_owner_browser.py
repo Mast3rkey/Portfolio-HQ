@@ -20,6 +20,7 @@ import sys
 import tempfile
 import threading
 from http.server import ThreadingHTTPServer
+from urllib.parse import urlsplit
 
 
 REPOSITORY = Path(__file__).resolve().parents[1]
@@ -109,7 +110,22 @@ def login(page: Page, base_url: str) -> None:
     require(page.get_by_role("heading", name="Sign in", exact=True).is_visible(),
             "sign-in page was not rendered")
     page.locator("#token").fill(TOKEN)
-    page.get_by_role("button", name="Sign in", exact=True).click()
+    with page.expect_request(
+        lambda request: request.method == "POST"
+        and urlsplit(request.url).path == "/login"
+    ) as login_request, page.expect_response(
+        lambda response: response.request.method == "POST"
+        and urlsplit(response.url).path == "/login"
+    ) as login_response:
+        page.get_by_role("button", name="Sign in", exact=True).click()
+    request = login_request.value
+    response = login_response.value
+    origin = request.header_value("origin")
+    destination = urlsplit(request.url).path
+    print(f"LOGIN_FORM status={response.status} origin={origin} destination={destination}")
+    require(origin == base_url, "native login form did not send its same-origin Origin")
+    require(destination == "/login", "native login form used an unexpected destination")
+    require(response.status == 303, "native login form did not receive its successful redirect")
     page.wait_for_url(f"{base_url}/")
     page.goto(f"{base_url}/accounts")
     require(page.get_by_role(
