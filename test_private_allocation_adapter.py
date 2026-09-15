@@ -621,3 +621,56 @@ def test_level1_withholds_only_the_undefined_percentage_at_a_zero_book(tmp_path)
     # SYNTH is off-roster, so no sleeve claims the one held position.
     assert level1["unassigned_holdings"] == {"SYNTH": 100.0}
     assert level1["sleeves"]["direct_equity"]["current_value"] == 0.0
+
+
+def test_envelope_states_every_observed_position_including_ones_at_target(tmp_path):
+    """A position already at or above target appears in no plan() row.
+
+    Without an echo of what was observed, most of a real portfolio would be
+    absent from the envelope and the Level-1 sleeve percentages would be
+    unexplainable. Off-roster holdings were already disclosed with values, so
+    on-roster ones must be too.
+    """
+    account = _account()
+    # Small cash keeps the book small, so SPY's holding exceeds its target.
+    account["cash"][0]["balance"] = 1000
+    account["holdings"] = [
+        # SPY above its governed target: a candidate in no plan() row section.
+        {"ticker": "SPY", "quantity": 30, "observed_at": "2026-09-15T11:00:00Z",
+         "freshness": "current",
+         "valuation": {"unit_price": 560.0, "currency": "USD",
+                       "observed_at": "2026-09-15T10:00:00Z", "freshness": "current"}},
+        {"ticker": "SYNTH", "quantity": 1, "observed_at": "2026-09-15T11:00:00Z",
+         "freshness": "current",
+         "valuation": {"unit_price": 100.0, "currency": "USD",
+                       "observed_at": "2026-09-15T10:00:00Z", "freshness": "current"}},
+    ]
+    _, _, supplement = _setup(tmp_path, account)
+    result = _run(tmp_path, supplement)
+    assert result["actionable"] is True
+    cr = result["canonical_result"]
+    listed = {row["ticker"] for section in ("buys", "underweight", "blocked", "trims",
+                                            "no_add_gated")
+              for row in cr[section]}
+    assert "SPY" not in listed, "fixture no longer exercises an at-or-above-target name"
+
+    observed = {row["ticker"]: row for row in result["provenance"]["observations"]}
+    assert observed["SPY"]["quantity"] == 30
+    assert observed["SPY"]["unit_price"] == 560.0
+    assert observed["SPY"]["value"] == 30 * 560.0
+    # The echo is internally checkable: quantity * unit_price == value.
+    for row in observed.values():
+        assert row["value"] == pytest.approx(row["quantity"] * row["unit_price"])
+    # It reconciles with the sleeve it feeds.
+    assert result["level1"]["sleeves"]["broad_market_funds"]["current_value"] == 30 * 560.0
+
+
+def test_observed_positions_survive_when_book_derived_dollars_are_withheld(tmp_path):
+    """Confirmed observations carry no book dependency, so they are not withheld."""
+    _, _, supplement = _setup(tmp_path)
+    supplement.pop("buffer")
+    result = _run(tmp_path, supplement)
+    assert result["canonical_result"]["book"] is None
+    assert result["level1"]["dollars_known"] is False
+    observed = {row["ticker"]: row for row in result["provenance"]["observations"]}
+    assert observed["SYNTH"]["value"] == 100.0 and observed["SYNTH"]["quantity"] == 1
