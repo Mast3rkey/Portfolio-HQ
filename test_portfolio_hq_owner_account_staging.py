@@ -716,6 +716,7 @@ def test_legitimate_review_operational_read_failures_block_snapshot_and_decision
         tmp_path, receipt["submission_id"], "rejected", "reviewer-first")
     review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
     final = review_root / f"{prior['review_id']}.json"
+    prior_bytes = final.read_bytes()
     _inject_read_failure(monkeypatch, final, phase)
 
     with pytest.raises(account_staging.AccountStorageError, match="retained account"):
@@ -723,8 +724,11 @@ def test_legitimate_review_operational_read_failures_block_snapshot_and_decision
     with pytest.raises(account_staging.AccountStorageError, match="retained account"):
         account_staging.review(
             tmp_path, receipt["submission_id"], "confirmed", "reviewer-second")
-    assert len(list(review_root.glob("*.json"))) == 1
-    assert final.exists()
+    assert {path.name for path in review_root.glob("*.json")} == {final.name}
+
+    monkeypatch.undo()
+    assert final.read_bytes() == prior_bytes
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == [prior]
 
 
 def test_mixed_readable_and_unreadable_history_never_returns_partial_or_adds(
