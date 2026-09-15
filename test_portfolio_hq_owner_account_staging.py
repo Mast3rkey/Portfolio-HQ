@@ -58,6 +58,44 @@ def test_exact_bytes_receipt_zero_and_restart_persistence(tmp_path: Path):
     assert restarted.records[0]["reviews"] == []
 
 
+def test_date_only_observations_roundtrip_without_manufactured_time(tmp_path: Path):
+    doc = json.loads(synthetic_document(identity="date-precision"))
+    doc["holdings"][0]["observed_at"] = "2026-09-14"
+    doc["holdings"][0]["valuation"]["observed_at"] = "2026-09-14"
+    doc["cash"][0]["observed_at"] = "2026-09-14"
+    original = json.dumps(doc, separators=(",", ":")).encode()
+    receipt = account_staging.ingest(tmp_path, original)
+    assert receipt["normalized"]["holdings"][0]["observed_at"] == "2026-09-14"
+    assert receipt["normalized"]["holdings"][0]["valuation"]["observed_at"] == "2026-09-14"
+    assert receipt["normalized"]["cash"][0]["observed_at"] == "2026-09-14"
+    assert account_staging.original(tmp_path, receipt["submission_id"]) == original
+
+
+@pytest.mark.parametrize("observed_at", [
+    "2026-09-15T11:00:00+00:00",
+    "2026-09-15 11:00:00+00:00",
+    "2026-09-15t11:00:00+00:00",
+])
+def test_pre_date_support_timestamp_formats_remain_receipt_verifiable(
+        tmp_path: Path, observed_at: str):
+    doc = json.loads(synthetic_document(identity="legacy-" + hashlib.sha256(
+        observed_at.encode()).hexdigest()[:12]))
+    doc["holdings"][0]["observed_at"] = observed_at
+    doc["holdings"][0]["valuation"]["observed_at"] = observed_at
+    doc["cash"][0]["observed_at"] = observed_at
+    original = json.dumps(doc, separators=(",", ":")).encode()
+    receipt = account_staging.ingest(tmp_path, original)
+    receipt_bytes = (tmp_path / "submissions" / receipt["submission_id"] /
+                     "receipt.json").read_bytes()
+
+    # Re-open through the immutable verification path, not the ingest return.
+    view = account_staging.snapshot(tmp_path)
+    assert view.originals[receipt["submission_id"]] == original
+    assert view.records[0]["normalized"]["holdings"][0]["observed_at"] == observed_at
+    assert (tmp_path / "submissions" / receipt["submission_id"] /
+            "receipt.json").read_bytes() == receipt_bytes
+
+
 def test_returned_nested_objects_cannot_mutate_storage_templates_or_later_receipts(tmp_path):
     original = synthetic_document(identity="mutable-return", holding_freshness="stale",
                                   include_protected=False)

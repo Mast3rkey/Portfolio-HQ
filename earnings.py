@@ -76,12 +76,12 @@ def next_earnings_date(ticker: str) -> date | None:
     return result
 
 
-def days_until_earnings(ticker: str) -> int | None:
+def days_until_earnings(ticker: str, *, as_of: date | None = None) -> int | None:
     """Calendar days until next earnings, or None if unknown."""
     d = next_earnings_date(ticker)
     if d is None:
         return None
-    return (d - datetime.now(timezone.utc).date()).days
+    return (d - (as_of or datetime.now(timezone.utc).date())).days
 
 
 if __name__ == "__main__":
