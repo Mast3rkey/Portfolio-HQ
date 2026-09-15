@@ -16,7 +16,7 @@ import re
 import secrets
 import shutil
 import stat
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import NamedTuple
 
@@ -122,6 +122,26 @@ def _timestamp(value, label: str) -> str:
     return text
 
 
+def _observation_time(value, label: str) -> str:
+    """Validate an observation instant or an explicitly date-only observation.
+
+    Date-only evidence has calendar-day precision; it is not silently promoted
+    to midnight. Lifecycle timestamps continue to use ``_timestamp`` and must
+    therefore remain timezone-aware instants.
+    """
+    text = _text(value, label)
+    if "T" in text:
+        return _timestamp(text, label)
+    try:
+        parsed = date.fromisoformat(text)
+    except ValueError as exc:
+        raise AccountSubmissionRejected(
+            f"{label} must be an ISO-8601 date or timezone-aware timestamp") from exc
+    if parsed.isoformat() != text:
+        raise AccountSubmissionRejected(f"{label} must be a canonical ISO-8601 date")
+    return text
+
+
 def _freshness(value, label: str) -> str:
     value = _text(value, label)
     if value not in {"current", "stale", "unknown"}:
@@ -163,7 +183,7 @@ def validate(data: bytes) -> tuple[dict, list[dict]]:
         seen.add(ticker)
         row = {"ticker": ticker,
                "quantity": _number(item.get("quantity"), f"holdings[{index}].quantity"),
-               "observed_at": _timestamp(item.get("observed_at"), f"holdings[{index}].observed_at"),
+               "observed_at": _observation_time(item.get("observed_at"), f"holdings[{index}].observed_at"),
                "freshness": _freshness(item.get("freshness"), f"holdings[{index}].freshness")}
         valuation = item.get("valuation")
         if valuation is None:
@@ -175,7 +195,7 @@ def validate(data: bytes) -> tuple[dict, list[dict]]:
                 "unit_price": _number(valuation.get("unit_price"), f"{ticker}.valuation.unit_price"),
                 "currency": _text(valuation.get("currency"), f"{ticker}.valuation.currency",
                                   pattern=_CURRENCY_RE),
-                "observed_at": _timestamp(valuation.get("observed_at"), f"{ticker}.valuation.observed_at"),
+                "observed_at": _observation_time(valuation.get("observed_at"), f"{ticker}.valuation.observed_at"),
                 "freshness": _freshness(valuation.get("freshness"), f"{ticker}.valuation.freshness"),
             }
         else:
@@ -204,7 +224,7 @@ def validate(data: bytes) -> tuple[dict, list[dict]]:
                    amount_key: _number(item.get(amount_key), f"{section}[{index}].{amount_key}"),
                    "currency": _text(item.get("currency"), f"{section}[{index}].currency",
                                      pattern=_CURRENCY_RE),
-                   "observed_at": _timestamp(item.get("observed_at"), f"{section}[{index}].observed_at"),
+                   "observed_at": _observation_time(item.get("observed_at"), f"{section}[{index}].observed_at"),
                    "freshness": _freshness(item.get("freshness"), f"{section}[{index}].freshness")}
             if require_basis:
                 row["basis"] = _text(item.get("basis"), f"{section}[{index}].basis")

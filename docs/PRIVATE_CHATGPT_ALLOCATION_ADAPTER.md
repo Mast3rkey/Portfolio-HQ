@@ -14,7 +14,8 @@ First ingest and confirm a schema-version-1 account submission through
 object with **only** these fields:
 
 * `schema_version`: `1`.
-* `as_of`: the reproducible, timezone-aware UTC allocation instant.
+* `as_of`: the reproducible, timezone-aware UTC allocation instant. Lifecycle
+  timestamps (`submitted_at`, receipt and review times) also remain instants.
 * `submission_id`, `receipt_sha256`, `review_id`, `review_sha256`, and `reviewer`: the exact
   expected submission, receipt, and confirmation identities. A missing,
   rejected, conflicting, or superseded identity fails closed. Confirmation is
@@ -35,10 +36,16 @@ object with **only** these fields:
 * `regime`: Boolean `ok` and `known`, exact `observed_at`, and `source_id`.
   Regime remains informational.
 
-All required account, buffer, market, earnings, and regime observations must be
-no more than two days old at `as_of` and not in its future. Original strings are
-retained in returned provenance: exact-time observations are not converted to
-dates and date-only earnings values are not promoted to invented instants.
+Holding, valuation, cash, debt, and displayed-buffer observations must be no
+more than two days old at `as_of` and not in its future. Their `observed_at`
+may be either a timezone-aware instant or a date-only ISO value. Date-only
+values use calendar-day freshness and explicitly carry no intraday precision;
+they are never promoted to midnight or a retrieval instant. Old market and
+earnings evidence becomes the canonical ticker-local unavailable state, and old
+regime evidence becomes informational unknown rather than blocking otherwise
+current book evidence. Future or malformed evidence still fails closed.
+Original strings are retained in returned provenance: exact-time observations
+are not converted to dates and date-only values are not promoted to invented instants.
 Only USD evidence is currently actionable; another currency is reported as
 unavailable because this adapter has no authorized FX conversion. Every nonzero
 holding needs a dated unit valuation. Non-roster holdings remain explicit
@@ -50,6 +57,8 @@ The principal must provide facts a read-only connection does not expose:
 the displayed maintenance buffer, complete quantities (including dust), debt,
 cash, valuations for every nonzero position, and any broker-specific distinction
 needed to prevent cash/debt double counting. Crypto is a holding, never USD cash.
+Account holdings named `CASH` or `RESERVE` are refused because those identifiers
+are canonical synthetic sleeves and accepting them would double count capital.
 
 ## Python and private-runtime CLI
 

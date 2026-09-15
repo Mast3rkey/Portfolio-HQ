@@ -18,6 +18,8 @@ from typing import Any
 import yaml
 
 import allocate
+import earnings
+import margin_state
 from portfolio_hq.owner import account_staging
 
 SCHEMA_VERSION = 1
@@ -25,6 +27,7 @@ MAX_SUPPLEMENT_BYTES = 512 * 1024
 FRESH_SECONDS = 2 * 86400
 POLICY_FILES = ("targets.yaml", "gates.yaml", "issuer_lookthrough.yaml")
 EXECUTION_FILES = ("allocate.py", "earnings.py", "margin_state.py",
+                   "portfolio_hq/owner/account_staging.py",
                    "portfolio_hq/owner/private_allocation.py")
 
 
@@ -47,27 +50,60 @@ def _parse_timestamp(value: Any, label: str) -> datetime:
         raise AllocationEvidenceError(f"{label} is outside the supported timestamp range") from exc
 
 
+def _observation_age(value: Any, label: str, as_of: datetime) -> tuple[str, float]:
+    """Return original precision and age; date-only values use calendar days."""
+    if isinstance(value, str) and "T" not in value:
+        try:
+            observed = date.fromisoformat(value)
+        except ValueError as exc:
+            raise AllocationEvidenceError(
+                f"{label} must be an ISO-8601 date or timezone-aware timestamp") from exc
+        if observed.isoformat() != value:
+            raise AllocationEvidenceError(f"{label} must be a canonical ISO-8601 date")
+        return value, float((as_of.date() - observed).days)
+    observed = _parse_timestamp(value, label)
+    try:
+        return value, (as_of - observed).total_seconds() / 86400
+    except OverflowError as exc:
+        raise AllocationEvidenceError(f"{label} is outside the supported timestamp range") from exc
+
+
 def _finite(value: Any, label: str, low: float = 0.0, high: float | None = None) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise AllocationEvidenceError(f"{label} must be a finite number")
-    result = float(value)
+    try:
+        result = float(value)
+    except (OverflowError, ValueError) as exc:
+        raise AllocationEvidenceError(f"{label} must be a finite number") from exc
+    if not math.isfinite(result):
+        raise AllocationEvidenceError(f"{label} must be a finite number")
     if result < low or (high is not None and result > high):
         raise AllocationEvidenceError(f"{label} is outside [{low}, {high}]")
     return result
 
 
 def _fresh(value: Any, label: str, as_of: datetime) -> str:
-    original = value
-    observed = _parse_timestamp(value, label)
-    try:
-        age = (as_of - observed).total_seconds()
-    except OverflowError as exc:
-        raise AllocationEvidenceError(f"{label} is outside the supported timestamp range") from exc
+    original, age_days = _observation_age(value, label, as_of)
+    age = age_days * 86400
     if age < 0:
         raise AllocationEvidenceError(f"{label} is in the future")
     if age > FRESH_SECONDS:
         raise AllocationEvidenceError(f"{label} is stale (> 2 days)")
     return original
+
+
+def _informational_age(value: Any, label: str, as_of: datetime) -> float:
+    """Validate identity/time but allow genuinely old informational evidence."""
+    _, age = _observation_age(value, label, as_of)
+    if age < 0:
+        raise AllocationEvidenceError(f"{label} is in the future")
+    return age
+
+
+def _observation_date(value: str, label: str) -> date:
+    if "T" not in value:
+        return date.fromisoformat(value)
+    return _parse_timestamp(value, label).date()
 
 
 def _json(data: bytes) -> dict:
@@ -97,7 +133,10 @@ def _source_bytes(source_root: Path, expected_sha: str) -> tuple[dict[str, bytes
     root = source_root.resolve()
     executing_root = Path(allocate.__file__).resolve().parent
     adapter_root = Path(__file__).resolve().parents[2]
-    if root != executing_root or root != adapter_root:
+    dependency_roots = {Path(module.__file__).resolve().parent for module in
+                        (allocate, earnings, margin_state)}
+    staging_root = Path(account_staging.__file__).resolve().parents[2]
+    if root != executing_root or root != adapter_root or root != staging_root or dependency_roots != {root}:
         raise AllocationEvidenceError("source root differs from the executing adapter/allocator checkout")
     sha = _git(root, "rev-parse", "--verify", "HEAD").decode().strip()
     if sha != expected_sha or not isinstance(expected_sha, str) or len(expected_sha) != 40:
@@ -112,7 +151,10 @@ def _source_bytes(source_root: Path, expected_sha: str) -> tuple[dict[str, bytes
         if path.is_symlink() or not path.is_file() or path.resolve() != root / name:
             raise AllocationEvidenceError(f"required source is missing, redirected, or nonregular: {name}")
         committed = _git(root, "show", f"{expected_sha}:{name}")
-        working = path.read_bytes()
+        try:
+            working = path.read_bytes()
+        except OSError as exc:
+            raise AllocationEvidenceError(f"required source could not be read: {name}") from exc
         if working != committed:
             raise AllocationEvidenceError(f"working bytes do not match named commit: {name}")
         consumed[name] = committed
@@ -153,6 +195,22 @@ def _source_id(value: Any, label: str) -> str:
             not account_staging._CLIENT_ID_RE.fullmatch(value.strip())):
         raise AllocationEvidenceError(f"{label} has an invalid source identity")
     return value.strip()
+
+
+def _validate_output_numbers(value: Any, path: str = "canonical_result") -> None:
+    if isinstance(value, dict):
+        for key, child in value.items():
+            _validate_output_numbers(child, f"{path}.{key}")
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            _validate_output_numbers(child, f"{path}[{index}]")
+    elif isinstance(value, (int, float)) and not isinstance(value, bool):
+        try:
+            valid = math.isfinite(value)
+        except OverflowError:
+            valid = False
+        if not valid:
+            raise AllocationEvidenceError(f"{path} contains a non-finite output number")
 
 
 def _review_evidence(runtime_root: Path | str, doc: dict) -> tuple[dict, bytes, str, dict]:
@@ -273,6 +331,9 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
         holdings, shares = {}, {}
         observation_provenance = []
         for index, h in enumerate(normalized["holdings"]):
+            if h["ticker"] in roster and roster[h["ticker"]]["asset_class"] in {"cash", "reserve"}:
+                raise AllocationEvidenceError(
+                    f"holding identity {h['ticker']} collides with a synthetic cash/reserve sleeve")
             qty = _finite(h["quantity"], f"holdings[{index}].quantity")
             shares[h["ticker"]] = qty
             if qty == 0:
@@ -304,15 +365,18 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
             if type(row["available"]) is not bool:
                 raise AllocationEvidenceError(f"market[{i}].available must be Boolean")
             _source_id(row["source_id"], f"market[{i}].source_id")
-            _fresh(row["observed_at"], f"market[{i}].observed_at", as_of)
+            age = _informational_age(row["observed_at"], f"market[{i}].observed_at", as_of)
             if row["available"]:
                 price = _finite(row["price"], f"market[{i}].price", low=0.000000001)
                 sma = (None if row["sma200"] is None else
                        _finite(row["sma200"], f"market[{i}].sma200", low=0.000000001))
                 rsi = (None if row["rsi14"] is None else
                        _finite(row["rsi14"], f"market[{i}].rsi14", high=100.0))
-                metrics[tk] = {"price": price, "sma200": sma, "rsi14": rsi}
-            elif any(row[k] is not None for k in ("price", "sma200", "rsi14")):
+                metrics[tk] = ({"price": price, "sma200": sma, "rsi14": rsi}
+                               if age <= 2 else
+                               {"error": "dated market evidence unavailable"})
+            elif not row["available"] and any(
+                    row[k] is not None for k in ("price", "sma200", "rsi14")):
                 raise AllocationEvidenceError(f"market[{i}] unavailable values must be null")
             else:
                 metrics[tk] = {"error": "dated market evidence unavailable"}
@@ -333,13 +397,17 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
             if tk in earnings or tk not in roster or tk in gates:
                 raise AllocationEvidenceError(f"earnings[{i}] has an invalid identity")
             _source_id(row["source_id"], f"earnings[{i}].source_id")
-            _fresh(row["observed_at"], f"earnings[{i}].observed_at", as_of)
+            age = _informational_age(row["observed_at"], f"earnings[{i}].observed_at", as_of)
             if row["next_date"] is not None:
                 try:
                     next_date = date.fromisoformat(row["next_date"])
                 except (TypeError, ValueError) as exc:
                     raise AllocationEvidenceError(f"earnings[{i}].next_date is invalid") from exc
-                earnings[tk] = (next_date - as_of.date()).days
+                if next_date < max(as_of.date(), _observation_date(
+                        row["observed_at"], f"earnings[{i}].observed_at")):
+                    raise AllocationEvidenceError(
+                        f"earnings[{i}].next_date predates its observation")
+                earnings[tk] = ((next_date - as_of.date()).days if age <= 2 else None)
             else:
                 earnings[tk] = None  # canonically allowed, disclosed unknown
         if earnings.keys() != eligible_market:
@@ -351,7 +419,9 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
         if type(regime["ok"]) is not bool or type(regime["known"]) is not bool:
             raise AllocationEvidenceError("regime ok/known must be Boolean")
         _source_id(regime["source_id"], "regime.source_id")
-        _fresh(regime["observed_at"], "regime.observed_at", as_of)
+        regime_age = _informational_age(regime["observed_at"], "regime.observed_at", as_of)
+        regime_ok = regime["ok"] if regime["known"] and regime_age <= 2 else False
+        regime_known = regime["known"] and regime_age <= 2
 
         cash_row, debt_row = normalized["cash"][0], normalized["debt_margin"][0]
         holdings_state = {"shares": shares, "crypto_shares": {},
@@ -364,12 +434,13 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
         valuation = allocate.valuation_completeness(holdings, holdings_state)
         availability = allocate.current_dollar_availability(cash_state, margin_state, valuation)
         result = allocate.plan(
-            targets, holdings, roster, metrics, regime["ok"], regime["known"],
+            targets, holdings, roster, metrics, regime_ok, regime_known,
             cash_state["balance"], margin_debt=debt_row["balance"],
             margin_buffer_pct=buffer_pct, gates_cfg=gates,
             lookthrough=lookthrough, holdings_state=holdings_state,
             dollars_available=availability["available"], earnings_provider=earnings.get,
             as_of=as_of)
+        _validate_output_numbers(result)
         return {"actionable": bool(result["dollars_available"]),
                 "blocked_reasons": availability["blocked_by"],
                 "as_of": doc["as_of"], "canonical_result": result,
@@ -385,7 +456,8 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
                 "limitations": ["recommendations only; no orders", "no broker retrieval or network access",
                                 "unknown earnings is disclosed by the canonical result"]}
     except (AllocationEvidenceError, account_staging.AccountStorageError,
-            account_staging.AccountSubmissionRejected, KeyError, TypeError, ValueError) as exc:
+            account_staging.AccountSubmissionRejected, KeyError, OSError,
+            OverflowError, TypeError, ValueError) as exc:
         return {"actionable": False, "blocked_reasons": [str(exc)], "as_of": None,
                 "canonical_result": None, "provenance": {"supplement_sha256": supplement_hash},
                 "discrepancies": [], "limitations": ["No dependent dollar result is available."]}

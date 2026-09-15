@@ -273,3 +273,60 @@ def test_cli_missing_and_oversized_supplement_are_controlled(tmp_path, capsys):
     oversized.write_bytes(b"x" * (private_allocation.MAX_SUPPLEMENT_BYTES + 1))
     assert private_allocation.main([*common, str(oversized)]) == 2
     assert "exceeds 512 KiB" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("ticker", ["CASH", "RESERVE"])
+def test_synthetic_sleeve_holding_collision_cannot_double_count(tmp_path, ticker):
+    account = _account(identity=f"collision-{ticker.lower()}")
+    account["holdings"][0]["ticker"] = ticker
+    _, _, supplement = _setup(tmp_path, account)
+    result = _run(tmp_path, supplement)
+    assert not result["actionable"] and "collides" in result["blocked_reasons"][0]
+
+
+def test_date_only_account_evidence_survives_to_provenance(tmp_path):
+    account = _account(identity="date-only")
+    account["holdings"][0]["observed_at"] = "2026-09-15"
+    account["holdings"][0]["valuation"]["observed_at"] = "2026-09-15"
+    account["cash"][0]["observed_at"] = "2026-09-15"
+    account["debt_margin"][0]["observed_at"] = "2026-09-15"
+    _, _, supplement = _setup(tmp_path, account)
+    result = _run(tmp_path, supplement)
+    assert result["actionable"]
+    assert result["provenance"]["observations"][0]["quantity_observed_at"] == "2026-09-15"
+    assert result["provenance"]["observations"][0]["valuation_observed_at"] == "2026-09-15"
+
+
+def test_past_next_earnings_is_rejected(tmp_path):
+    _, _, supplement = _setup(tmp_path)
+    supplement["earnings"][0]["next_date"] = "2026-09-14"
+    result = _run(tmp_path, supplement)
+    assert not result["actionable"] and "predates" in result["blocked_reasons"][0]
+
+
+def test_stale_informational_evidence_degrades_locally_not_globally(tmp_path):
+    _, _, supplement = _setup(tmp_path)
+    supplement["regime"].update(known=False, observed_at="2026-01-01T00:00:00Z")
+    supplement["earnings"][0]["observed_at"] = "2026-01-01"
+    market = next(row for row in supplement["market"] if row["ticker"] == "SPY")
+    market["observed_at"] = "2026-01-01"
+    result = _run(tmp_path, supplement)
+    assert result["actionable"] and result["canonical_result"]["regime_known"] is False
+    assert any(row["ticker"] == "SPY" for row in result["canonical_result"]["blocked"])
+
+
+def test_numeric_overflow_and_policy_permission_error_are_controlled(tmp_path, monkeypatch):
+    _, _, supplement = _setup(tmp_path)
+    supplement["market"][0]["price"] = 10 ** 1000
+    result = _run(tmp_path, supplement)
+    assert not result["actionable"] and "finite" in result["blocked_reasons"][0]
+
+    _, _, supplement = _setup(tmp_path / "permission", _account(identity="permission"))
+    original = Path.read_bytes
+    def guarded_read(path):
+        if path == ROOT / "gates.yaml":
+            raise PermissionError("synthetic denied")
+        return original(path)
+    monkeypatch.setattr(Path, "read_bytes", guarded_read)
+    result = _run(tmp_path / "permission", supplement)
+    assert not result["actionable"] and "could not be read" in result["blocked_reasons"][0]

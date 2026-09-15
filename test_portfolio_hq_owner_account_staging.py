@@ -58,6 +58,19 @@ def test_exact_bytes_receipt_zero_and_restart_persistence(tmp_path: Path):
     assert restarted.records[0]["reviews"] == []
 
 
+def test_date_only_observations_roundtrip_without_manufactured_time(tmp_path: Path):
+    doc = json.loads(synthetic_document(identity="date-precision"))
+    doc["holdings"][0]["observed_at"] = "2026-09-14"
+    doc["holdings"][0]["valuation"]["observed_at"] = "2026-09-14"
+    doc["cash"][0]["observed_at"] = "2026-09-14"
+    original = json.dumps(doc, separators=(",", ":")).encode()
+    receipt = account_staging.ingest(tmp_path, original)
+    assert receipt["normalized"]["holdings"][0]["observed_at"] == "2026-09-14"
+    assert receipt["normalized"]["holdings"][0]["valuation"]["observed_at"] == "2026-09-14"
+    assert receipt["normalized"]["cash"][0]["observed_at"] == "2026-09-14"
+    assert account_staging.original(tmp_path, receipt["submission_id"]) == original
+
+
 def test_returned_nested_objects_cannot_mutate_storage_templates_or_later_receipts(tmp_path):
     original = synthetic_document(identity="mutable-return", holding_freshness="stale",
                                   include_protected=False)
