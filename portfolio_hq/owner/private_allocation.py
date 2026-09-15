@@ -14,6 +14,7 @@ import re
 import subprocess
 import sys
 from datetime import date, datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 from types import CodeType, FunctionType
 from typing import Any
@@ -22,6 +23,7 @@ import yaml
 
 import allocate
 import earnings
+import level1_policy_summary
 import margin_state
 from portfolio_hq.owner import account_staging
 
@@ -29,7 +31,8 @@ SCHEMA_VERSION = 1
 MAX_SUPPLEMENT_BYTES = 512 * 1024
 FRESH_SECONDS = 2 * 86400
 POLICY_FILES = ("targets.yaml", "gates.yaml", "issuer_lookthrough.yaml")
-EXECUTION_FILES = ("allocate.py", "earnings.py", "margin_state.py",
+EXECUTION_FILES = ("allocate.py", "earnings.py", "level1_policy_summary.py",
+                   "margin_state.py",
                    "portfolio_hq/owner/account_staging.py",
                    "portfolio_hq/owner/private_allocation.py")
 # CPython sets CO_OPTIMIZED on function bodies but not on class bodies, which
@@ -174,6 +177,7 @@ def _verify_loaded_code(consumed: dict[str, bytes]) -> None:
     :func:`run` performs this check before it judges any evidence.
     """
     modules = {"allocate.py": allocate, "earnings.py": earnings,
+               "level1_policy_summary.py": level1_policy_summary,
                "margin_state.py": margin_state,
                "portfolio_hq/owner/account_staging.py": account_staging,
                "portfolio_hq/owner/private_allocation.py": sys.modules[__name__]}
@@ -192,7 +196,7 @@ def _source_bytes(source_root: Path, expected_sha: str) -> tuple[dict[str, bytes
     executing_root = Path(allocate.__file__).resolve().parent
     adapter_root = Path(__file__).resolve().parents[2]
     dependency_roots = {Path(module.__file__).resolve().parent for module in
-                        (allocate, earnings, margin_state)}
+                        (allocate, earnings, level1_policy_summary, margin_state)}
     staging_root = Path(account_staging.__file__).resolve().parents[2]
     if root != executing_root or root != adapter_root or root != staging_root or dependency_roots != {root}:
         raise AllocationEvidenceError("source root differs from the executing adapter/allocator checkout")
@@ -270,6 +274,83 @@ def _validate_output_numbers(value: Any, path: str = "canonical_result") -> None
             valid = False
         if not valid:
             raise AllocationEvidenceError(f"{path} contains a non-finite output number")
+
+
+def _level1_sleeves(targets: dict, holdings: dict, result: dict) -> dict:
+    """Join the accepted sleeve policy to the values this run actually observed.
+
+    Level 2 already falls out of :func:`allocate.plan` per instrument.  The
+    sleeve view is the same facts grouped the way a whole-portfolio review
+    needs them, and it invents no policy: the sleeve definitions, their
+    members and their percentages all come from
+    :func:`level1_policy_summary.build_policy_summary`, reading the verified
+    canonical ``targets.yaml`` bytes this run already consumed.  An
+    ``asset_class`` rollup would be wrong here -- the accepted policy splits
+    SPY/VEA/VWO from GLD although both are funds -- so the governed mapping is
+    used rather than reconstructed.
+
+    Dollar figures inherit the allocator's own availability.  When the book is
+    unavailable they are ``None`` with a stated reason, never estimated, which
+    is the same withholding rule ``plan`` applies to its own dollars.
+    """
+    summary = level1_policy_summary.build_policy_summary(targets)
+    book = result.get("book")
+    known = bool(result.get("dollars_available")) and isinstance(book, (int, float))
+    reason = None if known else "book is unavailable, so no sleeve dollar figure is published"
+    cash = result.get("cash")
+    # A share OF the book is undefined at a zero book, while the dollar figures
+    # themselves remain exactly right. Withhold only the undefined one rather
+    # than discarding a whole valid view -- or dividing and escaping the
+    # envelope, since decimal raises ZeroDivisionError, not ValueError.
+    book_total = Decimal(str(book)) if known else None
+    pct_defined = known and book_total != 0
+
+    sleeves, assigned = {}, set()
+    for name, members in summary["members"].items():
+        assigned.update(members)
+        # CASH/RESERVE are synthetic destination rows, not holdable tickers --
+        # the adapter rejects them as holding identities. The balance those
+        # rows stand for is the tracked cash the allocator itself used.
+        cash_sleeve = name == "cash_and_reserve"
+        if not known:
+            current = None
+        elif cash_sleeve:
+            current = float(cash) if isinstance(cash, (int, float)) else None
+        else:
+            current = float(sum(holdings.get(ticker, 0.0) for ticker in members))
+        target_pct = Decimal(summary["sleeves_pct"][name])
+        target = float(book_total * target_pct / 100) if known else None
+        sleeves[name] = {
+            "governed_target_pct": summary["sleeves_pct"][name],
+            "members": list(members),
+            "exposure_basis": "tracked cash balance" if cash_sleeve
+                              else "sum of held member values",
+            "current_value": current,
+            "current_pct": (None if current is None or not pct_defined
+                            else float(Decimal(str(current)) * 100 / book_total)),
+            "target_value": target,
+            # Positive means under the accepted sleeve weight.
+            "gap_value": None if current is None or target is None else target - current,
+        }
+
+    # Anything held outside the accepted roster is disclosed, never folded into
+    # a sleeve and never silently dropped; plan() reports the same names.
+    unassigned = {t: v for t, v in holdings.items() if t not in assigned}
+    return {
+        "status": summary["status"],
+        "policy_source": summary["policy_source"],
+        "policy_basis": list(summary["policy_basis"]),
+        "dollars_known": known,
+        "withheld_reason": reason,
+        "sleeves": sleeves,
+        "unallocated_policy_pct": summary["sleeves_pct"]["unallocated"],
+        "unassigned_holdings": unassigned,
+        "reconciliation": dict(summary["reconciliation"]),
+        "notes": [
+            "sleeve exposure is gross of margin debt; book is net of it",
+            "unallocated policy weight is held as cash and is never redistributed",
+        ],
+    }
 
 
 def _review_evidence(runtime_root: Path | str, doc: dict) -> tuple[dict, bytes, str, dict]:
@@ -504,9 +585,12 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
             dollars_available=availability["available"], earnings_provider=earnings.get,
             as_of=as_of)
         _validate_output_numbers(result)
+        level1 = _level1_sleeves(targets, holdings, result)
+        _validate_output_numbers(level1, "level1")
         return {"actionable": bool(result["dollars_available"]),
                 "blocked_reasons": availability["blocked_by"],
                 "as_of": doc["as_of"], "canonical_result": result,
+                "level1": level1,
                 "provenance": {"submission_id": doc["submission_id"],
                     "submission_sha256": receipt["submission_sha256"],
                     "receipt_sha256": receipt_hash, "review_id": doc["review_id"],
@@ -521,11 +605,12 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
                                 "executing code is bound to the named commit for the functions these"
                                 " files define; names imported into them are covered only by the"
                                 " shared source-root check"]}
-    except (AllocationEvidenceError, account_staging.AccountStorageError,
-            account_staging.AccountSubmissionRejected, KeyError, OSError,
-            OverflowError, TypeError, ValueError) as exc:
+    except (AllocationEvidenceError, ArithmeticError, account_staging.AccountStorageError,
+            account_staging.AccountSubmissionRejected, KeyError,
+            OSError, TypeError, ValueError) as exc:
         return {"actionable": False, "blocked_reasons": [str(exc)], "as_of": None,
-                "canonical_result": None, "provenance": {"supplement_sha256": supplement_hash},
+                "canonical_result": None, "level1": None,
+                "provenance": {"supplement_sha256": supplement_hash},
                 "discrepancies": [], "limitations": ["No dependent dollar result is available."]}
 
 
