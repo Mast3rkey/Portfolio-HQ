@@ -103,6 +103,16 @@ because the adapter injects both the market metrics and the earnings provider â€
 and in-process self-verification cannot prove `run` or the binding function
 itself, so a fresh process remains the strongest guarantee.
 
+`provenance.observations` states every confirmed position: ticker, quantity,
+unit price, value, the quantity and valuation observation times, and currency.
+This matters because `allocate.plan()` lists a position only while it is a buy,
+underweight, blocked, trim or gated candidate â€” a holding already at or above
+its governed target is none of those, so without this echo most of a real
+portfolio would be absent from the envelope and the sleeve percentages below
+could not be explained by the instruments producing them. These are the owner's
+own confirmed observations, so they carry no book dependency and are not
+withheld alongside book-derived figures.
+
 The envelope also carries a `level1` sleeve view: the accepted sleeve policy
 read from the same verified `targets.yaml` bytes through
 `level1_policy_summary`, joined to the values this run observed, giving each
