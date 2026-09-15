@@ -12,8 +12,10 @@ import json
 import math
 import re
 import subprocess
+import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
+from types import CodeType, FunctionType
 from typing import Any
 
 import yaml
@@ -30,6 +32,9 @@ POLICY_FILES = ("targets.yaml", "gates.yaml", "issuer_lookthrough.yaml")
 EXECUTION_FILES = ("allocate.py", "earnings.py", "margin_state.py",
                    "portfolio_hq/owner/account_staging.py",
                    "portfolio_hq/owner/private_allocation.py")
+# CPython sets CO_OPTIMIZED on function bodies but not on class bodies, which
+# are also module-level code constants.  It is the discriminator used below.
+CO_OPTIMIZED = 0x1
 
 
 class AllocationEvidenceError(ValueError):
@@ -130,6 +135,58 @@ def _git(root: Path, *args: str, input_bytes: bytes | None = None) -> bytes:
         raise AllocationEvidenceError("identified source could not be verified by Git") from exc
 
 
+def _defined_functions(source: bytes, name: str) -> dict[str, CodeType]:
+    """Module-level ``def`` code objects compiled from the verified bytes.
+
+    Nested defs and closures need no separate entry: code objects compare by
+    value and that comparison recurses through ``co_consts``, so tampering
+    inside an inner function still changes its enclosing function's code.
+    """
+    try:
+        module_code = compile(source, name, "exec", dont_inherit=True)
+    except (SyntaxError, ValueError) as exc:
+        raise AllocationEvidenceError(f"verified source does not compile: {name}") from exc
+    # Later definitions shadow earlier ones, matching import-time semantics.
+    return {const.co_name: const for const in module_code.co_consts
+            if isinstance(const, CodeType) and const.co_flags & CO_OPTIMIZED}
+
+
+def _verify_loaded_code(consumed: dict[str, bytes]) -> None:
+    """Bind the in-memory callables to the named commit, not just the disk.
+
+    Matching on-disk bytes cannot show that the *loaded* code came from them.
+    A long-lived process may hold modules imported before the checkout moved,
+    or replaced in memory afterwards, and would otherwise publish a result
+    produced by different code under ``expected_source_sha``.  Every
+    module-level function the commit defines must therefore still be present
+    and byte-identical in compiled code.
+
+    Scope is deliberately the functions these files *define*.  Names merely
+    imported into them are covered only by the shared-root check in
+    :func:`_source_bytes` and are disclosed as a limitation; the adapter
+    injects the market metrics and the earnings provider, so the two live
+    data paths are not consulted for this result either way.
+
+    In-process self-verification is irreducibly partial at exactly two
+    points: replacing ``run`` or this function itself removes the check
+    before it can run.  Everything else in these files, including the
+    retained-review validators and the rest of this module, is covered --
+    :func:`run` performs this check before it judges any evidence.
+    """
+    modules = {"allocate.py": allocate, "earnings.py": earnings,
+               "margin_state.py": margin_state,
+               "portfolio_hq/owner/account_staging.py": account_staging,
+               "portfolio_hq/owner/private_allocation.py": sys.modules[__name__]}
+    if set(modules) != set(EXECUTION_FILES):
+        raise AllocationEvidenceError("executing dependency binding is incomplete")
+    for name, module in modules.items():
+        for attr, expected in _defined_functions(consumed[name], name).items():
+            loaded = getattr(module, attr, None)
+            if not isinstance(loaded, FunctionType) or loaded.__code__ != expected:
+                raise AllocationEvidenceError(
+                    f"loaded code does not match the named commit: {name}:{attr}")
+
+
 def _source_bytes(source_root: Path, expected_sha: str) -> tuple[dict[str, bytes], dict]:
     root = source_root.resolve()
     executing_root = Path(allocate.__file__).resolve().parent
@@ -160,6 +217,7 @@ def _source_bytes(source_root: Path, expected_sha: str) -> tuple[dict[str, bytes
             raise AllocationEvidenceError(f"working bytes do not match named commit: {name}")
         consumed[name] = committed
         hashes[name] = hashlib.sha256(committed).hexdigest()
+    _verify_loaded_code(consumed)
     return consumed, {"source_root": str(root), "git_sha": sha,
                       "files_sha256": {n: hashes[n] for n in POLICY_FILES},
                       "execution_sha256": {n: hashes[n] for n in EXECUTION_FILES}}
@@ -287,6 +345,10 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
     """
     supplement_hash = hashlib.sha256(supplement_bytes).hexdigest()
     try:
+        # Verify and bind the executing code before it is used to judge any
+        # evidence: the retained-review validators are themselves part of the
+        # bound surface, so they must not run ahead of their own check.
+        targets, gates, lookthrough, policy = _policy(Path(source_root), expected_source_sha)
         doc = _json(supplement_bytes)
         allowed = {"schema_version", "as_of", "submission_id", "receipt_sha256",
                    "review_id", "reviewer", "review_sha256", "buffer", "market",
@@ -301,7 +363,6 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
         if issues:
             raise AllocationEvidenceError("confirmed submission unexpectedly has material issues")
 
-        targets, gates, lookthrough, policy = _policy(Path(source_root), expected_source_sha)
         roster = allocate.build_roster(targets)
         currencies = {row["currency"] for key in ("cash", "debt_margin")
                       for row in normalized[key]}
@@ -456,13 +517,37 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
                     "regime": regime},
                 "discrepancies": ["protected_capital submission rows are retained evidence but are not inferred as allocator reserve"],
                 "limitations": ["recommendations only; no orders", "no broker retrieval or network access",
-                                "unknown earnings is disclosed by the canonical result"]}
+                                "unknown earnings is disclosed by the canonical result",
+                                "executing code is bound to the named commit for the functions these"
+                                " files define; names imported into them are covered only by the"
+                                " shared source-root check"]}
     except (AllocationEvidenceError, account_staging.AccountStorageError,
             account_staging.AccountSubmissionRejected, KeyError, OSError,
             OverflowError, TypeError, ValueError) as exc:
         return {"actionable": False, "blocked_reasons": [str(exc)], "as_of": None,
                 "canonical_result": None, "provenance": {"supplement_sha256": supplement_hash},
                 "discrepancies": [], "limitations": ["No dependent dollar result is available."]}
+
+
+def _json_safe(value: Any, path: str = "output") -> Any:
+    """ISO-encode calendar values for the CLI's JSON boundary.
+
+    The canonical result legitimately carries real ``date`` objects -- the
+    retained common-driver measurement is one -- and :func:`run` returns them
+    unchanged so Python callers keep canonical fidelity.  Only this boundary
+    needs a serializable form, and anything it cannot represent faithfully is
+    refused rather than coerced, so an unexpected type surfaces as a
+    controlled envelope instead of an uncaught traceback.
+    """
+    if isinstance(value, dict):
+        return {key: _json_safe(child, f"{path}.{key}") for key, child in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(child, f"{path}[{index}]") for index, child in enumerate(value)]
+    if isinstance(value, (datetime, date)):  # datetime subclasses date; both isoformat
+        return value.isoformat()
+    if value is None or isinstance(value, (str, bool, int, float)):
+        return value
+    raise AllocationEvidenceError(f"{path} is not JSON-serializable: {type(value).__name__}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -481,7 +566,14 @@ def main(argv: list[str] | None = None) -> int:
         output = {"actionable": False, "blocked_reasons": [f"supplement could not be read: {exc}"],
                   "as_of": None, "canonical_result": None, "provenance": {},
                   "discrepancies": [], "limitations": ["No dependent dollar result is available."]}
-    print(json.dumps(output, sort_keys=True, indent=2))
+    try:
+        text = json.dumps(_json_safe(output), sort_keys=True, indent=2)
+    except (AllocationEvidenceError, RecursionError, TypeError, ValueError) as exc:
+        output = {"actionable": False, "blocked_reasons": [str(exc)], "as_of": None,
+                  "canonical_result": None, "provenance": {}, "discrepancies": [],
+                  "limitations": ["No dependent dollar result is available."]}
+        text = json.dumps(output, sort_keys=True, indent=2)
+    print(text)
     return 0 if output["actionable"] else 2
 
 

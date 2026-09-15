@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -69,15 +70,42 @@ def _run(tmp_path, supplement):
                                   source_root=ROOT, expected_source_sha=head)
 
 
+def _independent_canonical_plan():
+    """Rebuild the fixture's canonical plan without going through the adapter.
+
+    Deliberately reconstructed from the fixture's own literals rather than by
+    recording ``allocate.plan`` arguments: the adapter now binds loaded code to
+    the named commit, so wrapping ``allocate.plan`` would (correctly) be
+    refused.  Reproducing the inputs independently is also stronger evidence
+    that the adapter changed nothing on the way into the canonical engine.
+    """
+    as_of = datetime(2026, 9, 15, 12, 0, tzinfo=timezone.utc)
+    targets = allocate.load_yaml(ROOT / "targets.yaml")
+    roster = allocate.build_roster(targets)
+    gates = allocate.load_gates()
+    metrics = {t: {"price": 100.0, "sma200": 90.0, "rsi14": 40.0} for t, m in roster.items()
+               if m["asset_class"] not in {"crypto", "cash", "reserve"}}
+    earn = {t: (date(2026, 10, 15) - as_of.date()).days for t in metrics if t not in gates}
+    holdings = {"SYNTH": 100.0}
+    holdings_state = {"shares": {"SYNTH": 1.0}, "crypto_shares": {},
+                      "cash": {"balance": 100000, "synced_at": "2026-09-15T11:00:00Z"},
+                      "margin": {"debt": 0, "buffer_pct": 80.0,
+                                 "synced_at": "2026-09-15T11:00:00Z"}}
+    cash_state = allocate.load_cash_state(holdings_state, as_of=as_of)
+    margin = allocate.load_margin_state(holdings_state, as_of=as_of)
+    availability = allocate.current_dollar_availability(
+        cash_state, margin, allocate.valuation_completeness(holdings, holdings_state))
+    return allocate.plan(targets, holdings, roster, metrics, True, True,
+                         cash_state["balance"], margin_debt=0, margin_buffer_pct=80.0,
+                         gates_cfg=gates, lookthrough=allocate.load_yaml(ROOT / "issuer_lookthrough.yaml"),
+                         holdings_state=holdings_state,
+                         dollars_available=availability["available"],
+                         earnings_provider=earn.get, as_of=as_of)
+
+
 def test_retained_bytes_confirmed_version_to_real_noncrypto_plan_is_deterministic(
         tmp_path, monkeypatch):
     receipt, review, supplement = _setup(tmp_path)
-    called = []
-    real_plan = allocate.plan
-    def recording_plan(*args, **kwargs):
-        called.append((args, kwargs))
-        return real_plan(*args, **kwargs)
-    monkeypatch.setattr(allocate, "plan", recording_plan)
     monkeypatch.setattr(allocate, "AlpacaPaperClient",
                         lambda *a, **k: pytest.fail("broker client constructed"))
     monkeypatch.setattr(allocate, "days_until_earnings",
@@ -92,7 +120,7 @@ def test_retained_bytes_confirmed_version_to_real_noncrypto_plan_is_deterministi
     second = _run(tmp_path, supplement)
     after = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in tmp_path.rglob("*") if p.is_file()}
     assert first == second
-    assert first["canonical_result"] == real_plan(*called[0][0], **called[0][1])
+    assert first["canonical_result"] == _independent_canonical_plan()
     assert earnings._CACHE == cache_before
     assert before == after
     assert first["actionable"] is True
@@ -362,3 +390,115 @@ def test_numeric_overflow_and_policy_permission_error_are_controlled(tmp_path, m
     monkeypatch.setattr(Path, "read_bytes", guarded_read)
     result = _run(tmp_path / "permission", supplement)
     assert not result["actionable"] and "could not be read" in result["blocked_reasons"][0]
+
+
+def test_replacing_a_committed_function_in_memory_fails_closed(tmp_path, monkeypatch):
+    """Matching disk bytes must not let patched in-memory code claim the SHA."""
+    _, _, supplement = _setup(tmp_path)
+    assert _run(tmp_path, supplement)["actionable"] is True
+    real_plan = allocate.plan
+
+    def wrapping_plan(*args, **kwargs):  # even a faithful wrapper is different code
+        return real_plan(*args, **kwargs)
+
+    monkeypatch.setattr(allocate, "plan", wrapping_plan)
+    result = _run(tmp_path, supplement)
+    assert not result["actionable"] and result["canonical_result"] is None
+    assert result["blocked_reasons"] == [
+        "loaded code does not match the named commit: allocate.py:plan"]
+    assert "policy" not in result["provenance"]
+
+
+@pytest.mark.parametrize("module_name, attr", [
+    ("allocate.py", "build_roster"),
+    ("portfolio_hq/owner/account_staging.py", "_valid_review"),
+    ("portfolio_hq/owner/private_allocation.py", "_review_evidence"),
+])
+def test_binding_covers_every_declared_executing_file(tmp_path, monkeypatch, module_name, attr):
+    _, _, supplement = _setup(tmp_path)
+    module = {"allocate.py": allocate,
+              "portfolio_hq/owner/account_staging.py": account_staging,
+              "portfolio_hq/owner/private_allocation.py": private_allocation}[module_name]
+    monkeypatch.setattr(module, attr, lambda *a, **k: pytest.fail("patched code ran"))
+    result = _run(tmp_path, supplement)
+    assert result["blocked_reasons"] == [
+        f"loaded code does not match the named commit: {module_name}:{attr}"]
+
+
+def test_binding_scope_is_defined_functions_not_imported_names(tmp_path, monkeypatch):
+    """The declared scope is the functions these files define.
+
+    ``days_until_earnings`` is imported into allocate, so it is outside the
+    binding and conftest's repo-wide isolation keeps working.  That is safe
+    here only because the adapter injects the earnings provider, so the live
+    lookup is never consulted for this result -- assert that too.
+    """
+    _, _, supplement = _setup(tmp_path)
+    monkeypatch.setattr(allocate, "days_until_earnings",
+                        lambda *a, **k: pytest.fail("live earnings lookup used"))
+    result = _run(tmp_path, supplement)
+    assert result["actionable"] is True
+    assert any("imported into them" in note for note in result["limitations"])
+
+
+def test_execution_file_list_and_bound_modules_cannot_drift(tmp_path):
+    """A new executing dependency must be bound, not silently unbound."""
+    _, _, supplement = _setup(tmp_path)
+    original = private_allocation.EXECUTION_FILES
+    try:
+        private_allocation.EXECUTION_FILES = original + ("indicators.py",)
+        result = _run(tmp_path, supplement)
+    finally:
+        private_allocation.EXECUTION_FILES = original
+    assert result["blocked_reasons"] == ["executing dependency binding is incomplete"]
+
+
+def test_offline_run_opens_no_socket(tmp_path, monkeypatch):
+    """Prove absence of network use directly, not just that clients are unused.
+
+    Guarding named client attributes leaves the claim resting on knowing every
+    entry point.  Denying the socket layer itself covers paths this test does
+    not have to enumerate, including any cache refresh underneath them.
+    """
+    _, _, supplement = _setup(tmp_path)
+
+    def denied(*args, **kwargs):
+        raise AssertionError("socket opened during the offline allocation run")
+
+    monkeypatch.setattr("socket.socket", denied)
+    result = _run(tmp_path, supplement)
+    assert result["actionable"] is True and result["blocked_reasons"] == []
+
+
+def test_cli_emits_a_serializable_envelope_for_an_actionable_run(tmp_path, capsys):
+    """The documented CLI must return the envelope, not a traceback.
+
+    The canonical result carries a real ``date`` (the retained common-driver
+    measurement), so the success path -- the CLI's whole purpose -- is the one
+    that exercises the JSON boundary.
+    """
+    _, _, supplement = _setup(tmp_path)
+    path = tmp_path / "supplement.json"
+    path.write_bytes(json.dumps(supplement, separators=(",", ":")).encode())
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, check=True,
+                          capture_output=True, text=True).stdout.strip()
+    code = private_allocation.main([
+        "--runtime-root", str(tmp_path), "--supplement", str(path),
+        "--source-root", str(ROOT), "--expected-source-sha", head])
+    printed = json.loads(capsys.readouterr().out)
+    assert code == 0 and printed["actionable"] is True
+    assert printed["canonical_result"]["retained_common_driver_measurement"][
+        "measured_at"] == "2026-07-30"
+    assert printed["provenance"]["policy"]["git_sha"] == head
+
+
+def test_cli_refuses_an_unserializable_envelope_instead_of_raising(monkeypatch, capsys):
+    monkeypatch.setattr(private_allocation, "run",
+                        lambda *a, **k: {"actionable": True, "canonical_result": {"x": object()}})
+    code = private_allocation.main([
+        "--runtime-root", str(ROOT), "--supplement", str(ROOT / "targets.yaml"),
+        "--source-root", str(ROOT), "--expected-source-sha", "0" * 40])
+    printed = json.loads(capsys.readouterr().out)
+    assert code == 2 and printed["actionable"] is False
+    assert printed["blocked_reasons"] == [
+        "output.canonical_result.x is not JSON-serializable: object"]

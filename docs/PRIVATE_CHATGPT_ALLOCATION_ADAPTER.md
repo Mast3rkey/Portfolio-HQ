@@ -89,8 +89,28 @@ policy files and its executing adapter/allocator dependencies, refuses staged,
 dirty, redirected, or mixed-checkout inputs, and parses the already-verified
 policy bytes without a second filesystem read.
 
+Matching bytes on disk do not by themselves show that the *loaded* callables
+came from them: a long-lived process may hold modules imported before the
+checkout moved, or replaced in memory afterwards. The adapter therefore also
+binds the in-memory code, requiring every module-level function the named
+commit defines in `allocate.py`, `earnings.py`, `margin_state.py`,
+`account_staging.py`, and this adapter to still be present with byte-identical
+compiled code. This runs before any evidence is judged, so the retained-review
+validators cannot execute ahead of their own check. Two limits are disclosed
+rather than implied: names merely *imported* into those files are covered only
+by the shared source-root check — which is safe for the two live data paths
+because the adapter injects both the market metrics and the earnings provider —
+and in-process self-verification cannot prove `run` or the binding function
+itself, so a fresh process remains the strongest guarantee.
+
 The envelope contains the actual canonical result, actionability and blocked
 reasons, discrepancies, limitations, exact evidence hashes, source commit SHA,
 and hashes for `targets.yaml`, `gates.yaml`, and `issuer_lookthrough.yaml`.
 It contains recommendations—not orders or executable order payloads. Exit status
 is zero only for actionable evidence and two otherwise.
+
+The Python API returns the canonical result unchanged, so it keeps real `date`
+objects such as the retained common-driver `measured_at`. The CLI ISO-encodes
+those at its JSON boundary and refuses any value it cannot represent
+faithfully, reporting it as an ordinary non-actionable envelope rather than
+raising.
