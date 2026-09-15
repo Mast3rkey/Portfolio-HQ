@@ -100,7 +100,7 @@ to and no "it's only localhost" exemption.
   with the `Host` — belt and braces alongside `SameSite=Strict`.
 * Responses carry `Content-Security-Policy: default-src 'none'` (with no
   `script-src` at all — the interface ships no JavaScript), `nosniff`,
-  `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Cache-Control: no-store`
+  `X-Frame-Options: DENY`, `Referrer-Policy: same-origin`, `Cache-Control: no-store`
   and `robots: noindex`.
 * Three routes are reachable without a session, and none of them discloses
   anything: `GET`/`POST /login` (the sign-in form itself), `GET /logout`, and
