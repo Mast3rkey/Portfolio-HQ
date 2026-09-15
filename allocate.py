@@ -155,7 +155,7 @@ def _finite_scalar(raw, label: str, *, minimum: float | None = None,
     return val, None
 
 
-def _state_age_days(synced_at, *, as_of: date | None = None) -> float | None:
+def _state_age_days(synced_at, *, as_of: date | datetime | None = None) -> float | None:
     """Days since an ISO ``synced_at``, or None when missing, unparseable, or
     in the FUTURE. Identical fail-safe semantics to _margin_buffer_age_days --
     a fabricated 0 would read as 'freshly synced' and hide real staleness, and a
@@ -170,16 +170,22 @@ def _state_age_days(synced_at, *, as_of: date | None = None) -> float | None:
             parsed = datetime.fromisoformat(raw[:-1] + "+00:00" if raw.endswith("Z") else raw)
             if parsed.tzinfo is None:
                 return None
+            if isinstance(as_of, datetime):
+                if as_of.tzinfo is None:
+                    return None
+                seconds = (as_of.astimezone(parsed.tzinfo) - parsed).total_seconds()
+                return seconds / 86400 if seconds >= 0 else None
             observed_date = parsed.date()
         else:
             observed_date = date.fromisoformat(raw)
-        age = ((as_of or date.today()) - observed_date).days
-    except ValueError:
+        comparison_date = as_of.date() if isinstance(as_of, datetime) else (as_of or date.today())
+        age = (comparison_date - observed_date).days
+    except (OverflowError, ValueError):
         return None
     return age if age >= 0 else None
 
 
-def load_cash_state(data: dict | None = None, *, as_of: date | None = None) -> dict:
+def load_cash_state(data: dict | None = None, *, as_of: date | datetime | None = None) -> dict:
     """Read holdings.yaml's tracked ``cash:`` block and classify it.
 
     Per PHQ-2026-07 item 4, the verdict is a THREE-state classification, not a
@@ -235,7 +241,7 @@ def load_cash_state(data: dict | None = None, *, as_of: date | None = None) -> d
     return out
 
 
-def load_margin_state(data: dict | None = None, *, as_of: date | None = None) -> dict:
+def load_margin_state(data: dict | None = None, *, as_of: date | datetime | None = None) -> dict:
     """Read holdings.yaml's ``margin:`` block and classify it.
 
     Same three-state contract as load_cash_state. Margin debt participates in
@@ -1213,10 +1219,10 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     if isinstance(holdings_state, dict):
         _obs_blocks = []
         if holdings_state.get("cash") is not None:
-            _obs_blocks.append((load_cash_state(holdings_state, as_of=as_of.date())
+            _obs_blocks.append((load_cash_state(holdings_state, as_of=as_of)
                                 if as_of else load_cash_state(holdings_state))["usable"])
         if holdings_state.get("margin") is not None:
-            _obs_blocks.append((load_margin_state(holdings_state, as_of=as_of.date())
+            _obs_blocks.append((load_margin_state(holdings_state, as_of=as_of)
                                 if as_of else load_margin_state(holdings_state))["usable"])
         _obs_blocks.append(
             valuation_completeness(holdings, holdings_state)["complete"])
@@ -1571,7 +1577,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     # ---- THE OUTPUT BOUNDARY -----------------------------------------------
     # Every dependency needed to decide what may be emitted, gathered from the
     # observations themselves rather than from one collapsed boolean.
-    _margin_state = (load_margin_state(holdings_state or {}, as_of=as_of.date())
+    _margin_state = (load_margin_state(holdings_state or {}, as_of=as_of)
                      if as_of else load_margin_state(holdings_state or {}))
     # Scoped to what the CALLER actually supplied. `valuation_completeness(h, None)`
     # falls back to reading the real holdings.yaml, so a direct plan() caller that

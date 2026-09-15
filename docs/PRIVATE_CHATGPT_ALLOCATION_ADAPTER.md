@@ -15,7 +15,7 @@ object with **only** these fields:
 
 * `schema_version`: `1`.
 * `as_of`: the reproducible, timezone-aware UTC allocation instant.
-* `submission_id`, `receipt_sha256`, `review_id`, and `reviewer`: the exact
+* `submission_id`, `receipt_sha256`, `review_id`, `review_sha256`, and `reviewer`: the exact
   expected submission, receipt, and confirmation identities. A missing,
   rejected, conflicting, or superseded identity fails closed. Confirmation is
   version-specific data review, not a freshness finding or authority to trade.
@@ -23,10 +23,13 @@ object with **only** these fields:
   `observed_at`, and `source_id`. It is never derived. If absent, the adapter
   still returns a real canonical non-actionable result with book, cash, targets,
   gaps, and buys withheld.
-* `market`: exactly one row for every non-crypto market member of the identified
-  policy roster. Each row supplies `ticker`, `price`, `sma200`, `rsi14`,
-  `currency`, exact `observed_at`, and `source_id`.
-* `earnings`: exactly one row for the same tickers, with `ticker`, ISO date
+* `market`: a row for every eligible non-crypto market member of the identified
+  policy roster; gated names need no row. Each row supplies `ticker`, Boolean
+  `available`, `price`, `sma200`, `rsi14`, `currency`, exact `observed_at`, and
+  `source_id`. An explicitly unavailable row has null metrics and becomes the
+  canonical ticker-local no-data result; an available row may use null SMA/RSI
+  when those indicators are unavailable.
+* `earnings`: exactly one row for each eligible non-crypto ticker, with `ticker`, ISO date
   `next_date` (or `null` for the canonically allowed disclosed unknown), exact
   evidence `observed_at`, and `source_id`.
 * `regime`: Boolean `ok` and `known`, exact `observed_at`, and `source_id`.
@@ -68,6 +71,11 @@ python -m portfolio_hq.owner.private_allocation \
   --source-root /workspace/Portfolio-HQ \
   --expected-source-sha '<exact reviewed commit SHA>'
 ```
+
+The adapter verifies both working bytes and named-commit blobs for the three
+policy files and its executing adapter/allocator dependencies, refuses staged,
+dirty, redirected, or mixed-checkout inputs, and parses the already-verified
+policy bytes without a second filesystem read.
 
 The envelope contains the actual canonical result, actionability and blocked
 reasons, discrepancies, limitations, exact evidence hashes, source commit SHA,

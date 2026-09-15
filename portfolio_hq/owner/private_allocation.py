@@ -24,6 +24,8 @@ SCHEMA_VERSION = 1
 MAX_SUPPLEMENT_BYTES = 512 * 1024
 FRESH_SECONDS = 2 * 86400
 POLICY_FILES = ("targets.yaml", "gates.yaml", "issuer_lookthrough.yaml")
+EXECUTION_FILES = ("allocate.py", "earnings.py", "margin_state.py",
+                   "portfolio_hq/owner/private_allocation.py")
 
 
 class AllocationEvidenceError(ValueError):
@@ -35,11 +37,14 @@ def _parse_timestamp(value: Any, label: str) -> datetime:
         raise AllocationEvidenceError(f"{label} must be an explicit ISO-8601 timestamp")
     try:
         parsed = datetime.fromisoformat(value[:-1] + "+00:00" if value.endswith("Z") else value)
-    except ValueError as exc:
+    except (OverflowError, ValueError) as exc:
         raise AllocationEvidenceError(f"{label} must be an ISO-8601 timestamp") from exc
     if parsed.tzinfo is None:
         raise AllocationEvidenceError(f"{label} must include a timezone")
-    return parsed.astimezone(timezone.utc)
+    try:
+        return parsed.astimezone(timezone.utc)
+    except (OverflowError, ValueError) as exc:
+        raise AllocationEvidenceError(f"{label} is outside the supported timestamp range") from exc
 
 
 def _finite(value: Any, label: str, low: float = 0.0, high: float | None = None) -> float:
@@ -54,7 +59,10 @@ def _finite(value: Any, label: str, low: float = 0.0, high: float | None = None)
 def _fresh(value: Any, label: str, as_of: datetime) -> str:
     original = value
     observed = _parse_timestamp(value, label)
-    age = (as_of - observed).total_seconds()
+    try:
+        age = (as_of - observed).total_seconds()
+    except OverflowError as exc:
+        raise AllocationEvidenceError(f"{label} is outside the supported timestamp range") from exc
     if age < 0:
         raise AllocationEvidenceError(f"{label} is in the future")
     if age > FRESH_SECONDS:
@@ -77,27 +85,138 @@ def _json(data: bytes) -> dict:
     return doc
 
 
-def _policy(source_root: Path, expected_sha: str) -> tuple[dict, dict, dict, dict]:
-    root = source_root.resolve()
-    hashes = {}
-    for name in POLICY_FILES:
-        path = root / name
-        if not path.is_file() or path.resolve().parent != root:
-            raise AllocationEvidenceError(f"required policy file unavailable: {name}")
-        hashes[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+def _git(root: Path, *args: str, input_bytes: bytes | None = None) -> bytes:
     try:
-        sha = subprocess.run(
-            ["git", "-C", str(root), "rev-parse", "HEAD"], check=True,
-            capture_output=True, text=True).stdout.strip()
+        return subprocess.run(["git", "-C", str(root), *args], input=input_bytes,
+                              check=True, capture_output=True).stdout
     except (OSError, subprocess.CalledProcessError) as exc:
-        raise AllocationEvidenceError("source root is not an identified Git checkout") from exc
-    if sha != expected_sha:
+        raise AllocationEvidenceError("identified source could not be verified by Git") from exc
+
+
+def _source_bytes(source_root: Path, expected_sha: str) -> tuple[dict[str, bytes], dict]:
+    root = source_root.resolve()
+    executing_root = Path(allocate.__file__).resolve().parent
+    adapter_root = Path(__file__).resolve().parents[2]
+    if root != executing_root or root != adapter_root:
+        raise AllocationEvidenceError("source root differs from the executing adapter/allocator checkout")
+    sha = _git(root, "rev-parse", "--verify", "HEAD").decode().strip()
+    if sha != expected_sha or not isinstance(expected_sha, str) or len(expected_sha) != 40:
         raise AllocationEvidenceError(f"source SHA mismatch: expected {expected_sha}, found {sha}")
-    targets = allocate.load_yaml(root / "targets.yaml")
-    gates = allocate.load_gates(root / "gates.yaml")
-    lookthrough = allocate.load_issuer_lookthrough(root / "issuer_lookthrough.yaml")
-    return targets, gates, lookthrough, {"source_root": str(root), "git_sha": sha,
-                                        "files_sha256": hashes}
+    names = POLICY_FILES + EXECUTION_FILES
+    status = _git(root, "status", "--porcelain=v1", "--", *names).decode()
+    if status:
+        raise AllocationEvidenceError("policy or executing dependency has staged/uncommitted drift")
+    consumed, hashes = {}, {}
+    for name in names:
+        path = root / name
+        if path.is_symlink() or not path.is_file() or path.resolve() != root / name:
+            raise AllocationEvidenceError(f"required source is missing, redirected, or nonregular: {name}")
+        committed = _git(root, "show", f"{expected_sha}:{name}")
+        working = path.read_bytes()
+        if working != committed:
+            raise AllocationEvidenceError(f"working bytes do not match named commit: {name}")
+        consumed[name] = committed
+        hashes[name] = hashlib.sha256(committed).hexdigest()
+    return consumed, {"source_root": str(root), "git_sha": sha,
+                      "files_sha256": {n: hashes[n] for n in POLICY_FILES},
+                      "execution_sha256": {n: hashes[n] for n in EXECUTION_FILES}}
+
+
+def _policy(source_root: Path, expected_sha: str) -> tuple[dict, dict, dict, dict]:
+    consumed, provenance = _source_bytes(source_root, expected_sha)
+    try:
+        targets = yaml.safe_load(consumed["targets.yaml"]) or {}
+        gates_doc = yaml.safe_load(consumed["gates.yaml"])
+        lookthrough = yaml.safe_load(consumed["issuer_lookthrough.yaml"]) or {}
+    except yaml.YAMLError as exc:
+        raise AllocationEvidenceError("verified policy bytes are malformed YAML") from exc
+    if not isinstance(targets, dict) or not isinstance(gates_doc, dict):
+        raise AllocationEvidenceError("verified policy roots must be mappings")
+    gate_rows = gates_doc.get("gates")
+    if not isinstance(gate_rows, list):
+        raise AllocationEvidenceError("verified gates policy must contain a gates list")
+    gates = {}
+    for index, row in enumerate(gate_rows):
+        if not isinstance(row, dict) or not isinstance(row.get("ticker"), str) or not row["ticker"]:
+            raise AllocationEvidenceError(f"verified gate row {index} has no valid ticker")
+        ticker = row["ticker"].upper()
+        if ticker in gates:
+            raise AllocationEvidenceError(f"verified gates contain duplicate ticker {ticker}")
+        gates[ticker] = row
+    if not isinstance(lookthrough, dict):
+        raise AllocationEvidenceError("verified issuer lookthrough root must be a mapping")
+    return targets, gates, lookthrough, provenance
+
+
+def _source_id(value: Any, label: str) -> str:
+    if (not isinstance(value, str) or not value.strip() or
+            not account_staging._CLIENT_ID_RE.fullmatch(value.strip())):
+        raise AllocationEvidenceError(f"{label} has an invalid source identity")
+    return value.strip()
+
+
+def _review_evidence(runtime_root: Path | str, doc: dict) -> tuple[dict, bytes, str, dict]:
+    verified = account_staging._verified(runtime_root, doc["submission_id"])
+    if verified is None:
+        raise AllocationEvidenceError("expected submission is absent or its binding is invalid")
+    directory, original, receipt_bytes, receipt = verified
+    receipt_hash = hashlib.sha256(receipt_bytes).hexdigest()
+    if receipt_hash != doc["receipt_sha256"]:
+        raise AllocationEvidenceError("expected receipt identity does not match retained bytes")
+    paths = account_staging._review_paths(directory)
+    reviews = []
+    for path in paths:
+        if path.name.startswith("."):
+            continue
+        if not path.name.endswith(".json") or not account_staging._ID_RE.fullmatch(path.stem):
+            raise AllocationEvidenceError("review history contains an unrecognized entry")
+        if not account_staging._safe_regular_file(path):
+            raise AllocationEvidenceError("review history contains redirected or nonregular evidence")
+        raw = account_staging._bounded(path, account_staging.MAX_REVIEW_BYTES)
+        if not raw:
+            raise AllocationEvidenceError("review history contains absent or oversized evidence")
+        try:
+            review = json.loads(raw, object_pairs_hook=account_staging._pairs,
+                                parse_constant=account_staging._constant)
+        except (UnicodeDecodeError, ValueError, RecursionError) as exc:
+            raise AllocationEvidenceError("review history contains malformed evidence") from exc
+        if not account_staging._valid_review(review, path, receipt, receipt_bytes):
+            raise AllocationEvidenceError("review history contains invalid or incompletely bound evidence")
+        reviews.append((review, raw))
+    selected = [(review, raw) for review, raw in reviews if review["review_id"] == doc["review_id"]]
+    if len(selected) != 1 or selected[0][0]["reviewer"] != doc["reviewer"]:
+        raise AllocationEvidenceError("expected review identity/reviewer is absent")
+    chosen, chosen_bytes = selected[0]
+    if hashlib.sha256(chosen_bytes).hexdigest() != doc["review_sha256"]:
+        raise AllocationEvidenceError("expected review bytes do not match review_sha256")
+    if chosen["decision"] != "confirmed" or any(r["decision"] == "rejected" for r, _ in reviews):
+        raise AllocationEvidenceError("expected review is rejected or conflicting")
+    instants = [(account_staging._review_order_key(r)[0], r["review_id"]) for r, _ in reviews]
+    latest = max(i for i, _ in instants)
+    if sum(i == latest for i, _ in instants) != 1:
+        raise AllocationEvidenceError("review precedence is ambiguous at an equal instant")
+    if account_staging._review_order_key(chosen)[0] != latest:
+        raise AllocationEvidenceError("expected review is superseded")
+
+    selected_received = _parse_timestamp(receipt["received_at"], "received_at")
+    submissions = account_staging._root(runtime_root, create=False)
+    try:
+        entries = tuple(submissions.iterdir())
+    except OSError as exc:
+        raise AllocationEvidenceError("submission history could not be enumerated") from exc
+    for entry in entries:
+        if not account_staging._ID_RE.fullmatch(entry.name):
+            continue
+        other_verified = account_staging._verified(runtime_root, entry.name)
+        if other_verified is None:
+            raise AllocationEvidenceError("submission history contains invalid retained evidence")
+        record = other_verified[3]
+        if record["submission_id"] == receipt["submission_id"]:
+            continue
+        other = _parse_timestamp(record["received_at"], "received_at")
+        if other >= selected_received:
+            raise AllocationEvidenceError("expected submission is superseded or has ambiguous precedence")
+    return receipt, original, receipt_hash, chosen
 
 
 def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path | str,
@@ -111,31 +230,14 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
     try:
         doc = _json(supplement_bytes)
         allowed = {"schema_version", "as_of", "submission_id", "receipt_sha256",
-                   "review_id", "reviewer", "buffer", "market", "earnings", "regime"}
+                   "review_id", "reviewer", "review_sha256", "buffer", "market",
+                   "earnings", "regime"}
         if (set(doc) not in (allowed, allowed - {"buffer"}) or
-                doc.get("schema_version") != SCHEMA_VERSION):
+                type(doc.get("schema_version")) is not int or
+                doc["schema_version"] != SCHEMA_VERSION):
             raise AllocationEvidenceError("supplement must use schema_version 1 and only documented fields")
         as_of = _parse_timestamp(doc["as_of"], "as_of")
-        snap = account_staging.snapshot(runtime_root)
-        matches = [r for r in snap.records if r["submission_id"] == doc["submission_id"]]
-        if len(matches) != 1:
-            raise AllocationEvidenceError("expected submission is absent or its binding is invalid")
-        receipt = matches[0]
-        receipt_path = (Path(runtime_root) / account_staging.SUBMISSIONS_DIRNAME /
-                        doc["submission_id"] / account_staging.RECEIPT_FILENAME)
-        receipt_hash = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
-        if receipt_hash != doc["receipt_sha256"]:
-            raise AllocationEvidenceError("expected receipt identity does not match retained bytes")
-        reviews = receipt["reviews"]
-        selected = [r for r in reviews if r["review_id"] == doc["review_id"]]
-        if len(selected) != 1 or selected[0]["reviewer"] != doc["reviewer"]:
-            raise AllocationEvidenceError("expected review identity/reviewer is absent")
-        if selected[0]["decision"] != "confirmed":
-            raise AllocationEvidenceError("expected review rejected this version")
-        if reviews[-1]["review_id"] != doc["review_id"] or any(
-                r["decision"] != "confirmed" for r in reviews):
-            raise AllocationEvidenceError("expected review is conflicting or superseded")
-        original = snap.originals[doc["submission_id"]]
+        receipt, original, receipt_hash, _ = _review_evidence(runtime_root, doc)
         normalized, issues = account_staging.validate(original)
         if issues:
             raise AllocationEvidenceError("confirmed submission unexpectedly has material issues")
@@ -163,8 +265,9 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
             if not isinstance(buffer, dict) or set(buffer) != {"percentage", "currency", "observed_at", "source_id"}:
                 raise AllocationEvidenceError("buffer must contain percentage, currency, observed_at, source_id")
             buffer_pct = _finite(buffer["percentage"], "buffer.percentage", high=100.0)
-            if buffer["currency"] != "USD" or not isinstance(buffer["source_id"], str) or not buffer["source_id"]:
+            if buffer["currency"] != "USD":
                 raise AllocationEvidenceError("buffer currency/source_id is invalid")
+            _source_id(buffer["source_id"], "buffer.source_id")
             _fresh(buffer["observed_at"], "buffer.observed_at", as_of)
 
         holdings, shares = {}, {}
@@ -178,7 +281,10 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
                 raise AllocationEvidenceError(f"{h['ticker']} has an unavailable required valuation")
             _fresh(h["observed_at"], f"{h['ticker']}.observed_at", as_of)
             _fresh(h["valuation"]["observed_at"], f"{h['ticker']}.valuation.observed_at", as_of)
-            holdings[h["ticker"]] = qty * _finite(h["valuation"]["unit_price"], f"{h['ticker']}.unit_price")
+            value = qty * _finite(h["valuation"]["unit_price"], f"{h['ticker']}.unit_price")
+            if not math.isfinite(value):
+                raise AllocationEvidenceError(f"{h['ticker']} valuation product is not finite")
+            holdings[h["ticker"]] = value
             observation_provenance.append({"ticker": h["ticker"], "quantity_observed_at": h["observed_at"],
                                            "valuation_observed_at": h["valuation"]["observed_at"],
                                            "currency": h["valuation"]["currency"]})
@@ -188,17 +294,33 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
             raise AllocationEvidenceError("market must be a list")
         metrics = {}
         for i, row in enumerate(market_doc):
-            if not isinstance(row, dict) or set(row) != {"ticker", "price", "sma200", "rsi14", "currency", "observed_at", "source_id"}:
+            required = {"ticker", "available", "price", "sma200", "rsi14", "currency",
+                        "observed_at", "source_id"}
+            if not isinstance(row, dict) or set(row) != required:
                 raise AllocationEvidenceError(f"market[{i}] has an invalid shape")
             tk = row["ticker"]
             if tk in metrics or tk not in roster or row["currency"] != "USD":
                 raise AllocationEvidenceError(f"market[{i}] has duplicate, non-roster, or non-USD identity")
+            if type(row["available"]) is not bool:
+                raise AllocationEvidenceError(f"market[{i}].available must be Boolean")
+            _source_id(row["source_id"], f"market[{i}].source_id")
             _fresh(row["observed_at"], f"market[{i}].observed_at", as_of)
-            metrics[tk] = {k: _finite(row[k], f"market[{i}].{k}") for k in ("price", "sma200", "rsi14")}
-        required_market = {tk for tk, meta in roster.items()
-                           if meta["asset_class"] not in {"crypto", "cash", "reserve"}}
-        if metrics.keys() != required_market:
-            raise AllocationEvidenceError("market evidence must cover every non-crypto market roster ticker exactly")
+            if row["available"]:
+                price = _finite(row["price"], f"market[{i}].price", low=0.000000001)
+                sma = (None if row["sma200"] is None else
+                       _finite(row["sma200"], f"market[{i}].sma200", low=0.000000001))
+                rsi = (None if row["rsi14"] is None else
+                       _finite(row["rsi14"], f"market[{i}].rsi14", high=100.0))
+                metrics[tk] = {"price": price, "sma200": sma, "rsi14": rsi}
+            elif any(row[k] is not None for k in ("price", "sma200", "rsi14")):
+                raise AllocationEvidenceError(f"market[{i}] unavailable values must be null")
+            else:
+                metrics[tk] = {"error": "dated market evidence unavailable"}
+        eligible_market = {tk for tk, meta in roster.items()
+                           if meta["asset_class"] not in {"crypto", "cash", "reserve"}
+                           and tk not in gates}
+        if not eligible_market <= metrics.keys():
+            raise AllocationEvidenceError("market evidence must cover every eligible non-crypto ticker")
 
         earnings_doc = doc["earnings"]
         if not isinstance(earnings_doc, list):
@@ -208,8 +330,9 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
             if not isinstance(row, dict) or set(row) != {"ticker", "next_date", "observed_at", "source_id"}:
                 raise AllocationEvidenceError(f"earnings[{i}] has an invalid shape")
             tk = row["ticker"]
-            if tk in earnings or tk not in required_market:
+            if tk in earnings or tk not in roster or tk in gates:
                 raise AllocationEvidenceError(f"earnings[{i}] has an invalid identity")
+            _source_id(row["source_id"], f"earnings[{i}].source_id")
             _fresh(row["observed_at"], f"earnings[{i}].observed_at", as_of)
             if row["next_date"] is not None:
                 try:
@@ -219,14 +342,15 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
                 earnings[tk] = (next_date - as_of.date()).days
             else:
                 earnings[tk] = None  # canonically allowed, disclosed unknown
-        if earnings.keys() != required_market:
-            raise AllocationEvidenceError("earnings evidence must cover every non-crypto market roster ticker exactly")
+        if earnings.keys() != eligible_market:
+            raise AllocationEvidenceError("earnings evidence must cover every eligible non-crypto ticker exactly")
 
         regime = doc["regime"]
         if not isinstance(regime, dict) or set(regime) != {"ok", "known", "observed_at", "source_id"}:
             raise AllocationEvidenceError("regime has an invalid shape")
         if type(regime["ok"]) is not bool or type(regime["known"]) is not bool:
             raise AllocationEvidenceError("regime ok/known must be Boolean")
+        _source_id(regime["source_id"], "regime.source_id")
         _fresh(regime["observed_at"], "regime.observed_at", as_of)
 
         cash_row, debt_row = normalized["cash"][0], normalized["debt_margin"][0]
@@ -235,8 +359,8 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
                                    "synced_at": cash_row["observed_at"]},
                           "margin": {"debt": debt_row["balance"], "buffer_pct": buffer_pct,
                                      "synced_at": debt_row["observed_at"]}}
-        cash_state = allocate.load_cash_state(holdings_state, as_of=as_of.date())
-        margin_state = allocate.load_margin_state(holdings_state, as_of=as_of.date())
+        cash_state = allocate.load_cash_state(holdings_state, as_of=as_of)
+        margin_state = allocate.load_margin_state(holdings_state, as_of=as_of)
         valuation = allocate.valuation_completeness(holdings, holdings_state)
         availability = allocate.current_dollar_availability(cash_state, margin_state, valuation)
         result = allocate.plan(
@@ -252,6 +376,7 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
                 "provenance": {"submission_id": doc["submission_id"],
                     "submission_sha256": receipt["submission_sha256"],
                     "receipt_sha256": receipt_hash, "review_id": doc["review_id"],
+                    "review_sha256": doc["review_sha256"],
                     "reviewer": doc["reviewer"], "supplement_sha256": supplement_hash,
                     "policy": policy, "observations": observation_provenance,
                     "buffer": buffer, "market": market_doc, "earnings": earnings_doc,
@@ -273,8 +398,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--source-root", required=True, type=Path)
     parser.add_argument("--expected-source-sha", required=True)
     args = parser.parse_args(argv)
-    output = run(args.runtime_root, args.supplement.read_bytes(), source_root=args.source_root,
-                 expected_source_sha=args.expected_source_sha)
+    try:
+        with args.supplement.open("rb") as handle:
+            supplement = handle.read(MAX_SUPPLEMENT_BYTES + 1)
+        output = run(args.runtime_root, supplement, source_root=args.source_root,
+                     expected_source_sha=args.expected_source_sha)
+    except OSError as exc:
+        output = {"actionable": False, "blocked_reasons": [f"supplement could not be read: {exc}"],
+                  "as_of": None, "canonical_result": None, "provenance": {},
+                  "discrepancies": [], "limitations": ["No dependent dollar result is available."]}
     print(json.dumps(output, sort_keys=True, indent=2))
     return 0 if output["actionable"] else 2
 
