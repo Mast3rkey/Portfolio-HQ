@@ -512,6 +512,32 @@ def _valid_review(review: object, path: Path, receipt: dict,
             and review.get("meaning") == _REVIEW_MEANING)
 
 
+def _publish_review(review_root: Path, path: Path, data: bytes) -> None:
+    """Fully close ``data`` before atomically publishing an exclusive review."""
+    temporary = review_root / f".review-{secrets.token_hex(12)}.tmp"
+    created = False
+    try:
+        handle = temporary.open("xb")
+        created = True
+        with handle:
+            written = handle.write(data)
+            if written != len(data):
+                raise OSError("short review write")
+        # A same-filesystem hard link is an atomic create-if-absent operation:
+        # unlike replace(), it cannot overwrite an immutable prior decision.
+        os.link(temporary, path, follow_symlinks=False)
+    except OSError as exc:
+        raise AccountStorageError("review could not be stored immutably") from exc
+    finally:
+        if created:
+            try:
+                temporary.unlink()
+            except OSError:
+                # A final file, if linked, is already complete and authoritative.
+                # Otherwise the dot-prefixed remnant is never a valid review.
+                pass
+
+
 def review(runtime_root: Path | str, submission_id: str, decision: object,
            reviewer: str) -> dict:
     if not isinstance(decision, str) or decision not in {"confirmed", "rejected"}:
@@ -539,11 +565,10 @@ def review(runtime_root: Path | str, submission_id: str, decision: object,
     # so could present a partial history as the basis for a new confirmation.
     _review_paths(directory)
     try:
-        with path.open("x", encoding="utf-8") as handle:
-            json.dump(record, handle, sort_keys=True, separators=(",", ":"))
-            handle.write("\n")
-    except OSError as exc:
-        raise AccountStorageError("review could not be stored immutably") from exc
+        encoded = (json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    except (TypeError, ValueError, RecursionError) as exc:  # defensive internal boundary
+        raise AccountStorageError("review could not be serialized") from exc
+    _publish_review(path.parent, path, encoded)
     return record
 
 

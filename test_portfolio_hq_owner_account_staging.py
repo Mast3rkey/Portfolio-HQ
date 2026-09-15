@@ -462,6 +462,191 @@ def test_review_history_enumeration_failure_blocks_snapshot_and_new_review(
     assert {entry.name for entry in os.scandir(review_root)} == before
 
 
+@pytest.mark.parametrize("complete_before_error", [False, True])
+def test_review_write_error_never_publishes_partial_or_complete_final(
+        tmp_path, monkeypatch, complete_before_error):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity=(
+        "partial-write" if not complete_before_error else "complete-write-error")))
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    real_open = Path.open
+
+    class FailingWrite:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            self.handle.close()
+
+        def write(self, data):
+            amount = len(data) if complete_before_error else max(1, len(data) // 3)
+            self.handle.write(data[:amount])
+            self.handle.flush()
+            raise OSError("synthetic write failure after real bytes")
+
+    def failing_open(path, *args, **kwargs):
+        handle = real_open(path, *args, **kwargs)
+        return FailingWrite(handle) if path.parent == review_root and path.name.startswith(
+            ".review-") else handle
+
+    monkeypatch.setattr(Path, "open", failing_open)
+    with pytest.raises(account_staging.AccountStorageError, match="stored immutably"):
+        account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    assert list(review_root.glob("*.json")) == []
+    assert list(review_root.iterdir()) == []
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == []
+
+
+def test_review_close_error_never_publishes_final(tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="close-error"))
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    real_open = Path.open
+
+    class FailingClose:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            self.handle.close()
+            raise OSError("synthetic close failure after real close")
+
+        def write(self, data):
+            return self.handle.write(data)
+
+    def failing_open(path, *args, **kwargs):
+        handle = real_open(path, *args, **kwargs)
+        return FailingClose(handle) if path.parent == review_root and path.name.startswith(
+            ".review-") else handle
+
+    monkeypatch.setattr(Path, "open", failing_open)
+    with pytest.raises(account_staging.AccountStorageError, match="stored immutably"):
+        account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    assert list(review_root.iterdir()) == []
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == []
+
+
+def test_review_publication_failure_cleans_temp_and_publishes_nothing(tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="publish-error"))
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+
+    def unavailable_link(_source, _destination, **_kwargs):
+        raise OSError("synthetic atomic publication failure")
+
+    monkeypatch.setattr(os, "link", unavailable_link)
+    with pytest.raises(account_staging.AccountStorageError, match="stored immutably"):
+        account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    assert list(review_root.iterdir()) == []
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == []
+
+
+def test_review_serialization_and_temp_creation_fail_before_publication(tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="serialize-error"))
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    real_dumps = json.dumps
+
+    def unavailable_serialization(value, *args, **kwargs):
+        if isinstance(value, dict) and "review_id" in value:
+            raise ValueError("synthetic review serialization failure")
+        return real_dumps(value, *args, **kwargs)
+
+    monkeypatch.setattr(account_staging.json, "dumps", unavailable_serialization)
+    with pytest.raises(account_staging.AccountStorageError, match="serialized"):
+        account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    assert list(review_root.iterdir()) == []
+    monkeypatch.setattr(account_staging.json, "dumps", real_dumps)
+
+    real_open = Path.open
+
+    def unavailable_open(path, *args, **kwargs):
+        if path.parent == review_root and path.name.startswith(".review-"):
+            raise PermissionError("synthetic temporary creation failure")
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", unavailable_open)
+    with pytest.raises(account_staging.AccountStorageError, match="stored immutably"):
+        account_staging.review(tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    assert list(review_root.iterdir()) == []
+
+
+def test_review_cleanup_failure_leaves_only_ignored_temp_remnant(tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="cleanup-error"))
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    real_unlink = Path.unlink
+
+    def unavailable_unlink(path, *args, **kwargs):
+        if path.parent == review_root and path.name.startswith(".review-"):
+            raise OSError("synthetic temporary cleanup failure")
+        return real_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", unavailable_unlink)
+    review = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-1")
+    entries = list(review_root.iterdir())
+    assert sum(path.name == f"{review['review_id']}.json" for path in entries) == 1
+    assert sum(path.name.startswith(".review-") for path in entries) == 1
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == [review]
+
+
+def test_review_final_collision_never_overwrites_prior_review(tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="review-collision"))
+    fixed_id = "20260915T120000Z-0123456789ab"
+    monkeypatch.setattr(account_staging, "_new_id", lambda: fixed_id)
+    first = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-first")
+    final = tmp_path / "submissions" / receipt["submission_id"] / "reviews" / f"{fixed_id}.json"
+    prior_bytes = final.read_bytes()
+
+    with pytest.raises(account_staging.AccountStorageError, match="stored immutably"):
+        account_staging.review(
+            tmp_path, receipt["submission_id"], "confirmed", "reviewer-second")
+    assert final.read_bytes() == prior_bytes
+    history = account_staging.snapshot(tmp_path).records[0]["reviews"]
+    assert history == [first]
+    assert list(final.parent.iterdir()) == [final]
+
+
+def test_rejected_review_atomic_bytes_restart_and_temp_remnant_handling(tmp_path):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="atomic-success"))
+    review = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-1")
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    final = review_root / f"{review['review_id']}.json"
+    assert json.loads(final.read_bytes()) == review
+
+    remnant = review_root / ".review-interrupted.tmp"
+    remnant.write_bytes(final.read_bytes())
+    restarted = account_staging.snapshot(tmp_path)
+    assert restarted.records[0]["reviews"] == [review]
+    assert final.read_bytes() == (json.dumps(
+        review, sort_keys=True, separators=(",", ":")) + "\n").encode()
+
+
+def test_authenticated_review_publication_failure_has_no_false_confirmation(
+        signed_in, monkeypatch):
+    root = signed_in["config"].account_root
+    receipt = account_staging.ingest(root, synthetic_document(identity="http-publish-error"))
+    review_root = root / "submissions" / receipt["submission_id"] / "reviews"
+
+    def unavailable_link(_source, _destination, **_kwargs):
+        raise OSError("synthetic atomic publication failure")
+
+    monkeypatch.setattr(os, "link", unavailable_link)
+    status, _, page = signed_in["client"].request(
+        "POST", f"/accounts/review/{receipt['submission_id']}",
+        b"decision=confirmed&reviewer=reviewer-1",
+        {"Content-Type": "application/x-www-form-urlencoded"})
+    assert status == 409
+    assert b"Review not recorded" in page
+    assert b"No review decision recorded" in page
+    assert b"confirmed by reviewer-1" not in page
+    assert list(review_root.iterdir()) == []
+
+
 def test_authenticated_accounts_get_and_flash_surface_snapshot_storage_failure(
         signed_in, monkeypatch):
     def unavailable(_root):
