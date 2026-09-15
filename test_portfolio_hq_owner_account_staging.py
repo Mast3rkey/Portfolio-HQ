@@ -812,7 +812,8 @@ def test_review_history_uses_precise_chronology_not_reverse_same_second_ids(
 def test_review_chronology_normalizes_offsets_fractions_and_stabilizes_equal_instants(
         tmp_path, monkeypatch):
     receipt = account_staging.ingest(tmp_path, synthetic_document(identity="offset-chronology"))
-    ids = iter(("20260915T120000Z-ffffffffffff", "20260915T120000Z-000000000000"))
+    ids = iter(("20260915T120000Z-ffffffffffff", "20260915T120000Z-000000000000",
+                "20260915T120000Z-111111111111"))
     monkeypatch.setattr(account_staging, "_new_id", lambda: next(ids))
     first = account_staging.review(
         tmp_path, receipt["submission_id"], "confirmed", "reviewer-first")
@@ -849,6 +850,48 @@ def test_review_chronology_normalizes_offsets_fractions_and_stabilizes_equal_ins
         original_path, receipt_path, *review_paths.values())}
     history = account_staging.snapshot(tmp_path).records[0]["reviews"]
     assert [review["review_id"] for review in history] == sorted(review_paths)
+    assert {path: path.read_bytes() for path in protected} == protected
+    later = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-third")
+    history = account_staging.snapshot(tmp_path).records[0]["reviews"]
+    assert [review["review_id"] for review in history[:2]] == sorted(review_paths)
+    assert history[2] == later
+    assert {path: path.read_bytes() for path in protected} == protected
+
+
+def test_review_chronology_accepts_whitespace_and_datetime_boundaries(tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="time-boundaries"))
+    ids = [f"20260915T120000Z-{number:012x}" for number in range(6)]
+    generated = iter(ids)
+    monkeypatch.setattr(account_staging, "_new_id", lambda: next(generated))
+    reviews = [account_staging.review(
+        tmp_path, receipt["submission_id"],
+        "confirmed" if index % 2 == 0 else "rejected", f"reviewer-{index}"
+    ) for index in range(5)]
+    timestamps = (
+        "0001-01-01T00:00:00+01:00",
+        "0001-01-01T00:00:00Z",
+        " 2026-09-15T12:00:00Z ",
+        "9999-12-31T23:59:59Z",
+        "9999-12-31T23:59:59-01:00",
+    )
+    directory = tmp_path / "submissions" / receipt["submission_id"]
+    paths = []
+    for review, timestamp in zip(reviews, timestamps):
+        review["reviewed_at"] = timestamp
+        path = directory / "reviews" / f"{review['review_id']}.json"
+        path.write_text(json.dumps(review, sort_keys=True, separators=(",", ":")) + "\n")
+        paths.append(path)
+    protected = {path: path.read_bytes() for path in (
+        directory / "submission.json", directory / "receipt.json", *paths)}
+
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == reviews
+    later = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-later")
+    history = account_staging.snapshot(tmp_path).records[0]["reviews"]
+    assert history[:3] == reviews[:3]
+    assert history[3] == later
+    assert history[4:] == reviews[3:]
     assert {path: path.read_bytes() for path in protected} == protected
 
 

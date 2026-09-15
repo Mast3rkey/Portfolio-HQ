@@ -522,9 +522,11 @@ def _load_reviews(directory: Path, receipt: dict, receipt_bytes: bytes) -> list[
 
 def _review_order_key(review: dict) -> tuple[datetime, str]:
     """Order by actual instant; an ID tie-break only makes equal instants stable."""
-    text = review["reviewed_at"]
+    text = _timestamp(review["reviewed_at"], "reviewed_at")
     candidate = f"{text[:-1]}+00:00" if text.endswith("Z") else text
-    instant = datetime.fromisoformat(candidate).astimezone(timezone.utc)
+    # Aware datetime comparison accounts for offsets without converting the
+    # representable year-1/year-9999 boundary outside datetime's range.
+    instant = datetime.fromisoformat(candidate)
     return instant, review["review_id"]
 
 
