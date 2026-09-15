@@ -155,7 +155,7 @@ def _finite_scalar(raw, label: str, *, minimum: float | None = None,
     return val, None
 
 
-def _state_age_days(synced_at) -> float | None:
+def _state_age_days(synced_at, *, as_of: date | None = None) -> float | None:
     """Days since an ISO ``synced_at``, or None when missing, unparseable, or
     in the FUTURE. Identical fail-safe semantics to _margin_buffer_age_days --
     a fabricated 0 would read as 'freshly synced' and hide real staleness, and a
@@ -163,13 +163,23 @@ def _state_age_days(synced_at) -> float | None:
     if not synced_at:
         return None
     try:
-        age = (date.today() - date.fromisoformat(str(synced_at))).days
+        raw = str(synced_at)
+        # Preserve an upstream observation's precision.  Legacy state remains
+        # date-only; private callers may supply an exact aware timestamp.
+        if "T" in raw:
+            parsed = datetime.fromisoformat(raw[:-1] + "+00:00" if raw.endswith("Z") else raw)
+            if parsed.tzinfo is None:
+                return None
+            observed_date = parsed.date()
+        else:
+            observed_date = date.fromisoformat(raw)
+        age = ((as_of or date.today()) - observed_date).days
     except ValueError:
         return None
     return age if age >= 0 else None
 
 
-def load_cash_state(data: dict | None = None) -> dict:
+def load_cash_state(data: dict | None = None, *, as_of: date | None = None) -> dict:
     """Read holdings.yaml's tracked ``cash:`` block and classify it.
 
     Per PHQ-2026-07 item 4, the verdict is a THREE-state classification, not a
@@ -205,7 +215,7 @@ def load_cash_state(data: dict | None = None) -> dict:
     if reason is not None:
         out["reason"] = reason
         return out
-    age = _state_age_days(out["synced_at"])
+    age = _state_age_days(out["synced_at"], as_of=as_of)
     out["age_days"] = age
     if age is None:
         out["reason"] = (f"cash.synced_at is missing, malformed, or in the future "
@@ -225,7 +235,7 @@ def load_cash_state(data: dict | None = None) -> dict:
     return out
 
 
-def load_margin_state(data: dict | None = None) -> dict:
+def load_margin_state(data: dict | None = None, *, as_of: date | None = None) -> dict:
     """Read holdings.yaml's ``margin:`` block and classify it.
 
     Same three-state contract as load_cash_state. Margin debt participates in
@@ -273,7 +283,7 @@ def load_margin_state(data: dict | None = None) -> dict:
     # gates a dollar recommendation.
     out["debt"] = debt
     out["buffer_pct"] = buffer_pct
-    age = _state_age_days(out["synced_at"])
+    age = _state_age_days(out["synced_at"], as_of=as_of)
     out["age_days"] = age
     if age is None:
         out["reason"] = (f"margin.synced_at is missing, malformed, or in the future "
@@ -598,7 +608,7 @@ def build_roster(targets: dict) -> dict:
     return roster
 
 
-def load_gates() -> dict[str, dict]:
+def load_gates(path: Path | None = None) -> dict[str, dict]:
     """Actionable gates, represented separately from targets.yaml per
     PHQ-2026-02 — {ticker: {status, authority, allow_add, next_gate, ...}}.
     A gated ticker's target capital is never bought and never renormalized
@@ -613,49 +623,51 @@ def load_gates() -> dict[str, dict]:
     fail-loud convention (NUM-0001 P1-1) for the same reason: both are
     safety-critical parameters where a wrong default is worse than a crash.
     Independent review, PR #202, MAJOR finding 1."""
-    if not GATES_FILE.exists():
+    source = GATES_FILE if path is None else Path(path)
+    if not source.exists():
         raise ValueError(
-            f"gates.yaml is missing ({GATES_FILE}) — required under the "
+            f"gates.yaml is missing ({source}) — required under the "
             "canonical PHQ-2026-02 architecture; cannot safely treat this "
             "as 'no gates', which would let a gated ticker appear as an "
             "ordinary buy candidate")
     try:
-        raw = GATES_FILE.read_text()
+        raw = source.read_text()
     except OSError as e:
-        raise ValueError(f"gates.yaml could not be read ({GATES_FILE}): {e}")
+        raise ValueError(f"gates.yaml could not be read ({source}): {e}")
     try:
         data = yaml.safe_load(raw)
     except yaml.YAMLError as e:
-        raise ValueError(f"gates.yaml is not valid YAML ({GATES_FILE}): {e}")
+        raise ValueError(f"gates.yaml is not valid YAML ({source}): {e}")
     if not isinstance(data, dict):
         raise ValueError(
-            f"gates.yaml ({GATES_FILE}) must parse to a mapping with a "
+            f"gates.yaml ({source}) must parse to a mapping with a "
             f"top-level 'gates' key, got {type(data).__name__}")
     gate_list = data.get("gates")
     if gate_list is None:
-        raise ValueError(f"gates.yaml ({GATES_FILE}) is missing its top-level 'gates' key")
+        raise ValueError(f"gates.yaml ({source}) is missing its top-level 'gates' key")
     if not isinstance(gate_list, list):
         raise ValueError(
-            f"gates.yaml ({GATES_FILE}) 'gates' key must be a list, "
+            f"gates.yaml ({source}) 'gates' key must be a list, "
             f"got {type(gate_list).__name__}")
     result: dict[str, dict] = {}
     for i, g in enumerate(gate_list):
         if not isinstance(g, dict) or not g.get("ticker"):
             raise ValueError(
-                f"gates.yaml ({GATES_FILE}) entry #{i} is missing a required "
+                f"gates.yaml ({source}) entry #{i} is missing a required "
                 "'ticker' field")
         result[str(g["ticker"]).upper()] = g
     return result
 
 
-def load_issuer_lookthrough() -> dict:
+def load_issuer_lookthrough(path: Path | None = None) -> dict:
     """8%/40% no-add control configuration (PHQ-2026-02) — issuer
     ceiling/common-driver ceiling, the retained point-in-time 40.0284%
     measurement, and the hand-maintained ETF look-through constituent
     weights (never live-fetched — see issuer_lookthrough.yaml header)."""
-    if not LOOKTHROUGH_FILE.exists():
+    source = LOOKTHROUGH_FILE if path is None else Path(path)
+    if not source.exists():
         return {}
-    return load_yaml(LOOKTHROUGH_FILE) or {}
+    return load_yaml(source) or {}
 
 
 # ── data acquisition ───────────────────────────────────────────────────────────
@@ -1114,7 +1126,8 @@ def _apply_output_dependencies(result, deps, unknown_tickers, cluster_members):
 def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
          margin_debt=0.0, margin_buffer_pct=None, margin_requested=0.0,
          gates_cfg=None, lookthrough=None, holdings_state=None,
-         dollars_available=True):
+         dollars_available=True, *, earnings_provider=None,
+         as_of: datetime | None = None):
     """PHQ-2026-02 canonical-destination allocator. `roster` is
     build_roster()'s per-ticker {target_pct, asset_class} (canonical v1.30 —
     see targets.yaml). `gates_cfg` is load_gates()'s output (actionable
@@ -1139,7 +1152,14 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     ordering still run so the observational view survives, but `book`, `cash`, and
     every protected-capital dollar figure are returned as None,
     `dollars_available` is False, and NOTHING is deployable -- the cash surplus
-    that bounds buys is unavailable, so it funds nothing."""
+    that bounds buys is unavailable, so it funds nothing.
+
+    ``earnings_provider`` and ``as_of`` are per-call dependency injection for
+    offline/reproducible callers. Omitting both preserves legacy network and
+    wall-clock behavior. The same supplied clock reaches the internal cash and
+    margin rechecks; no global cache or clock is changed. The provider receives
+    one ticker and returns integer days or None. Missing earnings remains the
+    canonically disclosed flag, and regime semantics remain informational."""
     gates = targets.get("gates", {})
     caps = targets.get("caps", {})
     gates_cfg = gates_cfg or {}
@@ -1193,9 +1213,11 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     if isinstance(holdings_state, dict):
         _obs_blocks = []
         if holdings_state.get("cash") is not None:
-            _obs_blocks.append(load_cash_state(holdings_state)["usable"])
+            _obs_blocks.append((load_cash_state(holdings_state, as_of=as_of.date())
+                                if as_of else load_cash_state(holdings_state))["usable"])
         if holdings_state.get("margin") is not None:
-            _obs_blocks.append(load_margin_state(holdings_state)["usable"])
+            _obs_blocks.append((load_margin_state(holdings_state, as_of=as_of.date())
+                                if as_of else load_margin_state(holdings_state))["usable"])
         _obs_blocks.append(
             valuation_completeness(holdings, holdings_state)["complete"])
         _observed_book_ok = all(bool(b) for b in _obs_blocks)
@@ -1318,7 +1340,11 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
                     continue
 
             # ---- EARNINGS gate ------------------------------------------------
-            de = days_until_earnings(tk)
+            if earnings_provider is None:
+                de = (days_until_earnings(tk, as_of=as_of.date()) if as_of
+                      else days_until_earnings(tk))
+            else:
+                de = earnings_provider(tk)
             if de is None:
                 base["earn_flag"] = "earnings:unavailable"
             elif 0 <= de <= blackout_days:
@@ -1545,7 +1571,8 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     # ---- THE OUTPUT BOUNDARY -----------------------------------------------
     # Every dependency needed to decide what may be emitted, gathered from the
     # observations themselves rather than from one collapsed boolean.
-    _margin_state = load_margin_state(holdings_state or {})
+    _margin_state = (load_margin_state(holdings_state or {}, as_of=as_of.date())
+                     if as_of else load_margin_state(holdings_state or {}))
     # Scoped to what the CALLER actually supplied. `valuation_completeness(h, None)`
     # falls back to reading the real holdings.yaml, so a direct plan() caller that
     # passes no holdings_state would be judged against a tracked-shares claim it
