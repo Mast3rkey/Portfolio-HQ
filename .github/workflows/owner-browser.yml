@@ -1,0 +1,57 @@
+name: Owner browser validation
+
+# Synthetic-only rendered validation. No repository or owner secrets are used,
+# and checkout does not retain the workflow's read-only token.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/owner-browser.yml"
+      - "scripts/verify_owner_browser.py"
+      - "portfolio_hq/owner/**"
+      - "test_portfolio_hq_owner_account_staging.py"
+      - "test_portfolio_hq_owner_interface.py"
+      - "deploy/owner_interface/**"
+      - "docs/PORTFOLIO_HQ_OWNER_INTERFACE.md"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/owner-browser.yml"
+      - "scripts/verify_owner_browser.py"
+      - "portfolio_hq/owner/**"
+      - "test_portfolio_hq_owner_account_staging.py"
+      - "test_portfolio_hq_owner_interface.py"
+      - "deploy/owner_interface/**"
+      - "docs/PORTFOLIO_HQ_OWNER_INTERFACE.md"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: owner-browser-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rendered-owner-journey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout tested head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pinned Playwright and Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0
+          python -m playwright install --with-deps chromium
+
+      - name: Run synthetic rendered owner journey
+        run: python scripts/verify_owner_browser.py
