@@ -14,6 +14,7 @@ import ast
 import hashlib
 import http.client
 import json
+import socket
 import subprocess
 import sys
 import threading
@@ -639,20 +640,22 @@ def test_unknown_post_routes_are_not_served(signed_in):
     assert status == 404
 
 
-def test_cross_origin_posts_are_refused(signed_in):
+@pytest.mark.parametrize("origin", ["https://attacker.example", "null"])
+def test_cross_origin_and_null_origin_posts_are_refused(signed_in, origin):
     body, content_type = multipart({}, {"chart": ("a.png", png_bytes())})
     status, _, _ = signed_in["client"].request(
         "POST", "/charts/upload", body,
-        {"Content-Type": content_type, "Origin": "https://attacker.example"})
+        {"Content-Type": content_type, "Origin": origin})
     assert status == 403
     assert inbox_mod.list_records(signed_in["inbox"]) == []
 
 
-def test_cross_origin_login_is_refused(owner_env):
+@pytest.mark.parametrize("origin", ["https://attacker.example", "null"])
+def test_cross_origin_and_null_origin_login_is_refused(owner_env, origin):
     status, _, _ = owner_env["client"].request(
         "POST", "/login", f"token={TOKEN}".encode(),
         {"Content-Type": "application/x-www-form-urlencoded",
-         "Origin": "https://attacker.example"}, use_cookie=False)
+         "Origin": origin}, use_cookie=False)
     assert status == 403
 
 
@@ -711,10 +714,41 @@ def test_a_normal_connection_stays_reusable(signed_in):
         conn.close()
 
 
+def test_oversized_account_review_closes_without_parsing_unread_body(signed_in):
+    """An unread review body cannot desynchronise the persistent connection."""
+    client = signed_in["client"]
+    # Make the unread bytes themselves look like a complete second request. If
+    # the handler incorrectly keeps HTTP/1.1 alive, the server may parse it.
+    smuggled = b"GET /healthz HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n"
+    body = smuggled + b"x" * (4097 - len(smuggled))
+    request = (
+        b"POST /accounts/review/not-an-id HTTP/1.1\r\n"
+        + f"Host: 127.0.0.1:{client.port}\r\n".encode()
+        + f"Cookie: {client.cookie}\r\n".encode()
+        + b"Content-Type: application/x-www-form-urlencoded\r\n"
+        + f"Content-Length: {len(body)}\r\n\r\n".encode()
+        + body
+    )
+    with socket.create_connection(("127.0.0.1", client.port), timeout=20) as connection:
+        connection.sendall(request)
+        received = bytearray()
+        while True:
+            chunk = connection.recv(64 * 1024)
+            if not chunk:
+                break
+            received.extend(chunk)
+    response = bytes(received)
+    assert response.startswith(b"HTTP/1.1 400")
+    assert b"Connection: close\r\n" in response
+    assert response.count(b"HTTP/1.1") == 1
+    assert b'{"status":"ok"}' not in response
+
+
 def test_security_headers_are_present_on_pages(signed_in):
-    _, headers, _ = signed_in["client"].request("GET", "/")
+    _, headers, page = signed_in["client"].request("GET", "/")
     assert headers["X-Content-Type-Options"] == "nosniff"
-    assert headers["Referrer-Policy"] == "no-referrer"
+    assert headers["Referrer-Policy"] == "same-origin"
+    assert b'<meta name="referrer" content="same-origin">' in page
     assert headers["X-Frame-Options"] == "DENY"
     assert headers["Cache-Control"] == "no-store"
     csp = headers["Content-Security-Policy"]
@@ -997,7 +1031,7 @@ def test_no_owner_module_writes_outside_the_inbox(tmp_path: Path):
                 writers.append(path.name)
     # Writing is confined to the inbox, the export writer, and the CLI/service
     # bootstrap that creates the inbox directory itself.
-    assert set(writers) <= {"chart_inbox.py", "export_io.py", "service.py"}, writers
+    assert set(writers) <= {"account_staging.py", "chart_inbox.py", "export_io.py", "service.py"}, writers
 
 
 # ── owner-facing presentation contract ──────────────────────────────────────
