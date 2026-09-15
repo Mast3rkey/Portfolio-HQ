@@ -641,7 +641,11 @@ def _make_handler(config: OwnerServiceConfig):
             ))
 
         def _serve_account_original(self, submission_id: str) -> None:
-            data = account_staging.original(config.account_root, submission_id)
+            try:
+                data = account_staging.original(config.account_root, submission_id)
+            except account_staging.AccountStorageError as exc:
+                self._account_storage_unavailable(exc)
+                return
             if data is None:
                 self._deny(404, "No intact retained account submission with that reference.")
                 return

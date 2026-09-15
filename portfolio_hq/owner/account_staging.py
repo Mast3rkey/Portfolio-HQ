@@ -298,8 +298,10 @@ def _bounded(path: Path, limit: int) -> bytes | None:
     try:
         with path.open("rb") as handle:
             data = handle.read(limit + 1)
-    except OSError:
+    except FileNotFoundError:
         return None
+    except OSError as exc:
+        raise AccountStorageError("retained account evidence could not be read") from exc
     return data if len(data) <= limit else None
 
 
@@ -307,9 +309,22 @@ def _safe_regular_file(path: Path) -> bool:
     """Prove a read candidate is a non-redirected regular file before open."""
     try:
         mode = path.stat(follow_symlinks=False).st_mode
-    except OSError:
+    except FileNotFoundError:
         return False
+    except OSError as exc:
+        raise AccountStorageError("retained account evidence could not be inspected") from exc
     return (not os.path.islink(path) and stat.S_ISREG(mode)
+            and os.path.realpath(path) == str(path))
+
+
+def _safe_directory(path: Path) -> bool:
+    try:
+        mode = path.stat(follow_symlinks=False).st_mode
+    except FileNotFoundError:
+        return False
+    except OSError as exc:
+        raise AccountStorageError("retained account directory could not be inspected") from exc
+    return (not os.path.islink(path) and stat.S_ISDIR(mode)
             and os.path.realpath(path) == str(path))
 
 
@@ -332,8 +347,7 @@ def _existing_client_ids(runtime_root: Path | str) -> set[str]:
     for entry in entries:
         if not _ID_RE.fullmatch(entry.name):
             continue
-        if os.path.islink(entry) or not entry.is_dir() \
-                or os.path.realpath(entry) != str(entry):
+        if not _safe_directory(entry):
             raise AccountStorageError(
                 "cannot prove a retained account identity is unused: entry is redirected or nonregular")
         path = entry / SUBMISSION_FILENAME
@@ -399,9 +413,19 @@ def _same_json_value(left: object, right: object) -> bool:
 def _verified(runtime_root, submission_id: str):
     try:
         directory = _dir(runtime_root, submission_id)
-    except (ValueError, AccountStorageError):
+    except ValueError:
         return None
-    if os.path.islink(directory) or os.path.realpath(directory) != str(directory):
+    except AccountStorageError:
+        child = Path(os.path.realpath(Path(runtime_root))) / SUBMISSIONS_DIRNAME
+        try:
+            child.lstat()
+        except FileNotFoundError:
+            return None
+        except OSError as exc:
+            raise AccountStorageError(
+                "could not inspect the account submissions directory") from exc
+        raise
+    if not _safe_directory(directory):
         return None
     original_path = directory / SUBMISSION_FILENAME
     receipt_path = directory / RECEIPT_FILENAME
@@ -447,23 +471,13 @@ def snapshot(runtime_root: Path | str) -> Snapshot:
             "could not enumerate retained account submissions") from exc
     records, originals = [], {}
     for entry in entries:
-        if not entry.is_dir() or not _ID_RE.fullmatch(entry.name):
+        if not _ID_RE.fullmatch(entry.name) or not _safe_directory(entry):
             continue
         verified = _verified(runtime_root, entry.name)
         if verified is None:
             continue
         directory, original, receipt_bytes, receipt = verified
-        reviews = []
-        for path in _review_paths(directory):
-            data = _bounded(path, MAX_REVIEW_BYTES) if _safe_regular_file(path) else None
-            if not data:
-                continue
-            try:
-                review = json.loads(data, object_pairs_hook=_pairs, parse_constant=_constant)
-            except (ValueError, UnicodeDecodeError, RecursionError):
-                continue
-            if _valid_review(review, path, receipt, receipt_bytes):
-                reviews.append(review)
+        reviews = _load_reviews(directory, receipt, receipt_bytes)
         shown = dict(receipt)
         shown["reviews"] = reviews
         records.append(shown)
@@ -485,6 +499,22 @@ def _review_paths(directory: Path) -> list[Path]:
         return sorted(review_root.iterdir())
     except OSError as exc:
         raise AccountStorageError("could not enumerate review history") from exc
+
+
+def _load_reviews(directory: Path, receipt: dict, receipt_bytes: bytes) -> list[dict]:
+    """Load valid history while surfacing operational read failures."""
+    reviews = []
+    for path in _review_paths(directory):
+        data = _bounded(path, MAX_REVIEW_BYTES) if _safe_regular_file(path) else None
+        if not data:
+            continue
+        try:
+            review = json.loads(data, object_pairs_hook=_pairs, parse_constant=_constant)
+        except (ValueError, UnicodeDecodeError, RecursionError):
+            continue
+        if _valid_review(review, path, receipt, receipt_bytes):
+            reviews.append(review)
+    return reviews
 
 
 def _valid_review(review: object, path: Path, receipt: dict,
@@ -563,7 +593,7 @@ def review(runtime_root: Path | str, submission_id: str, decision: object,
     path = directory / REVIEWS_DIRNAME / f"{review_id}.json"
     # A decision must not be added while prior history is unavailable: doing
     # so could present a partial history as the basis for a new confirmation.
-    _review_paths(directory)
+    _load_reviews(directory, receipt, receipt_bytes)
     try:
         encoded = (json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n").encode()
     except (TypeError, ValueError, RecursionError) as exc:  # defensive internal boundary

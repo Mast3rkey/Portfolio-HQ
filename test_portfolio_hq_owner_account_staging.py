@@ -298,7 +298,7 @@ def test_retained_original_read_error_blocks_new_identity(tmp_path: Path, monkey
         return real_open(path, *args, **kwargs)
 
     monkeypatch.setattr(Path, "open", denied)
-    with pytest.raises(account_staging.AccountStorageError, match="original is unavailable"):
+    with pytest.raises(account_staging.AccountStorageError, match="could not be read"):
         account_staging.ingest(tmp_path, synthetic_document(identity="distinct-b"))
     assert _one_retained_directory(tmp_path).name == original.parent.name
 
@@ -645,6 +645,136 @@ def test_authenticated_review_publication_failure_has_no_false_confirmation(
     assert b"No review decision recorded" in page
     assert b"confirmed by reviewer-1" not in page
     assert list(review_root.iterdir()) == []
+
+
+def _inject_read_failure(monkeypatch, target: Path, phase: str):
+    """Inject one real operational failure at a retained-file read phase."""
+    if phase == "stat":
+        real_stat = Path.stat
+
+        def failing_stat(path, *args, **kwargs):
+            if path == target:
+                raise PermissionError("synthetic retained evidence stat failure")
+            return real_stat(path, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "stat", failing_stat)
+        return
+
+    real_open = Path.open
+
+    class FailingHandle:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            self.handle.close()
+            if phase == "close":
+                raise OSError("synthetic retained evidence close failure")
+
+        def read(self, size=-1):
+            if phase == "read":
+                raise OSError("synthetic retained evidence read failure")
+            return self.handle.read(size)
+
+    def failing_open(path, *args, **kwargs):
+        if path == target and phase == "open":
+            raise PermissionError("synthetic retained evidence open failure")
+        handle = real_open(path, *args, **kwargs)
+        return FailingHandle(handle) if path == target else handle
+
+    monkeypatch.setattr(Path, "open", failing_open)
+
+
+@pytest.mark.parametrize("filename", ["submission.json", "receipt.json"])
+@pytest.mark.parametrize("phase", ["stat", "open", "read", "close"])
+def test_original_and_receipt_operational_read_failures_are_not_absence(
+        tmp_path, monkeypatch, filename, phase):
+    receipt = account_staging.ingest(
+        tmp_path, synthetic_document(identity=f"{filename}-{phase}".replace(".", "-")))
+    directory = tmp_path / "submissions" / receipt["submission_id"]
+    _inject_read_failure(monkeypatch, directory / filename, phase)
+
+    with pytest.raises(account_staging.AccountStorageError, match="retained account"):
+        account_staging.snapshot(tmp_path)
+    with pytest.raises(account_staging.AccountStorageError, match="retained account"):
+        account_staging.original(tmp_path, receipt["submission_id"])
+    with pytest.raises(account_staging.AccountStorageError, match="retained account"):
+        account_staging.review(
+            tmp_path, receipt["submission_id"], "confirmed", "reviewer-1")
+    assert list((directory / "reviews").iterdir()) == []
+
+
+@pytest.mark.parametrize("phase", ["stat", "open", "read", "close"])
+def test_legitimate_review_operational_read_failures_block_snapshot_and_decision(
+        tmp_path, monkeypatch, phase):
+    receipt = account_staging.ingest(
+        tmp_path, synthetic_document(identity=f"review-{phase}"))
+    prior = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-first")
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    final = review_root / f"{prior['review_id']}.json"
+    _inject_read_failure(monkeypatch, final, phase)
+
+    with pytest.raises(account_staging.AccountStorageError, match="retained account"):
+        account_staging.snapshot(tmp_path)
+    with pytest.raises(account_staging.AccountStorageError, match="retained account"):
+        account_staging.review(
+            tmp_path, receipt["submission_id"], "confirmed", "reviewer-second")
+    assert len(list(review_root.glob("*.json"))) == 1
+    assert final.exists()
+
+
+def test_mixed_readable_and_unreadable_history_never_returns_partial_or_adds(
+        tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="mixed-history"))
+    first = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-first")
+    second = account_staging.review(
+        tmp_path, receipt["submission_id"], "confirmed", "reviewer-second")
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    protected = {path: path.read_bytes() for path in review_root.glob("*.json")}
+    _inject_read_failure(monkeypatch, review_root / f"{second['review_id']}.json", "open")
+
+    with pytest.raises(account_staging.AccountStorageError, match="could not be read"):
+        account_staging.snapshot(tmp_path)
+    with pytest.raises(account_staging.AccountStorageError, match="could not be read"):
+        account_staging.review(
+            tmp_path, receipt["submission_id"], "confirmed", "reviewer-third")
+    assert {path.name for path in review_root.glob("*.json")} == {
+        f"{first['review_id']}.json", f"{second['review_id']}.json"}
+    for path, expected in protected.items():
+        if path.name != f"{second['review_id']}.json":
+            assert path.read_bytes() == expected
+
+
+def test_operational_read_failures_have_controlled_sanitized_http_responses(
+        signed_in, monkeypatch):
+    root = signed_in["config"].account_root
+    receipt = account_staging.ingest(root, synthetic_document(identity="http-read-error"))
+    prior = account_staging.review(
+        root, receipt["submission_id"], "rejected", "reviewer-first")
+    directory = root / "submissions" / receipt["submission_id"]
+    review_path = directory / "reviews" / f"{prior['review_id']}.json"
+    _inject_read_failure(monkeypatch, review_path, "open")
+
+    status, _, page = signed_in["client"].request("GET", "/accounts")
+    assert status == 500 and b"No account state is being shown" in page
+    assert str(review_path).encode() not in page
+    status, _, page = signed_in["client"].request(
+        "POST", "/accounts/submit", b"{}", {"Content-Type": "application/json"})
+    assert status == 500 and b"No account state is being shown" in page
+    assert str(review_path).encode() not in page
+
+    monkeypatch.undo()
+    original_path = directory / "submission.json"
+    _inject_read_failure(monkeypatch, original_path, "open")
+    status, _, page = signed_in["client"].request(
+        "GET", f"/accounts/original/{receipt['submission_id']}")
+    assert status == 500 and b"No account state is being shown" in page
+    assert str(original_path).encode() not in page
 
 
 def test_authenticated_accounts_get_and_flash_surface_snapshot_storage_failure(
