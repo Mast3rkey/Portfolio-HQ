@@ -106,13 +106,15 @@ def require(condition: bool, message: str) -> None:
 def login(page: Page, base_url: str) -> None:
     page.goto(f"{base_url}/accounts")
     require(page.url == f"{base_url}/login", "anonymous account route was not denied")
-    require(page.get_by_role("heading", name="Sign in").is_visible(),
+    require(page.get_by_role("heading", name="Sign in", exact=True).is_visible(),
             "sign-in page was not rendered")
     page.locator("#token").fill(TOKEN)
-    page.get_by_role("button", name="Sign in").click()
+    page.get_by_role("button", name="Sign in", exact=True).click()
     page.wait_for_url(f"{base_url}/")
     page.goto(f"{base_url}/accounts")
-    require(page.get_by_role("heading", name="Account staging").is_visible(),
+    require(page.get_by_role(
+        "heading", name="Submit a manual account version", exact=True
+    ).is_visible(),
             "authenticated account page was not rendered")
 
 
@@ -122,12 +124,22 @@ def upload(page: Page, identity: str, payload: bytes) -> None:
         "mimeType": "application/json",
         "buffer": payload,
     })
-    page.get_by_role("button", name="Retain exact version").click()
+    page.get_by_role("button", name="Retain exact version", exact=True).click()
     page.wait_for_load_state("networkidle")
 
 
 def card(page: Page, identity: str):
-    return page.locator("section.card").filter(has_text=identity)
+    return page.locator("section.card").filter(
+        has=page.get_by_text(identity, exact=True)
+    )
+
+
+def history_entry(page: Page, identity: str, decision: str, reviewer: str):
+    return card(page, identity).locator("li").filter(
+        has_text=re.compile(
+            rf"^{re.escape(decision)} by {re.escape(reviewer)} at "
+        )
+    )
 
 
 def review(page: Page, identity: str, decision: str, reviewer: str) -> int:
@@ -136,7 +148,7 @@ def review(page: Page, identity: str, decision: str, reviewer: str) -> int:
     selected.locator('input[name="reviewer"]').fill(reviewer)
     label = "Confirm exact version" if decision == "confirmed" else "Reject exact version"
     with page.expect_response(re.compile(r"/accounts/review/")) as response:
-        selected.get_by_role("button", name=label).click()
+        selected.get_by_role("button", name=label, exact=True).click()
     page.wait_for_load_state("networkidle")
     return response.value.status
 
@@ -224,17 +236,23 @@ def run() -> None:
                     upload(page, "browser-clean", clean)
                     clean_card = card(page, "browser-clean")
                     require(clean_card.count() == 1, "clean receipt was not rendered")
-                    require(clean_card.get_by_text("No validation discrepancy was found").is_visible(),
+                    require(clean_card.get_by_text(
+                        "No validation discrepancy was found. This does not establish "
+                        "freshness or correctness.", exact=True
+                    ).is_visible(),
                             "clean discrepancy outcome was not rendered")
 
                     with page.expect_download() as download_event:
-                        clean_card.get_by_role("link", name="Retrieve retained original").click()
+                        clean_card.get_by_role(
+                            "link", name="Retrieve retained original", exact=True
+                        ).click()
                     retained = Path(download_event.value.path()).read_bytes()
                     require(retained == clean, "retrieved original did not retain exact bytes")
                     require(review(page, "browser-clean", "confirmed", "synthetic-reviewer") == 200,
                             "clean exact version was not confirmed")
-                    require(card(page, "browser-clean").get_by_text(
-                        "confirmed by synthetic-reviewer", exact=False).is_visible(),
+                    require(history_entry(
+                        page, "browser-clean", "confirmed", "synthetic-reviewer"
+                    ).is_visible(),
                         "confirmation/reviewer history was not rendered")
                     actions.append("clean submit, receipt, exact-original retrieval, confirmation")
 
@@ -244,20 +262,25 @@ def run() -> None:
                     )
                     upload(page, "browser-stale-missing", stale)
                     stale_card = card(page, "browser-stale-missing")
-                    require(stale_card.get_by_text("stale_holding", exact=False).is_visible(),
+                    require(stale_card.locator("strong").get_by_text(
+                        "stale_holding", exact=True
+                    ).is_visible(),
                             "stale discrepancy was not rendered")
-                    require(stale_card.get_by_text(
-                        "missing_protected_capital", exact=False).is_visible(),
+                    require(stale_card.locator("strong").get_by_text(
+                        "missing_protected_capital", exact=True
+                    ).is_visible(),
                         "missing-evidence discrepancy was not rendered")
                     require(review(page, "browser-stale-missing", "confirmed",
                                    "synthetic-reviewer") == 409,
                             "material discrepancies did not block confirmation")
                     require(card(page, "browser-stale-missing").get_by_text(
-                        "No review decision recorded.").is_visible(),
+                        "No review decision recorded.", exact=True).is_visible(),
                         "blocked confirmation unexpectedly created review history")
 
                     upload(page, "browser-conflict", conflicting_document("browser-conflict"))
-                    require(page.get_by_text("duplicate holding identity", exact=False).is_visible(),
+                    require(page.get_by_text(
+                        "Submission rejected: duplicate holding identity: SYNTH", exact=True
+                    ).is_visible(),
                             "conflicting evidence was not rejected")
                     require(card(page, "browser-conflict").count() == 0,
                             "conflicting evidence was retained")
@@ -265,10 +288,11 @@ def run() -> None:
                     changed = synthetic_document("browser-changed", quantity=1)
                     upload(page, "browser-changed", changed)
                     require(card(page, "browser-changed").get_by_text(
-                        "No review decision recorded.").is_visible(),
+                        "No review decision recorded.", exact=True).is_visible(),
                         "changed bytes inherited a review decision")
-                    require(card(page, "browser-clean").get_by_text(
-                        "confirmed by synthetic-reviewer", exact=False).is_visible(),
+                    require(history_entry(
+                        page, "browser-clean", "confirmed", "synthetic-reviewer"
+                    ).is_visible(),
                         "changed bytes altered the prior exact-version history")
                     assert_no_page_overflow(page, "narrow account")
                     stale_card = card(page, "browser-stale-missing")
@@ -282,18 +306,20 @@ def run() -> None:
                     wide = browser.new_context(viewport=VIEWPORTS["wide"])
                     wide_page = wide.new_page()
                     login(wide_page, base_url)
-                    require(card(wide_page, "browser-clean").get_by_text(
-                        "confirmed by synthetic-reviewer", exact=False).is_visible(),
+                    require(history_entry(
+                        wide_page, "browser-clean", "confirmed", "synthetic-reviewer"
+                    ).is_visible(),
                         "wide session did not retrieve confirmation history")
                     require(review(wide_page, "browser-changed", "rejected",
                                    "synthetic-wide-reviewer") == 200,
                             "separate exact version was not rejected")
-                    require(card(wide_page, "browser-changed").get_by_text(
-                        "rejected by synthetic-wide-reviewer", exact=False).is_visible(),
+                    require(history_entry(
+                        wide_page, "browser-changed", "rejected", "synthetic-wide-reviewer"
+                    ).is_visible(),
                         "rejection/reviewer history was not rendered")
                     assert_no_page_overflow(wide_page, "wide account")
-                    card(wide_page, "browser-changed").get_by_text(
-                        "rejected by synthetic-wide-reviewer", exact=False
+                    history_entry(
+                        wide_page, "browser-changed", "rejected", "synthetic-wide-reviewer"
                     ).scroll_into_view_if_needed()
                     screenshots.append(screenshot_record(
                         wide_page, "WIDE_ACCOUNT_REVIEW_HISTORY", "confirmed-and-rejected"
