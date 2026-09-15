@@ -794,6 +794,64 @@ def test_invalid_review_names_are_ignored_without_stat_or_open(
     assert ignored.read_bytes() == ignored_bytes
 
 
+def test_review_history_uses_precise_chronology_not_reverse_same_second_ids(
+        tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="chronology"))
+    ids = iter(("20260915T120000Z-ffffffffffff", "20260915T120000Z-000000000000"))
+    monkeypatch.setattr(account_staging, "_new_id", lambda: next(ids))
+    confirmed = account_staging.review(
+        tmp_path, receipt["submission_id"], "confirmed", "reviewer-first")
+    rejected = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-second")
+
+    history = account_staging.snapshot(tmp_path).records[0]["reviews"]
+    assert [review["decision"] for review in history] == ["confirmed", "rejected"]
+    assert history == [confirmed, rejected]
+
+
+def test_review_chronology_normalizes_offsets_fractions_and_stabilizes_equal_instants(
+        tmp_path, monkeypatch):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="offset-chronology"))
+    ids = iter(("20260915T120000Z-ffffffffffff", "20260915T120000Z-000000000000"))
+    monkeypatch.setattr(account_staging, "_new_id", lambda: next(ids))
+    first = account_staging.review(
+        tmp_path, receipt["submission_id"], "confirmed", "reviewer-first")
+    second = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-second")
+    directory = tmp_path / "submissions" / receipt["submission_id"]
+    original_path = directory / "submission.json"
+    receipt_path = directory / "receipt.json"
+    review_paths = {
+        first["review_id"]: directory / "reviews" / f"{first['review_id']}.json",
+        second["review_id"]: directory / "reviews" / f"{second['review_id']}.json",
+    }
+
+    # Lexically 08:00 sorts before 13:00, but these instants are 12:00:00.2Z
+    # and 12:00:00.1Z respectively.
+    first["reviewed_at"] = "2026-09-15T13:00:00.100000+01:00"
+    second["reviewed_at"] = "2026-09-15T08:00:00.200000-04:00"
+    for review in (first, second):
+        review_paths[review["review_id"]].write_text(
+            json.dumps(review, sort_keys=True, separators=(",", ":")) + "\n")
+    protected = {path: path.read_bytes() for path in (
+        original_path, receipt_path, *review_paths.values())}
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == [first, second]
+    assert {path: path.read_bytes() for path in protected} == protected
+
+    # Equal instants have no knowable precedence. The review ID supplies only
+    # deterministic presentation order, here 000... before fff....
+    first["reviewed_at"] = "2026-09-15T13:00:00.123456+01:00"
+    second["reviewed_at"] = "2026-09-15T12:00:00.123456Z"
+    for review in (first, second):
+        review_paths[review["review_id"]].write_text(
+            json.dumps(review, sort_keys=True, separators=(",", ":")) + "\n")
+    protected = {path: path.read_bytes() for path in (
+        original_path, receipt_path, *review_paths.values())}
+    history = account_staging.snapshot(tmp_path).records[0]["reviews"]
+    assert [review["review_id"] for review in history] == sorted(review_paths)
+    assert {path: path.read_bytes() for path in protected} == protected
+
+
 def test_operational_read_failures_have_controlled_sanitized_http_responses(
         signed_in, monkeypatch):
     root = signed_in["config"].account_root

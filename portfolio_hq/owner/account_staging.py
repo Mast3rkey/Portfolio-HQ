@@ -516,7 +516,16 @@ def _load_reviews(directory: Path, receipt: dict, receipt_bytes: bytes) -> list[
             continue
         if _valid_review(review, path, receipt, receipt_bytes):
             reviews.append(review)
+    reviews.sort(key=_review_order_key)
     return reviews
+
+
+def _review_order_key(review: dict) -> tuple[datetime, str]:
+    """Order by actual instant; an ID tie-break only makes equal instants stable."""
+    text = review["reviewed_at"]
+    candidate = f"{text[:-1]}+00:00" if text.endswith("Z") else text
+    instant = datetime.fromisoformat(candidate).astimezone(timezone.utc)
+    return instant, review["review_id"]
 
 
 def _valid_review(review: object, path: Path, receipt: dict,
