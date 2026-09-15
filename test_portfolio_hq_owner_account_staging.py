@@ -754,6 +754,46 @@ def test_mixed_readable_and_unreadable_history_never_returns_partial_or_adds(
             assert path.read_bytes() == expected
 
 
+@pytest.mark.parametrize("ignored_name", [
+    ".review-interrupted.tmp",
+    "notes.json",
+    "20260915T120000Z-0123456789ab.json.tmp",
+    "not-a-review.json",
+])
+def test_invalid_review_names_are_ignored_without_stat_or_open(
+        tmp_path, monkeypatch, ignored_name):
+    receipt = account_staging.ingest(tmp_path, synthetic_document(identity="ignored-remnant"))
+    prior = account_staging.review(
+        tmp_path, receipt["submission_id"], "rejected", "reviewer-first")
+    review_root = tmp_path / "submissions" / receipt["submission_id"] / "reviews"
+    ignored = review_root / ignored_name
+    ignored_bytes = b"synthetic non-review remnant"
+    ignored.write_bytes(ignored_bytes)
+    real_stat = Path.stat
+    real_open = Path.open
+
+    def forbidden_stat(path, *args, **kwargs):
+        if path == ignored:
+            raise AssertionError("invalid review name was inspected")
+        return real_stat(path, *args, **kwargs)
+
+    def forbidden_open(path, *args, **kwargs):
+        if path == ignored:
+            raise AssertionError("invalid review name was opened")
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", forbidden_stat)
+    monkeypatch.setattr(Path, "open", forbidden_open)
+    assert account_staging.snapshot(tmp_path).records[0]["reviews"] == [prior]
+    later = account_staging.review(
+        tmp_path, receipt["submission_id"], "confirmed", "reviewer-second")
+    history = account_staging.snapshot(tmp_path).records[0]["reviews"]
+    assert {review["review_id"]: review for review in history} == {
+        prior["review_id"]: prior, later["review_id"]: later}
+    monkeypatch.undo()
+    assert ignored.read_bytes() == ignored_bytes
+
+
 def test_operational_read_failures_have_controlled_sanitized_http_responses(
         signed_in, monkeypatch):
     root = signed_in["config"].account_root

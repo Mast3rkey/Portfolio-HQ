@@ -505,6 +505,8 @@ def _load_reviews(directory: Path, receipt: dict, receipt_bytes: bytes) -> list[
     """Load valid history while surfacing operational read failures."""
     reviews = []
     for path in _review_paths(directory):
+        if not path.name.endswith(".json") or not _ID_RE.fullmatch(path.name[:-5]):
+            continue
         data = _bounded(path, MAX_REVIEW_BYTES) if _safe_regular_file(path) else None
         if not data:
             continue
