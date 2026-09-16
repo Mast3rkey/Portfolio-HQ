@@ -485,11 +485,22 @@ def run(runtime_root: Path | str, supplement_bytes: bytes, *, source_root: Path 
                 raise AllocationEvidenceError(f"{h['ticker']} has an unavailable required valuation")
             _fresh(h["observed_at"], f"{h['ticker']}.observed_at", as_of)
             _fresh(h["valuation"]["observed_at"], f"{h['ticker']}.valuation.observed_at", as_of)
-            value = qty * _finite(h["valuation"]["unit_price"], f"{h['ticker']}.unit_price")
+            unit_price = _finite(h["valuation"]["unit_price"], f"{h['ticker']}.unit_price")
+            value = qty * unit_price
             if not math.isfinite(value):
                 raise AllocationEvidenceError(f"{h['ticker']} valuation product is not finite")
             holdings[h["ticker"]] = value
-            observation_provenance.append({"ticker": h["ticker"], "quantity_observed_at": h["observed_at"],
+            # Echo what was observed, not only when. plan() lists a position
+            # only while it is a candidate, so a name already at or above its
+            # target appears in no row and its value would otherwise be absent
+            # from the envelope entirely -- leaving the sleeve percentages
+            # above unexplainable and current portfolio state unstatable.
+            # These are the owner's own confirmed observations, so they carry
+            # no book dependency and are not withheld with book-derived
+            # figures, matching how off-roster holdings are already disclosed.
+            observation_provenance.append({"ticker": h["ticker"], "quantity": qty,
+                                           "quantity_observed_at": h["observed_at"],
+                                           "unit_price": unit_price, "value": value,
                                            "valuation_observed_at": h["valuation"]["observed_at"],
                                            "currency": h["valuation"]["currency"]})
 
