@@ -12,12 +12,22 @@
 **Base commit:** `e8b252a5ce82662112cfdbece8a9ee02687d6c66`
 **Machine-readable companion:** [`evidence_matrix.json`](evidence_matrix.json)
 **Verification:** `test_current_architecture_validation.py` re-derives every load-bearing
-number below from live configuration, retained evidence bytes, and the production exposure
-helper. Nothing here should be believed on this document's own say-so.
+number below — against this artifact's **own pinned base commit**, read read-only out of git,
+using the production exposure helper. Nothing here should be believed on this document's own
+say-so.
 
-**Snapshot preservation.** If a verification test fails later, configuration has changed and
-this artifact is stale. Per repository convention it must then be re-dated or superseded by a
-new dated artifact — never silently rewritten to match new state while keeping its old date.
+**Why the basis is pinned, and what that guarantees.** This is a historical record of what was
+true at its stated basis. Reconciling against that basis keeps the check permanently strong
+(it still proves the artifact was internally coherent and matched its inputs when created)
+while ensuring it never becomes a gate on future policy. A later, legitimate change to live
+repository inputs — a refreshed `issuer_lookthrough.yaml`, a defined common-driver inclusion
+rule, an executed successor robustness study, updated provenance documentation, an authorized
+target or cap change — does **not** make this record false and does **not** by itself turn
+repository CI red. Live drift is reported, never fatal. The historical figures here are never
+rewritten to current values.
+
+If the pinned base commit is unreachable (a shallow clone), the basis-dependent checks skip
+with an explicit reason rather than failing; full-history CI still exercises them.
 
 ---
 

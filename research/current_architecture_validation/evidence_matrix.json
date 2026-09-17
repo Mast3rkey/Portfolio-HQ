@@ -5,6 +5,22 @@
   "base_commit": "e8b252a5ce82662112cfdbece8a9ee02687d6c66",
   "status": "EVIDENCE_RECONCILIATION_ONLY",
   "authority": "NONE \u2014 this artifact classifies existing evidence. It changes no target, cap, ceiling, cluster, gate, margin parameter, holding, or allocator behaviour, and authorizes no research, trade, or order.",
+  "verification_semantics": {
+    "reconciliation_basis": "PINNED_BASE_COMMIT",
+    "basis_commit": "e8b252a5ce82662112cfdbece8a9ee02687d6c66",
+    "artifact_files_read_from": "WORKING_TREE (they do not exist at the base commit)",
+    "future_live_drift_fails_ci": false,
+    "live_drift_disposition": "HISTORICAL_RECORD_REMAINS_TRUE",
+    "historical_values_rewritten_to_current": false,
+    "unreachable_basis_behaviour": "SKIP_WITH_EXPLICIT_REASON (shallow clone); full-history CI still exercises the check",
+    "rationale": "CURRENT-ARCH-VALIDATION-0001 is a dated historical record. Verifying it against its own pinned basis proves it was internally coherent and matched its inputs when created, permanently \u2014 while ensuring that legitimate later work (refreshing issuer_lookthrough.yaml, defining the common-driver inclusion rule, executing a successor robustness study, updating stale provenance documentation, or an authorized target/cap change) does not turn repository CI red merely because the present no longer matches 2026-09-17.",
+    "not_introduced": [
+      "no lifecycle framework",
+      "no supersession registry",
+      "no governance decision",
+      "no latest-artifact bureaucracy"
+    ]
+  },
   "evidence_grade_vocabulary": [
     "EVIDENCE_DERIVED",
     "ROBUSTNESS_TESTED",
@@ -22,7 +38,7 @@
     "no_new_study_executed": true
   },
   "derived_measurements": {
-    "note": "Re-derived at as_of_date from live repository state. Cluster/issuer/common-driver figures come from the PRODUCTION exposure helper via currentness_report.collect_target_weight_concentration(); look-through arithmetic is never re-implemented. test_current_architecture_validation.py re-derives each of these and fails if the artifact drifts from live state.",
+    "note": "Re-derived at as_of_date from the repository state AT THIS ARTIFACT'S PINNED BASE COMMIT (read read-only out of git), not from live working-tree state. Cluster/issuer/common-driver figures come from the PRODUCTION exposure helper via currentness_report.collect_target_weight_concentration(), supplied the base-commit config files; look-through arithmetic is never re-implemented. test_current_architecture_validation.py re-derives each of these against that same pinned basis, so a later legitimate change to live inputs neither invalidates these figures nor fails repository CI.",
     "basis": "CANONICAL TARGET WEIGHTS (full deployment) \u2014 not current holdings",
     "destination_rows": 36,
     "destination_total_pct": 99.25,
@@ -132,7 +148,7 @@
       "canonical_source": "targets.yaml",
       "origin_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv via PHQ-2026-01 (out-of-repository committee process), principal-approved; implemented verbatim by PHQ-2026-02",
       "original_architecture": "37 rows summing exactly 100.00%",
-      "current_architecture": "36 rows summing 99.25% \u2014 PHQ-2026-04 removed SPCX (0.75%) after a verified manual exit and deliberately did NOT renormalize",
+      "current_architecture": "36 rows summing 99.25% \u2014 PHQ-2026-04 removed SPCX (0.75%) after a verified manual exit and deliberately did NOT renormalize. All 36 shared weights are NUMERICALLY (economically) identical to the retained source after parsing \u2014 not byte-identical: both sides are compared as floats, and the retained JSON carries representations such as 3.5000000000000004 against the YAML's 3.50.",
       "evidence_used": "No in-repository study. backtest_weights.py tested the RETIRED T1/T2/ETF/band/spec tier-weight STRUCTURE, not these per-name weights. The retained due-diligence package discloses an external backtest with an approximately 23-month common window that 'contains look-ahead and survivorship limitations' (its own words).",
       "current_architecture_tested": false,
       "alternatives_tested": false,
