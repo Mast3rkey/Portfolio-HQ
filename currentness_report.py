@@ -294,14 +294,20 @@ class RepositoryAccountState:
 # forces a deliberate decision rather than this rule silently persisting.
 VALUATION_EVIDENCE_TRACKS = ("shares", "crypto_shares", "holdings")
 
+#: The two tracks `allocate.valuation_completeness` coerces with a bare
+#: `float(qty)`. `holdings:` is NOT one of them — production validates those
+#: resolved values itself, through `_finite_scalar`, which returns a flag
+#: instead of raising.
+RAW_QUANTITY_TRACKS = ("shares", "crypto_shares")
+
 
 def dated_valuation_evidence(holdings_doc: dict) -> dict:
     """Is there admissible DATED evidence that position valuations are current?
 
-    Returns `{"tracks_declared", "declaration_reason", "position_count",
-    "dated", "reason"}`.
+    Returns `{"tracks_declared", "declaration_reason", "entries_wellformed",
+    "malformed_reason", "position_count", "dated", "reason"}`.
 
-    TWO QUESTIONS, ASKED IN ORDER, AND THE FIRST ONE GATES THE SECOND.
+    THREE QUESTIONS, ASKED IN ORDER, AND EACH ONE GATES THE NEXT.
 
     1. ARE THE POSITION TRACKS DECLARED AT ALL? An UNDECLARED track is not an
        EMPTY track. `shares`, `crypto_shares` and `holdings` were previously
@@ -323,13 +329,38 @@ def dated_valuation_evidence(holdings_doc: dict) -> dict:
        this boundary simply refuses to hand the production helper input it
        cannot legitimately compute on, exactly as `validate_lookthrough` does.
 
-    2. ONLY IF ALL THREE ARE DECLARED: is there a DATED current valuation for
-       the positions they contain? `dated` is True only when the question does
-       not arise — i.e. there is no position to value.
+    2. ARE THE DECLARED ENTRIES READABLE AS POSITIONS? Declaring the three
+       tracks is not the same as their contents being usable. Once the
+       mappings exist, `allocate.valuation_completeness()` coerces every
+       `shares`/`crypto_shares` quantity with a bare `float(qty)` and later
+       joins the collected symbols into text — so `{"ZZBAD": "not-a-number"}`
+       raises `ValueError`, `{"ZZBAD": []}` and `{"ZZBAD": {}}` raise
+       `TypeError`, and a non-string ticker key raises `TypeError` at the join,
+       a different site again. Every one of those is an uncaught exception
+       escaping a diagnostic that exists to fail closed.
+
+       A malformed entry is NOT zero and NOT absent — it is a tracked line
+       whose size is unknown — so it still counts toward `position_count`, and
+       it is additionally named in `malformed_reason` so the caller can decline
+       to hand it on. Scope is exact: quantities are checked for
+       `shares`/`crypto_shares` only (see `RAW_QUANTITY_TRACKS`), because the
+       manual `holdings:` track's values are validated inside production by
+       `_finite_scalar`, which returns a flag rather than raising and correctly
+       reports `complete=False`; that judgement stays production's. Ticker
+       identity is checked on all three, because the join reaches all three.
+
+    3. ONLY IF ALL THREE ARE DECLARED AND EVERY ENTRY IS READABLE: is there a
+       DATED current valuation for the positions they contain? `dated` is True
+       only when the question does not arise — i.e. there is no position to
+       value.
 
     No position schema is introduced and no timestamp authority is claimed
     here: this asks whether the three tracks the existing schema already
-    defines were declared, and whether anything in the file dates them.
+    defines were declared, whether their entries are readable at all, and
+    whether anything in the file dates them. No value is invented, no price is
+    fetched, and the completeness arithmetic itself is never reimplemented —
+    that remains `allocate.valuation_completeness`'s, and this boundary only
+    decides whether it can legitimately be asked.
     """
     if not isinstance(holdings_doc, dict):
         # The caller in this module coerces a non-mapping document to {} before
@@ -353,6 +384,8 @@ def dated_valuation_evidence(holdings_doc: dict) -> dict:
     if undeclared:
         return {
             "tracks_declared": False,
+            "entries_wellformed": None,   # never reached: nothing to read
+            "malformed_reason": None,
             "declaration_reason": (
                 "POSITION TRACK DECLARATION: holdings.yaml does not declare every "
                 f"position track as a mapping — {', '.join(undeclared)}. An "
@@ -373,23 +406,77 @@ def dated_valuation_evidence(holdings_doc: dict) -> dict:
     # one track (a share-tracked name that also carries a manual dollar
     # fallback is the documented production pattern), and that is still a
     # single position to value — not two.
+    #
+    # The same pass records MALFORMED entries — see `entries_wellformed` in the
+    # docstring. A malformed entry still COUNTS as a position (it is a tracked
+    # line this module cannot prove is empty); it is additionally named so the
+    # caller can decline to hand it to a production helper that would raise.
     positions: set[str] = set()
+    malformed: list[str] = []
     for track in VALUATION_EVIDENCE_TRACKS:
         for ticker, raw in holdings_doc[track].items():
+            # IDENTITY, all three tracks. `valuation_completeness` collects
+            # symbols and then does `", ".join(...)` on them, which raises
+            # TypeError on a non-string key — at a DIFFERENT site from the
+            # quantity coercion below, so both have to be covered.
+            if not isinstance(ticker, str) or not ticker.strip():
+                malformed.append(
+                    f"{track}[{ticker!r}] (ticker identity is not a non-empty "
+                    f"string: {type(ticker).__name__})")
+                positions.add(f"<malformed {track} identity {ticker!r}>")
+                continue
+
             value, _ = _checked_pct(raw, f"{track}.{ticker}")
             # A malformed entry is NOT dismissed as absent: it is a tracked
             # line this module cannot prove is empty, so it counts.
             if value is None or value != 0:
-                positions.add(str(ticker).strip().upper())
+                positions.add(ticker.strip().upper())
+
+            # QUANTITY, shares/crypto_shares ONLY. `valuation_completeness`
+            # does a bare `float(qty)` over exactly these two tracks and raises
+            # ValueError/TypeError on anything float() cannot take. The manual
+            # `holdings:` track is deliberately NOT checked here: production
+            # validates those values itself through `_finite_scalar`, which
+            # returns a flag instead of raising and correctly reports
+            # complete=False — that judgement stays production's to make.
+            if value is None and track in RAW_QUANTITY_TRACKS:
+                malformed.append(f"{track}.{ticker} ({type(raw).__name__})")
+
+    if malformed:
+        shown_bad = ", ".join(malformed[:12]) + ("…" if len(malformed) > 12 else "")
+        return {
+            "tracks_declared": True,
+            "declaration_reason": None,
+            "entries_wellformed": False,
+            "malformed_reason": (
+                f"MALFORMED POSITION INPUT: {len(malformed)} tracked entr(y/ies) "
+                f"cannot be read as a position — {shown_bad}. A quantity that is "
+                "not a finite, non-Boolean number, or a ticker identity that is "
+                "not a non-empty string, is not zero and not absent: it is a "
+                "tracked line whose size is unknown. These are refused here "
+                "rather than passed on, because the production completeness "
+                "helper coerces every shares/crypto_shares quantity with a bare "
+                "float() and joins symbols into text, and would raise on both "
+                "instead of producing a diagnostic. Valuation completeness is "
+                "therefore NOT evaluated and no zero is substituted; fix the "
+                "entry, or supply confirmed evidence through the accepted "
+                "private adapter."),
+            "position_count": len(positions),
+            "dated": False,
+            "reason": None,
+        }
 
     if not positions:
         return {"tracks_declared": True, "declaration_reason": None,
+                "entries_wellformed": True, "malformed_reason": None,
                 "position_count": 0, "dated": True, "reason": None}
 
     shown = ", ".join(sorted(positions)[:12]) + ("…" if len(positions) > 12 else "")
     return {
         "tracks_declared": True,
         "declaration_reason": None,
+        "entries_wellformed": True,
+        "malformed_reason": None,
         "position_count": len(positions),
         "dated": False,
         "reason": (
@@ -534,7 +621,7 @@ def collect_repository_account_state(
     # never be read as an empty one (see `dated_valuation_evidence`).
     evidence = dated_valuation_evidence(doc)
 
-    if evidence["tracks_declared"]:
+    if evidence["tracks_declared"] and evidence["entries_wellformed"]:
         # THE RESOLVED-VALUE MAP. `allocate.valuation_completeness()`'s first
         # argument is, by production contract, RESOLVED CURRENT DOLLAR VALUES
         # for every nonzero tracked position — production reaches it through
@@ -558,11 +645,14 @@ def collect_repository_account_state(
         valuation = allocate.valuation_completeness(resolved_values, doc)
     else:
         # NOT an evaluated completeness result and never presented as one: an
-        # explicitly incomplete stand-in carrying the declaration failure as
-        # its own reason, so the SINGLE production availability rule still
-        # computes the answer and this module does not grow a second one.
+        # explicitly incomplete stand-in carrying whichever input failure
+        # applies as its own reason, so the SINGLE production availability rule
+        # still computes the answer and this module does not grow a second one.
+        # Exactly one of the two reasons is set, and the gates are ordered, so
+        # the more fundamental failure is the one reported.
         valuation = {"complete": False, "unresolved": (),
-                     "reason": evidence["declaration_reason"]}
+                     "reason": (evidence["declaration_reason"]
+                                or evidence["malformed_reason"])}
 
     availability = allocate.current_dollar_availability(cash, margin, valuation)
 
@@ -593,6 +683,12 @@ def collect_repository_account_state(
             "not all declared as mappings, so there was nothing to evaluate "
             "completeness against and no zero was substituted for the missing "
             "declaration")
+    elif not evidence["entries_wellformed"]:
+        notes.append(
+            "valuation completeness was NOT evaluated: at least one declared "
+            "position entry cannot be read as a position, so the production "
+            "completeness helper was never asked — a malformed entry is neither "
+            "zero nor absent, and no value was substituted for it")
     if verdict != REPOSITORY_STATE_CURRENT:
         notes.append(
             "repository baseline cannot support a current dollar recommendation "
@@ -613,7 +709,8 @@ def collect_repository_account_state(
         margin_age_days=margin.get("age_days"),
         holdings_observation_notes=_holdings_observation_notes(doc, valuation),
         valuation_complete=(bool(valuation.get("complete"))
-                            if evidence["tracks_declared"] else None),
+                            if (evidence["tracks_declared"]
+                                and evidence["entries_wellformed"]) else None),
         valuation_evidence_dated=bool(evidence["dated"]),
         positions_requiring_valuation=(None if evidence["position_count"] is None
                                        else int(evidence["position_count"])),
@@ -1911,7 +2008,7 @@ def render(report: CurrentnessReport) -> str:
     # position tracks were not all declared. Say that rather than printing a
     # bare None a reader could take for a falsy result.
     A(f"   valuation complete          "
-      f"{'NOT EVALUATED (position tracks undeclared)' if r.valuation_complete is None else r.valuation_complete}")
+      f"{'NOT EVALUATED (position input unusable — see blocked below)' if r.valuation_complete is None else r.valuation_complete}")
     A(f"   dollars from repo state     {r.dollars_from_repository_state}")
     for note in r.holdings_observation_notes:
         A(f"     · {note}")

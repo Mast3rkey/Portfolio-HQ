@@ -2025,3 +2025,275 @@ def test_dated_valuation_evidence_fails_closed_on_a_non_mapping_document(bad):
     assert evidence["position_count"] is None
     assert evidence["dated"] is False
     assert _UNDECLARED_FRAGMENT in evidence["declaration_reason"]
+
+
+# ── 15. a malformed position entry must not escape as an exception ────────────
+#
+# THE FOURTH-ROUND MAJOR REGRESSIONS. The declaration gate proved the three
+# tracks EXIST and are mappings. It did not prove their CONTENTS are readable,
+# and once the mappings exist collect_repository_account_state() still handed
+# them to the unmodified production helper, which does a bare `float(qty)` over
+# every shares/crypto_shares quantity and later joins the collected symbols
+# into text. Reproduced at the parent commit, end to end, with all three tracks
+# explicitly declared and fresh cash/margin dates:
+#
+#   shares:        {ZZBAD: "not-a-number"}  -> ValueError  (allocate.py:319)
+#   shares:        {ZZBAD: []}              -> TypeError   (allocate.py:319)
+#   shares:        {ZZBAD: {}}              -> TypeError   (allocate.py:319)
+#   shares:        {ZZBAD: None}            -> TypeError   (allocate.py:319)
+#   crypto_shares: {ZZBAD: "not-a-number"}  -> ValueError  (allocate.py:322)
+#   crypto_shares: {ZZBAD: []}              -> TypeError   (allocate.py:322)
+#   crypto_shares: {ZZBAD: {}}              -> TypeError   (allocate.py:322)
+#   any track with a non-string ticker key  -> TypeError at ", ".join(...)
+#
+# The pre-existing malformed-entry test exercises dated_valuation_evidence()
+# directly, so it never reached the crash site. These go end to end.
+
+_MALFORMED_FRAGMENT = "MALFORMED POSITION INPUT"
+
+
+def _declared(**tracks):
+    """All three tracks explicitly declared, fresh dates, one track overridden."""
+    doc = {"shares": {}, "crypto_shares": {}, "holdings": {}, **_fresh_dates()}
+    doc.update(tracks)
+    return doc
+
+
+def _assert_malformed_blocked(state, *fragments):
+    """A malformed entry fails CLOSED, names itself, and invents nothing."""
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+    assert state.dollars_from_repository_state is False
+    # completeness was never evaluated -- it must not read as either True or a
+    # production-derived False, because the helper was never asked
+    assert state.valuation_complete is not True
+    assert state.valuation_complete is None
+    blocked = " ".join(state.blocked_by)
+    assert _MALFORMED_FRAGMENT in blocked
+    for fragment in fragments:
+        assert fragment in blocked, f"{fragment!r} not named in: {blocked}"
+    # the malformed line is still a POSITION -- never silently zeroed or dropped
+    assert state.positions_requiring_valuation is not None
+    assert state.positions_requiring_valuation >= 1
+    # the separate accepted route is untouched by this refusal
+    assert state.private_evidence.available is True
+    assert any("private-evidence adapter" in n for n in state.notes)
+    assert any("NOT evaluated" in n for n in state.notes)
+
+
+@pytest.mark.parametrize("bad", ["not-a-number", [], {}, None, float("nan"),
+                                 float("inf"), True, "", "1,234"])
+def test_malformed_share_quantity_is_a_diagnostic_not_an_exception(tmp_path, bad):
+    """Every shape `float(qty)` cannot take, plus the shapes it takes but must
+    not: bool (float(True) is 1.0) and non-finite."""
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(shares={"ZZBAD": bad})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    _assert_malformed_blocked(state, "shares.ZZBAD")
+
+
+@pytest.mark.parametrize("bad", ["not-a-number", [], {}, None, float("nan"), True])
+def test_malformed_crypto_quantity_is_a_diagnostic_not_an_exception(tmp_path, bad):
+    """crypto_shares is coerced by the same bare float() one loop later."""
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(crypto_shares={"ZZBAD": bad})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    _assert_malformed_blocked(state, "crypto_shares.ZZBAD")
+
+
+@pytest.mark.parametrize("track", ["shares", "crypto_shares", "holdings"])
+@pytest.mark.parametrize("key", [7, 3.5, None, True, "", "   "])
+def test_malformed_ticker_identity_is_a_diagnostic_not_an_exception(tmp_path, track, key):
+    """A non-string ticker key crashes at a DIFFERENT site from the quantity
+    coercion -- `", ".join(unresolved)` and `", ".join(invalid)` inside
+    valuation_completeness -- and reaches all three tracks, including the
+    manual holdings snapshot whose VALUES production validates for itself."""
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(**{track: {key: 1.0}})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    _assert_malformed_blocked(state, track, "ticker identity")
+
+
+def test_every_reproduced_crash_shape_now_returns_a_state(tmp_path):
+    """The eight shapes reproduced as uncaught exceptions at the parent commit,
+    asserted as a set: each returns a state object rather than raising."""
+    shapes = [
+        ("shares", {"ZZBAD": "not-a-number"}), ("shares", {"ZZBAD": []}),
+        ("shares", {"ZZBAD": {}}), ("shares", {"ZZBAD": None}),
+        ("crypto_shares", {"ZZBAD": "not-a-number"}), ("crypto_shares", {"ZZBAD": []}),
+        ("crypto_shares", {"ZZBAD": {}}), ("shares", {7: 1.0}),
+    ]
+    for i, (track, block) in enumerate(shapes):
+        state = cr.collect_repository_account_state(   # must not raise
+            holdings_path=_write(tmp_path / f"h{i}.yaml", _declared(**{track: block})),
+            as_of=datetime(2026, 9, 16, 12, 0, 0))
+        assert state.verdict == cr.PRIVATE_CURRENT_EVIDENCE_REQUIRED
+        assert state.valuation_complete is None
+
+
+def test_malformed_entry_names_every_offender_not_just_the_first(tmp_path):
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(shares={"ZZA": "x", "ZZB": []},
+                                       crypto_shares={"ZZC": {}})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    blocked = " ".join(state.blocked_by)
+    for name in ("shares.ZZA", "shares.ZZB", "crypto_shares.ZZC"):
+        assert name in blocked
+    assert "3 tracked entr" in blocked
+
+
+def test_malformed_entry_reason_is_stated_once_not_duplicated(tmp_path):
+    """It travels through the single production availability rule as the
+    valuation blocker; it must not also be appended as a currency blocker."""
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(shares={"ZZBAD": "x"})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert sum(r.count(_MALFORMED_FRAGMENT) for r in state.blocked_by) == 1
+
+
+def test_a_malformed_entry_still_reports_stale_cash_as_stale(tmp_path):
+    """This gate RESTRICTS; it never relabels an independently knowable fact."""
+    doc = _declared(shares={"ZZBAD": "x"})
+    doc["cash"]["synced_at"] = "2026-08-01"
+    doc["margin"]["synced_at"] = "2026-07-31"
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml", doc),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.verdict == cr.REPOSITORY_STATE_STALE
+    assert state.cash_state == "stale"
+    assert state.dollars_from_repository_state is False
+    assert any(_MALFORMED_FRAGMENT in r for r in state.blocked_by)
+
+
+def test_a_malformed_entry_never_suppresses_the_margin_usage_statement(tmp_path):
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(shares={"ZZBAD": "x"})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.margin_usage_statement == cr.MARGIN_USAGE_UNAVAILABLE
+
+
+def test_the_declaration_gate_outranks_the_malformed_gate(tmp_path):
+    """Both can fail at once. The more fundamental failure is the one reported,
+    and the malformed check is not even reached -- there is nothing to read."""
+    doc = _declared(shares={"ZZBAD": "x"})
+    doc.pop("crypto_shares")
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml", doc),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    blocked = " ".join(state.blocked_by)
+    assert _UNDECLARED_FRAGMENT in blocked
+    assert _MALFORMED_FRAGMENT not in blocked
+    evidence = cr.dated_valuation_evidence(doc)
+    assert evidence["tracks_declared"] is False
+    assert evidence["entries_wellformed"] is None
+
+
+@pytest.mark.parametrize("doc,wellformed", [
+    ({"shares": {}, "crypto_shares": {}, "holdings": {}}, True),
+    ({"shares": {"ZZA": 0.0}, "crypto_shares": {}, "holdings": {}}, True),
+    ({"shares": {"ZZA": 1.0}, "crypto_shares": {}, "holdings": {"ZZA": 500.0}}, True),
+    ({"shares": {"ZZA": "x"}, "crypto_shares": {}, "holdings": {}}, False),
+    ({"shares": {}, "crypto_shares": {"ZZC": []}, "holdings": {}}, False),
+    ({"shares": {}, "crypto_shares": {}, "holdings": {4: 1.0}}, False),
+])
+def test_dated_valuation_evidence_reports_wellformedness_directly(doc, wellformed):
+    evidence = cr.dated_valuation_evidence(doc)
+    assert evidence["entries_wellformed"] is wellformed
+    if wellformed:
+        assert evidence["malformed_reason"] is None
+    else:
+        assert _MALFORMED_FRAGMENT in evidence["malformed_reason"]
+        assert evidence["reason"] is None          # the currency gate is not reached
+        assert evidence["position_count"] >= 1     # never zeroed
+
+
+def test_a_malformed_entry_is_never_counted_as_zero_or_absent(tmp_path):
+    """The principle the pre-existing direct test established, now proven end
+    to end: a malformed line is a position of unknown size, not an empty slot."""
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(shares={"ZZBAD": "not-a-number"})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.positions_requiring_valuation == 1
+    assert state.valuation_complete is not True
+    assert "0 tracked" not in " ".join(state.blocked_by)
+
+
+def test_no_price_is_fetched_and_no_value_invented_for_a_malformed_entry(tmp_path):
+    """Nothing numeric is published for the malformed line."""
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(shares={"ZZBAD": "not-a-number"})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    blob = json.dumps(state.as_dict())
+    assert "$" not in blob
+    assert "ZZBAD" in blob          # named, not hidden
+    assert state.valuation_complete is None
+
+
+# ── positive controls this gate must NOT disturb ──────────────────────────────
+
+def test_positive_control_malformed_gate_leaves_an_empty_book_current(tmp_path):
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml", _declared()),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+    assert state.valuation_complete is True
+
+
+def test_positive_control_malformed_gate_leaves_an_all_zero_book_current(tmp_path):
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(shares={"ZZA": 0.0},
+                                       crypto_shares={"ZZC": 0},
+                                       holdings={"ZZM": 0.0})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+    assert state.valuation_complete is True
+
+
+def test_positive_control_a_valid_nonzero_position_still_blocks_on_currency(tmp_path):
+    """Well-formed and still not current -- the undated-valuation rule from the
+    previous round is untouched, and it is a DIFFERENT reason."""
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(shares={"ZZA": 4.05})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+    blocked = " ".join(state.blocked_by)
+    assert "VALUATION CURRENCY" in blocked
+    assert _MALFORMED_FRAGMENT not in blocked
+    assert state.valuation_complete is False       # production evaluated it
+
+
+def test_positive_control_a_malformed_holdings_VALUE_stays_productions_call(tmp_path):
+    """SCOPE BOUNDARY. The manual `holdings:` track's VALUES are validated
+    inside production by _finite_scalar, which returns a flag rather than
+    raising and correctly reports complete=False. That judgement is production's
+    and this gate must not take it over -- only the identity check reaches
+    `holdings`, because only the join does."""
+    state = cr.collect_repository_account_state(
+        holdings_path=_write(tmp_path / "holdings.yaml",
+                             _declared(shares={"ZZA": 1.0},
+                                       holdings={"ZZA": "not-a-number"})),
+        as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+    assert state.valuation_complete is False       # production's answer, not None
+    blocked = " ".join(state.blocked_by)
+    assert _MALFORMED_FRAGMENT not in blocked
+    assert "ZZA" in blocked
+
+
+def test_real_corpus_position_entries_are_all_wellformed():
+    """The committed baseline is readable, so this gate changes nothing about
+    the real corpus -- if that ever stops being true it is a genuine finding."""
+    doc = yaml.safe_load((REPO_ROOT / "holdings.yaml").read_text())
+    evidence = cr.dated_valuation_evidence(doc)
+    assert evidence["tracks_declared"] is True
+    assert evidence["entries_wellformed"] is True
+    assert evidence["malformed_reason"] is None
