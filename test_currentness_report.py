@@ -1121,19 +1121,26 @@ def test_positive_control_no_tracked_positions_can_prove_completeness(tmp_path):
     assert state.verdict == cr.REPOSITORY_STATE_CURRENT
 
 
-def test_positive_control_manual_dollar_valuation_proves_completeness(tmp_path):
-    """Positive control B: the manual `holdings:` snapshot is the one
-    repository-native source of resolved dollar values — the same mapping
-    allocate.resolve_holdings() itself starts from before applying prices this
-    module does not fetch."""
+def test_manual_dollar_snapshot_is_structurally_complete_but_not_current(tmp_path):
+    """SUPERSEDES the former positive control B.
+
+    The manual `holdings:` snapshot IS a resolved dollar value, so
+    allocate.valuation_completeness() still reports structural completeness —
+    every tracked position carries some value. But it is UNDATED, so it cannot
+    show that value is CURRENT. Those are two different claims and only the
+    first is provable from repository state; current-dollar availability must
+    therefore stay false."""
     doc = {"shares": {"ZZFAKE": 4.05}, "crypto_shares": {},
            "holdings": {"ZZFAKE": 1234.56}, **_fresh_dates()}
     p = _write(tmp_path / "holdings.yaml", doc)
     state = cr.collect_repository_account_state(
         holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
-    assert state.valuation_complete is True
-    assert state.dollars_from_repository_state is True
-    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+
+    assert state.valuation_complete is True          # structurally complete
+    assert state.valuation_evidence_dated is False   # but not shown to be current
+    assert state.dollars_from_repository_state is False
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+    assert any("VALUATION CURRENCY" in reason for reason in state.blocked_by)
 
 
 def test_partial_manual_coverage_still_fails_closed(tmp_path):
@@ -1144,6 +1151,7 @@ def test_partial_manual_coverage_still_fails_closed(tmp_path):
     state = cr.collect_repository_account_state(
         holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
     assert state.valuation_complete is False
+    assert state.valuation_evidence_dated is False
     assert state.verdict != cr.REPOSITORY_STATE_CURRENT
     assert any("ZZB" in r for r in state.blocked_by)
 
@@ -1392,14 +1400,25 @@ def test_positive_control_valid_lookthrough_still_computes(tmp_path):
     assert result.issuers[0].ceiling_pct == pytest.approx(8.0)
 
 
-def test_absent_issuers_key_is_valid_zero_coverage(tmp_path):
-    """No issuers declared is a legitimate empty state, not a malformed one —
-    but the ceilings are still required."""
+def test_explicitly_empty_issuers_list_is_valid_zero_coverage(tmp_path):
+    """A DECLARED empty membership is a legitimate state. An absent key is not
+    — see test_absent_issuers_key_is_unavailable below."""
     result = _policy_with(tmp_path, {"issuer_ceiling_pct": 8.0,
-                                     "common_driver_ceiling_pct": 40.0})
+                                     "common_driver_ceiling_pct": 40.0,
+                                     "issuers": []})
     assert result.available is True
     assert result.issuers == ()
     assert result.common_driver.recomputed_pct == pytest.approx(0.0)
+
+
+def test_explicitly_empty_funds_list_is_valid(tmp_path):
+    """Likewise a declared empty fund list: real direct exposure, no embedded."""
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA", "funds": []}]})
+    assert result.available is True
+    assert result.issuers[0].direct_pct == pytest.approx(10.0)
+    assert result.issuers[0].embedded_pct == pytest.approx(0.0)
 
 
 def test_validate_lookthrough_rejects_a_non_mapping_document(tmp_path):
@@ -1436,3 +1455,233 @@ def test_real_corpus_ceilings_are_read_from_config_not_defaulted():
     for fallback in ('"issuer_ceiling_pct", 8.0', '"common_driver_ceiling_pct", 40.0',
                      "get(\"issuer_ceiling_pct\", ", "get(\"common_driver_ceiling_pct\", "):
         assert fallback not in source, f"ceiling fallback still present: {fallback}"
+
+
+# ── 13. DELTA MAJOR 1 — undated valuation never proves currency ───────────
+#
+# Pre-fix defect: the manual `holdings:` dollar snapshot satisfied
+# allocate.valuation_completeness(), so fresh cash + fresh margin + an UNDATED
+# manual value produced REPOSITORY_STATE_CURRENT / dollars available. A manual
+# value is real but undated; structural completeness is not currency.
+#
+# holdings.yaml dates exactly two blocks (cash.synced_at, margin.synced_at) —
+# see allocate.write_state(), its only writer. There is no per-position
+# valuation timestamp, so any nonzero position fails closed.
+
+def test_holdings_schema_still_dates_only_cash_and_margin():
+    """PINS THE SCHEMA FACT the currency rule rests on.
+
+    allocate.write_state() is the only writer of holdings.yaml. It emits
+    `synced_at` for the cash and margin blocks only; holdings/shares/
+    crypto_shares are written as bare mappings. If a dated valuation form is
+    ever added, this test fails and forces a deliberate decision rather than
+    letting the fail-closed rule silently persist — or silently lapse."""
+    source = (REPO_ROOT / "allocate.py").read_text()
+    body = source[source.index("def write_state("):source.index("def update_cash(")]
+    emitted = body.count('f"  synced_at: ')
+    assert emitted == 2, (
+        f"write_state() emits {emitted} synced_at fields, not 2 — re-derive which "
+        "blocks are dated before trusting the valuation-currency rule")
+    for dated_block in ('f"  synced_at: {cash.get(', 'f"  synced_at: {margin.get('):
+        assert dated_block in body
+    # the three value/quantity tracks are still written undated
+    for track in ('f.write("holdings:\\n")', 'f.write("shares:\\n")',
+                  'f.write("crypto_shares:\\n")'):
+        assert track in body
+
+    doc = yaml.safe_load((REPO_ROOT / "holdings.yaml").read_text())
+    assert "synced_at" in (doc.get("cash") or {})
+    assert "synced_at" in (doc.get("margin") or {})
+    for track in cr.VALUATION_EVIDENCE_TRACKS:
+        block = doc.get(track) or {}
+        assert "synced_at" not in block
+        for value in block.values():
+            assert not isinstance(value, dict), (
+                f"{track} entries are no longer bare scalars — a per-position "
+                "structure may now carry a date; re-derive the currency rule")
+
+
+def test_undated_manual_valuation_does_not_prove_current_dollars(tmp_path):
+    """THE DELTA MAJOR 1 REGRESSION. Fresh cash + fresh margin + nonzero
+    tracked position + manual dollar fallback + no admissible valuation
+    timestamp => must NOT be current/available."""
+    doc = {"shares": {"ZZFAKE": 4.05}, "crypto_shares": {},
+           "holdings": {"ZZFAKE": 1234.56}, **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+
+    assert state.cash_state == "current" and state.margin_state == "current"
+    assert state.valuation_evidence_dated is False
+    # ZZFAKE is share-tracked AND manually valued: one position, not two.
+    assert state.positions_requiring_valuation == 1
+    assert state.dollars_from_repository_state is False
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+    assert any("no dated current valuation" in r for r in state.blocked_by)
+
+
+def test_manual_only_position_is_counted_even_though_untracked(tmp_path):
+    """A manual-only entry is never `expected` by valuation_completeness (it is
+    in no shares/crypto_shares block), so before this gate it received zero
+    scrutiny and passed as complete. It is a position and it counts."""
+    doc = {"shares": {}, "crypto_shares": {}, "holdings": {"ZZONLY": 500.0},
+           **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+
+    assert state.valuation_complete is True       # structurally, nothing is missing
+    assert state.valuation_evidence_dated is False
+    assert state.positions_requiring_valuation == 1
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+
+
+@pytest.mark.parametrize("doc,expected", [
+    ({"shares": {"ZZA": 1.0}, "crypto_shares": {}, "holdings": {}}, 1),
+    ({"shares": {}, "crypto_shares": {"ZZC": 0.5}, "holdings": {}}, 1),
+    ({"shares": {}, "crypto_shares": {}, "holdings": {"ZZM": 10.0}}, 1),
+    ({"shares": {"ZZA": 1.0}, "crypto_shares": {"ZZC": 2.0},
+      "holdings": {"ZZM": 3.0}}, 3),
+])
+def test_every_track_counts_toward_positions_requiring_valuation(doc, expected):
+    evidence = cr.dated_valuation_evidence(doc)
+    assert evidence["position_count"] == expected
+    assert evidence["dated"] is False
+    assert evidence["reason"] is not None
+
+
+def test_one_ticker_in_two_tracks_is_one_position(tmp_path):
+    """A share-tracked name that also carries a manual dollar fallback is the
+    documented production pattern — it is a single position to value."""
+    evidence = cr.dated_valuation_evidence(
+        {"shares": {"ZZA": 1.0}, "crypto_shares": {}, "holdings": {"ZZA": 500.0}})
+    assert evidence["position_count"] == 1
+    mixed = cr.dated_valuation_evidence(
+        {"shares": {"ZZA": 1.0}, "crypto_shares": {}, "holdings": {"zza": 500.0}})
+    assert mixed["position_count"] == 1, "ticker identity must be case-insensitive"
+
+
+def test_a_malformed_position_entry_counts_rather_than_being_dismissed():
+    """A malformed value is not provably empty, so it must not be treated as
+    an absent position and quietly skipped."""
+    for bad in (True, float("nan"), "not-a-number", None, [], {}):
+        evidence = cr.dated_valuation_evidence({"shares": {"ZZBAD": bad}})
+        assert evidence["position_count"] == 1, bad
+        assert evidence["dated"] is False
+
+
+def test_positive_control_empty_book_proves_valuation_completeness(tmp_path):
+    """THE PRESERVED POSITIVE CONTROL. Nothing to value, so the currency
+    question does not arise — fresh cash and margin alone are sufficient."""
+    doc = {"shares": {}, "crypto_shares": {}, "holdings": {}, **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+
+    assert state.valuation_complete is True
+    assert state.valuation_evidence_dated is True
+    assert state.positions_requiring_valuation == 0
+    assert state.dollars_from_repository_state is True
+    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+    assert state.blocked_by == ()
+
+
+def test_positive_control_all_zero_positions_is_an_empty_book(tmp_path):
+    doc = {"shares": {"ZZA": 0.0}, "crypto_shares": {"ZZC": 0},
+           "holdings": {"ZZM": 0.0}, **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.positions_requiring_valuation == 0
+    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+
+
+def test_currency_gate_only_restricts_never_loosens(tmp_path):
+    """Stale cash plus an empty book: the gate says 'dated', but the production
+    availability fact still blocks. The gate must never upgrade that."""
+    doc = {"shares": {}, "crypto_shares": {}, "holdings": {},
+           "cash": {"balance": 1000.0, "synced_at": "2026-08-01"},
+           "margin": {"debt": 0.0, "buffer_pct": 100.0, "synced_at": "2026-08-01"}}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.valuation_evidence_dated is True
+    assert state.dollars_from_repository_state is False
+    assert state.verdict == cr.REPOSITORY_STATE_STALE
+
+
+def test_module_names_no_hypothetical_valuation_timestamp_field():
+    """The fix must not invent a new valuation authority by naming a field a
+    future schema 'should' carry."""
+    source = (REPO_ROOT / "currentness_report.py").read_text()
+    for invented in ("holdings_synced_at", "valued_at", "valuation_synced_at",
+                     "priced_at", "positions_synced_at"):
+        assert invented not in source, f"invented valuation authority: {invented}"
+
+
+def test_real_corpus_positions_force_undated_verdict():
+    """Derived from the live file, not asserted as a constant."""
+    doc = yaml.safe_load((REPO_ROOT / "holdings.yaml").read_text())
+    expected = cr.dated_valuation_evidence(doc)["position_count"]
+    report = cr.build_report(root=REPO_ROOT, as_of=AS_OF)
+    state = report.repository_account_state
+    assert state.positions_requiring_valuation == expected
+    if expected > 0:
+        assert state.valuation_evidence_dated is False
+        assert state.dollars_from_repository_state is False
+        assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+
+
+# ── 14. DELTA MAJOR 2 — a missing membership key is not an empty set ──────
+
+def test_absent_issuers_key_is_unavailable(tmp_path):
+    """THE DELTA MAJOR 2 REGRESSION (top level). Pre-fix this published a
+    plausible 0.0000% common-driver exposure with status OK."""
+    result = _policy_with(tmp_path, {"issuer_ceiling_pct": 8.0,
+                                     "common_driver_ceiling_pct": 40.0})
+    _assert_controlled_unavailable(result, "missing required 'issuers'")
+    assert "not an empty membership" in result.detail
+
+
+def test_absent_funds_key_on_an_issuer_row_is_unavailable(tmp_path):
+    """THE DELTA MAJOR 2 REGRESSION (per issuer). Pre-fix this published
+    ZZA at 10.0000% direct with zero embedded — understating the controls."""
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA"}]})
+    _assert_controlled_unavailable(result, "missing required 'funds'")
+    assert "not an empty membership" in result.detail
+
+
+def test_absent_funds_on_a_later_issuer_row_is_still_caught(tmp_path):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA", "funds": []}, {"ticker": "ZZB"}]})
+    _assert_controlled_unavailable(result, "missing required 'funds'")
+    assert "issuers[1]" in result.detail
+
+
+def test_explicit_null_issuers_is_rejected_as_a_type_error(tmp_path):
+    """`issuers: null` is present-but-wrong-typed, distinct from absent."""
+    result = _policy_with(tmp_path, {"issuer_ceiling_pct": 8.0,
+                                     "common_driver_ceiling_pct": 40.0,
+                                     "issuers": None})
+    _assert_controlled_unavailable(result, "issuers must be a list")
+
+
+def test_explicit_null_funds_is_rejected_as_a_type_error(tmp_path):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA", "funds": None}]})
+    _assert_controlled_unavailable(result, "funds must be a list")
+
+
+def test_real_corpus_declares_issuers_and_every_funds_key():
+    """The committed configuration must declare membership explicitly — if it
+    ever stops, that is a real finding, not a test to relax."""
+    lookthrough = yaml.safe_load((REPO_ROOT / "issuer_lookthrough.yaml").read_text())
+    assert "issuers" in lookthrough
+    for row in lookthrough["issuers"]:
+        assert "funds" in row, f"{row.get('ticker')} does not declare funds"
+    validated, reason = cr.validate_lookthrough(lookthrough)
+    assert reason is None, reason

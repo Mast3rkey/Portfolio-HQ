@@ -237,6 +237,8 @@ class RepositoryAccountState:
     margin_age_days: float | None
     holdings_observation_notes: tuple[str, ...]
     valuation_complete: bool | None
+    valuation_evidence_dated: bool | None
+    positions_requiring_valuation: int | None
     dollars_from_repository_state: bool
     blocked_by: tuple[str, ...]
     margin_usage_statement: str
@@ -254,12 +256,82 @@ class RepositoryAccountState:
             "margin_age_days": self.margin_age_days,
             "holdings_observation_notes": list(self.holdings_observation_notes),
             "valuation_complete": self.valuation_complete,
+            "valuation_evidence_dated": self.valuation_evidence_dated,
+            "positions_requiring_valuation": self.positions_requiring_valuation,
             "dollars_from_repository_state": self.dollars_from_repository_state,
             "blocked_by": list(self.blocked_by),
             "margin_usage_statement": self.margin_usage_statement,
             "private_evidence": self.private_evidence.as_dict(),
             "notes": list(self.notes),
         }
+
+
+# THE DATED-VALUATION-EVIDENCE RULE.
+#
+# `holdings.yaml` dates exactly two blocks — `cash.synced_at` and
+# `margin.synced_at`. Verified against `allocate.write_state()`, which is the
+# only writer of this file: it emits `synced_at` for the cash and margin blocks
+# and writes `holdings:`, `shares:` and `crypto_shares:` as bare
+# ticker -> value/quantity mappings with no timestamp of any kind.
+#
+# So there is NO per-position valuation timestamp in this schema. The manual
+# `holdings:` dollar snapshot is a real resolved value, but an UNDATED one: it
+# cannot establish that a position's value is CURRENT, only that some value was
+# recorded at some unrecorded time. Structural completeness
+# (`valuation_completeness()` — "is every tracked position valued at all") and
+# currency ("is that valuation current") are two different claims, and only the
+# first is provable from repository state today.
+#
+# Therefore: whenever repository state holds any nonzero position, current
+# dollar availability is false. The accepted private-evidence adapter remains
+# the route to a real current portfolio. An empty book is the one case that
+# genuinely needs no valuation evidence — there is nothing to value.
+#
+# This module deliberately does NOT name a hypothetical future timestamp field.
+# Inventing one would create a new valuation authority, which is out of scope;
+# `test_holdings_schema_still_dates_only_cash_and_margin` pins the schema fact
+# above so that if a dated valuation form is ever added, that test fails and
+# forces a deliberate decision rather than this rule silently persisting.
+VALUATION_EVIDENCE_TRACKS = ("shares", "crypto_shares", "holdings")
+
+
+def dated_valuation_evidence(holdings_doc: dict) -> dict:
+    """Is there admissible DATED evidence that position valuations are current?
+
+    Returns `{"position_count", "dated", "reason"}`. `dated` is True only when
+    the question does not arise — i.e. there is no position to value.
+    """
+    # One POSITION, counted once. A ticker may legitimately appear in more than
+    # one track (a share-tracked name that also carries a manual dollar
+    # fallback is the documented production pattern), and that is still a
+    # single position to value — not two.
+    positions: set[str] = set()
+    for track in VALUATION_EVIDENCE_TRACKS:
+        block = holdings_doc.get(track) or {}
+        if not isinstance(block, dict):
+            continue
+        for ticker, raw in block.items():
+            value, _ = _checked_pct(raw, f"{track}.{ticker}")
+            # A malformed entry is NOT dismissed as absent: it is a tracked
+            # line this module cannot prove is empty, so it counts.
+            if value is None or value != 0:
+                positions.add(str(ticker).strip().upper())
+
+    if not positions:
+        return {"position_count": 0, "dated": True, "reason": None}
+
+    shown = ", ".join(sorted(positions)[:12]) + ("…" if len(positions) > 12 else "")
+    return {
+        "position_count": len(positions),
+        "dated": False,
+        "reason": (
+            f"VALUATION CURRENCY: {len(positions)} nonzero position(s) ({shown}) have no "
+            "dated current valuation. holdings.yaml dates only cash.synced_at and "
+            "margin.synced_at — shares, crypto_shares and the manual holdings snapshot "
+            "carry no per-position observation date, so no repository-only value can be "
+            "shown to be CURRENT. Supply confirmed evidence through the accepted private "
+            "adapter instead."),
+    }
 
 
 # The one sentence this unit exists to make impossible to get wrong.
@@ -346,7 +418,9 @@ def collect_repository_account_state(
             cash_state=None, cash_synced_at=None, cash_age_days=None,
             margin_state=None, margin_synced_at=None, margin_age_days=None,
             holdings_observation_notes=(),
-            valuation_complete=None, dollars_from_repository_state=False,
+            valuation_complete=None, valuation_evidence_dated=None,
+            positions_requiring_valuation=None,
+            dollars_from_repository_state=False,
             blocked_by=(f"allocate not importable: {exc.__class__.__name__}",),
             margin_usage_statement=MARGIN_USAGE_UNAVAILABLE,
             private_evidence=private,
@@ -360,7 +434,9 @@ def collect_repository_account_state(
             cash_state=None, cash_synced_at=None, cash_age_days=None,
             margin_state=None, margin_synced_at=None, margin_age_days=None,
             holdings_observation_notes=(),
-            valuation_complete=None, dollars_from_repository_state=False,
+            valuation_complete=None, valuation_evidence_dated=None,
+            positions_requiring_valuation=None,
+            dollars_from_repository_state=False,
             blocked_by=(f"holdings file unreadable: {exc.__class__.__name__}",),
             margin_usage_statement=MARGIN_USAGE_UNAVAILABLE,
             private_evidence=private,
@@ -393,8 +469,19 @@ def collect_repository_account_state(
     valuation = allocate.valuation_completeness(resolved_values, doc)
     availability = allocate.current_dollar_availability(cash, margin, valuation)
 
+    # THE CURRENCY GATE, applied ON TOP of the production availability fact.
+    # `valuation_completeness()` proves every tracked position carries SOME
+    # value; it does not — and cannot — prove that value is current, because
+    # nothing in this schema dates it. This gate may only ever RESTRICT the
+    # production answer further; it can never make unavailable state available.
+    evidence = dated_valuation_evidence(doc)
+    blocked = list(availability.get("blocked_by") or ())
+    if not evidence["dated"]:
+        blocked.append(evidence["reason"])
+    dollars_ok = bool(availability.get("available")) and bool(evidence["dated"])
+
     both_usable = bool(cash.get("usable")) and bool(margin.get("usable"))
-    if both_usable and availability.get("available"):
+    if both_usable and dollars_ok:
         verdict = REPOSITORY_STATE_CURRENT
     elif cash.get("state") == "stale" or margin.get("state") == "stale":
         verdict = REPOSITORY_STATE_STALE
@@ -422,8 +509,10 @@ def collect_repository_account_state(
         margin_age_days=margin.get("age_days"),
         holdings_observation_notes=_holdings_observation_notes(doc, valuation),
         valuation_complete=bool(valuation.get("complete")),
-        dollars_from_repository_state=bool(availability.get("available")),
-        blocked_by=tuple(availability.get("blocked_by") or ()),
+        valuation_evidence_dated=bool(evidence["dated"]),
+        positions_requiring_valuation=int(evidence["position_count"]),
+        dollars_from_repository_state=dollars_ok,
+        blocked_by=tuple(blocked),
         margin_usage_statement=MARGIN_USAGE_UNAVAILABLE,
         private_evidence=private,
         notes=tuple(notes),
@@ -1072,9 +1161,18 @@ def validate_lookthrough(lookthrough: object) -> tuple[dict | None, str | None]:
             return None, reason
         ceilings[key] = value
 
-    raw_issuers = lookthrough.get("issuers")
-    if raw_issuers is None:
-        raw_issuers = []
+    # MEMBERSHIP IS EXPLICIT OR IT IS UNKNOWN. A missing key is not an empty
+    # set: absent `issuers` would silently publish 0.0000% common-driver
+    # exposure, and an absent per-issuer `funds` would silently drop that
+    # issuer's embedded exposure — both UNDERSTATING the 8% issuer and 40%
+    # common-driver no-add controls while looking like a clean result.
+    if "issuers" not in lookthrough:
+        return None, (
+            "issuer_lookthrough.yaml is missing required 'issuers' — an absent "
+            "membership key is not an empty membership, and treating it as one "
+            "would understate the issuer and common-driver controls; the section "
+            "reports UNAVAILABLE instead")
+    raw_issuers = lookthrough["issuers"]
     if not isinstance(raw_issuers, list):
         return None, "issuer_lookthrough.issuers must be a list"
 
@@ -1094,9 +1192,12 @@ def validate_lookthrough(lookthrough: object) -> tuple[dict | None, str | None]:
             return None, f"{label}.ticker {key!r} is a duplicate issuer identity"
         seen.add(key)
 
-        raw_funds = row.get("funds")
-        if raw_funds is None:
-            raw_funds = []
+        if "funds" not in row:
+            return None, (
+                f"{label} is missing required 'funds' — an absent membership key is "
+                "not an empty membership, and treating it as one would drop this "
+                "issuer's embedded exposure and understate the controls")
+        raw_funds = row["funds"]
         if not isinstance(raw_funds, list):
             return None, f"{label}.funds must be a list"
         funds: list[dict] = []
