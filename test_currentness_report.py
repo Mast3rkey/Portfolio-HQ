@@ -16,6 +16,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import shutil
 from datetime import date, datetime
 from pathlib import Path
 
@@ -682,7 +683,12 @@ def test_unreadable_policy_is_unavailable_not_zero(tmp_path):
 # ── 7. repository account state and the private-evidence boundary ─────────
 
 def _holdings(cash_date="2026-09-16", margin_date="2026-09-16", debt=0.0):
-    return {"shares": {}, "crypto_shares": {},
+    # All THREE position tracks are declared explicitly. An omitted track is
+    # an undeclared track, not an empty one, and would now (correctly) block on
+    # the declaration gate — which would silently turn every fixture built on
+    # this helper into a vacuous pass for whatever it was actually written to
+    # test. See test_a_missing_position_track_is_not_an_empty_one.
+    return {"shares": {}, "crypto_shares": {}, "holdings": {},
             "cash": {"balance": 1000.0, "synced_at": cash_date},
             "margin": {"debt": debt, "buffer_pct": 100.0, "synced_at": margin_date}}
 
@@ -1046,7 +1052,8 @@ def _fresh_dates():
 def test_fresh_dates_plus_unvalued_equity_share_is_not_repository_current(tmp_path):
     """THE MAJOR 1 REGRESSION. Everything dated fresh, one nonzero tracked
     share, no resolved dollar value anywhere."""
-    doc = {"shares": {"ZZFAKE": 4.05}, "crypto_shares": {}, **_fresh_dates()}
+    doc = {"shares": {"ZZFAKE": 4.05}, "crypto_shares": {}, "holdings": {},
+           **_fresh_dates()}
     p = _write(tmp_path / "holdings.yaml", doc)
     state = cr.collect_repository_account_state(
         holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
@@ -1062,7 +1069,8 @@ def test_fresh_dates_plus_unvalued_equity_share_is_not_repository_current(tmp_pa
 
 def test_fresh_dates_plus_unvalued_crypto_quantity_is_not_repository_current(tmp_path):
     """The equivalent crypto case — crypto_shares is the same trap."""
-    doc = {"shares": {}, "crypto_shares": {"ZZCOIN": 0.5}, **_fresh_dates()}
+    doc = {"shares": {}, "crypto_shares": {"ZZCOIN": 0.5}, "holdings": {},
+           **_fresh_dates()}
     p = _write(tmp_path / "holdings.yaml", doc)
     state = cr.collect_repository_account_state(
         holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
@@ -1077,7 +1085,8 @@ def test_fresh_dates_plus_unvalued_crypto_quantity_is_not_repository_current(tmp
 def test_a_quantity_is_never_promoted_to_a_dollar_valuation(tmp_path):
     """A quantity that would look like a perfectly plausible dollar value must
     still count as unresolved — the two are different kinds of number."""
-    doc = {"shares": {"ZZFAKE": 1234.56}, "crypto_shares": {}, **_fresh_dates()}
+    doc = {"shares": {"ZZFAKE": 1234.56}, "crypto_shares": {}, "holdings": {},
+           **_fresh_dates()}
     p = _write(tmp_path / "holdings.yaml", doc)
     state = cr.collect_repository_account_state(
         holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
@@ -1087,7 +1096,7 @@ def test_a_quantity_is_never_promoted_to_a_dollar_valuation(tmp_path):
 
 def test_many_unvalued_positions_are_all_reported_not_just_the_first(tmp_path):
     doc = {"shares": {"ZZA": 1.0, "ZZB": 2.0}, "crypto_shares": {"ZZC": 3.0},
-           **_fresh_dates()}
+           "holdings": {}, **_fresh_dates()}
     p = _write(tmp_path / "holdings.yaml", doc)
     state = cr.collect_repository_account_state(
         holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
@@ -1102,7 +1111,7 @@ def test_zero_quantity_positions_do_not_require_a_valuation(tmp_path):
     """A zero quantity is not a tracked position — existing production
     semantics, preserved."""
     doc = {"shares": {"ZZFAKE": 0.0}, "crypto_shares": {"ZZCOIN": 0},
-           **_fresh_dates()}
+           "holdings": {}, **_fresh_dates()}
     p = _write(tmp_path / "holdings.yaml", doc)
     state = cr.collect_repository_account_state(
         holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
@@ -1111,8 +1120,15 @@ def test_zero_quantity_positions_do_not_require_a_valuation(tmp_path):
 
 
 def test_positive_control_no_tracked_positions_can_prove_completeness(tmp_path):
-    """Positive control A: nothing tracked, so nothing is unresolved."""
-    doc = {"shares": {}, "crypto_shares": {}, **_fresh_dates()}
+    """Positive control A: nothing tracked, so nothing is unresolved.
+
+    SUPERSEDED FIXTURE. This control previously omitted `holdings:` entirely
+    and still expected REPOSITORY_STATE_CURRENT — which is precisely the
+    fail-open the declaration gate now closes, so as written it was asserting
+    the defect rather than the property. A legitimate empty book DECLARES all
+    three tracks as explicit empty mappings; that is what is controlled here.
+    """
+    doc = {"shares": {}, "crypto_shares": {}, "holdings": {}, **_fresh_dates()}
     p = _write(tmp_path / "holdings.yaml", doc)
     state = cr.collect_repository_account_state(
         holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
@@ -1565,7 +1581,8 @@ def test_a_malformed_position_entry_counts_rather_than_being_dismissed():
     """A malformed value is not provably empty, so it must not be treated as
     an absent position and quietly skipped."""
     for bad in (True, float("nan"), "not-a-number", None, [], {}):
-        evidence = cr.dated_valuation_evidence({"shares": {"ZZBAD": bad}})
+        evidence = cr.dated_valuation_evidence(
+            {"shares": {"ZZBAD": bad}, "crypto_shares": {}, "holdings": {}})
         assert evidence["position_count"] == 1, bad
         assert evidence["dated"] is False
 
@@ -1685,3 +1702,326 @@ def test_real_corpus_declares_issuers_and_every_funds_key():
         assert "funds" in row, f"{row.get('ticker')} does not declare funds"
     validated, reason = cr.validate_lookthrough(lookthrough)
     assert reason is None, reason
+
+
+# ── 13. an undeclared position track is not an empty one ──────────────────────
+#
+# THE THIRD-ROUND MAJOR 1 REGRESSIONS. `dated_valuation_evidence` previously
+# read each track as `holdings_doc.get(track) or {}` and skipped non-mappings,
+# so a MISSING, NULL or NON-MAPPING track produced the same answer as a
+# genuinely declared empty one: zero positions, nothing to value, and a fresh
+# REPOSITORY_STATE_CURRENT verdict for a file whose position record had not
+# been read at all. Two of those shapes did not even reach a verdict — they
+# raised out of production helpers.
+
+_UNDECLARED_FRAGMENT = "POSITION TRACK DECLARATION"
+
+
+def _state_for(tmp_path, doc, name="holdings.yaml"):
+    p = _write(tmp_path / name, doc)
+    return cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+
+
+def _assert_declaration_blocked(state, track):
+    """An undeclared track fails CLOSED: never CURRENT, never dollar-usable,
+    the track named, and no fabricated position count standing in for the
+    count nobody could take."""
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+    assert state.dollars_from_repository_state is False
+    assert state.positions_requiring_valuation is None, (
+        "0 would claim a count was taken; it was not")
+    assert state.valuation_complete is None, (
+        "completeness was never evaluated and must not be reported as a bool")
+    blocked = " ".join(state.blocked_by)
+    assert _UNDECLARED_FRAGMENT in blocked
+    assert track in blocked
+    # the separate accepted path is never closed off by this refusal
+    assert state.private_evidence.available is True
+    assert any("private-evidence adapter" in n for n in state.notes)
+
+
+@pytest.mark.parametrize("track", ["shares", "crypto_shares", "holdings"])
+def test_a_missing_position_track_is_not_an_empty_one(tmp_path, track):
+    """Each of the three tracks, omitted one at a time."""
+    doc = {"shares": {}, "crypto_shares": {}, "holdings": {}, **_fresh_dates()}
+    doc.pop(track)
+    _assert_declaration_blocked(_state_for(tmp_path, doc), track)
+
+
+def test_all_three_tracks_missing_is_not_an_empty_book(tmp_path):
+    """The worst case: no position record of any kind, previously reported as
+    a current, fully valued, zero-position book."""
+    _assert_declaration_blocked(_state_for(tmp_path, dict(_fresh_dates())), "shares")
+
+
+@pytest.mark.parametrize("track", ["shares", "crypto_shares", "holdings"])
+def test_an_explicit_null_track_is_not_an_empty_one(tmp_path, track):
+    """`shares:` with nothing after it parses to None, which `or {}` silently
+    converted into a declared empty mapping."""
+    doc = {"shares": {}, "crypto_shares": {}, "holdings": {}, **_fresh_dates()}
+    doc[track] = None
+    _assert_declaration_blocked(_state_for(tmp_path, doc), track)
+
+
+@pytest.mark.parametrize("track,value", [
+    ("shares", ["ZZA", "ZZB"]),
+    ("crypto_shares", "ZZCOIN 0.5"),
+    ("holdings", 7),
+    ("shares", True),
+])
+def test_a_non_mapping_track_is_refused_not_skipped(tmp_path, track, value):
+    """A non-mapping track was skipped entirely. Two of these shapes also
+    raised out of production helpers rather than producing a diagnostic:
+    a non-mapping `shares`/`crypto_shares` raises AttributeError inside
+    allocate.valuation_completeness, and a non-mapping `holdings` raises
+    ValueError while building the resolved-value map. allocate.py is NOT
+    changed; the declaration gate runs first so neither is ever reached."""
+    doc = {"shares": {}, "crypto_shares": {}, "holdings": {}, **_fresh_dates()}
+    doc[track] = value
+    _assert_declaration_blocked(_state_for(tmp_path, doc), track)
+
+
+def test_a_non_mapping_track_produces_a_diagnostic_not_an_exception(tmp_path):
+    """Explicitly: the two crash shapes are controlled UNAVAILABLE now."""
+    for track, value in (("shares", "ZZA 1"), ("crypto_shares", 7),
+                         ("holdings", ["ZZA"])):
+        doc = {"shares": {}, "crypto_shares": {}, "holdings": {},
+               **_fresh_dates()}
+        doc[track] = value
+        state = _state_for(tmp_path, doc, name=f"h-{track}.yaml")  # no raise
+        assert state.verdict == cr.PRIVATE_CURRENT_EVIDENCE_REQUIRED
+
+
+def test_undeclared_track_reason_is_stated_once_not_duplicated(tmp_path):
+    """The declaration failure travels through the production availability
+    helper as the valuation blocker; it must not ALSO be appended as a
+    currency blocker."""
+    doc = {"shares": {}, "crypto_shares": {}, **_fresh_dates()}
+    state = _state_for(tmp_path, doc)
+    occurrences = sum(r.count(_UNDECLARED_FRAGMENT) for r in state.blocked_by)
+    assert occurrences == 1, state.blocked_by
+
+
+def test_undeclared_track_notes_never_publish_a_position_count(tmp_path):
+    """`len()` of a str or list would publish a number describing the wrong
+    thing: len("ZZA 1") is 5, not five positions."""
+    doc = {"shares": "ZZA 1", "crypto_shares": {}, "holdings": {},
+           **_fresh_dates()}
+    state = _state_for(tmp_path, doc)
+    notes = " ".join(state.holdings_observation_notes)
+    assert "NOT DECLARED" in notes
+    assert "positions: 5" not in notes
+    assert any("valuation completeness was NOT evaluated" in n for n in state.notes)
+
+
+def test_an_undeclared_track_still_reports_stale_cash_as_stale(tmp_path):
+    """The declaration gate RESTRICTS; it never relabels an independently
+    knowable fact. Stale dates stay the stale verdict."""
+    doc = {"shares": {}, "crypto_shares": {},
+           "cash": {"balance": 1000.0, "synced_at": "2026-08-01"},
+           "margin": {"debt": 0.0, "buffer_pct": 100.0, "synced_at": "2026-07-31"}}
+    state = _state_for(tmp_path, doc)
+    assert state.verdict == cr.REPOSITORY_STATE_STALE
+    assert state.cash_state == "stale"
+    assert state.dollars_from_repository_state is False
+    assert any(_UNDECLARED_FRAGMENT in r for r in state.blocked_by)
+
+
+def test_an_undeclared_track_never_suppresses_the_margin_usage_statement(tmp_path):
+    doc = {"shares": {}, "crypto_shares": {}, **_fresh_dates()}
+    state = _state_for(tmp_path, doc)
+    assert state.margin_usage_statement == cr.MARGIN_USAGE_UNAVAILABLE
+
+
+@pytest.mark.parametrize("doc,declared", [
+    ({"shares": {}, "crypto_shares": {}, "holdings": {}}, True),
+    ({"shares": {"ZZA": 0.0}, "crypto_shares": {}, "holdings": {}}, True),
+    ({"shares": {}, "crypto_shares": {}}, False),
+    ({"shares": None, "crypto_shares": {}, "holdings": {}}, False),
+    ({"shares": [], "crypto_shares": {}, "holdings": {}}, False),
+])
+def test_dated_valuation_evidence_reports_declaration_directly(doc, declared):
+    evidence = cr.dated_valuation_evidence(doc)
+    assert evidence["tracks_declared"] is declared
+    if declared:
+        assert evidence["declaration_reason"] is None
+        assert isinstance(evidence["position_count"], int)
+    else:
+        assert _UNDECLARED_FRAGMENT in evidence["declaration_reason"]
+        assert evidence["position_count"] is None
+        assert evidence["dated"] is False
+        assert evidence["reason"] is None
+
+
+def test_positive_control_explicitly_declared_empty_book_is_still_current(tmp_path):
+    """THE PRESERVED POSITIVE CONTROL for this gate. All three tracks present
+    and explicitly empty is a real declaration of an empty book, and it must
+    remain CURRENT — the gate refuses silence, not emptiness."""
+    doc = {"shares": {}, "crypto_shares": {}, "holdings": {}, **_fresh_dates()}
+    state = _state_for(tmp_path, doc)
+    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+    assert state.dollars_from_repository_state is True
+    assert state.valuation_complete is True
+    assert state.positions_requiring_valuation == 0
+
+
+def test_positive_control_declared_all_zero_book_is_still_current(tmp_path):
+    """Explicit zero quantities are a declaration too, and production already
+    treats a zero quantity as no position. Unchanged."""
+    doc = {"shares": {"ZZA": 0.0}, "crypto_shares": {"ZZC": 0},
+           "holdings": {"ZZM": 0.0}, **_fresh_dates()}
+    state = _state_for(tmp_path, doc)
+    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+    assert state.positions_requiring_valuation == 0
+
+
+def test_real_corpus_declares_all_three_position_tracks():
+    """The committed baseline declares all three as mappings, so this gate
+    changes nothing about the real corpus's verdict — if that ever stops being
+    true it is a genuine finding about holdings.yaml, not a test to relax."""
+    doc = yaml.safe_load((REPO_ROOT / "holdings.yaml").read_text())
+    for track in cr.VALUATION_EVIDENCE_TRACKS:
+        assert track in doc, track
+        assert isinstance(doc[track], dict), track
+    assert cr.dated_valuation_evidence(doc)["tracks_declared"] is True
+
+
+# ── 14. a whitespace-padded look-through identity is refused, not trimmed ─────
+#
+# THE THIRD-ROUND MAJOR 2 REGRESSIONS. validate_lookthrough normalised
+# identities for its duplicate check (`.strip().upper()`) but reconstructed the
+# validated structure from the RAW strings, while the production helper
+# allocate._issuer_exposure resolves with `.upper()` and NO `.strip()`. A padded
+# identity therefore passed validation and then matched no canonical holdings
+# key, contributing 0.0% direct and 0.0% embedded exposure and understating the
+# 8% issuer and 40% common-driver controls while still reporting OK.
+
+_PADDED_FRAGMENT = "whitespace-padded"
+
+
+@pytest.mark.parametrize("ticker", [" ZZA", "ZZA ", " ZZA ", "\tZZA", "ZZA\n"])
+def test_a_padded_issuer_ticker_is_refused(tmp_path, ticker):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": ticker,
+                     "funds": [{"fund": "ZZFUND", "fund_holding_weight": 0.10}]}]})
+    _assert_controlled_unavailable(result, _PADDED_FRAGMENT)
+
+
+@pytest.mark.parametrize("fund", [" ZZFUND", "ZZFUND ", " ZZFUND "])
+def test_a_padded_fund_identity_is_refused(tmp_path, fund):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA",
+                     "funds": [{"fund": fund, "fund_holding_weight": 0.10}]}]})
+    _assert_controlled_unavailable(result, _PADDED_FRAGMENT)
+
+
+def test_the_padded_identity_refusal_names_the_production_mismatch(tmp_path):
+    """The reason must explain WHY, so a reader can act on it rather than
+    guessing that padding is merely untidy."""
+    _, reason = cr.validate_lookthrough({
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": " ZZA ", "funds": []}]})
+    assert ".strip()" in reason and ".upper()" in reason
+    assert "8%" in reason and "40%" in reason
+
+
+def test_padded_identity_would_have_zeroed_real_exposure(tmp_path):
+    """THE DEFECT ITSELF, demonstrated against the unmodified production
+    helper: identical economics, one padded identity, exposure silently gone.
+    allocate._issuer_exposure is called here, never modified."""
+    import allocate
+    holdings = {"ZZA": 10.0, "ZZFUND": 100.0}
+    clean = {"ticker": "ZZA",
+             "funds": [{"fund": "ZZFUND", "fund_holding_weight": 0.5}]}
+    padded = {"ticker": " ZZA ",
+              "funds": [{"fund": " ZZFUND ", "fund_holding_weight": 0.5}]}
+
+    honest = allocate._issuer_exposure(holdings, 110.0, {"issuers": [clean]})
+    silent = allocate._issuer_exposure(holdings, 110.0, {"issuers": [padded]})
+    assert honest["common_driver_current_pct"] > 50.0
+    assert silent["common_driver_current_pct"] == 0.0
+    # and validate_lookthrough now refuses to hand the padded form onward
+    assert cr.validate_lookthrough({
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [padded]})[0] is None
+
+
+def test_lowercase_identities_are_accepted_because_production_uppercases(tmp_path):
+    """Case is NOT the divergence — `_issuer_exposure` applies `.upper()` to
+    both identities, so a lowercase row resolves identically there and here.
+    Refusing it would be a rule this defect does not justify."""
+    validated, reason = cr.validate_lookthrough({
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "zza",
+                     "funds": [{"fund": "zzfund", "fund_holding_weight": 0.10}]}]})
+    assert reason is None
+    assert validated["issuers"][0]["ticker"] == "zza"
+
+
+def test_duplicate_detection_stays_canonical_across_case(tmp_path):
+    """Unchanged: duplicates are still detected on the canonical identity, so
+    ZZA and zza remain one issuer."""
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA", "funds": []},
+                    {"ticker": "zza", "funds": []}]})
+    _assert_controlled_unavailable(result, "duplicate issuer identity")
+
+
+def test_validated_identities_are_passed_through_unmodified(tmp_path):
+    """Approach A, stated structurally: the validator REFUSES padding, it does
+    not canonicalise. Every accepted identity reaches the production helper
+    exactly as the file wrote it, so this report can never publish an exposure
+    the allocator would not compute from the same configuration."""
+    lookthrough = {"issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+                   "issuers": [{"ticker": "zzA",
+                                "funds": [{"fund": "zzFund",
+                                           "fund_holding_weight": 0.10}]}]}
+    validated, reason = cr.validate_lookthrough(lookthrough)
+    assert reason is None
+    assert validated["issuers"][0]["ticker"] == "zzA"
+    assert validated["issuers"][0]["funds"][0]["fund"] == "zzFund"
+
+
+def test_real_corpus_carries_no_padded_identity():
+    """The committed configuration is canonical today, so this refusal changes
+    nothing economically about the real report — verified, not assumed."""
+    lookthrough = yaml.safe_load((REPO_ROOT / "issuer_lookthrough.yaml").read_text())
+    for row in lookthrough["issuers"]:
+        assert row["ticker"] == row["ticker"].strip(), row["ticker"]
+        for fund in row.get("funds") or []:
+            assert fund["fund"] == fund["fund"].strip(), fund["fund"]
+    assert cr.validate_lookthrough(lookthrough)[1] is None
+
+
+def test_render_never_prints_a_bare_none_for_unevaluated_completeness(tmp_path):
+    """`None` must not read as a falsy completeness result in the rendered
+    report — it means the question was never asked."""
+    root = tmp_path / "root"
+    root.mkdir()
+    for name in ("targets.yaml", "gates.yaml", "issuer_lookthrough.yaml"):
+        shutil.copy(REPO_ROOT / name, root / name)
+    _write(root / "holdings.yaml",
+           {"shares": None, "crypto_shares": {}, "holdings": {},
+            **_fresh_dates()})
+    (root / "intelligence").mkdir()
+    out = cr.render(cr.build_report(root=root, as_of=AS_OF))
+    line = next(l for l in out.splitlines() if "valuation complete" in l)
+    assert "NOT EVALUATED" in line
+    assert line.strip().rstrip().endswith(")")
+    assert "valuation complete          None" not in out
+
+
+@pytest.mark.parametrize("bad", [None, 7, "holdings", [], True, 1.5])
+def test_dated_valuation_evidence_fails_closed_on_a_non_mapping_document(bad):
+    """A non-mapping document declares no track at all. The in-module caller
+    already coerces one to {} before reaching here, but this is public and must
+    refuse rather than raise."""
+    evidence = cr.dated_valuation_evidence(bad)
+    assert evidence["tracks_declared"] is False
+    assert evidence["position_count"] is None
+    assert evidence["dated"] is False
+    assert _UNDECLARED_FRAGMENT in evidence["declaration_reason"]

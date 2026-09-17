@@ -298,19 +298,84 @@ VALUATION_EVIDENCE_TRACKS = ("shares", "crypto_shares", "holdings")
 def dated_valuation_evidence(holdings_doc: dict) -> dict:
     """Is there admissible DATED evidence that position valuations are current?
 
-    Returns `{"position_count", "dated", "reason"}`. `dated` is True only when
-    the question does not arise — i.e. there is no position to value.
+    Returns `{"tracks_declared", "declaration_reason", "position_count",
+    "dated", "reason"}`.
+
+    TWO QUESTIONS, ASKED IN ORDER, AND THE FIRST ONE GATES THE SECOND.
+
+    1. ARE THE POSITION TRACKS DECLARED AT ALL? An UNDECLARED track is not an
+       EMPTY track. `shares`, `crypto_shares` and `holdings` were previously
+       read as `holdings_doc.get(track) or {}` with non-mappings skipped, so an
+       absent key, an explicit `null`, or a non-mapping value all produced the
+       same zero-position answer as a genuinely declared empty book — and a
+       file whose entire position record this module could not read reported
+       `REPOSITORY_STATE_CURRENT` with `position_count = 0`, indistinguishable
+       from a real empty book. An explicit empty mapping IS a declaration and
+       stays valid; absence, `null` and non-mapping are refusals to answer, and
+       this fails closed on each.
+
+       This check also has to run BEFORE `allocate.valuation_completeness()` is
+       reached: that production helper iterates `data["shares"]` and
+       `data["crypto_shares"]` directly and raises `AttributeError` on a
+       non-mapping track, and building the resolved-value map raises
+       `ValueError` on a non-mapping `holdings`. Those are uncaught crashes,
+       not diagnostics. `allocate.py` is NOT modified to defend against them;
+       this boundary simply refuses to hand the production helper input it
+       cannot legitimately compute on, exactly as `validate_lookthrough` does.
+
+    2. ONLY IF ALL THREE ARE DECLARED: is there a DATED current valuation for
+       the positions they contain? `dated` is True only when the question does
+       not arise — i.e. there is no position to value.
+
+    No position schema is introduced and no timestamp authority is claimed
+    here: this asks whether the three tracks the existing schema already
+    defines were declared, and whether anything in the file dates them.
     """
+    if not isinstance(holdings_doc, dict):
+        # The caller in this module coerces a non-mapping document to {} before
+        # reaching here, but this is public: a non-mapping document declares no
+        # track at all, and that is a refusal to answer like any other.
+        holdings_doc = {}
+
+    undeclared: list[str] = []
+    for track in VALUATION_EVIDENCE_TRACKS:
+        if track not in holdings_doc:
+            undeclared.append(f"{track} (key absent)")
+            continue
+        value = holdings_doc[track]
+        if value is None:
+            undeclared.append(f"{track} (explicit null)")
+        elif not isinstance(value, dict):
+            # bool is an int subclass and str/list are iterable; neither is a
+            # mapping, and neither is an empty track.
+            undeclared.append(f"{track} (not a mapping: {type(value).__name__})")
+
+    if undeclared:
+        return {
+            "tracks_declared": False,
+            "declaration_reason": (
+                "POSITION TRACK DECLARATION: holdings.yaml does not declare every "
+                f"position track as a mapping — {', '.join(undeclared)}. An "
+                "undeclared track is NOT an empty track: an absent key, an explicit "
+                "null, or a non-mapping value is a position record this module "
+                "cannot read, not one proven to hold nothing, and reading it as "
+                "empty would let an entirely unread book report a complete, current "
+                "valuation. All three of shares, crypto_shares and holdings must be "
+                "present and mappings (an explicit empty mapping is a valid "
+                "declaration of an empty track). Reported UNAVAILABLE instead; the "
+                "accepted private-evidence adapter remains a separate, valid path."),
+            "position_count": None,
+            "dated": False,
+            "reason": None,
+        }
+
     # One POSITION, counted once. A ticker may legitimately appear in more than
     # one track (a share-tracked name that also carries a manual dollar
     # fallback is the documented production pattern), and that is still a
     # single position to value — not two.
     positions: set[str] = set()
     for track in VALUATION_EVIDENCE_TRACKS:
-        block = holdings_doc.get(track) or {}
-        if not isinstance(block, dict):
-            continue
-        for ticker, raw in block.items():
+        for ticker, raw in holdings_doc[track].items():
             value, _ = _checked_pct(raw, f"{track}.{ticker}")
             # A malformed entry is NOT dismissed as absent: it is a tracked
             # line this module cannot prove is empty, so it counts.
@@ -318,10 +383,13 @@ def dated_valuation_evidence(holdings_doc: dict) -> dict:
                 positions.add(str(ticker).strip().upper())
 
     if not positions:
-        return {"position_count": 0, "dated": True, "reason": None}
+        return {"tracks_declared": True, "declaration_reason": None,
+                "position_count": 0, "dated": True, "reason": None}
 
     shown = ", ".join(sorted(positions)[:12]) + ("…" if len(positions) > 12 else "")
     return {
+        "tracks_declared": True,
+        "declaration_reason": None,
         "position_count": len(positions),
         "dated": False,
         "reason": (
@@ -381,13 +449,25 @@ def _holdings_observation_notes(holdings_doc: dict, valuation: dict | None = Non
     the cash and margin blocks are dated — so this states that plainly rather
     than inventing a date."""
     notes: list[str] = []
-    shares = holdings_doc.get("shares") or {}
-    crypto = holdings_doc.get("crypto_shares") or {}
-    manual = holdings_doc.get("holdings") or {}
-    notes.append(f"share-tracked equity/fund positions: {len(shares)}")
-    notes.append(f"share-tracked crypto positions: {len(crypto)}")
-    notes.append(f"manual dollar-valued positions (the only repository-native "
-                 f"resolved valuations): {len(manual)}")
+
+    def _count(track: str, label: str) -> str:
+        # An undeclared track has NO countable size. `len()` of a str or list
+        # would publish a number ("7 positions" for the string "AAPL 1") that
+        # describes the wrong thing entirely, so say what is actually true.
+        if track not in holdings_doc:
+            return f"{label}: NOT DECLARED (key absent — not an empty track)"
+        value = holdings_doc[track]
+        if value is None:
+            return f"{label}: NOT DECLARED (explicit null — not an empty track)"
+        if not isinstance(value, dict):
+            return (f"{label}: NOT DECLARED (not a mapping: "
+                    f"{type(value).__name__} — not an empty track)")
+        return f"{label}: {len(value)}"
+
+    notes.append(_count("shares", "share-tracked equity/fund positions"))
+    notes.append(_count("crypto_shares", "share-tracked crypto positions"))
+    notes.append(_count("holdings", "manual dollar-valued positions (the only "
+                                    "repository-native resolved valuations)"))
     notes.append("holdings.yaml carries NO per-position observation date — share "
                  "counts are undated repository state and their currency cannot be "
                  "established from this file")
@@ -447,26 +527,43 @@ def collect_repository_account_state(
     cash = allocate.load_cash_state(doc, as_of=as_of) if as_of else allocate.load_cash_state(doc)
     margin = allocate.load_margin_state(doc, as_of=as_of) if as_of else allocate.load_margin_state(doc)
 
-    # THE RESOLVED-VALUE MAP. `allocate.valuation_completeness()`'s first
-    # argument is, by production contract, RESOLVED CURRENT DOLLAR VALUES for
-    # every nonzero tracked position — production reaches it through
-    # `resolve_holdings()` (qty x latest price) or, in the private adapter,
-    # through confirmed evidence. A raw `shares:` quantity is NOT a dollar
-    # value, and because it is finite and nonzero it would satisfy the
-    # completeness check as though it were one: 4.05 shares would read as a
-    # resolved $4.05 holding and a fresh-dated but entirely unvalued book
-    # would report REPOSITORY_STATE_CURRENT.
-    #
-    # This module fetches no prices — it is offline and read-only by contract —
-    # so the ONLY repository-native resolved dollar values are the manual
-    # `holdings:` snapshot, which is exactly where `resolve_holdings()` itself
-    # starts (`result = dict(data.get("holdings", {}))`) before applying prices
-    # this module does not have. Anything share- or coin-tracked without such
-    # an entry is therefore genuinely unresolved here, and
-    # `valuation_completeness()` reports it as such — fail closed, never a
-    # quantity promoted to a valuation, and never an invented price.
-    resolved_values = dict(doc.get("holdings") or {})
-    valuation = allocate.valuation_completeness(resolved_values, doc)
+    # THE DECLARATION GATE, asked FIRST. `valuation_completeness()` and the
+    # resolved-value map below both index the position tracks directly and
+    # raise on a non-mapping one, so whether the tracks were declared at all
+    # has to be settled before either is reached — and an undeclared track can
+    # never be read as an empty one (see `dated_valuation_evidence`).
+    evidence = dated_valuation_evidence(doc)
+
+    if evidence["tracks_declared"]:
+        # THE RESOLVED-VALUE MAP. `allocate.valuation_completeness()`'s first
+        # argument is, by production contract, RESOLVED CURRENT DOLLAR VALUES
+        # for every nonzero tracked position — production reaches it through
+        # `resolve_holdings()` (qty x latest price) or, in the private adapter,
+        # through confirmed evidence. A raw `shares:` quantity is NOT a dollar
+        # value, and because it is finite and nonzero it would satisfy the
+        # completeness check as though it were one: 4.05 shares would read as a
+        # resolved $4.05 holding and a fresh-dated but entirely unvalued book
+        # would report REPOSITORY_STATE_CURRENT.
+        #
+        # This module fetches no prices — it is offline and read-only by
+        # contract — so the ONLY repository-native resolved dollar values are
+        # the manual `holdings:` snapshot, which is exactly where
+        # `resolve_holdings()` itself starts (`result =
+        # dict(data.get("holdings", {}))`) before applying prices this module
+        # does not have. Anything share- or coin-tracked without such an entry
+        # is therefore genuinely unresolved here, and `valuation_completeness()`
+        # reports it as such — fail closed, never a quantity promoted to a
+        # valuation, and never an invented price.
+        resolved_values = dict(doc["holdings"])
+        valuation = allocate.valuation_completeness(resolved_values, doc)
+    else:
+        # NOT an evaluated completeness result and never presented as one: an
+        # explicitly incomplete stand-in carrying the declaration failure as
+        # its own reason, so the SINGLE production availability rule still
+        # computes the answer and this module does not grow a second one.
+        valuation = {"complete": False, "unresolved": (),
+                     "reason": evidence["declaration_reason"]}
+
     availability = allocate.current_dollar_availability(cash, margin, valuation)
 
     # THE CURRENCY GATE, applied ON TOP of the production availability fact.
@@ -474,9 +571,10 @@ def collect_repository_account_state(
     # value; it does not — and cannot — prove that value is current, because
     # nothing in this schema dates it. This gate may only ever RESTRICT the
     # production answer further; it can never make unavailable state available.
-    evidence = dated_valuation_evidence(doc)
     blocked = list(availability.get("blocked_by") or ())
-    if not evidence["dated"]:
+    if evidence["reason"] is not None:
+        # Only the currency reason is appended here. A declaration failure is
+        # already carried above as the valuation blocker, so it is stated once.
         blocked.append(evidence["reason"])
     dollars_ok = bool(availability.get("available")) and bool(evidence["dated"])
 
@@ -489,6 +587,12 @@ def collect_repository_account_state(
         verdict = PRIVATE_CURRENT_EVIDENCE_REQUIRED
 
     notes: list[str] = []
+    if not evidence["tracks_declared"]:
+        notes.append(
+            "valuation completeness was NOT evaluated: the position tracks were "
+            "not all declared as mappings, so there was nothing to evaluate "
+            "completeness against and no zero was substituted for the missing "
+            "declaration")
     if verdict != REPOSITORY_STATE_CURRENT:
         notes.append(
             "repository baseline cannot support a current dollar recommendation "
@@ -508,9 +612,11 @@ def collect_repository_account_state(
         margin_state=margin.get("state"), margin_synced_at=_as_iso(margin.get("synced_at")),
         margin_age_days=margin.get("age_days"),
         holdings_observation_notes=_holdings_observation_notes(doc, valuation),
-        valuation_complete=bool(valuation.get("complete")),
+        valuation_complete=(bool(valuation.get("complete"))
+                            if evidence["tracks_declared"] else None),
         valuation_evidence_dated=bool(evidence["dated"]),
-        positions_requiring_valuation=int(evidence["position_count"]),
+        positions_requiring_valuation=(None if evidence["position_count"] is None
+                                       else int(evidence["position_count"])),
         dollars_from_repository_state=dollars_ok,
         blocked_by=tuple(blocked),
         margin_usage_statement=MARGIN_USAGE_UNAVAILABLE,
@@ -1119,6 +1225,40 @@ class TargetWeightConcentration:
         }
 
 
+def _padded_identity_reason(field: str, value: str) -> str:
+    """Why a whitespace-padded issuer or fund identity is REFUSED, not trimmed.
+
+    `allocate._issuer_exposure` resolves identities with `.upper()` and NO
+    `.strip()` — `iss["ticker"].upper()` and `f["fund"].upper()`. A padded
+    identity therefore never matches the canonical holdings key production
+    looks up, so its direct and embedded exposure both silently compute as
+    0.0 and the 8% issuer and 40% common-driver no-add controls are understated
+    while still reporting a clean OK.
+
+    Two responses were available. CANONICALISING here (trimming before use)
+    would let this diagnostic publish a DIFFERENT, correct exposure than the
+    production allocator would compute from the very same configuration file —
+    masking a live production mismatch behind a healthy-looking report, which
+    is the opposite of what a preflight is for. REFUSING is the response taken,
+    and it matches the repository's own precedent: `allocate.build_roster`
+    already rejects a whitespace-padded `asset_class` outright rather than
+    normalising it. `_issuer_exposure` is not modified; the configuration is
+    required to be canonical, or the section reports UNAVAILABLE.
+
+    Case is NOT rejected: production applies `.upper()` to both identities, so
+    a lowercase identity resolves identically in production and here. Padding
+    is the only divergence, and it is the only thing refused.
+    """
+    return (f"{field} {value!r} is whitespace-padded. The production exposure "
+            "helper resolves identities with .upper() and no .strip(), so a "
+            "padded identity matches no canonical holdings key and silently "
+            "contributes 0.0% direct and 0.0% embedded exposure — understating "
+            "the 8% issuer and 40% common-driver controls while still reading as "
+            "OK. It is refused rather than trimmed, so this report can never "
+            "show an exposure the allocator would not compute from the same "
+            "file; fix the identity in issuer_lookthrough.yaml.")
+
+
 def validate_lookthrough(lookthrough: object) -> tuple[dict | None, str | None]:
     """Strictly validate every look-through value this section consumes.
 
@@ -1185,7 +1325,9 @@ def validate_lookthrough(lookthrough: object) -> tuple[dict | None, str | None]:
         ticker = row.get("ticker")
         if not isinstance(ticker, str) or not ticker.strip():
             return None, f"{label}.ticker must be a non-empty string, got {ticker!r}"
-        key = ticker.strip().upper()
+        if ticker != ticker.strip():
+            return None, _padded_identity_reason(f"{label}.ticker", ticker)
+        key = ticker.upper()
         if key in seen:
             # _issuer_exposure keys its result dict by ticker, so a duplicate
             # would be silently collapsed and one row's weights lost.
@@ -1209,7 +1351,9 @@ def validate_lookthrough(lookthrough: object) -> tuple[dict | None, str | None]:
             fund_id = fund.get("fund")
             if not isinstance(fund_id, str) or not fund_id.strip():
                 return None, f"{flabel}.fund must be a non-empty string, got {fund_id!r}"
-            fund_key = fund_id.strip().upper()
+            if fund_id != fund_id.strip():
+                return None, _padded_identity_reason(f"{flabel}.fund", fund_id)
+            fund_key = fund_id.upper()
             if fund_key in fund_seen:
                 return None, f"{flabel}.fund {fund_key!r} is a duplicate fund identity"
             fund_seen.add(fund_key)
@@ -1763,7 +1907,11 @@ def render(report: CurrentnessReport) -> str:
     A(f"   verdict                     {r.verdict}")
     A(f"   cash observation            {r.cash_state} (synced {r.cash_synced_at}, age {r.cash_age_days}d)")
     A(f"   margin observation          {r.margin_state} (synced {r.margin_synced_at}, age {r.margin_age_days}d)")
-    A(f"   valuation complete          {r.valuation_complete}")
+    # None is NOT "False": completeness was never evaluated, because the
+    # position tracks were not all declared. Say that rather than printing a
+    # bare None a reader could take for a falsy result.
+    A(f"   valuation complete          "
+      f"{'NOT EVALUATED (position tracks undeclared)' if r.valuation_complete is None else r.valuation_complete}")
     A(f"   dollars from repo state     {r.dollars_from_repository_state}")
     for note in r.holdings_observation_notes:
         A(f"     · {note}")
