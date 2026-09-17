@@ -225,40 +225,50 @@ def test_no_new_file_appears_under_intelligence_after_a_run():
 
 @pytest.mark.parametrize("bad", [True, False])
 def test_boolean_is_never_accepted_as_a_percentage(bad):
-    with pytest.raises(cr.CurrentnessReportError):
-        cr._strict_pct(bad, "synthetic")
+    value, reason = cr._checked_pct(bad, "synthetic")
+    assert value is None and "boolean" in reason
 
 
 @pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
 def test_non_finite_percentage_rejected(bad):
-    with pytest.raises(cr.CurrentnessReportError):
-        cr._strict_pct(bad, "synthetic")
+    value, reason = cr._checked_pct(bad, "synthetic")
+    assert value is None and "finite" in reason
 
 
 @pytest.mark.parametrize("bad", ["3.0", None, [], {}])
 def test_non_numeric_percentage_rejected(bad):
-    with pytest.raises(cr.CurrentnessReportError):
-        cr._strict_pct(bad, "synthetic")
+    value, reason = cr._checked_pct(bad, "synthetic")
+    assert value is None and "real number" in reason
+
+
+def test_negative_percentage_rejected_when_a_minimum_is_required():
+    value, reason = cr._checked_pct(-0.01, "synthetic", minimum=0.0)
+    assert value is None and ">= 0.0" in reason
+    assert cr._checked_pct(-0.01, "synthetic") == (-0.01, None)
 
 
 def test_real_numbers_accepted():
-    assert cr._strict_pct(6, "x") == 6.0
-    assert cr._strict_pct(2.25, "x") == 2.25
+    assert cr._checked_pct(6, "x") == (6.0, None)
+    assert cr._checked_pct(2.25, "x") == (2.25, None)
 
 
-def test_boolean_target_pct_in_config_is_rejected(tmp_path):
+def test_boolean_target_pct_in_config_is_unavailable_not_a_crash(tmp_path):
     """allocate.build_roster coerces True -> 1.0 (bool subclasses int); this
-    diagnostic refuses the raw value before that coercion can hide it."""
+    diagnostic refuses the raw value before that coercion can hide it, and does
+    so as controlled UNAVAILABLE so one bad row cannot abort the whole report."""
     targets = {"destination": [{"ticker": "ZZFAKE", "target_pct": True,
                                 "asset_class": "equity"}],
                "caps": {"clusters": []}}
     _write(tmp_path / "targets.yaml", targets)
     _write(tmp_path / "issuer_lookthrough.yaml",
            {"issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0, "issuers": []})
-    with pytest.raises(cr.CurrentnessReportError):
-        cr.collect_target_weight_concentration(
-            targets_path=tmp_path / "targets.yaml",
-            lookthrough_path=tmp_path / "issuer_lookthrough.yaml")
+    result = cr.collect_target_weight_concentration(
+        targets_path=tmp_path / "targets.yaml",
+        lookthrough_path=tmp_path / "issuer_lookthrough.yaml")
+    assert result.available is False
+    assert result.status == cr.UNAVAILABLE
+    assert "boolean" in result.detail
+    assert result.clusters == () and result.issuers == () and result.common_driver is None
 
 
 # ── 3. overdue boundary and catalyst semantics ────────────────────────────
@@ -1016,3 +1026,413 @@ def test_real_corpus_report_always_states_margin_usage_is_unavailable():
         cr.MARGIN_USAGE_UNAVAILABLE
     assert any(a.area == "current margin usage" and a.status == cr.UNAVAILABLE
                for a in report.attention)
+
+
+# ── 11. MAJOR 1 regressions — a quantity is never a resolved valuation ────
+#
+# Pre-fix defect: collect_repository_account_state() passed holdings.yaml's raw
+# `shares`/`crypto_shares` quantities to allocate.valuation_completeness(),
+# whose first argument is by production contract RESOLVED CURRENT DOLLAR
+# VALUES. A finite nonzero quantity (4.05 shares) therefore satisfied the
+# completeness check as though it were a resolved $4.05 holding, so fresh
+# cash + fresh margin + an entirely unvalued book reported
+# REPOSITORY_STATE_CURRENT with dollars available. Fail-open; forbidden.
+
+def _fresh_dates():
+    return {"cash": {"balance": 1000.0, "synced_at": "2026-09-16"},
+            "margin": {"debt": 0.0, "buffer_pct": 100.0, "synced_at": "2026-09-16"}}
+
+
+def test_fresh_dates_plus_unvalued_equity_share_is_not_repository_current(tmp_path):
+    """THE MAJOR 1 REGRESSION. Everything dated fresh, one nonzero tracked
+    share, no resolved dollar value anywhere."""
+    doc = {"shares": {"ZZFAKE": 4.05}, "crypto_shares": {}, **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+
+    assert state.cash_state == "current"
+    assert state.margin_state == "current"
+    assert state.valuation_complete is False
+    assert state.dollars_from_repository_state is False
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+    assert any("VALUATION" in reason for reason in state.blocked_by)
+    assert any("ZZFAKE" in reason for reason in state.blocked_by)
+
+
+def test_fresh_dates_plus_unvalued_crypto_quantity_is_not_repository_current(tmp_path):
+    """The equivalent crypto case — crypto_shares is the same trap."""
+    doc = {"shares": {}, "crypto_shares": {"ZZCOIN": 0.5}, **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+
+    assert state.cash_state == "current" and state.margin_state == "current"
+    assert state.valuation_complete is False
+    assert state.dollars_from_repository_state is False
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+    assert any("ZZCOIN" in reason for reason in state.blocked_by)
+
+
+def test_a_quantity_is_never_promoted_to_a_dollar_valuation(tmp_path):
+    """A quantity that would look like a perfectly plausible dollar value must
+    still count as unresolved — the two are different kinds of number."""
+    doc = {"shares": {"ZZFAKE": 1234.56}, "crypto_shares": {}, **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.valuation_complete is False
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+
+
+def test_many_unvalued_positions_are_all_reported_not_just_the_first(tmp_path):
+    doc = {"shares": {"ZZA": 1.0, "ZZB": 2.0}, "crypto_shares": {"ZZC": 3.0},
+           **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+    blocked = " ".join(state.blocked_by)
+    for ticker in ("ZZA", "ZZB", "ZZC"):
+        assert ticker in blocked
+    assert any("3 nonzero tracked position(s)" in n
+               for n in state.holdings_observation_notes)
+
+
+def test_zero_quantity_positions_do_not_require_a_valuation(tmp_path):
+    """A zero quantity is not a tracked position — existing production
+    semantics, preserved."""
+    doc = {"shares": {"ZZFAKE": 0.0}, "crypto_shares": {"ZZCOIN": 0},
+           **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.valuation_complete is True
+    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+
+
+def test_positive_control_no_tracked_positions_can_prove_completeness(tmp_path):
+    """Positive control A: nothing tracked, so nothing is unresolved."""
+    doc = {"shares": {}, "crypto_shares": {}, **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.valuation_complete is True
+    assert state.dollars_from_repository_state is True
+    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+
+
+def test_positive_control_manual_dollar_valuation_proves_completeness(tmp_path):
+    """Positive control B: the manual `holdings:` snapshot is the one
+    repository-native source of resolved dollar values — the same mapping
+    allocate.resolve_holdings() itself starts from before applying prices this
+    module does not fetch."""
+    doc = {"shares": {"ZZFAKE": 4.05}, "crypto_shares": {},
+           "holdings": {"ZZFAKE": 1234.56}, **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.valuation_complete is True
+    assert state.dollars_from_repository_state is True
+    assert state.verdict == cr.REPOSITORY_STATE_CURRENT
+
+
+def test_partial_manual_coverage_still_fails_closed(tmp_path):
+    """One valued, one not — completeness is all-or-nothing."""
+    doc = {"shares": {"ZZA": 1.0, "ZZB": 2.0}, "crypto_shares": {},
+           "holdings": {"ZZA": 500.0}, **_fresh_dates()}
+    p = _write(tmp_path / "holdings.yaml", doc)
+    state = cr.collect_repository_account_state(
+        holdings_path=p, as_of=datetime(2026, 9, 16, 12, 0, 0))
+    assert state.valuation_complete is False
+    assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+    assert any("ZZB" in r for r in state.blocked_by)
+
+
+def test_module_never_calls_a_price_fetching_surface():
+    """Structural AST proof: this module fetches no prices, so it must make no
+    call to any price-producing helper. Checked over real call/name nodes —
+    a prose mention of `resolve_holdings()` in a comment is documentation, not
+    a call, and substring matching would wrongly flag it."""
+    tree = ast.parse((REPO_ROOT / "currentness_report.py").read_text())
+    banned = {"get_bars", "get_crypto_latest", "resolve_holdings", "fetch_market",
+              "fetch_crypto", "AlpacaPaperClient", "compute_all", "days_until_earnings"}
+    used: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            func = node.func
+            if isinstance(func, ast.Name):
+                used.add(func.id)
+            elif isinstance(func, ast.Attribute):
+                used.add(func.attr)
+        elif isinstance(node, ast.Import):
+            used.update(a.name.split(".")[0] for a in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                used.add(node.module.split(".")[0])
+            used.update(a.name for a in node.names)
+    offenders = used & banned
+    assert not offenders, f"price-fetching surface called/imported: {offenders}"
+
+
+def test_real_corpus_repository_valuation_is_incomplete_and_says_why():
+    """On the live corpus every tracked position is share/coin-tracked with no
+    manual dollar snapshot, so repository-only valuation is genuinely
+    incomplete — derived, not asserted as a constant."""
+    doc = yaml.safe_load((REPO_ROOT / "holdings.yaml").read_text())
+    expected = sum(1 for q in (doc.get("shares") or {}).values() if float(q) != 0)
+    expected += sum(1 for q in (doc.get("crypto_shares") or {}).values() if float(q) != 0)
+    manual = doc.get("holdings") or {}
+
+    report = cr.build_report(root=REPO_ROOT, as_of=AS_OF)
+    state = report.repository_account_state
+    if expected > 0 and not manual:
+        assert state.valuation_complete is False
+        assert state.dollars_from_repository_state is False
+        assert state.verdict != cr.REPOSITORY_STATE_CURRENT
+
+
+# ── 12. MAJOR 2 regressions — no silent ceiling fallback, strict rows ─────
+#
+# Pre-fix defect: lookthrough.get("issuer_ceiling_pct", 8.0) and
+# lookthrough.get("common_driver_ceiling_pct", 40.0) meant a missing
+# safety-sensitive key still produced a plausible OK/OVER_LIMIT verdict against
+# a historical literal, and allocate._issuer_exposure's float() coercion turned
+# a Boolean fund_holding_weight into a 100% constituent.
+
+def _policy_with(tmp_path, lookthrough):
+    targets = {"destination": [
+        {"ticker": "ZZA", "target_pct": 10.0, "asset_class": "equity"},
+        {"ticker": "ZZFUND", "target_pct": 20.0, "asset_class": "fund"}],
+        "caps": {"clusters": []}}
+    t = _write(tmp_path / "targets.yaml", targets)
+    l = _write(tmp_path / "issuer_lookthrough.yaml", lookthrough)
+    return cr.collect_target_weight_concentration(targets_path=t, lookthrough_path=l)
+
+
+_VALID_ISSUERS = [{"ticker": "ZZA",
+                   "funds": [{"fund": "ZZFUND", "fund_holding_weight": 0.10}]}]
+
+
+def _assert_controlled_unavailable(result, fragment):
+    assert result.available is False
+    assert result.status == cr.UNAVAILABLE
+    assert fragment in result.detail
+    # nothing plausible is published alongside the refusal
+    assert result.clusters == ()
+    assert result.issuers == ()
+    assert result.max_issuer is None
+    assert result.common_driver is None
+    assert result.destination_total_pct is None
+
+
+def test_missing_issuer_ceiling_does_not_fall_back_to_the_historical_literal(tmp_path):
+    """THE MAJOR 2 REGRESSION (issuer half)."""
+    result = _policy_with(tmp_path, {"common_driver_ceiling_pct": 40.0,
+                                     "issuers": _VALID_ISSUERS})
+    _assert_controlled_unavailable(result, "missing required 'issuer_ceiling_pct'")
+    assert "8" not in result.detail.split("issuer_ceiling_pct")[0]
+
+
+def test_missing_common_driver_ceiling_does_not_fall_back(tmp_path):
+    """THE MAJOR 2 REGRESSION (common-driver half)."""
+    result = _policy_with(tmp_path, {"issuer_ceiling_pct": 8.0,
+                                     "issuers": _VALID_ISSUERS})
+    _assert_controlled_unavailable(
+        result, "missing required 'common_driver_ceiling_pct'")
+
+
+def test_both_ceilings_missing_is_unavailable(tmp_path):
+    result = _policy_with(tmp_path, {"issuers": _VALID_ISSUERS})
+    _assert_controlled_unavailable(result, "missing required")
+
+
+@pytest.mark.parametrize("bad", [True, False])
+def test_boolean_ceiling_is_rejected(tmp_path, bad):
+    result = _policy_with(tmp_path, {"issuer_ceiling_pct": bad,
+                                     "common_driver_ceiling_pct": 40.0,
+                                     "issuers": _VALID_ISSUERS})
+    _assert_controlled_unavailable(result, "must not be a boolean")
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_ceiling_is_rejected(tmp_path, bad):
+    result = _policy_with(tmp_path, {"issuer_ceiling_pct": 8.0,
+                                     "common_driver_ceiling_pct": bad,
+                                     "issuers": _VALID_ISSUERS})
+    _assert_controlled_unavailable(result, "must be finite")
+
+
+def test_negative_ceiling_is_rejected(tmp_path):
+    result = _policy_with(tmp_path, {"issuer_ceiling_pct": -1.0,
+                                     "common_driver_ceiling_pct": 40.0,
+                                     "issuers": _VALID_ISSUERS})
+    _assert_controlled_unavailable(result, ">= 0.0")
+
+
+@pytest.mark.parametrize("bad", ["8", None, [], {}])
+def test_non_numeric_ceiling_is_rejected(tmp_path, bad):
+    result = _policy_with(tmp_path, {"issuer_ceiling_pct": bad,
+                                     "common_driver_ceiling_pct": 40.0,
+                                     "issuers": _VALID_ISSUERS})
+    _assert_controlled_unavailable(result, "must be a real number")
+
+
+@pytest.mark.parametrize("bad", [True, False])
+def test_boolean_fund_holding_weight_never_reaches_the_production_helper(tmp_path, bad):
+    """float(True) is 1.0 — a Boolean weight would have become a 100% fund
+    constituent inside allocate._issuer_exposure. Refused at this boundary;
+    the production helper is not modified."""
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA",
+                     "funds": [{"fund": "ZZFUND", "fund_holding_weight": bad}]}]})
+    _assert_controlled_unavailable(result, "must not be a boolean")
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_fund_holding_weight_is_rejected(tmp_path, bad):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA",
+                     "funds": [{"fund": "ZZFUND", "fund_holding_weight": bad}]}]})
+    _assert_controlled_unavailable(result, "must be finite")
+
+
+def test_negative_fund_holding_weight_is_rejected(tmp_path):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA",
+                     "funds": [{"fund": "ZZFUND", "fund_holding_weight": -0.1}]}]})
+    _assert_controlled_unavailable(result, ">= 0.0")
+
+
+def test_missing_fund_holding_weight_is_rejected(tmp_path):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA", "funds": [{"fund": "ZZFUND"}]}]})
+    _assert_controlled_unavailable(result, "missing 'fund_holding_weight'")
+
+
+@pytest.mark.parametrize("bad", ["not-a-mapping", 3, None, []])
+def test_malformed_fund_row_is_rejected(tmp_path, bad):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA", "funds": [bad]}]})
+    _assert_controlled_unavailable(result, "is not a mapping")
+
+
+@pytest.mark.parametrize("bad", ["", "   ", None, 3, []])
+def test_malformed_fund_identity_is_rejected(tmp_path, bad):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA",
+                     "funds": [{"fund": bad, "fund_holding_weight": 0.1}]}]})
+    _assert_controlled_unavailable(result, "must be a non-empty string")
+
+
+def test_duplicate_issuer_identity_is_rejected_not_silently_collapsed(tmp_path):
+    """_issuer_exposure keys its result by ticker, so a duplicate would be
+    silently collapsed and one row's weights lost."""
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA", "funds": []},
+                    {"ticker": "zza", "funds": []}]})
+    _assert_controlled_unavailable(result, "duplicate issuer identity")
+
+
+def test_duplicate_fund_identity_within_one_issuer_is_rejected(tmp_path):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA", "funds": [
+            {"fund": "ZZFUND", "fund_holding_weight": 0.1},
+            {"fund": "ZZFUND", "fund_holding_weight": 0.2}]}]})
+    _assert_controlled_unavailable(result, "duplicate fund identity")
+
+
+@pytest.mark.parametrize("bad", ["", "   ", None, 3, []])
+def test_malformed_issuer_ticker_is_rejected(tmp_path, bad):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": bad, "funds": []}]})
+    _assert_controlled_unavailable(result, "must be a non-empty string")
+
+
+@pytest.mark.parametrize("bad", ["nope", 3, {}])
+def test_malformed_issuers_container_is_rejected(tmp_path, bad):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": bad})
+    _assert_controlled_unavailable(result, "issuers must be a list")
+
+
+@pytest.mark.parametrize("bad", ["nope", 3, {}])
+def test_malformed_funds_container_is_rejected(tmp_path, bad):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": [{"ticker": "ZZA", "funds": bad}]})
+    _assert_controlled_unavailable(result, "funds must be a list")
+
+
+def test_malformed_issuer_row_is_rejected(tmp_path):
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": ["not-a-mapping"]})
+    _assert_controlled_unavailable(result, "is not a mapping")
+
+
+def test_positive_control_valid_lookthrough_still_computes(tmp_path):
+    """The refusals above must not have broken the working path."""
+    result = _policy_with(tmp_path, {
+        "issuer_ceiling_pct": 8.0, "common_driver_ceiling_pct": 40.0,
+        "issuers": _VALID_ISSUERS})
+    assert result.available is True
+    assert result.issuers[0].ticker == "ZZA"
+    assert result.issuers[0].embedded_pct == pytest.approx(2.0)
+    assert result.common_driver.ceiling_pct == pytest.approx(40.0)
+    assert result.issuers[0].ceiling_pct == pytest.approx(8.0)
+
+
+def test_absent_issuers_key_is_valid_zero_coverage(tmp_path):
+    """No issuers declared is a legitimate empty state, not a malformed one —
+    but the ceilings are still required."""
+    result = _policy_with(tmp_path, {"issuer_ceiling_pct": 8.0,
+                                     "common_driver_ceiling_pct": 40.0})
+    assert result.available is True
+    assert result.issuers == ()
+    assert result.common_driver.recomputed_pct == pytest.approx(0.0)
+
+
+def test_validate_lookthrough_rejects_a_non_mapping_document(tmp_path):
+    validated, reason = cr.validate_lookthrough(["not", "a", "mapping"])
+    assert validated is None and "not a mapping" in reason
+
+
+def test_real_corpus_lookthrough_passes_strict_validation():
+    """The committed configuration must satisfy the strict validator — if it
+    ever stops doing so, that is a real finding, not a test to relax."""
+    lookthrough = yaml.safe_load((REPO_ROOT / "issuer_lookthrough.yaml").read_text())
+    validated, reason = cr.validate_lookthrough(lookthrough)
+    assert reason is None, reason
+    assert validated["issuer_ceiling_pct"] == pytest.approx(
+        float(lookthrough["issuer_ceiling_pct"]))
+    assert validated["common_driver_ceiling_pct"] == pytest.approx(
+        float(lookthrough["common_driver_ceiling_pct"]))
+    assert len(validated["issuers"]) == len(lookthrough["issuers"])
+
+
+def test_real_corpus_ceilings_are_read_from_config_not_defaulted():
+    """The published ceilings must equal the committed values, and the module
+    must contain no ceiling fallback literal."""
+    lookthrough = yaml.safe_load((REPO_ROOT / "issuer_lookthrough.yaml").read_text())
+    report = cr.build_report(root=REPO_ROOT, as_of=AS_OF)
+    t = report.target_weight_concentration
+    assert t.available is True
+    assert t.common_driver.ceiling_pct == pytest.approx(
+        float(lookthrough["common_driver_ceiling_pct"]))
+    for row in t.issuers:
+        assert row.ceiling_pct == pytest.approx(float(lookthrough["issuer_ceiling_pct"]))
+
+    source = (REPO_ROOT / "currentness_report.py").read_text()
+    for fallback in ('"issuer_ceiling_pct", 8.0', '"common_driver_ceiling_pct", 40.0',
+                     "get(\"issuer_ceiling_pct\", ", "get(\"common_driver_ceiling_pct\", "):
+        assert fallback not in source, f"ceiling fallback still present: {fallback}"

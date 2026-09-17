@@ -150,21 +150,31 @@ class CurrentnessReportError(ValueError):
 
 # ── strict numeric handling ───────────────────────────────────────────────
 
-def _strict_pct(value: object, label: str) -> float:
-    """A percentage must be a real, finite, non-Boolean number.
+def _checked_pct(value: object, label: str, *,
+                 minimum: float | None = None) -> tuple[float | None, str | None]:
+    """Validate a percentage without raising. Returns `(value, None)` or
+    `(None, reason)`.
 
-    `bool` is a subclass of `int`, so `True` would otherwise silently become
-    1.0 and a malformed config would read as a valid 1% weight. Rejected.
+    A percentage must be a real, finite, non-Boolean number. `bool` is a
+    subclass of `int`, so `True` would otherwise silently become 1.0 and a
+    malformed config would read as a valid 1% weight — exactly the coercion
+    `float()` performs. Rejected here, before any production helper sees it.
+
+    Non-raising by design: a malformed configuration must make its own section
+    controlled-`UNAVAILABLE`, not abort the whole diagnostic and take the
+    sections that are perfectly readable down with it.
     """
     if isinstance(value, bool):
-        raise CurrentnessReportError(f"{label} must not be a boolean, got {value!r}")
+        return None, f"{label} must not be a boolean, got {value!r}"
     if not isinstance(value, (int, float)):
-        raise CurrentnessReportError(
-            f"{label} must be a real number, got {value!r} ({type(value).__name__})")
+        return None, (f"{label} must be a real number, got {value!r} "
+                      f"({type(value).__name__})")
     result = float(value)
     if not math.isfinite(result):
-        raise CurrentnessReportError(f"{label} must be finite, got {value!r}")
-    return result
+        return None, f"{label} must be finite, got {value!r}"
+    if minimum is not None and result < minimum:
+        return None, f"{label} must be >= {minimum}, got {result}"
+    return result, None
 
 
 def _as_iso(value: object) -> str | None:
@@ -293,7 +303,7 @@ def detect_private_evidence_capability() -> PrivateEvidenceCapability:
                 "evidence was read, and none is required to produce this report."))
 
 
-def _holdings_observation_notes(holdings_doc: dict) -> tuple[str, ...]:
+def _holdings_observation_notes(holdings_doc: dict, valuation: dict | None = None) -> tuple[str, ...]:
     """Describe what share-count observation dating the repository actually
     offers. `holdings.yaml` carries no per-position observation date — only
     the cash and margin blocks are dated — so this states that plainly rather
@@ -304,10 +314,19 @@ def _holdings_observation_notes(holdings_doc: dict) -> tuple[str, ...]:
     manual = holdings_doc.get("holdings") or {}
     notes.append(f"share-tracked equity/fund positions: {len(shares)}")
     notes.append(f"share-tracked crypto positions: {len(crypto)}")
-    notes.append(f"manual dollar-valued positions: {len(manual)}")
+    notes.append(f"manual dollar-valued positions (the only repository-native "
+                 f"resolved valuations): {len(manual)}")
     notes.append("holdings.yaml carries NO per-position observation date — share "
                  "counts are undated repository state and their currency cannot be "
                  "established from this file")
+    if valuation is not None:
+        unresolved = tuple(valuation.get("unresolved") or ())
+        if unresolved:
+            shown = ", ".join(unresolved[:12]) + ("…" if len(unresolved) > 12 else "")
+            notes.append(
+                f"{len(unresolved)} nonzero tracked position(s) have NO resolved "
+                f"current dollar value in repository state ({shown}) — this module "
+                "fetches no prices, so a quantity is never treated as a valuation")
     return tuple(notes)
 
 
@@ -351,9 +370,27 @@ def collect_repository_account_state(
 
     cash = allocate.load_cash_state(doc, as_of=as_of) if as_of else allocate.load_cash_state(doc)
     margin = allocate.load_margin_state(doc, as_of=as_of) if as_of else allocate.load_margin_state(doc)
-    holdings_values = {**(doc.get("shares") or {}), **(doc.get("crypto_shares") or {}),
-                       **(doc.get("holdings") or {})}
-    valuation = allocate.valuation_completeness(holdings_values, doc)
+
+    # THE RESOLVED-VALUE MAP. `allocate.valuation_completeness()`'s first
+    # argument is, by production contract, RESOLVED CURRENT DOLLAR VALUES for
+    # every nonzero tracked position — production reaches it through
+    # `resolve_holdings()` (qty x latest price) or, in the private adapter,
+    # through confirmed evidence. A raw `shares:` quantity is NOT a dollar
+    # value, and because it is finite and nonzero it would satisfy the
+    # completeness check as though it were one: 4.05 shares would read as a
+    # resolved $4.05 holding and a fresh-dated but entirely unvalued book
+    # would report REPOSITORY_STATE_CURRENT.
+    #
+    # This module fetches no prices — it is offline and read-only by contract —
+    # so the ONLY repository-native resolved dollar values are the manual
+    # `holdings:` snapshot, which is exactly where `resolve_holdings()` itself
+    # starts (`result = dict(data.get("holdings", {}))`) before applying prices
+    # this module does not have. Anything share- or coin-tracked without such
+    # an entry is therefore genuinely unresolved here, and
+    # `valuation_completeness()` reports it as such — fail closed, never a
+    # quantity promoted to a valuation, and never an invented price.
+    resolved_values = dict(doc.get("holdings") or {})
+    valuation = allocate.valuation_completeness(resolved_values, doc)
     availability = allocate.current_dollar_availability(cash, margin, valuation)
 
     both_usable = bool(cash.get("usable")) and bool(margin.get("usable"))
@@ -383,7 +420,7 @@ def collect_repository_account_state(
         cash_age_days=cash.get("age_days"),
         margin_state=margin.get("state"), margin_synced_at=_as_iso(margin.get("synced_at")),
         margin_age_days=margin.get("age_days"),
-        holdings_observation_notes=_holdings_observation_notes(doc),
+        holdings_observation_notes=_holdings_observation_notes(doc, valuation),
         valuation_complete=bool(valuation.get("complete")),
         dollars_from_repository_state=bool(availability.get("available")),
         blocked_by=tuple(availability.get("blocked_by") or ()),
@@ -993,6 +1030,105 @@ class TargetWeightConcentration:
         }
 
 
+def validate_lookthrough(lookthrough: object) -> tuple[dict | None, str | None]:
+    """Strictly validate every look-through value this section consumes.
+
+    Returns `(validated, None)` or `(None, reason)`. `validated` carries the
+    two ceilings and the issuer rows, already proven well-formed.
+
+    WHY THIS EXISTS, both halves:
+
+    1. NO SILENT CEILING FALLBACK. `issuer_ceiling_pct` and
+       `common_driver_ceiling_pct` are safety-sensitive constraint values. A
+       missing key previously defaulted to the historical 8.0/40.0 literals, so
+       an absent configuration still produced a plausible OK/OVER_LIMIT verdict
+       as though the active constraint were known. Both are REQUIRED here —
+       the same fail-loud treatment `allocate._resolve_margin_config` already
+       gives the 1.8x cap and 30% floor (NUM-0001 P1-1), expressed as
+       controlled UNAVAILABLE because a diagnostic must not abort.
+
+    2. NO MALFORMED VALUE REACHING THE PRODUCTION HELPER.
+       `allocate._issuer_exposure` computes `float(f["fund_holding_weight"])`,
+       and `float(True)` is 1.0 — a Boolean weight would silently become a
+       100% fund constituent. `_issuer_exposure` is NOT modified to defend
+       against this; it keeps owning the arithmetic, and this boundary simply
+       refuses to hand it anything it cannot legitimately compute on.
+
+    Every key validated below is one `_issuer_exposure` actually reads.
+    """
+    if not isinstance(lookthrough, dict):
+        return None, "issuer_lookthrough configuration is not a mapping"
+
+    ceilings: dict[str, float] = {}
+    for key in ("issuer_ceiling_pct", "common_driver_ceiling_pct"):
+        if key not in lookthrough:
+            return None, (
+                f"issuer_lookthrough.yaml is missing required '{key}' — this is a "
+                "safety-sensitive constraint value and is never defaulted to a "
+                "historical literal; the section reports UNAVAILABLE instead")
+        value, reason = _checked_pct(lookthrough[key], f"issuer_lookthrough.{key}",
+                                     minimum=0.0)
+        if reason is not None:
+            return None, reason
+        ceilings[key] = value
+
+    raw_issuers = lookthrough.get("issuers")
+    if raw_issuers is None:
+        raw_issuers = []
+    if not isinstance(raw_issuers, list):
+        return None, "issuer_lookthrough.issuers must be a list"
+
+    seen: set[str] = set()
+    issuers: list[dict] = []
+    for i, row in enumerate(raw_issuers):
+        label = f"issuer_lookthrough.issuers[{i}]"
+        if not isinstance(row, dict):
+            return None, f"{label} is not a mapping"
+        ticker = row.get("ticker")
+        if not isinstance(ticker, str) or not ticker.strip():
+            return None, f"{label}.ticker must be a non-empty string, got {ticker!r}"
+        key = ticker.strip().upper()
+        if key in seen:
+            # _issuer_exposure keys its result dict by ticker, so a duplicate
+            # would be silently collapsed and one row's weights lost.
+            return None, f"{label}.ticker {key!r} is a duplicate issuer identity"
+        seen.add(key)
+
+        raw_funds = row.get("funds")
+        if raw_funds is None:
+            raw_funds = []
+        if not isinstance(raw_funds, list):
+            return None, f"{label}.funds must be a list"
+        funds: list[dict] = []
+        fund_seen: set[str] = set()
+        for j, fund in enumerate(raw_funds):
+            flabel = f"{label}.funds[{j}]"
+            if not isinstance(fund, dict):
+                return None, f"{flabel} is not a mapping"
+            fund_id = fund.get("fund")
+            if not isinstance(fund_id, str) or not fund_id.strip():
+                return None, f"{flabel}.fund must be a non-empty string, got {fund_id!r}"
+            fund_key = fund_id.strip().upper()
+            if fund_key in fund_seen:
+                return None, f"{flabel}.fund {fund_key!r} is a duplicate fund identity"
+            fund_seen.add(fund_key)
+            if "fund_holding_weight" not in fund:
+                return None, f"{flabel} is missing 'fund_holding_weight'"
+            weight, reason = _checked_pct(fund["fund_holding_weight"],
+                                          f"{flabel}.fund_holding_weight",
+                                          minimum=0.0)
+            if reason is not None:
+                return None, reason
+            funds.append({"fund": fund_id, "fund_holding_weight": weight})
+        issuers.append({"ticker": ticker, "funds": funds})
+
+    return {"issuer_ceiling_pct": ceilings["issuer_ceiling_pct"],
+            "common_driver_ceiling_pct": ceilings["common_driver_ceiling_pct"],
+            "issuers": issuers,
+            "retained_common_driver_measurement":
+                lookthrough.get("retained_common_driver_measurement")}, None
+
+
 TARGET_WEIGHT_BASIS = (
     "CANONICAL TARGET WEIGHTS (full-deployment basis) — not current holdings. "
     "Computed by supplying the production exposure helper a unit book of 100.0 "
@@ -1061,14 +1197,26 @@ def collect_target_weight_concentration(
     # because bool subclasses int. That is production behaviour and is NOT
     # changed by this module — but this diagnostic will not report a
     # constraint computed from a value it cannot trust, so it checks the raw
-    # config before the coercion happens.
+    # config before the coercion happens. Controlled UNAVAILABLE, matching the
+    # look-through path below: one malformed config value must not abort the
+    # whole report and silence the sections that ARE readable.
     for i, row in enumerate(targets.get("destination") or []):
         if not isinstance(row, dict):
             continue
         ticker = row.get("ticker")
         label = f"destination row #{i} ({ticker!r}).target_pct"
         if "target_pct" in row:
-            _strict_pct(row["target_pct"], label)
+            _, reason = _checked_pct(row["target_pct"], label)
+            if reason is not None:
+                return _unavailable(reason)
+
+    # Ceilings and every consumed look-through row are REQUIRED and strictly
+    # validated before the production exposure helper is called. No historical
+    # literal is ever substituted for a missing safety-sensitive ceiling.
+    validated, reason = validate_lookthrough(lookthrough)
+    if reason is not None:
+        return _unavailable(reason)
+    lookthrough = validated
 
     try:
         roster = allocate.build_roster(targets)
@@ -1080,7 +1228,10 @@ def collect_target_weight_concentration(
     unit_book = 100.0
     target_values: dict[str, float] = {}
     for ticker, meta in roster.items():
-        target_values[ticker] = _strict_pct(meta.get("target_pct"), f"{ticker}.target_pct")
+        value, reason = _checked_pct(meta.get("target_pct"), f"{ticker}.target_pct")
+        if reason is not None:
+            return _unavailable(reason)
+        target_values[ticker] = value
     destination_total = sum(target_values.values())
 
     clusters: list[ClusterConstraint] = []
@@ -1088,7 +1239,9 @@ def collect_target_weight_concentration(
         if not isinstance(raw, dict):
             continue
         name = str(raw.get("name", "<unnamed>"))
-        cap = _strict_pct(raw.get("pct"), f"cluster {name}.pct")
+        cap, reason = _checked_pct(raw.get("pct"), f"cluster {name}.pct", minimum=0.0)
+        if reason is not None:
+            return _unavailable(reason)
         members = tuple(sorted(str(t).upper() for t in (raw.get("tickers") or [])))
         exposure = sum(target_values.get(t, 0.0) for t in members)
         if not members:
@@ -1106,9 +1259,8 @@ def collect_target_weight_concentration(
             utilisation_pct=_utilisation(exposure, cap),
             headroom_pct=cap - exposure, status=status, detail=detail))
 
-    issuer_ceiling = _strict_pct(lookthrough.get("issuer_ceiling_pct", 8.0), "issuer_ceiling_pct")
-    driver_ceiling = _strict_pct(lookthrough.get("common_driver_ceiling_pct", 40.0),
-                                 "common_driver_ceiling_pct")
+    issuer_ceiling = lookthrough["issuer_ceiling_pct"]
+    driver_ceiling = lookthrough["common_driver_ceiling_pct"]
 
     exposure = allocate._issuer_exposure(target_values, unit_book, lookthrough)
 
