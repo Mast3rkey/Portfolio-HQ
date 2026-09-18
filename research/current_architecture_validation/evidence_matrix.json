@@ -1,0 +1,461 @@
+{
+  "schema_version": "1.0",
+  "artifact_id": "CURRENT-ARCH-VALIDATION-0001",
+  "as_of_date": "2026-09-17",
+  "base_commit": "e8b252a5ce82662112cfdbece8a9ee02687d6c66",
+  "status": "EVIDENCE_RECONCILIATION_ONLY",
+  "authority": "NONE \u2014 this artifact classifies existing evidence. It changes no target, cap, ceiling, cluster, gate, margin parameter, holding, or allocator behaviour, and authorizes no research, trade, or order.",
+  "verification_semantics": {
+    "reconciliation_basis": "PINNED_BASE_COMMIT",
+    "basis_commit": "e8b252a5ce82662112cfdbece8a9ee02687d6c66",
+    "artifact_files_read_from": "WORKING_TREE (they do not exist at the base commit)",
+    "future_live_drift_fails_ci": false,
+    "live_drift_disposition": "HISTORICAL_RECORD_REMAINS_TRUE",
+    "historical_values_rewritten_to_current": false,
+    "unreachable_basis_behaviour": "SKIP_WITH_EXPLICIT_REASON (shallow clone); full-history CI still exercises the check",
+    "rationale": "CURRENT-ARCH-VALIDATION-0001 is a dated historical record. BOTH halves of its basis are pinned -- the input bytes it was derived from and the production code that derived them -- so it stays permanently verifiable while never becoming a gate on future policy. Legitimate later work cannot invalidate it or turn repository CI red: not a refreshed issuer_lookthrough.yaml, not PD-1 defining the common-driver inclusion rule, not moving allocate._issuer_exposure behind a public wrapper, not correcting the exposure arithmetic, not refactoring the collector, not an authorized target or cap change.",
+    "not_introduced": [
+      "no lifecycle framework",
+      "no supersession registry",
+      "no governance decision",
+      "no latest-artifact bureaucracy"
+    ],
+    "executable_semantics_basis": "PINNED_BASE_COMMIT",
+    "pinned_executable_modules": [
+      "currentness_report.py",
+      "allocate.py"
+    ],
+    "executable_semantics_mechanism": "The base commit's top-level modules and config are materialised read-only via `git archive` into pytest scratch space, and the BASE-COMMIT currentness_report.collect_target_weight_concentration() -- which delegates to that commit's allocate._issuer_exposure -- is executed there in an isolated subprocess rooted at the extracted tree. The subprocess refuses to proceed if either module resolves outside it.",
+    "live_production_code_used_for_historical_figures": false,
+    "arithmetic_reimplemented": false,
+    "drift_surfaces_reported": [
+      "config and evidence inputs (targets.yaml, issuer_lookthrough.yaml, retained evidence, study artifacts, provenance docs)",
+      "executable production semantics (currentness_report.py, allocate.py)"
+    ],
+    "basis_covers": [
+      "INPUT_BYTES",
+      "EXECUTABLE_SEMANTICS"
+    ]
+  },
+  "evidence_grade_vocabulary": [
+    "EVIDENCE_DERIVED",
+    "ROBUSTNESS_TESTED",
+    "SUPPORTED_WITHIN_TESTED_RANGE",
+    "GOVERNANCE_CHOICE",
+    "INHERITED",
+    "UNVALIDATED",
+    "UNABLE_TO_DETERMINE"
+  ],
+  "determination": {
+    "phase_c_case": "CASE_3_NO_EXISTING_AUTHORITY_OR_STUDY_CAN_ANSWER",
+    "case_1_rejected_because": "No decision-grade evidence evaluating the CURRENT canonical architecture exists. PORTFOLIO-ROBUSTNESS-0001 is classified EVIDENCE_LIMITED_NOT_DECISION_GRADE by RISK-0005 and is barred from being cited as validation of the baseline.",
+    "case_2_rejected_because": "PORTFOLIO-ROBUSTNESS-V2-0001 is preregistered but CANNOT lawfully execute under its own frozen contract: research/whole_portfolio_robustness_v2/validation/input_admission.json records admitted=false / INPUT_ADMISSION_FAILED, and inputs/input_freeze.json records SOL provider UNRESOLVED_SINGLE_USD_SPOT_SOURCE and dff_availability status UNRESOLVED with substitution PROHIBITED. The preregistration further requires a crypto successor disposition BEFORE execution (crypto: NEW_SUCCESSOR_DISPOSITION_REQUIRED_BEFORE_EXECUTION). Executing would violate the study's own halt-before-results rule.",
+    "action_taken": "STOPPED BEFORE EXECUTION. No study was run, no data acquired, no parameter changed. Principal decisions required are enumerated below.",
+    "no_new_study_executed": true
+  },
+  "derived_measurements": {
+    "note": "Re-derived at as_of_date from the repository state AT THIS ARTIFACT'S PINNED BASE COMMIT (read read-only out of git), not from live working-tree state. Cluster/issuer/common-driver figures come from the PRODUCTION exposure helper via currentness_report.collect_target_weight_concentration(), supplied the base-commit config files; look-through arithmetic is never re-implemented. test_current_architecture_validation.py re-derives each of these against that same pinned basis, so a later legitimate change to live inputs neither invalidates these figures nor fails repository CI.",
+    "basis": "CANONICAL TARGET WEIGHTS (full deployment) \u2014 not current holdings",
+    "destination_rows": 36,
+    "destination_total_pct": 99.25,
+    "retained_architecture_rows": 37,
+    "retained_total_pct": 100.0,
+    "tickers_in_retained_only": [
+      "SPCX"
+    ],
+    "tickers_in_current_only": [],
+    "weight_mismatches_among_shared": [],
+    "targets_yaml_has_tiers_key": false,
+    "clusters": [
+      {
+        "name": "semis",
+        "cap_pct": 25.0,
+        "target_exposure_pct": 15.75,
+        "utilisation_pct": 63.0,
+        "headroom_pct": 9.25,
+        "status": "OK",
+        "members": [
+          "ASML",
+          "AVGO",
+          "KLAC",
+          "NVDA",
+          "TSM"
+        ]
+      },
+      {
+        "name": "power_infra",
+        "cap_pct": 20.0,
+        "target_exposure_pct": 6.5,
+        "utilisation_pct": 32.5,
+        "headroom_pct": 13.5,
+        "status": "OK",
+        "members": [
+          "ETN",
+          "GEV",
+          "PWR"
+        ]
+      },
+      {
+        "name": "oil",
+        "cap_pct": 20.0,
+        "target_exposure_pct": 0,
+        "utilisation_pct": 0.0,
+        "headroom_pct": 20.0,
+        "status": "UNAVAILABLE",
+        "members": []
+      }
+    ],
+    "max_issuer": {
+      "ticker": "NVDA",
+      "direct_pct": 6.0,
+      "embedded_pct": 1.149,
+      "effective_pct": 7.149,
+      "ceiling_pct": 8.0,
+      "utilisation_pct": 89.3625,
+      "headroom_pct": 0.851,
+      "status": "OK"
+    },
+    "common_driver": {
+      "recomputed_pct": 41.64540000000001,
+      "ceiling_pct": 40.0,
+      "retained_value_pct": 40.0284,
+      "retained_measured_at": "2026-07-30",
+      "retained_delta_pct": 1.6170000000000115,
+      "reconciles": false,
+      "status": "DISCREPANCY",
+      "limit_status": "OVER_LIMIT"
+    },
+    "retained_lookthrough_effective_sum_pct": 41.6454,
+    "retained_headline_pct": 40.0284,
+    "retained_internal_gap_pp": 1.617,
+    "unique_embedded_exclusion_sets_reproducing_headline": [
+      [
+        "AAPL",
+        "LLY",
+        "TSLA"
+      ]
+    ],
+    "lookthrough_snapshot_ages_days": {
+      "SPY_holdings_as_of_2026-07-23": 56,
+      "VEA_holdings_as_of_2026-05-31": 109,
+      "VWO_holdings_as_of_2026-05-31": 109,
+      "one_quarter_threshold_days": 92,
+      "past_own_refresh_condition": [
+        "VEA",
+        "VWO"
+      ]
+    },
+    "provenance_audit_coverage": {
+      "file": "docs/NUMERIC_PARAMETER_PROVENANCE_AUDIT.md",
+      "audit_date": "2026-07-21",
+      "migration_date_PHQ_2026_02": "2026-07-31",
+      "audit_predates_current_architecture": true,
+      "occurrences_of_issuer": 0,
+      "occurrences_of_look_through": 0,
+      "occurrences_of_common_driver": 0,
+      "note": "The entire look-through control family (8% effective-issuer ceiling, 40% AI/platform common-driver ceiling, issuer_lookthrough.yaml) is absent from the repository's own numeric-parameter provenance audit, which was written before that file existed."
+    }
+  },
+  "parameters": [
+    {
+      "parameter": "Canonical destination target_pct (36 per-name weights)",
+      "current_value": "36 rows summing 99.25% of book",
+      "current_scope": "targets.yaml destination[]",
+      "canonical_source": "targets.yaml",
+      "origin_source": "Portfolio_HQ_Grand_Master_Architecture_v1_30.csv via PHQ-2026-01 (out-of-repository committee process), principal-approved; implemented verbatim by PHQ-2026-02",
+      "original_architecture": "37 rows summing exactly 100.00%",
+      "current_architecture": "36 rows summing 99.25% \u2014 PHQ-2026-04 removed SPCX (0.75%) after a verified manual exit and deliberately did NOT renormalize. All 36 shared weights are NUMERICALLY (economically) identical to the retained source after parsing \u2014 not byte-identical: both sides are compared as floats, and the retained JSON carries representations such as 3.5000000000000004 against the YAML's 3.50.",
+      "evidence_used": "No in-repository study. backtest_weights.py tested the RETIRED T1/T2/ETF/band/spec tier-weight STRUCTURE, not these per-name weights. The retained due-diligence package discloses an external backtest with an approximately 23-month common window that 'contains look-ahead and survivorship limitations' (its own words).",
+      "current_architecture_tested": false,
+      "alternatives_tested": false,
+      "evidence_grade": "GOVERNANCE_CHOICE",
+      "empirical_status": "UNVALIDATED",
+      "known_limitations": [
+        "The external derivation is not reproducible inside this repository; only its outputs are retained.",
+        "The external backtest's own disclosed look-ahead and survivorship limitations make it non-decision-grade on its face.",
+        "The only in-repository study that compared this baseline against alternatives (PORTFOLIO-ROBUSTNESS-0001) is barred from being cited as validation (RISK-0005)."
+      ],
+      "policy_status": "Active, binding",
+      "next_evidence_needed": "A decision-grade current-architecture comparison against pre-registered bounded alternatives. PORTFOLIO-ROBUSTNESS-V2-0001 is designed to be exactly that and remains blocked on input admission."
+    },
+    {
+      "parameter": "semis cluster cap",
+      "current_value": "25.0% of book",
+      "current_scope": "ASML, AVGO, KLAC, NVDA, TSM (5 names)",
+      "canonical_source": "targets.yaml caps.clusters[name=semis]",
+      "origin_source": "Correlation-scan-informed governance selection (0.542 average pairwise correlation, trailing ~1yr), recorded in CLAUDE.md and docs/PORTFOLIO_POLICY_MANUAL.md as prose only",
+      "original_architecture": "13 members: ASML, TSM, NVDA, AVGO, AMD, MU, MRVL, KLAC, LRCX, AMAT, WDC, INTC, SKHY",
+      "current_architecture": "5 members \u2014 8 of the 13 exited the roster at the PHQ-2026-02 migration; the cap level was carried forward unchanged and explicitly NOT re-scoped",
+      "evidence_used": "The 0.542 correlation figure. No retained dataset, no retained script, and no reproducible artifact exists for it anywhere in the repository \u2014 it survives only as narrative citation.",
+      "current_architecture_tested": false,
+      "alternatives_tested": false,
+      "evidence_grade": "GOVERNANCE_CHOICE",
+      "empirical_status": "UNVALIDATED",
+      "known_limitations": [
+        "The correlation basis was measured over a 13-name membership that no longer exists; 62% of the measured members are gone.",
+        "NUM-0001's own classification states the cap level is 'never backtested for return impact by design'.",
+        "No cap-level sweep (alternative percentages) has ever been run for any cluster.",
+        "NON-BINDING at canonical target weights: 15.75% exposure against a 25.0% cap (63.0% utilisation)."
+      ],
+      "policy_status": "Active; latent at target weights (can only bind on live holdings drift)",
+      "next_evidence_needed": "A re-scan of pairwise correlation over the CURRENT 5-name membership with the dataset retained, before the 25% level can be defended or revised."
+    },
+    {
+      "parameter": "power_infra cluster cap",
+      "current_value": "20.0% of book",
+      "current_scope": "ETN, GEV, PWR (3 names)",
+      "canonical_source": "targets.yaml caps.clusters[name=power_infra]",
+      "origin_source": "Correlation-scan-informed governance selection (0.560 average pairwise correlation), added 2026-07-14; prose only",
+      "original_architecture": "4 members: GEV, ETN, VRT, PWR",
+      "current_architecture": "3 members \u2014 VRT exited at the PHQ-2026-02 migration; cap level carried forward unchanged",
+      "evidence_used": "The 0.560 correlation figure. No retained dataset or script; narrative citation only. intelligence/BATCH4_POWER_INFRASTRUCTURE_COMPARISON.md independently records that it is unverified whether the figure still holds.",
+      "current_architecture_tested": false,
+      "alternatives_tested": false,
+      "evidence_grade": "GOVERNANCE_CHOICE",
+      "empirical_status": "UNVALIDATED",
+      "known_limitations": [
+        "Correlation basis measured over a 4-name membership; 1 of 4 members has exited.",
+        "Level explicitly chosen as tighter than semis on judgement (shorter track record), not derived.",
+        "NON-BINDING at canonical target weights: 6.50% exposure against a 20.0% cap (32.5% utilisation)."
+      ],
+      "policy_status": "Active; latent at target weights",
+      "next_evidence_needed": "Same as semis \u2014 re-scan over current membership with the dataset retained."
+    },
+    {
+      "parameter": "oil cluster cap",
+      "current_value": "20.0% of book",
+      "current_scope": "ZERO members",
+      "canonical_source": "targets.yaml caps.clusters[name=oil]",
+      "origin_source": "The only cap with a stated derivation: a drawdown stress test (approximately 30% historical max drawdown applied at the cap ceiling, giving approximately 6% of book impact, matched to power_infra's accepted risk budget)",
+      "original_architecture": "2 members: XOM, CVX (0.819 average pairwise correlation, the strongest scanned)",
+      "current_architecture": "0 members \u2014 both XOM and CVX exited the canonical roster at the PHQ-2026-02 migration",
+      "evidence_used": "The stress-test arithmetic is mathematically derived, but its input (the approximately 30% drawdown figure) is recorded as 'this dataset's own actual historical max drawdown ... not a real-world citation' and is not retained.",
+      "current_architecture_tested": false,
+      "alternatives_tested": false,
+      "evidence_grade": "UNABLE_TO_DETERMINE",
+      "empirical_status": "DEAD_CONFIGURATION",
+      "known_limitations": [
+        "With zero members the cap cannot bind on anything. It is inert configuration, NOT a satisfied limit \u2014 a distinction the currentness preflight already reports as UNAVAILABLE rather than OK.",
+        "Its derivation is the strongest of the three caps but is unreproducible and, at zero membership, moot."
+      ],
+      "policy_status": "Active in config, inert in effect",
+      "next_evidence_needed": "A governance decision on whether to retire the cap or repopulate its membership. No empirical work can make a zero-member cap meaningful."
+    },
+    {
+      "parameter": "Effective single-issuer ceiling",
+      "current_value": "8.0%",
+      "current_scope": "11 issuers mapped in issuer_lookthrough.yaml (direct + ETF look-through)",
+      "canonical_source": "issuer_lookthrough.yaml issuer_ceiling_pct",
+      "origin_source": "PHQ-2026-01 point 9, principal-approved ('approved_single_issuer_ceiling': 0.08 in the retained due-diligence package); implemented by PHQ-2026-02",
+      "original_architecture": "Same 11 issuers; introduced with the canonical architecture",
+      "current_architecture": "Unchanged membership and ceiling",
+      "evidence_used": "None. No derivation is recorded anywhere for why 8% rather than any other level. NUM-0001's provenance audit does not cover this parameter at all \u2014 the audit is pinned to 2026-07-21, before issuer_lookthrough.yaml existed.",
+      "current_architecture_tested": false,
+      "alternatives_tested": false,
+      "evidence_grade": "GOVERNANCE_CHOICE",
+      "empirical_status": "UNVALIDATED",
+      "known_limitations": [
+        "Unclassified by the repository's own provenance standard (NUM-0001) because the audit predates the parameter.",
+        "The measurement INPUT is stale: VEA and VWO constituent weights are as-of 2026-05-31 (109 days at this artifact's as-of date), past the one-quarter refresh condition issuer_lookthrough.yaml states for itself. These feed ASML and TSM embedded exposure.",
+        "This is the tightest live constraint in the system: NVDA effective 7.1490% against 8.00%, 0.851pp headroom, 89.36% utilisation."
+      ],
+      "policy_status": "Active, binding no-add control (clip-or-block, never a trim)",
+      "next_evidence_needed": "A refreshed ETF-constituent snapshot; separately, an explicit rationale or derivation for the 8% level if it is ever to be defended as anything other than a governance choice."
+    },
+    {
+      "parameter": "AI/platform common-driver ceiling",
+      "current_value": "40.0%",
+      "current_scope": "The same 11 issuers in issuer_lookthrough.yaml",
+      "canonical_source": "issuer_lookthrough.yaml common_driver_ceiling_pct",
+      "origin_source": "PHQ-2026-01 point 9, principal-approved ('approved_ai_platform_common_driver_ceiling': 0.4)",
+      "original_architecture": "Retained point-in-time measurement 40.0284% as-of 2026-07-30, described in the source package as an 'estimate' and recorded as at/marginally over the ceiling",
+      "current_architecture": "Recomputation at canonical target weights returns 41.6454% \u2014 OVER_LIMIT by 1.6454pp",
+      "evidence_used": "The retained due-diligence look-through table plus the production exposure helper (allocate._issuer_exposure) applied on a target-weight basis.",
+      "current_architecture_tested": false,
+      "alternatives_tested": false,
+      "evidence_grade": "UNABLE_TO_DETERMINE",
+      "empirical_status": "MEASUREMENT_BASIS_UNDEFINED",
+      "known_limitations": [
+        "The ceiling has no recorded derivation, exactly as with the 8% issuer ceiling.",
+        "More seriously, the ceiling has no recorded MEASUREMENT RULE \u2014 see study_reconciliation.common_driver_discrepancy. Whether the portfolio is over or at the ceiling at target weights depends entirely on an inclusion rule that was never written down."
+      ],
+      "policy_status": "Active, binding no-add control; currently reporting OVER_LIMIT at target weights",
+      "next_evidence_needed": "A principal decision defining the authoritative common-driver membership and inclusion basis, followed by a re-measurement. Until that rule exists, neither 40.0284% nor 41.6454% can be called correct."
+    },
+    {
+      "parameter": "Correlated-cluster trim mechanism",
+      "current_value": "On breach: trim largest-own-target-overweight-first, floored at each name's own target, no RSI gate; already-trimmed names skipped; effects cascade across clusters sharing a ticker",
+      "current_scope": "allocate.py plan(), applied to every configured cluster",
+      "canonical_source": "allocate.py (mechanism); targets.yaml caps.clusters (parameters)",
+      "origin_source": "Generalized from a single hardcoded semis cluster when power_infra was added (2026-07-14); the underlying trim concept predates this repository's tracked history",
+      "original_architecture": "Coexisted with band/spec RSI-gated trims and the T1/T2 1.5x concentration ceiling",
+      "current_architecture": "The ONLY trim rule remaining. PHQ-2026-02 retired both the band/spec RSI-gated trim and the T1/T2 ceiling and deliberately invented no replacement.",
+      "evidence_used": "Engineering verification only \u2014 mechanical unit tests in test_margin.py and test_allocate_integration.py (ordering, floor, two-cluster independence, non-member immunity). No economic evidence.",
+      "current_architecture_tested": false,
+      "alternatives_tested": false,
+      "evidence_grade": "UNVALIDATED",
+      "empirical_status": "MECHANICALLY_VERIFIED_ECONOMICALLY_UNTESTED",
+      "known_limitations": [
+        "backtest_t1t2_trim.py's Arm D was the cluster-shaped arm and DID NOT RUN \u2014 it was conditional on |C-B| > 1.0pp and the observed gap was 0.00pp.",
+        "reports/trim_backtest.md tested band/spec RSI-gated trims, a different and now-retired rule.",
+        "The repository already records that the implemented floor-at-target magnitude is untested (the arm that was tested was ceiling-style).",
+        "Latent at canonical target weights: no cluster can breach at full deployment (63.0% / 32.5% / dead), so the rule can only fire on live holdings drift \u2014 and current-holdings exposure is presently UNAVAILABLE from repository state."
+      ],
+      "policy_status": "Active, mechanical, no discretion",
+      "next_evidence_needed": "If the rule is ever to rest on evidence rather than doctrine, a study of the floor-at-target cluster trim against a no-trim and a ceiling-style control, over the current roster."
+    }
+  ],
+  "study_reconciliation": {
+    "backtest_weights_py": {
+      "what_it_compared": "Four tier-weight SCHEMES (current gradation, equal-weight, flatter, steeper) over 63 tickers, 2021-06-01 to 2026-07-10, holding the band/spec trim rule constant",
+      "tested_current_36_weights": false,
+      "note": "It varied a tier-to-weight mapping. The current architecture has no tiers; it assigns a weight per name directly. The question this script answered no longer exists in the current architecture.",
+      "cluster_caps_excluded_by_design": true
+    },
+    "backtest_t1t2_trim_py": {
+      "what_it_tested": "Whether a T1/T2 per-name concentration ceiling should exist (arms: none, fixed 1.5x, trend-gated 1.5x; a conditional cluster-shaped Arm D)",
+      "arm_d_cluster_ran": false,
+      "arm_d_reason": "Conditional on |C-B| > 1.0pp; observed 0.00pp",
+      "rule_now_retired": true
+    },
+    "cap_calibration": {
+      "semis_25pct_calibrated_by_any_test": false,
+      "power_infra_20pct_calibrated_by_any_test": false,
+      "issuer_8pct_calibrated_by_any_test": false,
+      "common_driver_40pct_calibrated_by_any_test": false,
+      "live_cluster_trim_algorithm_evaluated_by_any_test": false
+    },
+    "tier_dependency_finding": {
+      "claim": "Every tier-era backtest is architecturally orphaned and cannot run against the current configuration.",
+      "mechanism": "backtest_regime.universe() and backtest_rungs.roster_tickers() both read targets.yaml['tiers']; backtest_weights.py, backtest_t1t2_trim.py and backtest_trend.py obtain their roster by importing backtest_regime. targets.yaml has no 'tiers' key.",
+      "affected_scripts": [
+        "backtest_weights.py",
+        "backtest_t1t2_trim.py",
+        "backtest_trend.py",
+        "backtest_regime.py",
+        "backtest_rungs.py",
+        "backtest_trims.py"
+      ]
+    },
+    "risk_0005_invalidation": {
+      "study": "PORTFOLIO-ROBUSTNESS-0001",
+      "status": "EVIDENCE_LIMITED_NOT_DECISION_GRADE",
+      "defects": [
+        "23 of 28 consumed datasets differ from the source inventory's selected hashes",
+        "17 unresolved corporate-action mismatches",
+        "SOL confirmation path omits 115 sessions after registered inception",
+        "pre-2020-04-03 RTX predecessor rows wrongly admitted"
+      ],
+      "barred_claim": "THE_STUDY_VALIDATED_OR_CONFIRMED_THE_ACCEPTED_BASELINE"
+    },
+    "whole_portfolio_robustness_v2_contents": {
+      "protocol": true,
+      "pre_registration": true,
+      "frozen_input_manifest": true,
+      "engine_and_validators": true,
+      "source_input_bytes_admitted": false,
+      "execution_directory": false,
+      "results": false,
+      "retained_decision_grade_results": false,
+      "binds_to_current_canonical_targets": true,
+      "binds_to_current_concentration_architecture": "PARTIAL \u2014 targets.yaml, gates.yaml and issuer_lookthrough.yaml are hash-pinned inputs, but the study evaluates whole-portfolio ALTERNATIVES; it does not calibrate any cap or ceiling level.",
+      "blocking_errors": [
+        "DFF: actual publication-time/vintage evidence unresolved",
+        "SOL: no independently accepted successor source anchor",
+        "SOL: missing receipt"
+      ]
+    },
+    "common_driver_discrepancy": {
+      "question": "Why does the current recomputation (41.6454%) differ from the retained measurement (40.0284%)?",
+      "answer": "It is NOT configuration drift. The retained due-diligence package's own 11 itemized effective weights sum to exactly 41.6454% \u2014 identical to the current recomputation to four decimal places. Every fund allocation in that table (SPY 15%, VEA 7%, VWO 1%) still matches targets.yaml, and the retained NVDA effective weight (7.149%) reproduces exactly. The discrepancy is therefore INTERNAL to the retained evidence: its headline 40.0284% figure is inconsistent with its own line items in the same file.",
+      "arithmetic_reconciliation": "An exhaustive search of all 2,047 non-empty subsets found exactly ONE combination reproducing the headline: total effective (41.6454%) minus the ETF-embedded components of LLY, TSLA and AAPL (1.6170pp) = 40.0284%. The exclusion is unique at 1e-9 tolerance.",
+      "corroboration": "The package's separate effective_mega6_weight (0.29999) IS exactly reproducible from the same line items (NVDA+MSFT+AMZN+GOOGL+AVGO+META), which supports the line items being the reliable part of the retained package.",
+      "intent": "UNRESOLVED \u2014 the retained package documents no inclusion rule, describes the figure as an 'estimate', and gives no reason why LLY, TSLA and AAPL would contribute direct weight but not embedded weight. This artifact establishes the arithmetic, not the intent.",
+      "consequence": "Whether the canonical target portfolio breaches the 40% common-driver ceiling depends on which inclusion rule is authoritative, and no accepted decision states one."
+    }
+  },
+  "acceptance_answers": {
+    "which_are_evidence_backed": "NONE of the seven parameters examined is supported by decision-grade evidence evaluating the current architecture.",
+    "which_are_governance_choices": [
+      "36 canonical target weights",
+      "semis 25%",
+      "power_infra 20%",
+      "issuer 8%",
+      "common-driver 40%"
+    ],
+    "which_are_stale_or_architecture_changed": [
+      "semis cap (8 of 13 measured members gone)",
+      "power_infra cap (1 of 4 gone)",
+      "oil cap (all members gone)",
+      "all six tier-era backtests (orphaned)",
+      "docs/NUMERIC_PARAMETER_PROVENANCE_AUDIT.md (pinned 2026-07-21, pre-migration)",
+      "docs/PORTFOLIO_POLICY_MANUAL.md (as-of 2026-07-18, pre-migration)",
+      "issuer_lookthrough.yaml VEA/VWO constituents (109 days, past its own refresh rule)"
+    ],
+    "which_never_tested_against_alternatives": [
+      "semis 25%",
+      "power_infra 20%",
+      "oil 20%",
+      "issuer 8%",
+      "common-driver 40%",
+      "the live cluster-trim algorithm",
+      "the 36 per-name canonical weights"
+    ],
+    "which_are_non_binding_or_dead_at_target_weights": [
+      "oil cap \u2014 DEAD, zero members",
+      "semis cap \u2014 non-binding, 63.0% utilised",
+      "power_infra cap \u2014 non-binding, 32.5% utilised",
+      "cluster trim mechanism \u2014 latent, cannot fire at full deployment"
+    ],
+    "why_common_driver_recomputation_differs": "See study_reconciliation.common_driver_discrepancy. The current config has not drifted; the retained headline is internally inconsistent with its own itemized table.",
+    "does_canonical_target_portfolio_have_decision_grade_robustness_evidence": "NO.",
+    "does_live_cluster_trim_have_empirical_evidence": "NO \u2014 mechanical unit tests only; the one cluster-shaped backtest arm never ran.",
+    "what_evidence_is_required_before_any_numeric_policy_change": "See principal_decisions_required."
+  },
+  "principal_decisions_required": [
+    {
+      "id": "PD-1",
+      "topic": "Common-driver measurement rule",
+      "decision": "Define the authoritative AI/platform common-driver membership and inclusion basis (whole effective exposure for all 11 issuers, versus the retained package's apparent direct-plus-partial-embedded treatment).",
+      "why_blocking": "Without it, the repository cannot say whether the canonical target portfolio is at or over its own 40% ceiling. The two candidate answers straddle the limit."
+    },
+    {
+      "id": "PD-2",
+      "topic": "Look-through snapshot refresh",
+      "decision": "Authorize (or decline) a refresh of issuer_lookthrough.yaml's ETF constituent weights.",
+      "why_blocking": "VEA/VWO constituents are 109 days old, past the file's own stated one-quarter refresh condition. They feed ASML and TSM embedded exposure and therefore both ceiling measurements."
+    },
+    {
+      "id": "PD-3",
+      "topic": "Cluster cap membership and level",
+      "decision": "Authorize a correlation re-scan over current cluster membership with a retained dataset, and decide whether 25% / 20% remain appropriate for 5-name and 3-name clusters.",
+      "why_blocking": "The caps' only empirical input was measured over memberships that no longer exist and was never retained."
+    },
+    {
+      "id": "PD-4",
+      "topic": "Oil cap disposition",
+      "decision": "Retire the zero-member oil cap, or repopulate its membership.",
+      "why_blocking": "It is currently inert configuration that reads like an active control."
+    },
+    {
+      "id": "PD-5",
+      "topic": "Successor whole-portfolio study",
+      "decision": "Authorize the external data acquisition PORTFOLIO-ROBUSTNESS-V2-0001 requires (a single-source SOL/USD spot series with complete 2021-06-01 to 2026-07-31 coverage, and a DFF/FRED publication-vintage receipt), or accept that no decision-grade robustness evidence will exist for the current targets.",
+      "why_blocking": "V2 is the only designed vehicle for answering the target-weight question, and it is halted at input admission by its own contract. This artifact did NOT acquire data or execute anything."
+    }
+  ],
+  "boundaries": [
+    "No target, cap, ceiling, cluster membership, gate, margin parameter, holding, or allocator behaviour was changed.",
+    "No study was executed and no research data was acquired.",
+    "No buy, sell, trim, hold, or allocation recommendation is made or implied.",
+    "Margin parameters (1.8x leverage cap, 30% buffer floor) are OUT OF SCOPE for this unit and were not analyzed, validated, or changed.",
+    "No brokerage, account, or credential access occurred.",
+    "Stage 1 remains UNARMED AND NOT EXECUTABLE."
+  ],
+  "limitations": [
+    "This repository clone is shallow (256 commits, oldest reachable 2026-08-20). The SHA that docs/NUMERIC_PARAMETER_PROVENANCE_AUDIT.md pins (0b419765...) is not resolvable here, so that audit's own snapshot could not be re-verified against its stated commit; its audit DATE (2026-07-21) relative to PHQ-2026-02 (2026-07-31) is what this artifact relies on.",
+    "The unique LLY/TSLA/AAPL embedded-exclusion reconciliation is an arithmetic fact, not documented intent. Intent remains unresolved.",
+    "Cluster and issuer figures are computed at canonical TARGET weights (full deployment). Current-holdings exposure is UNAVAILABLE from repository state and was not estimated.",
+    "The external PHQ-2026-01 committee process is visible only through its retained outputs; its method could not be independently re-derived."
+  ]
+}
