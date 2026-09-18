@@ -12,19 +12,31 @@
 **Base commit:** `e8b252a5ce82662112cfdbece8a9ee02687d6c66`
 **Machine-readable companion:** [`evidence_matrix.json`](evidence_matrix.json)
 **Verification:** `test_current_architecture_validation.py` re-derives every load-bearing
-number below — against this artifact's **own pinned base commit**, read read-only out of git,
-using the production exposure helper. Nothing here should be believed on this document's own
-say-so.
+number below against this artifact's **own pinned base commit**. Nothing here should be
+believed on this document's own say-so.
 
-**Why the basis is pinned, and what that guarantees.** This is a historical record of what was
-true at its stated basis. Reconciling against that basis keeps the check permanently strong
-(it still proves the artifact was internally coherent and matched its inputs when created)
-while ensuring it never becomes a gate on future policy. A later, legitimate change to live
-repository inputs — a refreshed `issuer_lookthrough.yaml`, a defined common-driver inclusion
-rule, an executed successor robustness study, updated provenance documentation, an authorized
-target or cap change — does **not** make this record false and does **not** by itself turn
-repository CI red. Live drift is reported, never fatal. The historical figures here are never
-rewritten to current values.
+**Both halves of the basis are pinned.** A historical figure is a function of two things — the
+inputs it was computed from and the code that computed them — so both are taken from the base
+commit:
+
+| Half of the basis | How it is pinned |
+|---|---|
+| Inputs (`targets.yaml`, `issuer_lookthrough.yaml`, retained evidence, study artifacts, provenance docs) | read read-only out of git at the base commit |
+| Executable semantics (`currentness_report.py`, `allocate.py`) | the base commit's tree is materialised via `git archive` into test scratch space, and the **base-commit** `collect_target_weight_concentration` — delegating to that commit's `allocate._issuer_exposure` — is **executed** there in an isolated subprocess that refuses to run if either module resolves outside the extracted tree |
+
+The arithmetic is still never re-implemented: the genuine historical production helper is
+*executed*, not copied.
+
+**What that guarantees.** This is a record of what was true at its stated basis. Pinning both
+halves keeps the check permanently strong — it still proves the artifact was internally
+coherent and matched its inputs when created — while ensuring it never becomes a gate on
+future policy. None of the following makes this record false or turns repository CI red: a
+refreshed `issuer_lookthrough.yaml`; PD-1 defining the common-driver inclusion rule; moving
+`allocate._issuer_exposure` behind a public wrapper; correcting the exposure arithmetic;
+refactoring the collector; an executed successor robustness study; updated provenance
+documentation; an authorized target or cap change. Live drift — in config **or** in production
+code — is classified and reported, never fatal. The historical figures here are never rewritten
+to current values.
 
 If the pinned base commit is unreachable (a shallow clone), the basis-dependent checks skip
 with an explicit reason rather than failing; full-history CI still exercises them.

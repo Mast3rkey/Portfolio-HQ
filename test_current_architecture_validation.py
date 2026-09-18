@@ -38,10 +38,15 @@ data, and make no allocation recommendation.
 from __future__ import annotations
 
 import ast
+import io
 import itertools
 import json
+import os
 import subprocess
+import sys
+import tarfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -60,10 +65,17 @@ V1_PREFIX = "research/whole_portfolio_robustness"
 
 TOL = 1e-9
 
-#: Live paths whose content the snapshot's substantive claims were derived from.
-#: Used only to REPORT whether live state still matches the basis. Drift here is
-#: expected over time and is never a test failure.
-SNAPSHOT_SOURCE_PATHS = (
+#: Executable production semantics the historical concentration figures were
+#: derived by. These are pinned and EXECUTED from the base commit (see
+#: `_base_tree` / `_run_base_helper`), not merely read — the live working-tree
+#: copies play no role in the historical calculation.
+EXECUTABLE_SEMANTICS_PATHS = ("currentness_report.py", "allocate.py")
+
+#: Live paths whose content the snapshot's substantive claims were derived from,
+#: including the executable-semantics modules above. Used only to REPORT whether
+#: live state still matches the basis. Drift here is expected over time and is
+#: never a test failure.
+SNAPSHOT_SOURCE_PATHS = EXECUTABLE_SEMANTICS_PATHS + (
     "targets.yaml",
     "issuer_lookthrough.yaml",
     DUE_DILIGENCE_PATH,
@@ -123,8 +135,127 @@ def snapshot_text(path: str) -> str:
     return text
 
 
+#: Executed inside an isolated subprocess rooted at the extracted base tree.
+#: It imports the BASE-COMMIT production modules, refuses to proceed if either
+#: resolves outside that tree, and returns only structured results.
+_BASE_HELPER_SCRIPT = r"""
+import json, sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+sys.path.insert(0, str(root))
+
+import currentness_report as cr
+import allocate
+
+for mod in (cr, allocate):
+    loaded = Path(mod.__file__).resolve()
+    if loaded.parent != root:
+        raise SystemExit(f"ISOLATION FAILURE: {mod.__name__} loaded from {loaded}")
+
+result = cr.collect_target_weight_concentration(
+    targets_path=root / "targets.yaml",
+    lookthrough_path=root / "issuer_lookthrough.yaml",
+)
+
+print(json.dumps({
+    "available": result.available,
+    "detail": result.detail,
+    "destination_total_pct": result.destination_total_pct,
+    "clusters": [
+        {"name": c.name, "cap_pct": c.cap_pct, "members": list(c.members),
+         "target_exposure_pct": c.target_exposure_pct,
+         "utilisation_pct": c.utilisation_pct, "headroom_pct": c.headroom_pct,
+         "status": c.status}
+        for c in result.clusters
+    ],
+    "max_issuer": {k: getattr(result.max_issuer, k) for k in (
+        "ticker", "direct_pct", "embedded_pct", "effective_pct",
+        "ceiling_pct", "utilisation_pct", "headroom_pct", "status")},
+    "common_driver": {k: getattr(result.common_driver, k) for k in (
+        "recomputed_pct", "ceiling_pct", "retained_value_pct",
+        "retained_delta_pct", "reconciles", "status", "limit_status")},
+    "module_files": {"currentness_report": cr.__file__, "allocate": allocate.__file__},
+}))
+"""
+
+
+def materialise_base_tree(destination: Path) -> Path:
+    """Extract the base commit's top-level modules and config into `destination`.
+
+    Read-only `git archive`; nothing in the repository is touched. Scoped to the
+    top-level `*.py` plus the two config files the helper consumes — enough for
+    the production import graph, without unpacking the whole research corpus.
+    """
+    names = subprocess.run(
+        ["git", "ls-tree", "--name-only", SNAPSHOT_BASE_COMMIT],
+        cwd=HERE, capture_output=True, text=True, check=True,
+    ).stdout.split()
+    wanted = [n for n in names if n.endswith(".py")]
+    wanted += ["targets.yaml", "issuer_lookthrough.yaml"]
+
+    archive = subprocess.run(
+        ["git", "archive", "--format=tar", SNAPSHOT_BASE_COMMIT, "--", *wanted],
+        cwd=HERE, capture_output=True, check=True,
+    ).stdout
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tf:
+        try:
+            tf.extractall(destination, filter="data")
+        except TypeError:  # pragma: no cover - Python < 3.11.4
+            tf.extractall(destination)
+    return destination
+
+
+def run_base_helper(root: Path, *, prepend_pythonpath: Path | None = None) -> dict:
+    """Run the BASE-COMMIT production helper in an isolated subprocess.
+
+    `prepend_pythonpath` exists so a test can place a deliberately different
+    module ahead of the base tree on `PYTHONPATH` and prove it is still not
+    consulted.
+    """
+    env = dict(os.environ)
+    entries = [str(root)]
+    if prepend_pythonpath is not None:
+        entries.insert(0, str(prepend_pythonpath))
+    env["PYTHONPATH"] = os.pathsep.join(entries)
+
+    proc = subprocess.run(
+        [sys.executable, "-c", _BASE_HELPER_SCRIPT, str(root)],
+        cwd=root, env=env, capture_output=True, text=True,
+    )
+    if proc.returncode != 0:
+        pytest.fail(
+            "base-commit production helper failed to execute in isolation:\n"
+            f"{proc.stderr[-2000:]}"
+        )
+    return json.loads(proc.stdout)
+
+
+def _namespace(payload: dict, root: Path) -> SimpleNamespace:
+    return SimpleNamespace(
+        available=payload["available"],
+        detail=payload["detail"],
+        destination_total_pct=payload["destination_total_pct"],
+        clusters=tuple(
+            SimpleNamespace(**{**c, "members": tuple(c["members"])})
+            for c in payload["clusters"]
+        ),
+        max_issuer=SimpleNamespace(**payload["max_issuer"]),
+        common_driver=SimpleNamespace(**payload["common_driver"]),
+        module_files=payload["module_files"],
+        base_tree=root,
+    )
+
+
 def live_basis_drift() -> tuple[str, tuple[str, ...]]:
-    """Classify live state against the snapshot basis. Informational only."""
+    """Classify live state against the snapshot basis. Informational only.
+
+    Covers BOTH basis surfaces — the config/evidence inputs and the executable
+    production semantics (`currentness_report.py`, `allocate.py`). Drift in any
+    of them is reported, never fatal: the historical figures are derived by
+    executing the base-commit code against base-commit inputs, so neither kind
+    of drift can change or invalidate them.
+    """
     if not BASE_AVAILABLE:
         return "BASE_UNAVAILABLE", ()
     drifted = []
@@ -155,31 +286,38 @@ def due_diligence() -> dict:
 
 
 @pytest.fixture(scope="module")
-def concentration(tmp_path_factory):
-    """Production-helper exposure at the snapshot basis' canonical target weights.
+def base_tree(tmp_path_factory) -> Path:
+    """The repository's top-level modules and config AT THE PINNED BASE COMMIT."""
+    if not BASE_AVAILABLE:
+        pytest.skip(
+            f"snapshot base commit {SNAPSHOT_BASE_COMMIT[:12]} is not reachable in this clone"
+        )
+    return materialise_base_tree(tmp_path_factory.mktemp("snapshot_base_tree"))
 
-    Reuses `currentness_report.collect_target_weight_concentration`, which in
-    turn delegates the look-through arithmetic to `allocate._issuer_exposure`.
-    Deliberately NOT re-implemented here — a second implementation would prove
-    only that two copies of the same mistake agree.
 
-    The two config inputs are materialised read-only from the pinned base
-    commit into a temporary directory, so this reconciliation is unaffected by
-    any later legitimate change to the live files.
+@pytest.fixture(scope="module")
+def concentration(base_tree):
+    """Historical concentration figures, derived by the BASE-COMMIT production code.
+
+    Both halves of the historical basis are pinned:
+
+      * inputs  — `targets.yaml` and `issuer_lookthrough.yaml` as of the base commit;
+      * SEMANTICS — `currentness_report.collect_target_weight_concentration` and the
+        `allocate._issuer_exposure` it delegates to, executed FROM the base commit
+        in an isolated subprocess rooted at the extracted tree.
+
+    The live working-tree copies of those modules play no role here. A later
+    legitimate change to production exposure code — PD-1 defining the
+    common-driver inclusion rule, moving `_issuer_exposure` behind a public
+    wrapper, correcting the arithmetic, refactoring the collector — therefore
+    cannot alter or invalidate this dated record.
+
+    The arithmetic is still never re-implemented: the genuine historical
+    production helper is executed, not copied.
     """
-    import currentness_report as cr
-
-    basis_dir = tmp_path_factory.mktemp("snapshot_basis")
-    targets_path = basis_dir / "targets.yaml"
-    lookthrough_path = basis_dir / "issuer_lookthrough.yaml"
-    targets_path.write_text(snapshot_text("targets.yaml"))
-    lookthrough_path.write_text(snapshot_text("issuer_lookthrough.yaml"))
-
-    result = cr.collect_target_weight_concentration(
-        targets_path=targets_path, lookthrough_path=lookthrough_path,
-    )
-    assert result.available, f"production exposure helper unavailable: {result.detail}"
-    return result
+    payload = run_base_helper(base_tree)
+    assert payload["available"], f"base-commit exposure helper unavailable: {payload['detail']}"
+    return _namespace(payload, base_tree)
 
 
 def _param(matrix: dict, name_fragment: str) -> dict:
@@ -253,13 +391,14 @@ def test_artifact_states_margin_is_out_of_scope(matrix):
     assert "stage 1 remains unarmed" in joined
 
 
-def test_this_module_never_writes_outside_pytest_scratch_space():
-    """AST proof that this module performs no destructive filesystem call, and
-    that every write it does make is confined to pytest-managed scratch space.
+def test_this_module_never_writes_to_a_repository_path():
+    """AST proof of the invariant that actually matters.
 
-    The `concentration` fixture materialises the base-commit config files, and
-    one adversarial test writes a mutated fixture; both must live under
-    `tmp_path` / `tmp_path_factory`, never a repository path.
+    This module extracts a base tree and writes adversarial fixtures, all into
+    pytest-managed scratch space. The real risk is not that a write exists, but
+    that one could land on a repository path — so this checks exactly that: no
+    write-capable call takes an argument derived from a repository-rooted name,
+    and no destructive filesystem call exists at all.
     """
     tree = ast.parse(Path(__file__).read_text())
 
@@ -267,28 +406,42 @@ def test_this_module_never_writes_outside_pytest_scratch_space():
         name for node in ast.walk(tree)
         if isinstance(node, ast.Call)
         for name in [getattr(node.func, "attr", None) or getattr(node.func, "id", None)]
-        if name in {"unlink", "rmtree", "rmdir", "remove", "chmod"}
+        if name in {"unlink", "rmtree", "rmdir", "remove", "chmod", "rename", "replace_file"}
     ]
     assert destructive == [], f"destructive call(s) present: {destructive}"
 
-    writes = {"write_text", "write_bytes", "open", "mkdir"}
-    scratch = {"tmp_path", "tmp_path_factory"}
+    write_calls = {"write_text", "write_bytes", "mkdir", "extractall", "touch", "makedirs"}
+    repo_rooted = {"HERE", "ARTIFACT_DIR", "MATRIX_PATH", "REPORT_PATH"}
     for node in ast.walk(tree):
-        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        if not isinstance(node, ast.Call):
             continue
-        used = {
-            name for sub in ast.walk(node)
-            if isinstance(sub, ast.Call)
-            for name in [getattr(sub.func, "attr", None) or getattr(sub.func, "id", None)]
-            if name in writes
+        name = getattr(node.func, "attr", None) or getattr(node.func, "id", None)
+        if name not in write_calls:
+            continue
+        mentioned = {
+            sub.id for sub in ast.walk(node)
+            if isinstance(sub, ast.Name) and sub.id in repo_rooted
         }
-        if not used:
-            continue
-        params = {a.arg for a in node.args.args}
-        assert params & scratch, (
-            f"{node.name} calls {sorted(used)} without a pytest scratch fixture "
-            "in scope — a write could land on a repository path"
+        assert not mentioned, (
+            f"{name}() references repository-rooted name(s) {sorted(mentioned)} — "
+            "a write could land inside the repository"
         )
+
+
+def test_base_tree_is_materialised_only_into_pytest_scratch_space():
+    """The one function that unpacks an archive must be fed a tmp fixture."""
+    tree = ast.parse(Path(__file__).read_text())
+    call_sites = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and (getattr(node.func, "id", None) == "materialise_base_tree")
+    ]
+    assert call_sites, "materialise_base_tree is never called"
+    for call in call_sites:
+        names = {sub.id for sub in ast.walk(call) if isinstance(sub, ast.Name)}
+        attrs = {sub.attr for sub in ast.walk(call) if isinstance(sub, ast.Attribute)}
+        assert "tmp_path_factory" in names and "mktemp" in attrs, \
+            "base tree must be extracted into pytest scratch space"
 
 
 def test_matrix_documents_its_own_verification_semantics(matrix):
@@ -296,6 +449,7 @@ def test_matrix_documents_its_own_verification_semantics(matrix):
     and is not a gate on future live state."""
     semantics = matrix["verification_semantics"]
     assert semantics["reconciliation_basis"] == "PINNED_BASE_COMMIT"
+    assert set(semantics["basis_covers"]) == {"INPUT_BYTES", "EXECUTABLE_SEMANTICS"}
     assert semantics["future_live_drift_fails_ci"] is False
     assert semantics["historical_values_rewritten_to_current"] is False
 
@@ -645,3 +799,87 @@ def test_matrix_records_that_drift_does_not_invalidate_the_snapshot(matrix):
     assert all(item.startswith("no ") for item in declared)
     assert not (ARTIFACT_DIR / "registry.yaml").exists()
     assert not (ARTIFACT_DIR / "lifecycle.yaml").exists()
+
+
+# ── executable semantics are pinned to the base commit, not the live tree ───
+
+@requires_snapshot_basis
+def test_historical_figures_are_computed_by_base_commit_production_code(concentration):
+    """Structural proof that the historical calculation ran from the pinned tree.
+
+    Both production modules must resolve inside the extracted base tree and must
+    NOT be the live working-tree copies. The subprocess itself refuses to run if
+    that is not true; this asserts it from the returned evidence as well.
+    """
+    root = concentration.base_tree.resolve()
+    for module, path in concentration.module_files.items():
+        loaded = Path(path).resolve()
+        assert loaded.parent == root, f"{module} loaded from {loaded}, not the base tree"
+        assert HERE not in loaded.parents, f"{module} loaded from the live working tree"
+        assert loaded.is_file()
+    assert set(concentration.module_files) == {"currentness_report", "allocate"}
+
+
+@requires_snapshot_basis
+def test_base_tree_modules_may_differ_from_live_without_affecting_the_record(base_tree):
+    """The base tree carries its OWN copies of the executable semantics."""
+    for name in EXECUTABLE_SEMANTICS_PATHS:
+        extracted = base_tree / name
+        assert extracted.is_file(), f"{name} missing from the extracted base tree"
+        assert extracted.read_text() == snapshot_text(name)
+
+
+@requires_snapshot_basis
+def test_live_helper_code_drift_does_not_change_the_historical_reconciliation(
+    base_tree, concentration, tmp_path,
+):
+    """Adversarial proof against FUTURE PRODUCTION-CODE change.
+
+    A deliberately different `currentness_report` is placed AHEAD of the base
+    tree on `PYTHONPATH`. If the historical calculation consulted live code, it
+    would either adopt the sabotaged numbers or fail. It must do neither: the
+    subprocess pins `sys.path[0]` to the extracted tree, so the base-commit
+    module wins and every historical figure is unchanged.
+
+    No repository production file is modified to perform this simulation.
+    """
+    sabotage = tmp_path / "sabotage"
+    sabotage.mkdir()
+    (sabotage / "currentness_report.py").write_text(
+        "raise AssertionError('live helper must never be imported by the historical run')\n"
+    )
+    (sabotage / "allocate.py").write_text(
+        "raise AssertionError('live allocate must never be imported by the historical run')\n"
+    )
+
+    payload = run_base_helper(base_tree, prepend_pythonpath=sabotage)
+    shadowed = _namespace(payload, base_tree)
+
+    # the sabotaged modules were never consulted
+    for path in shadowed.module_files.values():
+        assert Path(path).resolve().parent == base_tree.resolve()
+        assert sabotage not in Path(path).resolve().parents
+
+    # and every historical figure is bit-for-bit what the pinned record states
+    assert shadowed.common_driver.recomputed_pct == concentration.common_driver.recomputed_pct
+    assert shadowed.max_issuer.effective_pct == concentration.max_issuer.effective_pct
+    assert [(c.name, c.target_exposure_pct, c.utilisation_pct, c.status, c.members)
+            for c in shadowed.clusters] == \
+           [(c.name, c.target_exposure_pct, c.utilisation_pct, c.status, c.members)
+            for c in concentration.clusters]
+
+
+def test_drift_reporting_covers_executable_semantics_not_just_config():
+    """Drift reporting must not imply config bytes alone determine the figures."""
+    assert set(EXECUTABLE_SEMANTICS_PATHS) == {"currentness_report.py", "allocate.py"}
+    assert set(EXECUTABLE_SEMANTICS_PATHS) <= set(SNAPSHOT_SOURCE_PATHS)
+    assert "targets.yaml" in SNAPSHOT_SOURCE_PATHS
+    assert "issuer_lookthrough.yaml" in SNAPSHOT_SOURCE_PATHS
+
+
+def test_matrix_records_that_executable_semantics_are_pinned(matrix):
+    semantics = matrix["verification_semantics"]
+    assert semantics["executable_semantics_basis"] == "PINNED_BASE_COMMIT"
+    assert semantics["live_production_code_used_for_historical_figures"] is False
+    assert set(semantics["pinned_executable_modules"]) == set(EXECUTABLE_SEMANTICS_PATHS)
+    assert semantics["arithmetic_reimplemented"] is False

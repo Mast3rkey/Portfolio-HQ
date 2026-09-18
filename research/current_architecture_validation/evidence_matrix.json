@@ -13,12 +13,28 @@
     "live_drift_disposition": "HISTORICAL_RECORD_REMAINS_TRUE",
     "historical_values_rewritten_to_current": false,
     "unreachable_basis_behaviour": "SKIP_WITH_EXPLICIT_REASON (shallow clone); full-history CI still exercises the check",
-    "rationale": "CURRENT-ARCH-VALIDATION-0001 is a dated historical record. Verifying it against its own pinned basis proves it was internally coherent and matched its inputs when created, permanently \u2014 while ensuring that legitimate later work (refreshing issuer_lookthrough.yaml, defining the common-driver inclusion rule, executing a successor robustness study, updating stale provenance documentation, or an authorized target/cap change) does not turn repository CI red merely because the present no longer matches 2026-09-17.",
+    "rationale": "CURRENT-ARCH-VALIDATION-0001 is a dated historical record. BOTH halves of its basis are pinned -- the input bytes it was derived from and the production code that derived them -- so it stays permanently verifiable while never becoming a gate on future policy. Legitimate later work cannot invalidate it or turn repository CI red: not a refreshed issuer_lookthrough.yaml, not PD-1 defining the common-driver inclusion rule, not moving allocate._issuer_exposure behind a public wrapper, not correcting the exposure arithmetic, not refactoring the collector, not an authorized target or cap change.",
     "not_introduced": [
       "no lifecycle framework",
       "no supersession registry",
       "no governance decision",
       "no latest-artifact bureaucracy"
+    ],
+    "executable_semantics_basis": "PINNED_BASE_COMMIT",
+    "pinned_executable_modules": [
+      "currentness_report.py",
+      "allocate.py"
+    ],
+    "executable_semantics_mechanism": "The base commit's top-level modules and config are materialised read-only via `git archive` into pytest scratch space, and the BASE-COMMIT currentness_report.collect_target_weight_concentration() -- which delegates to that commit's allocate._issuer_exposure -- is executed there in an isolated subprocess rooted at the extracted tree. The subprocess refuses to proceed if either module resolves outside it.",
+    "live_production_code_used_for_historical_figures": false,
+    "arithmetic_reimplemented": false,
+    "drift_surfaces_reported": [
+      "config and evidence inputs (targets.yaml, issuer_lookthrough.yaml, retained evidence, study artifacts, provenance docs)",
+      "executable production semantics (currentness_report.py, allocate.py)"
+    ],
+    "basis_covers": [
+      "INPUT_BYTES",
+      "EXECUTABLE_SEMANTICS"
     ]
   },
   "evidence_grade_vocabulary": [
