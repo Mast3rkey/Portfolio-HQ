@@ -1,1 +1,10 @@
 research/buy_ladder_backtest/execution/REPORT.md whitespace=-blank-at-eof
+
+# Retained primary-source issuer holdings files (PHQ-2026-08, PD-2). These are
+# official publisher exports kept VERBATIM and SHA-256-pinned in
+# issuer_lookthrough.yaml's `fund_sources` block, so their bytes must not be
+# normalised — rewriting the CRLF line endings Vanguard emits would break the
+# provenance chain the refresh depends on. `cr-at-eol` tells git the carriage
+# return is expected there, rather than trailing whitespace to flag.
+governance/evidence/PHQ-2026-08/Holdings_details_FTSE_Developed_Markets_ETF.csv whitespace=cr-at-eol
+governance/evidence/PHQ-2026-08/Holdings_details_FTSE_Emerging_Markets_ETF.csv whitespace=cr-at-eol

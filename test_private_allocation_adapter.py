@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -130,10 +131,21 @@ def test_retained_bytes_confirmed_version_to_real_noncrypto_plan_is_deterministi
     assert first["provenance"]["submission_sha256"] == receipt["submission_sha256"]
     assert first["provenance"]["review_id"] == review["review_id"]
     assert first["provenance"]["observations"][0]["valuation_observed_at"].endswith("10:00:00Z")
-    assert first["provenance"]["policy"]["files_sha256"] == {
-        "targets.yaml": "69cda30c3f2f7bff00ef4cd3f8f59cda83ece999145e82646ff0987041da874d",
-        "gates.yaml": "e9a0bcd98a45f75b77e5f60076be34c4eda890255bb9aa0cf1a14868418f2d86",
-        "issuer_lookthrough.yaml": "6cf4e417e747d9a1ae9621e57d238c685ab593fb65539d561a5d136c7027b0b9"}
+    # The property under test is that the adapter records the identity of the
+    # policy bytes it actually computed against — not that those bytes hold any
+    # particular historical value. Literal digests were previously pinned here,
+    # which turned this determinism test into a gate on every future authorized
+    # policy change (PHQ-2026-08's primary-source look-through refresh tripped
+    # it). Deriving the expected digests from the live files keeps the assertion
+    # exact for the property this test owns — a wrong, stale, fabricated, missing
+    # or extra provenance entry still fails — and deliberately drops the separate
+    # "live policy has not moved" property, which was never this test's job and
+    # is held, correctly and independently, by the research pre-registrations.
+    recorded = first["provenance"]["policy"]["files_sha256"]
+    expected = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+                for name in ("targets.yaml", "gates.yaml", "issuer_lookthrough.yaml")}
+    assert recorded == expected
+    assert all(re.fullmatch(r"[0-9a-f]{64}", digest) for digest in recorded.values())
 
 
 @pytest.mark.parametrize("mutation, phrase", [
