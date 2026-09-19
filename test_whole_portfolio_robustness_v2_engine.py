@@ -232,7 +232,11 @@ def test_exact_close_required_and_later_available_asset_stays_cash():
 
 def test_pinned_fund_lookthrough_is_used():
     import yaml
-    look=yaml.safe_load(Path('issuer_lookthrough.yaml').read_text())
+    from historical_test_fixtures import historical_bytes, ORIGINAL_LOOKTHROUGH_SHA256
+    import hashlib
+    payload=historical_bytes('issuer_lookthrough.yaml')
+    assert hashlib.sha256(payload).hexdigest()==ORIGINAL_LOOKTHROUGH_SHA256
+    look=yaml.safe_load(payload)
     result=concentration({'nav':'100','positions':[{'ticker':'SPY','shares':'1','price':'100'}]},look)
     assert result['effective_issuer_max']==pytest.approx(.0766) and result['ai_platform_common_driver']>0
 

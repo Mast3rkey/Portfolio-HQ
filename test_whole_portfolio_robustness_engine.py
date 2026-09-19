@@ -2,10 +2,33 @@ from copy import deepcopy
 from decimal import Decimal
 import hashlib
 import json
+import subprocess
+import sys
 
 import pytest
 
+from historical_test_fixtures import export_historical_tree, rebase_path_globals
+
 import whole_portfolio_robustness_engine as engine
+
+
+@pytest.fixture(scope="module")
+def historical_root(tmp_path_factory):
+    return export_historical_tree(tmp_path_factory.mktemp("portfolio-history"))
+
+
+@pytest.fixture(scope="module")
+def historical_gate_report(historical_root):
+    code = (
+        "import json,sys; sys.path.insert(0,sys.argv[1]); "
+        "import whole_portfolio_robustness_engine as e; r=e.build_data_gate(); "
+        "print(json.dumps({'ready':r.ready,'freeze':r.freeze,'issues':r.issues}))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code, str(historical_root)], cwd=historical_root,
+        check=True, text=True, capture_output=True,
+    )
+    return json.loads(result.stdout)
 
 
 def test_six_instrument_weight_sets_are_exact_and_reconciled():
@@ -114,39 +137,58 @@ def test_corporate_action_bytes_must_match_inventory_pin(tmp_path, monkeypatch):
     assert engine._validate_actions(inventory)[1] == ["corporate actions: frozen hash mismatch"]
 
 
-def test_missing_candidate_file_returns_halt_receipt_not_traceback(monkeypatch):
-    real_candidate_path = engine._candidate_path
-    missing = engine.ROOT / "missing-SOL-test.json"
-    assert not missing.exists()
-    monkeypatch.setattr(
-        engine, "_candidate_path",
-        lambda ticker, kind: missing if ticker == "SOL" else real_candidate_path(ticker, kind),
+def test_missing_candidate_file_returns_halt_receipt_not_traceback(historical_root):
+    code = (
+        "import json,sys; from pathlib import Path; sys.path.insert(0,sys.argv[1]); "
+        "import whole_portfolio_robustness_engine as e; real=e._candidate_path; "
+        "missing=Path(sys.argv[1])/'missing-SOL-test.json'; "
+        "e._candidate_path=lambda ticker,kind: missing if ticker=='SOL' else real(ticker,kind); "
+        "r=e.build_data_gate(); print(json.dumps({'ready':r.ready,'freeze':r.freeze,'issues':r.issues}))"
     )
-    report = engine.build_data_gate()
-    assert report.ready is False
-    assert report.freeze["datasets"]["SOL"]["sha256"] is None
-    assert any("SOL: unreadable candidate" in issue for issue in report.issues)
+    result = subprocess.run(
+        [sys.executable, "-c", code, str(historical_root)], cwd=historical_root,
+        check=True, text=True, capture_output=True,
+    )
+    report = json.loads(result.stdout)
+    assert report["ready"] is False
+    assert report["freeze"]["datasets"]["SOL"]["sha256"] is None
+    assert any("SOL: unreadable candidate" in issue for issue in report["issues"])
 
 
-def test_current_frozen_gate_halts_on_disclosed_sol_gap_not_silent_fill():
-    report = engine.build_data_gate()
-    assert report.ready is False
-    assert report.freeze["gate"] == "HALT"
-    assert report.freeze["stage1"] == "UNARMED_AND_NOT_EXECUTABLE"
-    sol = [issue for issue in report.issues if issue.startswith("SOL:")]
+def test_current_frozen_gate_halts_on_disclosed_sol_gap_not_silent_fill(historical_gate_report):
+    report = historical_gate_report
+    assert report["ready"] is False
+    assert report["freeze"]["gate"] == "HALT"
+    assert report["freeze"]["stage1"] == "UNARMED_AND_NOT_EXECUTABLE"
+    sol = [issue for issue in report["issues"] if issue.startswith("SOL:")]
     assert len(sol) == 2
     assert any("required confirmation observations missing" in issue for issue in sol)
     assert any("102 required holdout_all_current_assets observations missing" in issue for issue in sol)
     assert all("pinned selected source bytes unavailable" in issue for issue in sol)
-    assert not [issue for issue in report.issues if not issue.startswith("SOL:")]
-    assert report.freeze["corporate_action_count"] == 820
-    assert report.freeze["corporate_actions_sha256"] == (
+    assert not [issue for issue in report["issues"] if not issue.startswith("SOL:")]
+    assert report["freeze"]["corporate_action_count"] == 820
+    assert report["freeze"]["corporate_actions_sha256"] == (
         "a75341f1279665423722074fbc3c89eed2a0c4708e8aefcd658220c3e7bc83b2"
     )
 
 
-def test_require_ready_refuses_to_emit_results_from_incomplete_input():
-    with pytest.raises(engine.DataGateError, match="data gate halted"):
+def test_require_ready_refuses_to_emit_results_from_incomplete_input(
+        historical_gate_report, monkeypatch):
+    report = engine.GateReport(
+        ready=historical_gate_report["ready"],
+        freeze=historical_gate_report["freeze"],
+        issues=tuple(historical_gate_report["issues"]),
+    )
+    assert report.ready is False and report.freeze["gate"] == "HALT"
+    monkeypatch.setattr(engine, "build_data_gate", lambda: report)
+    with pytest.raises(engine.DataGateError, match="data gate halted: SOL:"):
+        engine.require_ready()
+
+
+def test_live_require_ready_rejects_refreshed_frozen_input_before_results():
+    with pytest.raises(
+            engine.prereg_validator.PreregistrationError,
+            match="frozen input hash mismatch: issuer_lookthrough.yaml"):
         engine.require_ready()
 
 

@@ -2,16 +2,23 @@
 # common-driver no-add controls, per PHQ-2026-02
 # (governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md).
 #
-# Membership and fund_holding_weight below are transcribed verbatim from
-# governance/evidence/PHQ-2026-01/final_due_diligence/Portfolio_HQ_Look_Through_Exposure_v1_32.csv
-# (retained under governance/evidence/PHQ-2026-01/) — a point-in-time,
-# hand-maintained ETF-constituent snapshot, NOT a live fetch (this
-# repository's Alpaca client has no ETF-constituent-lookthrough capability;
-# design note PHQ-2026-01_TARGET_ALLOCATOR_IMPLEMENTATION_DESIGN_NOTE.md §5/§6
-# explicitly warns against inventing a new estimate). Must be refreshed at
-# each quarterly review, per PHQ-2026-01's own Limitations section — stale
-# beyond one quarter should be treated as a disclosed data-freshness warning,
-# not silently trusted.
+# MEMBERSHIP is unchanged from PHQ-2026-02 (the same governed 11 issuers).
+#
+# fund_holding_weight was REFRESHED under PHQ-2026-08 (PD-2, principal-approved)
+# from OFFICIAL PRIMARY-SOURCE issuer holdings files — State Street for SPY
+# (as of 2026-09-17) and Vanguard for VEA/VWO (both as of 2026-08-31) — retained
+# verbatim and SHA-256-pinned under governance/evidence/PHQ-2026-08/. Every value
+# below is derived from those files; see `fund_sources:` at the end of this file
+# for publisher, as-of date, evidence hash, and the exact source security rows
+# (name/ticker/SEDOL/raw weight) each governed issuer's weight was built from.
+#
+# This remains a point-in-time snapshot, NOT a live fetch (this repository's
+# Alpaca client has no ETF-constituent-lookthrough capability; design note
+# PHQ-2026-01_TARGET_ALLOCATOR_IMPLEMENTATION_DESIGN_NOTE.md §5/§6 explicitly
+# warns against inventing a new estimate). Must be refreshed at each quarterly
+# review — stale beyond one quarter should be treated as a disclosed
+# data-freshness warning, not silently trusted. `fund_sources.*.holdings_as_of`
+# makes that staleness machine-readable rather than opaque.
 #
 # effective_weight = direct_weight + (fund_weight_of_book x fund_holding_weight),
 # computed at runtime from CURRENT reconciled holdings/prices — this file
@@ -22,6 +29,12 @@
 issuer_ceiling_pct: 8.0
 common_driver_ceiling_pct: 40.0
 
+# HISTORICAL EVIDENCE ONLY — NOT the measurement rule. Preserved unchanged.
+# PHQ-2026-08 (PD-1) makes `common_driver_measurement_rule` below authoritative;
+# this figure is arithmetically consistent with having excluded the ETF-embedded
+# components of LLY, TSLA and AAPL, which the authoritative rule forbids. It is
+# retained as the historical record and must not be rewritten or cited as the rule.
+#
 # Retained point-in-time measurement from the PHQ-2026-01 due-diligence
 # look-through audit (Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.json
 # `lookthrough_summary.effective_ai_platform_common_driver_estimate`,
@@ -42,24 +55,118 @@ retained_common_driver_measurement:
 # explicit list, sourced from the retained look-through evidence.
 issuers:
   - ticker: NVDA
-    funds: [{fund: SPY, fund_holding_weight: 0.0766}]
+    funds: [{fund: SPY, fund_holding_weight: 0.08065936}]
   - ticker: MSFT
-    funds: [{fund: SPY, fund_holding_weight: 0.0456}]
+    funds: [{fund: SPY, fund_holding_weight: 0.05613785}]
   - ticker: AMZN
-    funds: [{fund: SPY, fund_holding_weight: 0.0377}]
+    funds: [{fund: SPY, fund_holding_weight: 0.03733477}]
   - ticker: GOOGL
-    funds: [{fund: SPY, fund_holding_weight: 0.0572}]  # "Alphabet (GOOGL+GOOG)" in source; this account holds GOOGL only
+    funds: [{fund: SPY, fund_holding_weight: 0.05558578}]  # governed Alphabet economic issuer: SPY's ALPHABET INC CL A (GOOGL, 3.092270%) + CL C (GOOG, 2.466308%) aggregated per PHQ-2026-08
   - ticker: AVGO
-    funds: [{fund: SPY, fund_holding_weight: 0.0274}]
+    funds: [{fund: SPY, fund_holding_weight: 0.02496656}]
   - ticker: META
-    funds: [{fund: SPY, fund_holding_weight: 0.0221}]
+    funds: [{fund: SPY, fund_holding_weight: 0.02274996}]
   - ticker: LLY
-    funds: [{fund: SPY, fund_holding_weight: 0.0147}]
+    funds: [{fund: SPY, fund_holding_weight: 0.01384076}]
   - ticker: TSLA
-    funds: [{fund: SPY, fund_holding_weight: 0.0167}]
+    funds: [{fund: SPY, fund_holding_weight: 0.01565225}]
   - ticker: AAPL
-    funds: [{fund: SPY, fund_holding_weight: 0.0764}]   # no direct target/holding; embedded-only via SPY
+    funds: [{fund: SPY, fund_holding_weight: 0.07514951}]   # no direct target/holding; embedded-only via SPY
   - ticker: TSM
-    funds: [{fund: VWO, fund_holding_weight: 0.1464}]
+    funds: [{fund: VWO, fund_holding_weight: 0.1469}]
   - ticker: ASML
-    funds: [{fund: VEA, fund_holding_weight: 0.0190}]
+    funds: [{fund: VEA, fund_holding_weight: 0.0195}]
+
+# ---------------------------------------------------------------------------
+# PD-1 (PHQ-2026-08) — AUTHORITATIVE COMMON-DRIVER MEASUREMENT RULE.
+# Principal-approved. Closes the ambiguity PR #397 exposed between the
+# retained 40.0284% headline and its own 41.6454% line-item sum.
+# ---------------------------------------------------------------------------
+common_driver_measurement_rule:
+  basis: FULL_EFFECTIVE_ALL_ISSUERS
+  formula: "COMMON_DRIVER_EXPOSURE = SUM over all governed common-driver issuers
+    of (DIRECT_EXPOSURE + ALL GOVERNED ETF-EMBEDDED EXPOSURE)"
+  selective_exclusion_permitted: false
+  selective_exclusion_note: "No governed issuer's ETF-embedded component may be
+    omitted — specifically including LLY, TSLA and AAPL, whose embedded slices the
+    retained 40.0284% headline is arithmetically consistent with having excluded."
+  economic_issuer_aggregation: true
+  economic_issuer_aggregation_note: "Multiple share classes or depositary-receipt
+    lines of ONE economic issuer aggregate into that governed issuer. Identity is
+    resolved by security identifier (SEDOL), never by name similarity."
+  principal_approval: granted
+  authority: governance/decisions/PHQ-2026-08-common-driver-measurement-authority-and-lookthrough-refresh.md
+  implemented_by: "allocate._issuer_exposure — UNCHANGED. It already computes
+    direct_pct + sum(fund_pct_of_book * fund_holding_weight) for every governed
+    issuer and sums across all of them; this rule ratifies that behaviour."
+  governed_issuer_count: 11
+  issuer_ceiling_pct_unchanged: 8.0
+  common_driver_ceiling_pct_unchanged: 40.0
+
+# ---------------------------------------------------------------------------
+# PD-2 — PRIMARY-SOURCE CONSTITUENT PROVENANCE (principal-approved refresh).
+# Official issuer files retained verbatim under governance/evidence/PHQ-2026-08/.
+# Network egress to ssga.com / vanguard.com / sec.gov is denied in the execution
+# environment (gateway 403 to CONNECT), so the official files were supplied
+# directly by the principal rather than fetched here — recorded honestly below.
+# ---------------------------------------------------------------------------
+fund_sources:
+  SPY:
+    publisher: State Street Global Advisors
+    source_identity: "State Street(R) SPDR(R) S&P 500(R) ETF Trust - official daily holdings file (holdings-daily-us-en-spy.xlsx)"
+    holdings_as_of: 2026-09-17
+    received_at: 2026-09-18
+    acquisition: PRINCIPAL_SUPPLIED_OFFICIAL_FILE
+    acquisition_note: "Not fetched by this environment; official publisher
+      endpoints are blocked by network egress policy. Bytes retained and hashed."
+    evidence: governance/evidence/PHQ-2026-08/holdings-daily-us-en-spy.xlsx
+    evidence_sha256: 19bb37597955bc83ea8b2163a2f06898334afa2f5d6eda66c52c4d6f9ae2cee3
+    securities_used:
+      NVDA:
+        - {name: "NVIDIA CORP", ticker: "NVDA", sedol: "2379504", raw_weight_pct: 8.065936}
+      MSFT:
+        - {name: "MICROSOFT CORP", ticker: "MSFT", sedol: "2588173", raw_weight_pct: 5.613785}
+      AMZN:
+        - {name: "AMAZON.COM INC", ticker: "AMZN", sedol: "2000019", raw_weight_pct: 3.733477}
+      GOOGL:
+        - {name: "ALPHABET INC CL A", ticker: "GOOGL", sedol: "BYVY8G0", raw_weight_pct: 3.09227}
+        - {name: "ALPHABET INC CL C", ticker: "GOOG", sedol: "BYY88Y7", raw_weight_pct: 2.466308}
+      AVGO:
+        - {name: "BROADCOM INC", ticker: "AVGO", sedol: "BDZ78H9", raw_weight_pct: 2.496656}
+      META:
+        - {name: "META PLATFORMS INC CLASS A", ticker: "META", sedol: "B7TL820", raw_weight_pct: 2.274996}
+      LLY:
+        - {name: "ELI LILLY + CO", ticker: "LLY", sedol: "2516152", raw_weight_pct: 1.384076}
+      TSLA:
+        - {name: "TESLA INC", ticker: "TSLA", sedol: "B616C79", raw_weight_pct: 1.565225}
+      AAPL:
+        - {name: "APPLE INC", ticker: "AAPL", sedol: "2046251", raw_weight_pct: 7.514951}
+  VEA:
+    publisher: Vanguard
+    source_identity: "Vanguard FTSE Developed Markets ETF (VEA) - official Holdings details export"
+    holdings_as_of: 2026-08-31
+    received_at: 2026-09-18
+    acquisition: PRINCIPAL_SUPPLIED_OFFICIAL_FILE
+    acquisition_note: "Not fetched by this environment; official publisher
+      endpoints are blocked by network egress policy. Bytes retained and hashed."
+    evidence: governance/evidence/PHQ-2026-08/Holdings_details_FTSE_Developed_Markets_ETF.csv
+    evidence_sha256: cb6603835fef54b99ddaefc6b349306daea3e3929461f95c03a98fd4256119aa
+    securities_used:
+      ASML:
+        - {name: "ASML Holding NV", ticker: "ASML", sedol: "B929F46", raw_weight_pct: 1.95}
+  VWO:
+    publisher: Vanguard
+    source_identity: "Vanguard FTSE Emerging Markets ETF (VWO) - official Holdings details export"
+    holdings_as_of: 2026-08-31
+    received_at: 2026-09-18
+    acquisition: PRINCIPAL_SUPPLIED_OFFICIAL_FILE
+    acquisition_note: "Not fetched by this environment; official publisher
+      endpoints are blocked by network egress policy. Bytes retained and hashed."
+    evidence: governance/evidence/PHQ-2026-08/Holdings_details_FTSE_Emerging_Markets_ETF.csv
+    evidence_sha256: e0fdfda925ebddf036c73d60ea655ec220b7e7f0481593a660e985797634ef1d
+    securities_used:
+      TSM:
+        - {name: "Taiwan Semiconductor Manufacturing Co Ltd", ticker: "2330", sedol: "6889106", raw_weight_pct: 14.67}
+        - {name: "TAIWAN SEMICONDUCTOR-SP ADR", ticker: "TSM", sedol: "2113382", raw_weight_pct: 0.02}
+    excluded_similar_identities:
+      - {name: "Taiwan Semiconductor Co Ltd", ticker: "5425", sedol: "6222972", reason: "DIFFERENT ECONOMIC ISSUER - not TSMC; excluded despite similar name"}

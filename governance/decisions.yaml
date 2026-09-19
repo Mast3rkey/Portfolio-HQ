@@ -1222,3 +1222,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0009, NUM-0001, LADDER-0001, LADDER-0002, LADDER-0003]
     supporting_artifact: null
     file: governance/decisions/LADDER-0004-invalid-initial-execution-and-corrective-reexecution-authorization.md
+  - decision_id: PHQ-2026-08
+    date: 2026-09-18
+    status: Accepted
+    category: portfolio_construction_governance
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, PHQ-2026-01, PHQ-2026-02, PHQ-2026-07]
+    supporting_artifact: issuer_lookthrough.yaml
+    file: governance/decisions/PHQ-2026-08-common-driver-measurement-authority-and-lookthrough-refresh.md

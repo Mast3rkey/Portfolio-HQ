@@ -10,6 +10,8 @@ from decimal import Decimal, localcontext
 from pathlib import Path
 
 import yaml
+
+from historical_test_fixtures import export_historical_tree
 import pytest
 
 import whole_portfolio_robustness_v2_preregistration_validator as validator
@@ -25,8 +27,13 @@ def _validate_copy(tmp_path: Path, data: dict) -> list[str]:
     return validator.validate(prereg_path=path)
 
 
-def test_preregistration_passes() -> None:
-    assert validator.validate() == []
+def test_historical_preregistration_passes(tmp_path: Path) -> None:
+    historical = export_historical_tree(tmp_path)
+    assert validator.validate(root=historical) == []
+
+
+def test_live_preregistration_rejects_refreshed_lookthrough() -> None:
+    assert "pin drift: issuer_lookthrough.yaml" in validator.validate()
 
 
 def test_coherent_variant_drift_cannot_rebless_itself(tmp_path: Path) -> None:
@@ -107,9 +114,16 @@ def test_foreign_veto_inventory_has_separate_and_joint_cases() -> None:
     ]
 
 
-def test_optimized_python_validator_passes() -> None:
+def test_optimized_python_validator_passes(tmp_path: Path) -> None:
+    historical = export_historical_tree(tmp_path)
+    code = (
+        "from pathlib import Path; import whole_portfolio_robustness_v2_preregistration_validator as v; "
+        "errors=v.validate(root=Path(" + repr(str(historical)) + ")); "
+        "print('PASS: historical preregistration' if not errors else '\\n'.join(errors)); "
+        "raise SystemExit(bool(errors))"
+    )
     result = subprocess.run(
-        [sys.executable, "-O", str(validator.ROOT / "whole_portfolio_robustness_v2_preregistration_validator.py")],
+        [sys.executable, "-O", "-c", code],
         cwd=validator.ROOT, text=True, capture_output=True, check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
@@ -127,15 +141,17 @@ def test_predecessor_outputs_are_untouched() -> None:
 
 
 def _isolated_root(tmp_path: Path) -> Path:
+    historical = export_historical_tree(tmp_path)
     root = tmp_path / "isolated"
     for rel in validator.EXPECTED_PINS:
         target = root / rel
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(validator.ROOT / rel, target)
+        shutil.copy2(historical / rel, target)
     for source in (validator.PREREG, validator.PROTOCOL):
-        target = root / source.relative_to(validator.ROOT)
+        rel = source.relative_to(validator.ROOT)
+        target = root / rel
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
+        shutil.copy2(historical / rel, target)
     return root
 
 
