@@ -1,15 +1,42 @@
 from pathlib import Path
+import json
+import subprocess
+import sys
 
 import pytest
 
 import allocate
+from historical_test_fixtures import export_historical_tree, rebase_path_globals
 from research.buy_ladder_backtest import ladder_v2 as engine
 
 
-def test_frozen_validation_is_result_blind_and_reconstructs_inputs(tmp_path, monkeypatch):
-    monkeypatch.setattr(engine, "RECEIPT", tmp_path / "receipt.json")
-    monkeypatch.setattr(engine, "simulate", lambda *_args, **_kwargs: pytest.fail("validate exposed the holdout"))
-    receipt = engine.validate()
+@pytest.fixture(scope="module")
+def historical_root(tmp_path_factory):
+    return export_historical_tree(tmp_path_factory.mktemp("ladder-history"))
+
+
+@pytest.fixture
+def historical_engine(monkeypatch, historical_root):
+    rebase_path_globals(monkeypatch, engine, historical_root)
+    monkeypatch.setenv("LADDER_V2_CODE_COMMIT", "9ca7a68751034d72641693273fc4c64cd0138eb5")
+    return engine
+
+
+def test_frozen_validation_is_result_blind_and_reconstructs_inputs(tmp_path, historical_root):
+    receipt_path = tmp_path / "receipt.json"
+    code = (
+        "import json,sys; from pathlib import Path; sys.path.insert(0,sys.argv[1]); "
+        "from research.buy_ladder_backtest import ladder_v2 as e; "
+        "e.RECEIPT=Path(sys.argv[2]); "
+        "e.simulate=lambda *a,**k: (_ for _ in ()).throw(AssertionError('validate exposed holdout')); "
+        "print(json.dumps(e.validate()))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code, str(historical_root), str(receipt_path)],
+        cwd=historical_root, check=True, text=True, capture_output=True,
+        env={**__import__("os").environ, "LADDER_V2_CODE_COMMIT": "9ca7a68751034d72641693273fc4c64cd0138eb5"},
+    )
+    receipt = json.loads(result.stdout)
     assert receipt["validation_scope"] == "INPUT_RECONSTRUCTION_AND_NON_HOLDOUT_INVARIANTS_ONLY"
     assert receipt["reconstruction"]["status"] == "EXACT_BYTE_IDENTITY_VERIFIED"
     assert receipt["holdout_results_emitted"] is False
@@ -18,13 +45,13 @@ def test_frozen_validation_is_result_blind_and_reconstructs_inputs(tmp_path, mon
     assert receipt["stage1"] == "UNARMED_AND_NOT_EXECUTABLE"
 
 
-def test_execute_rejects_missing_receipt(tmp_path, monkeypatch):
+def test_execute_rejects_missing_receipt(tmp_path, monkeypatch, historical_engine):
     monkeypatch.setattr(engine, "RECEIPT", tmp_path / "missing.json")
     with pytest.raises(engine.StudyError, match="validation receipt missing"):
         engine.execute()
 
 
-def test_indicator_uses_only_rows_through_decision_date():
+def test_indicator_uses_only_rows_through_decision_date(historical_engine):
     _, prices, _, _ = engine.load_inputs()
     bars = prices["SPY"]
     before = engine.indicators(bars, 300)
@@ -33,7 +60,7 @@ def test_indicator_uses_only_rows_through_decision_date():
     assert engine.indicators(changed_future, 300) == before
 
 
-def test_first_eligible_date_is_bounded_by_simulation_start():
+def test_first_eligible_date_is_bounded_by_simulation_start(historical_engine):
     cfg, prices, _sessions, _actions = engine.load_inputs()
     dates = engine.first_eligible_decision_dates(prices, cfg)
     assert dates["NVDA"] == "2021-06-01"
@@ -284,12 +311,22 @@ def test_target_deviation_includes_zero_weight_eligible_names():
     assert equity["max_target_deviation"] == pytest.approx(0.06)
 
 
-def test_every_consumed_support_input_is_pinned_in_manifest():
-    cfg = engine.config()
-    manifest = engine.bundle(cfg, False)
+def test_every_consumed_support_input_is_pinned_in_manifest(historical_root):
+    code = (
+        "import json,sys; sys.path.insert(0,sys.argv[1]); "
+        "from research.buy_ladder_backtest import ladder_v2 as e; "
+        "cfg=e.config(); print(json.dumps({'cfg':cfg,'manifest':e.bundle(cfg,False)},default=str))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code, str(historical_root)], cwd=historical_root,
+        check=True, text=True, capture_output=True,
+        env={**__import__("os").environ, "LADDER_V2_CODE_COMMIT": "9ca7a68751034d72641693273fc4c64cd0138eb5"},
+    )
+    payload = json.loads(result.stdout)
+    cfg, manifest = payload["cfg"], payload["manifest"]
     assert set(cfg["configuration_hashes"]).issubset(manifest["files"])
     assert set(cfg["support_hashes"]).issubset(manifest["files"])
-    assert str(engine.ANOMALIES.relative_to(engine.ROOT)) in manifest["files"]
+    assert "research/buy_ladder_backtest/inputs/price_anomaly_overrides.json" in manifest["files"]
 
 
 def test_retained_result_refuses_missing_event_cell():
@@ -355,7 +392,7 @@ def test_canonical_json_rejects_nonfinite_numbers():
         engine.canonical({"bad": float("inf")})
 
 
-def test_config_keeps_advisory_and_stage1_boundaries():
+def test_config_keeps_advisory_and_stage1_boundaries(historical_engine):
     cfg = engine.config()
     assert cfg["schema_version"] == "2.0"
     assert cfg["study_id"] == "LADDER-V2-0001"
@@ -371,5 +408,14 @@ def test_config_keeps_advisory_and_stage1_boundaries():
     assert cfg["holdout_previously_exposed"] is True
     assert cfg["advisory_only"] is True
     assert cfg["stage1"] == "UNARMED_AND_NOT_EXECUTABLE"
+
+
+def test_live_refresh_halts_before_receipt_or_results(tmp_path, monkeypatch):
+    monkeypatch.setattr(engine, "RECEIPT", tmp_path / "receipt.json")
+    monkeypatch.setattr(engine, "OUTPUT", tmp_path / "execution")
+    with pytest.raises(engine.StudyError, match="frozen input drift: issuer_lookthrough.yaml"):
+        engine.validate()
+    assert not engine.RECEIPT.exists()
+    assert not engine.OUTPUT.exists()
     forbidden = {"allocate.py", "levels.py", "holdings.yaml"}
     assert not forbidden.intersection({path.name for path in Path(engine.STUDY).rglob("*")})

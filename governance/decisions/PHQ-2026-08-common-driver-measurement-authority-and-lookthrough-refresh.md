@@ -70,9 +70,10 @@ is labelled.
 **3. Economic-issuer aggregation.** Where one economic issuer appears in a
 governed fund under more than one line — multiple share classes, or a
 depositary receipt alongside the local line — those lines aggregate into that
-single governed issuer. **Identity is resolved by security identifier (SEDOL),
-never by name similarity.** Two securities with similar names and different
-identifiers are different issuers and must not be aggregated.
+single governed issuer. **SEDOL identifies a security, not necessarily an
+economic issuer.** Aggregation requires evidenced mapping of each distinct
+security identifier to the same economic issuer; name similarity alone is
+never sufficient.
 
 **4. The retained figure is historical evidence, not the rule.** The retained
 `40.0284%` value, its `measured_at: 2026-07-30`, its methodology string and its

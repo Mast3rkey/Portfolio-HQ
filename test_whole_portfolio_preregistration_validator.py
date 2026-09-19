@@ -5,6 +5,9 @@ from pathlib import Path
 import pytest
 import yaml
 
+import whole_portfolio_preregistration_validator as validator
+from historical_test_fixtures import export_historical_tree, rebase_path_globals
+
 from whole_portfolio_preregistration_validator import (
     PreregistrationError,
     derive_baseline,
@@ -29,8 +32,10 @@ def _documents():
     )
 
 
-def test_live_preregistration_and_all_frozen_inputs_validate():
-    result = validate_files()
+def test_historical_preregistration_and_all_frozen_inputs_validate(tmp_path, monkeypatch):
+    historical = export_historical_tree(tmp_path)
+    rebase_path_globals(monkeypatch, validator, historical)
+    result = validator.validate_files()
     assert result["status"] == "VALID"
     assert result["baseline"] == {
         "eligible_direct_equity": "56.50",
@@ -39,6 +44,21 @@ def test_live_preregistration_and_all_frozen_inputs_validate():
         "crypto": "4.00",
         "cash_and_protected_capital": "12.50",
     }
+
+
+def test_live_preregistration_rejects_refreshed_frozen_input():
+    with pytest.raises(PreregistrationError, match="issuer_lookthrough.yaml"):
+        validate_files()
+
+
+def test_tampered_historical_input_is_rejected(tmp_path, monkeypatch):
+    historical = export_historical_tree(tmp_path)
+    rebase_path_globals(monkeypatch, validator, historical)
+    path = tmp_path / "issuer_lookthrough.yaml"
+    path.write_bytes((historical / "issuer_lookthrough.yaml").read_bytes() + b"# tampered\n")
+    monkeypatch.setattr(validator, "LOOKTHROUGH_PATH", path)
+    with pytest.raises(PreregistrationError, match="issuer_lookthrough.yaml"):
+        validator.validate_files()
 
 
 def test_baseline_is_derived_from_policy_and_protected_capital():

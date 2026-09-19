@@ -34,7 +34,10 @@ import csv
 import datetime as _dt
 import hashlib
 import io
+import json
 import re
+import subprocess
+import sys
 import xml.etree.ElementTree as ET
 import zipfile
 from decimal import Decimal
@@ -45,6 +48,7 @@ import yaml
 
 import allocate
 import currentness_report as cr
+from historical_test_fixtures import export_historical_tree
 
 REPO_ROOT = Path(__file__).resolve().parent
 LOOKTHROUGH_PATH = REPO_ROOT / "issuer_lookthrough.yaml"
@@ -655,62 +659,162 @@ def test_the_discrepancy_continues_to_be_reported_rather_than_suppressed():
 # ══ H. The refreshed measurement, recomputed through production code ══════════
 
 @pytest.fixture(scope="module")
-def concentration():
-    result = cr.collect_target_weight_concentration()
+def historical_concentration(tmp_path_factory):
+    root = export_historical_tree(
+        tmp_path_factory.mktemp("phq-2026-08-history"),
+        revision="9c685b83f95bf85b29dbcea5e7bf44c6c5da6146",
+        expected_lookthrough_sha256="33d3797bd746de6825f58ba2ca2c0c67908e012a5118bb7d1d10d883fc0be294",
+    )
+    code = (
+        "import json,sys; sys.path.insert(0,sys.argv[1]); "
+        "import currentness_report as c; "
+        "print(json.dumps(c.collect_target_weight_concentration().as_dict()))"
+    )
+    completed = subprocess.run(
+        [sys.executable, "-c", code, str(root)], cwd=root, check=True,
+        text=True, capture_output=True,
+    )
+    return json.loads(completed.stdout)
+
+
+def test_historical_tree_retrieval_is_isolated_from_prior_code_tampering(tmp_path):
+    first = export_historical_tree(
+        tmp_path / "first",
+        revision="9c685b83f95bf85b29dbcea5e7bf44c6c5da6146",
+        expected_lookthrough_sha256="33d3797bd746de6825f58ba2ca2c0c67908e012a5118bb7d1d10d883fc0be294",
+    )
+    original_allocate = (first / "allocate.py").read_bytes()
+    (first / "allocate.py").write_bytes(b"# poisoned historical semantics\n")
+
+    second = export_historical_tree(
+        tmp_path / "second",
+        revision="9c685b83f95bf85b29dbcea5e7bf44c6c5da6146",
+        expected_lookthrough_sha256="33d3797bd746de6825f58ba2ca2c0c67908e012a5118bb7d1d10d883fc0be294",
+    )
+    assert second != first
+    assert (second / "allocate.py").read_bytes() == original_allocate
+    assert (first / "issuer_lookthrough.yaml").read_bytes() == (
+        second / "issuer_lookthrough.yaml"
+    ).read_bytes()
+
+
+@pytest.fixture(scope="module")
+def synthetic_concentration(tmp_path_factory):
+    """Exercise current code using controlled, deliberately future-shaped policy."""
+    root = tmp_path_factory.mktemp("synthetic-policy")
+    targets = {"destination": [
+        {"ticker": "AAPL", "target_pct": 3.0, "asset_class": "equity"},
+        {"ticker": "NVDA", "target_pct": 5.0, "asset_class": "equity"},
+        {"ticker": "SPY", "target_pct": 20.0, "asset_class": "fund"},
+        {"ticker": "VEA", "target_pct": 10.0, "asset_class": "fund"},
+        {"ticker": "VWO", "target_pct": 5.0, "asset_class": "fund"},
+        {"ticker": "CASH", "target_pct": 57.0, "asset_class": "cash"},
+    ]}
+    lookthrough = {
+        "issuer_ceiling_pct": 20.0,
+        "common_driver_ceiling_pct": 40.0,
+        "issuers": [
+            {"ticker": "AAPL", "funds": [
+                {"fund": "SPY", "fund_holding_weight": 0.06},
+                {"fund": "VEA", "fund_holding_weight": 0.02},
+            ]},
+            {"ticker": "NVDA", "funds": [
+                {"fund": "SPY", "fund_holding_weight": 0.08},
+                {"fund": "VWO", "fund_holding_weight": 0.03},
+            ]},
+            {"ticker": "MSFT", "funds": [
+                {"fund": "VEA", "fund_holding_weight": 0.04},
+            ]},
+        ],
+    }
+    targets_path = root / "targets.yaml"
+    lookthrough_path = root / "issuer_lookthrough.yaml"
+    targets_path.write_text(yaml.safe_dump(targets, sort_keys=False), encoding="utf-8")
+    lookthrough_path.write_text(
+        yaml.safe_dump(lookthrough, sort_keys=False), encoding="utf-8"
+    )
+    result = cr.collect_target_weight_concentration(
+        targets_path=targets_path, lookthrough_path=lookthrough_path
+    )
     assert result.available is True
-    return result
+    return result, targets, lookthrough
 
 
-def test_common_driver_recomputes_to_the_reported_figure(concentration):
-    assert round(concentration.common_driver.recomputed_pct, 4) == 41.7646
+def test_synthetic_future_policy_uses_every_issuer_and_every_fund_row(
+        synthetic_concentration):
+    result, targets, lookthrough = synthetic_concentration
+    target_pct = {row["ticker"]: float(row["target_pct"]) for row in targets["destination"]}
+    expected = {}
+    for issuer in lookthrough["issuers"]:
+        direct = target_pct.get(issuer["ticker"], 0.0)
+        embedded = sum(
+            target_pct.get(fund["fund"], 0.0) * float(fund["fund_holding_weight"])
+            for fund in issuer["funds"]
+        )
+        expected[issuer["ticker"]] = (direct, embedded, direct + embedded)
+
+    actual = {row.ticker: row for row in result.issuers}
+    assert expected["AAPL"] == pytest.approx((3.0, 1.4, 4.4))
+    assert expected["NVDA"] == pytest.approx((5.0, 1.75, 6.75))
+    assert expected["MSFT"] == pytest.approx((0.0, 0.4, 0.4))
+    for ticker, (direct, embedded, effective) in expected.items():
+        assert actual[ticker].direct_pct == pytest.approx(direct)
+        assert actual[ticker].embedded_pct == pytest.approx(embedded)
+        assert actual[ticker].effective_pct == pytest.approx(effective)
+    assert result.common_driver.recomputed_pct == pytest.approx(
+        sum(effective for _, _, effective in expected.values())
+    )
+
+
+def test_common_driver_recomputes_to_the_reported_figure(historical_concentration):
+    assert round(historical_concentration["common_driver"]["recomputed_pct"], 4) == 41.7646
 
 
 def test_common_driver_is_measured_against_the_unchanged_forty_percent_ceiling(
-        concentration):
-    cd = concentration.common_driver
-    assert cd.ceiling_pct == 40.0
-    assert round(cd.headroom_pct, 4) == -1.7646
-    assert cd.limit_status == "OVER_LIMIT"
+        historical_concentration):
+    cd = historical_concentration["common_driver"]
+    assert cd["ceiling_pct"] == 40.0
+    assert round(cd["headroom_pct"], 4) == -1.7646
+    assert cd["limit_status"] == "OVER_LIMIT"
 
 
 def test_maximum_issuer_is_nvda_approaching_the_unchanged_eight_percent_ceiling(
-        concentration):
-    top = concentration.max_issuer
-    assert top.ticker == "NVDA"
-    assert round(top.effective_pct, 4) == 7.2099
-    assert top.ceiling_pct == 8.0
-    assert round(top.headroom_pct, 4) == 0.7901
-    assert top.status == "APPROACHING"
+        historical_concentration):
+    top = historical_concentration["max_issuer"]
+    assert top["ticker"] == "NVDA"
+    assert round(top["effective_pct"], 4) == 7.2099
+    assert top["ceiling_pct"] == 8.0
+    assert round(top["headroom_pct"], 4) == 0.7901
+    assert top["status"] == "APPROACHING"
 
 
-def test_no_governed_issuer_breaches_the_eight_percent_ceiling(concentration):
-    breaches = [i.ticker for i in concentration.issuers if i.effective_pct > i.ceiling_pct]
+def test_no_governed_issuer_breached_the_historical_eight_percent_ceiling(
+        historical_concentration):
+    breaches = [
+        row["ticker"] for row in historical_concentration["issuers"]
+        if row["effective_pct"] > row["ceiling_pct"]
+    ]
     assert breaches == []
 
 
-def test_every_governed_issuer_appears_in_the_recomputation(concentration):
-    assert {i.ticker for i in concentration.issuers} == GOVERNED_ISSUERS
+def test_every_governed_issuer_appears_in_the_historical_recomputation(
+        historical_concentration):
+    assert {row["ticker"] for row in historical_concentration["issuers"]} == GOVERNED_ISSUERS
 
 
-def test_the_common_driver_equals_the_sum_of_all_eleven_effective_exposures(
-        concentration):
-    """The measurement is the PD-1 sum itself — not a subset of it."""
-    total = sum(i.effective_pct for i in concentration.issuers)
-    assert concentration.common_driver.recomputed_pct == pytest.approx(total)
+def test_aapl_was_embedded_only_in_the_historical_measurement(
+        historical_concentration):
+    aapl = next(
+        row for row in historical_concentration["issuers"] if row["ticker"] == "AAPL"
+    )
+    assert aapl["direct_pct"] == 0.0
+    assert aapl["embedded_pct"] > 0.0
+    assert aapl["effective_pct"] == pytest.approx(aapl["embedded_pct"])
 
 
-def test_embedded_only_issuers_really_do_contribute_to_the_live_measurement(
-        concentration):
-    """AAPL has no direct canonical target; its whole contribution is embedded.
-    Under the omitted reading it would be absent from the total."""
-    aapl = next(i for i in concentration.issuers if i.ticker == "AAPL")
-    assert aapl.direct_pct == 0.0
-    assert aapl.embedded_pct > 0.0
-    assert aapl.effective_pct == pytest.approx(aapl.embedded_pct)
-
-
-def test_the_measurement_basis_is_target_weights_not_current_holdings(concentration):
-    basis = concentration.basis
+def test_the_measurement_basis_is_target_weights_not_current_holdings(
+        synthetic_concentration):
+    basis = synthetic_concentration[0].basis
     assert "CANONICAL TARGET WEIGHTS" in basis
     assert "not current holdings" in basis
 

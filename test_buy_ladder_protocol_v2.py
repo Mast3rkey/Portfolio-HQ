@@ -8,6 +8,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import yaml
+from historical_test_fixtures import export_historical_tree
 
 
 ROOT = Path(__file__).resolve().parent
@@ -76,10 +77,15 @@ def _anchor_basis_rate(
     return raw_rate / factor
 
 
-def test_protocol_and_configuration_are_exactly_pinned() -> None:
-    assert _sha256(PROTOCOL) == PROTOCOL_SHA256
+def test_protocol_and_configuration_are_exactly_pinned(tmp_path: Path) -> None:
+    historical = export_historical_tree(tmp_path)
+    assert _sha256(historical / PROTOCOL.relative_to(ROOT)) == PROTOCOL_SHA256
     for relpath, expected in CONFIG_HASHES.items():
-        assert _sha256(ROOT / relpath) == expected
+        assert _sha256(historical / relpath) == expected
+
+
+def test_live_refresh_is_rejected_by_the_frozen_protocol() -> None:
+    assert _sha256(ROOT / "issuer_lookthrough.yaml") != CONFIG_HASHES["issuer_lookthrough.yaml"]
 
 
 def test_decision_and_catalog_bind_the_same_protocol() -> None:
