@@ -640,20 +640,21 @@ def test_retained_measurement_is_labelled_historical_evidence_not_the_rule(
 
 
 def test_retained_measurement_is_not_silently_reconciled_to_the_new_figure(
-        lookthrough: dict):
+        lookthrough: dict, historical_concentration):
     """Adversarial: the whole point of PD-1 is that these two differ. If a
     future edit 'fixed' the retained figure, this fails."""
     retained = lookthrough["retained_common_driver_measurement"]["value_pct"]
-    recomputed = cr.collect_target_weight_concentration().common_driver.recomputed_pct
+    recomputed = historical_concentration["common_driver"]["recomputed_pct"]
     assert retained != pytest.approx(recomputed)
 
 
-def test_the_discrepancy_continues_to_be_reported_rather_than_suppressed():
-    cd = cr.collect_target_weight_concentration().common_driver
-    assert cd.reconciles is False
-    assert cd.status == "DISCREPANCY"
-    assert cd.discrepancy_flag == "RETAINED_MEASUREMENT_DISCREPANCY"
-    assert cd.retained_value_pct == 40.0284
+def test_the_historical_discrepancy_was_reported_rather_than_suppressed(
+        historical_concentration):
+    cd = historical_concentration["common_driver"]
+    assert cd["reconciles"] is False
+    assert cd["status"] == "DISCREPANCY"
+    assert cd["discrepancy_flag"] == "RETAINED_MEASUREMENT_DISCREPANCY"
+    assert cd["retained_value_pct"] == 40.0284
 
 
 # ══ H. The refreshed measurement, recomputed through production code ══════════
@@ -713,6 +714,7 @@ def synthetic_concentration(tmp_path_factory):
     lookthrough = {
         "issuer_ceiling_pct": 20.0,
         "common_driver_ceiling_pct": 40.0,
+        "retained_common_driver_measurement": {"value_pct": 11.55},
         "issuers": [
             {"ticker": "AAPL", "funds": [
                 {"fund": "SPY", "fund_holding_weight": 0.06},
@@ -764,6 +766,16 @@ def test_synthetic_future_policy_uses_every_issuer_and_every_fund_row(
     assert result.common_driver.recomputed_pct == pytest.approx(
         sum(effective for _, _, effective in expected.values())
     )
+
+
+def test_current_reporting_allows_a_mathematically_equal_retained_observation(
+        synthetic_concentration):
+    common_driver = synthetic_concentration[0].common_driver
+    assert common_driver.recomputed_pct == pytest.approx(11.55)
+    assert common_driver.retained_value_pct == pytest.approx(11.55)
+    assert common_driver.reconciles is True
+    assert common_driver.status == "OK"
+    assert common_driver.discrepancy_flag is None
 
 
 def test_common_driver_recomputes_to_the_reported_figure(historical_concentration):
