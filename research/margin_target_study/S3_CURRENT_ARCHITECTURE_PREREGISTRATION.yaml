@@ -81,7 +81,15 @@ proposed_accounting_contract:
       event_amounts: f_E=0; U_E=E_0; FOR_k_IN_K f_k=F_k_AND_U_k=F_k
       predecessor: EACH_j_READS_ONLY_STATE_j_minus_1; NO_EVENT_READS_WINDOW_OPEN_0_AFTER_A_PREDECESSOR_EXISTS
       before_route: [G_j_pre=G_j_minus_1, D_j_pre=D_j_minus_1, C_j_pre=C_j_minus_1+f_j, N_j_pre=G_j_pre-D_j_pre, B_j_pre=G_j_pre+C_j_pre-D_j_pre]
-      route: r_j=min(U_j,D_j_pre,max(0,G_j_pre/L_star-N_j_pre)); 0_le_r_j_le_U_j
+      routing_selection: EXACTLY_ONE_FAMILY_SOURCE_CONTROL_RULE_PER_EVENT; NO_IMPLICIT_COMPOSITION
+      routing_rules:
+        R1_DEPOSIT_TARGET_RESTORATION: SOURCE_MUST_BE_EXTERNAL_DEPOSIT; r_j=min(U_j,D_j_pre,max(0,G_j_pre/L_star-N_j_pre))
+        R2_DIVIDEND_TREATMENT: SOURCE_MUST_BE_ADMITTED_DIVIDEND; r_j=min(U_j,D_j_pre); EXCESS_U_j_MINUS_r_j_REMAINS_RESIDUAL_ONLY_AFTER_DEBT_CLEARS
+        R2_DIVIDEND_REINVEST_CONTROL: SOURCE_MUST_BE_ADMITTED_DIVIDEND; r_j=0
+        EXISTING_CASH_EXPLICIT_RULE: SOURCE_MUST_BE_E; ROUTE_REQUIRES_SEPARATELY_ADMITTED_RULE_AND_AMOUNT_OTHERWISE_r_j=0
+        NO_REPAYMENT_ROUTE: r_j=0
+      source_applicability: CORPORATE_ACTION_PROTECTED_AND_PRE_EXISTING_CASH_ARE_NOT_DIVIDENDS; EXTERNAL_DEPOSIT_IS_NOT_DIVIDEND; CLASSIFICATION_CANNOT_CHANGE_TO_SELECT_A_RULE
+      route_bounds: 0_le_r_j_le_min(U_j,D_j_pre); REPAYMENT_RULES_NEVER_BORROW
       after_route: [G_j=G_j_pre, D_j=D_j_pre-r_j, C_j=C_j_pre-r_j, N_j=N_j_pre+r_j, B_j=B_j_pre]
       classification: EACH_F_k_RETAINS_EXTERNAL_FLOW_OR_RETURN_CASH_CLASSIFICATION; EACH_U_j_IS_ROUTED_AT_MOST_ONCE
     cash_routing_c:
@@ -106,7 +114,7 @@ proposed_accounting_contract:
     trim_denominator: ONE_MINUS_L_STAR_TIMES_S_MUST_BE_POSITIVE
     bounds: [REPAYMENT_LE_DEBT, CASH_REPAYMENT_LE_SETTLED_SOURCE_CASH, SALE_LE_GROSS, NO_NEGATIVE_ENDING_CASH_OR_DEBT]
   identities:
-    cash_repayment: r_j=min(U_j,D_j_pre,max(0,G_j_pre/L_star-N_j_pre))
+    cash_repayment_dispatch: r_j=THE_SINGLE_SELECTED_SOURCE_APPLICABLE_RULE_IN_stages.source_events_j.routing_rules
     trim_gross_sale: q=0_UNLESS_SELECTED_AUTHORIZED; IF_SELECTED_q=max(0,(G_c-L_star*N_c)/(1-L_star*s))_SUBJECT_TO_FEASIBILITY
     trim_net_debt_repayment: r_trim=(1-s)*q
     purchase_cash: C_e=C_i+x_actual-(1+b)*p_executed

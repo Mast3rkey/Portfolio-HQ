@@ -32,6 +32,13 @@ EXPECTED_GAPS = {
     "ACCEPTANCE_STATISTICS_UNCERTAINTY_MULTIPLE_TESTING_AND_THRESHOLD_SENSITIVITY",
     "HOLDOUT_STATUS_AND_ANY_LAWFUL_FUTURE_EVALUATION_SCOPE",
 }
+EXPECTED_ROUTING_RULES = {
+    "R1_DEPOSIT_TARGET_RESTORATION": "SOURCE_MUST_BE_EXTERNAL_DEPOSIT; r_j=min(U_j,D_j_pre,max(0,G_j_pre/L_star-N_j_pre))",
+    "R2_DIVIDEND_TREATMENT": "SOURCE_MUST_BE_ADMITTED_DIVIDEND; r_j=min(U_j,D_j_pre); EXCESS_U_j_MINUS_r_j_REMAINS_RESIDUAL_ONLY_AFTER_DEBT_CLEARS",
+    "R2_DIVIDEND_REINVEST_CONTROL": "SOURCE_MUST_BE_ADMITTED_DIVIDEND; r_j=0",
+    "EXISTING_CASH_EXPLICIT_RULE": "SOURCE_MUST_BE_E; ROUTE_REQUIRES_SEPARATELY_ADMITTED_RULE_AND_AMOUNT_OTHERWISE_r_j=0",
+    "NO_REPAYMENT_ROUTE": "r_j=0",
+}
 
 
 class UniqueKeyLoader(yaml.SafeLoader):
@@ -140,6 +147,18 @@ def validate(path: Path = REGISTER) -> list[str]:
     trial_budget = data.get("trial_budget")
     if not isinstance(trial_budget, dict) or trial_budget.get("status") != "NOT_DEFINED":
         errors.append("trial budget must remain undefined")
+    contract = data.get("proposed_accounting_contract")
+    stages = contract.get("stages") if isinstance(contract, dict) else None
+    events = stages.get("source_events_j") if isinstance(stages, dict) else None
+    identities = contract.get("identities") if isinstance(contract, dict) else None
+    if (not isinstance(events, dict)
+            or events.get("routing_selection") != "EXACTLY_ONE_FAMILY_SOURCE_CONTROL_RULE_PER_EVENT; NO_IMPLICIT_COMPOSITION"
+            or events.get("routing_rules") != EXPECTED_ROUTING_RULES
+            or events.get("source_applicability") != "CORPORATE_ACTION_PROTECTED_AND_PRE_EXISTING_CASH_ARE_NOT_DIVIDENDS; EXTERNAL_DEPOSIT_IS_NOT_DIVIDEND; CLASSIFICATION_CANNOT_CHANGE_TO_SELECT_A_RULE"
+            or events.get("route_bounds") != "0_le_r_j_le_min(U_j,D_j_pre); REPAYMENT_RULES_NEVER_BORROW"
+            or not isinstance(identities, dict)
+            or identities.get("cash_repayment_dispatch") != "r_j=THE_SINGLE_SELECTED_SOURCE_APPLICABLE_RULE_IN_stages.source_events_j.routing_rules"):
+        errors.append("source-specific cash routing contract changed or incomplete")
     return errors
 
 
