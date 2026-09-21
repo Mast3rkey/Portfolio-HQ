@@ -23,7 +23,9 @@ A later decision must supply and independently accept a complete successor speci
 
 ## Approved file scope of this draft only
 
-This draft may change only: this proposed decision; its scoping YAML; the current numeric inventory; the V2 remediation/source ledger; a non-authoritative scoping checklist validator and its tests; the result-free receipt; and the generated decision index. It changes no accepted decision, frozen protocol, research input, production code/configuration, or result.
+This draft's exact nine paths are: `docs/CURRENT_NUMERIC_POLICY_EVIDENCE_INVENTORY_20260920.md`; `governance/decisions.yaml`; `governance/decisions/MARGIN-0006-current-architecture-s3-successor-proposal.md`; `margin_current_s3_preregistration_validator.py`; `research/current_architecture_readiness/EVIDENCE_AND_INPUT_REMEDIATION.md`; `research/current_architecture_readiness/validation/result_free_validation_receipt.json`; `research/margin_target_study/S3_CURRENT_ARCHITECTURE_PREREGISTRATION.yaml`; `test_margin_current_s3_preregistration.py`; and `test_portfolio_hq_dashboard_decisions.py`. It changes no accepted decision, frozen protocol, research input, production code/configuration, or result.
+
+The checklist validator is intentionally non-authoritative. It checks only the scoping identity/status/role, the exact unresolved-decision labels, selected seal/fresh-period structure, undefined candidate/budget status, and the three execution prohibitions. It does **not** validate the truth, completeness, provenance, or admissibility of narrative exposure, coverage, source, policy, or economic claims; those remain review work.
 
 ## R1 integration prerequisite
 

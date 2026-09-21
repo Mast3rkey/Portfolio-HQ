@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Non-authoritative, result-free checklist for the incomplete S3 scoping register."""
+"""Check narrow authority/status predicates in the incomplete S3 scope file.
+
+This non-authoritative checklist does not validate narrative facts, evidence
+provenance/admissibility, policy correctness, or execution readiness.
+"""
 from __future__ import annotations
 
 import math
@@ -50,7 +54,9 @@ UniqueKeyLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, 
 def _finite(value: Any) -> bool:
     if isinstance(value, bool) or value is None or isinstance(value, str):
         return True
-    if isinstance(value, (int, float)):
+    if isinstance(value, int):
+        return value.bit_length() <= 1024
+    if isinstance(value, float):
         return math.isfinite(value)
     if isinstance(value, list):
         return all(_finite(item) for item in value)
@@ -74,24 +80,35 @@ def validate(path: Path = REGISTER) -> list[str]:
     if data.get("artifact_role") != "RESULT_BLIND_SCOPING_REGISTER_NOT_A_FROZEN_PREREGISTRATION":
         errors.append("artifact role overstates scoping authority")
     gaps = data.get("required_unresolved_decisions")
-    if not isinstance(gaps, list) or len(gaps) != len(set(gaps)) or set(gaps) != EXPECTED_GAPS:
+    if (not isinstance(gaps, list)
+            or not all(isinstance(gap, str) for gap in gaps)
+            or len(gaps) != len(set(gaps))
+            or set(gaps) != EXPECTED_GAPS):
         errors.append("missing, duplicate, or changed unresolved-decision register")
     exposure = data.get("exposure_and_coverage_ledger")
     if not isinstance(exposure, dict):
         errors.append("exposure ledger must be a mapping")
     else:
-        if exposure.get("original_margin_track_2", {}).get("original_untouched_start") != "2025-07-01":
+        track_2 = exposure.get("original_margin_track_2")
+        fresh = exposure.get("successor_fresh_period")
+        if not isinstance(track_2, dict):
+            errors.append("original Track 2 exposure record must be a mapping")
+        elif track_2.get("original_untouched_start") != "2025-07-01":
             errors.append("original Track 2 seal changed")
-        if exposure.get("successor_fresh_period", {}).get("status") != "NONE_ESTABLISHED":
+        if not isinstance(fresh, dict):
+            errors.append("successor fresh-period record must be a mapping")
+        elif fresh.get("status") != "NONE_ESTABLISHED":
             errors.append("successor fresh-period claim is prohibited")
     execution = data.get("execution")
     if not isinstance(execution, dict) or any(execution.get(key) is not False for key in (
         "implementation_authorized", "historical_execution_authorized", "sealed_access_authorized"
     )) or execution.get("runner_command") != "NONE":
         errors.append("implementation/execution/sealed access must remain prohibited with no runner")
-    if data.get("candidate_registry", {}).get("status") != "NOT_DEFINED":
+    candidate_registry = data.get("candidate_registry")
+    if not isinstance(candidate_registry, dict) or candidate_registry.get("status") != "NOT_DEFINED":
         errors.append("candidate registry must remain undefined")
-    if data.get("trial_budget", {}).get("status") != "NOT_DEFINED":
+    trial_budget = data.get("trial_budget")
+    if not isinstance(trial_budget, dict) or trial_budget.get("status") != "NOT_DEFINED":
         errors.append("trial budget must remain undefined")
     return errors
 
@@ -102,7 +119,7 @@ def main() -> int:
         print(f"ERROR: {error}")
     if errors:
         return 1
-    print("PASS: incomplete scoping register is internally consistent; this is not execution readiness")
+    print("PASS: scoping authority/status checklist predicates hold; narrative facts are unchecked")
     return 0
 
 
