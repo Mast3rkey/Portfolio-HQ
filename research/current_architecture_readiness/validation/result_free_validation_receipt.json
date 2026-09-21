@@ -1,6 +1,6 @@
 {
-  "recorded_at_utc": "2026-09-21T16:11:30Z",
-  "unit": "PR400 exact one-use MARGIN-0006 governance-transition guard correction",
+  "recorded_at_utc": "2026-09-21T17:07:15Z",
+  "unit": "PR400 result-blind cost-aware capacity fixture correction",
   "authority": "SPECIFICATION_INCOMPLETE_NOT_AUTHORIZED_NOT_EXECUTABLE",
   "environment": {
     "python": "3.14.4",
@@ -24,42 +24,30 @@
   "broker_or_account_accessed": false,
   "checks": [
     {
-      "command": "python -m pytest -q test_overlap_model_validator.py::test_margin_0006_allowance_names_the_exact_reviewed_transition test_overlap_model_validator.py::test_margin_0006_exact_transition_accepts_only_its_reviewed_bytes test_overlap_model_validator.py::test_margin_0006_transition_does_not_authorize_other_governance_changes test_overlap_model_validator.py::test_closed_range_proof_permits_additions test_overlap_model_validator.py::test_closed_range_proof_refuses_a_wrong_old_blob test_overlap_model_validator.py::test_closed_range_proof_refuses_a_wrong_new_blob test_overlap_model_validator.py::test_closed_range_proof_refuses_an_allowance_bound_to_another_base test_overlap_model_validator.py::test_closed_range_proof_refuses_a_deletion test_overlap_model_validator.py::test_closed_range_proof_refuses_a_rename test_overlap_model_validator.py::test_closed_range_proof_refuses_an_extra_modified_decision test_overlap_model_validator.py::test_closed_range_proof_refuses_a_dead_allowance",
-      "exit": 0,
-      "outcome": "13 passed in 5.83s",
-      "scope": "Exact MARGIN-0006 transition plus accepted-bytes, wrong-base/blob, later-rewrite, deletion, rename, other-decision, and historical-helper adversarial coverage."
-    },
-    {
       "command": "python -m pytest -q test_margin_current_s3_preregistration.py",
       "exit": 0,
-      "outcome": "24 passed in 1.11s"
+      "outcome": "25 passed in 1.39s",
+      "scope": "Focused scoping, cost-cap derivation, conservation, full/partial/no-draw, mutation, and malformed-input tests; no historical data."
     },
     {
-      "command": "python -m py_compile test_overlap_model_validator.py test_margin_current_s3_preregistration.py",
+      "command": "python -m py_compile test_margin_current_s3_preregistration.py",
       "exit": 0,
       "outcome": "pass"
     },
     {
+      "command": "python - <<'PY' ... yaml.safe_load(...) ... PY",
+      "exit": 0,
+      "outcome": "PASS: YAML parses and execution prohibitions remain exact"
+    },
+    {
       "command": "python -m json.tool research/current_architecture_readiness/validation/result_free_validation_receipt.json >/dev/null",
       "exit": 0,
-      "outcome": "pass after receipt rewrite"
+      "outcome": "pass after final receipt rewrite"
     },
     {
       "command": "git diff --check",
       "exit": 0,
       "outcome": "no whitespace errors"
-    },
-    {
-      "command": "python -m pytest -q test_overlap_model_validator.py -x",
-      "exit": 1,
-      "outcome": "1 failed, 185 passed in 1.26s: pre-existing test_protected_intelligence_records_untouched requires unavailable PR #292 object 957d14b7... in this truncated checkout",
-      "classification": "ENVIRONMENT_HISTORY_LIMITATION_NOT_SKIPPED_OR_CLAIMED_PASS"
-    },
-    {
-      "command": "git fetch --no-tags https://github.com/Mast3rkey/Portfolio-HQ.git 5e9a5b64086cdae6ad2fcc21e902a7e727abe6f8",
-      "exit": 128,
-      "outcome": "CONNECT tunnel failed, response 403; published base object not acquired",
-      "classification": "NETWORK_ACCESS_LIMITATION"
     }
   ],
   "source_attribution_dispositions": {
@@ -72,14 +60,14 @@
   "artifact_sha256": {
     "governance/decisions/MARGIN-0006-current-architecture-s3-successor-proposal.md": "63e44db7efc79aa65949130eb525590768d19d70e52141f978a5382d513680c6",
     "research/current_architecture_readiness/EVIDENCE_AND_INPUT_REMEDIATION.md": "cefc8ae5230fc35624f02507691c2d801e80a85e13b85fdadfa490725100881e",
-    "research/margin_target_study/S3_CURRENT_ARCHITECTURE_PREREGISTRATION.yaml": "1a7c8277f31d71af9bfa0f5d751415f604f9b2b22fe9f5f02fe31d7360477b4c",
-    "test_margin_current_s3_preregistration.py": "73c94b0706adc263d36a7f7626fb5e9a3e1503d6faca7c911f2ff21788da8b80",
+    "research/margin_target_study/S3_CURRENT_ARCHITECTURE_PREREGISTRATION.yaml": "01e2cf16401a9171b338a3a89978e33c59dabd4165b74d1c563b79bd40ae499f",
+    "test_margin_current_s3_preregistration.py": "e6383e77d0461c6e2f8711bbed02a14e3b1d5af138f779e4ac2270da98b3c38b",
     "test_overlap_model_validator.py": "fdeef59334d04d765be612feea5e67b3ac3e2eb830579e186c7ed3046433e5b5"
   },
   "limitations": [
-    "MARGIN-0006 remains Proposed and SPECIFICATION_INCOMPLETE_NOT_AUTHORIZED_NOT_EXECUTABLE; no research execution or policy change occurred.",
-    "The local checkout lacks the published base commit and older PR #292 objects; exact-base full Python 3.11 CI is required after unchanged-byte transport.",
-    "The checklist does not validate narrative truth, simulator implementation, input admissibility, or execution readiness."
+    "MARGIN-0006 remains Proposed and SPECIFICATION_INCOMPLETE_NOT_AUTHORIZED_NOT_EXECUTABLE; the cost-aware capacity is a proposed definition, not an engine or policy change.",
+    "Historical/sealed execution, input admission, production/frozen protocol changes, brokerage access, and Stage1 actions remain prohibited and were not performed.",
+    "Supported final-head Python 3.11 full CI and independent review remain required after unchanged-byte transport."
   ],
   "ci_failure_reproduction": {
     "coordinator_reported_command": "full Python 3.11 CI job 106398578869",
@@ -94,5 +82,11 @@
     "new_blob": "bc0e3ab820686015ec7e03fca847d58b7ee9d9ac",
     "local_old_endpoint_proof": "wrapper 7e53236543e6fc28bd96adc9d911259c0cd014bc has coordinator-reported merged tree a9805e0ba452067344b497bd356b5ea7f9fafb84 and the exact old blob",
     "published_base_direct_verification": "REQUIRED_IN_FINAL_HEAD_CI; object unavailable locally and network fetch returned 403"
+  },
+  "cost_capacity_defect_disposition": {
+    "legacy_helper": "14 is retained only as the zero-buy-cost legacy comparator; full deployment at 10 bps produces leverage 1.2500874432 and is not cost-safe capacity or actual draw.",
+    "proposed_bound": "x_cap=max(0,((1+b)*(H*N_i-G_i)+(H-1)*A)/(1+H*b)); fixture 13.9825218477, with full-gap purchase 69.9126092385 and ending leverage 1.25.",
+    "execution_semantics": "Fee reservation precedes weighted-gap allocation; purchases consume cash first; executed draw and fee derive from executed purchases and may be lower or zero; residual cash stays explicit.",
+    "authority": "PROPOSED_RESULT_BLIND_NOT_IMPLEMENTED_NOT_EXECUTABLE"
   }
 }

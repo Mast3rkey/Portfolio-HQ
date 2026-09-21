@@ -87,6 +87,9 @@ proposed_accounting_contract:
     purchase_book: B_prime=B-b*p
     genuine_target_purchase_using_all_A: p=(L_star*(N_i+A)-G_i)/(1+L_star*b)
     genuine_target_draw: x=(1+b)*p-A
+    cost_aware_full_deployment_capacity: x_cap=max(0,((1+b)*(H*N_i-G_i)+(H-1)*A)/(1+H*b))
+    capacity_purchase_if_full_gap: p_cap=(A+x_cap)/(1+b)
+    executed_draw_cash_first: x_actual=max(0,(1+b)*p_executed-A)
   proposed_event_clock:
     - OPENING_ENTITLEMENT_SNAPSHOT
     - PENDING_OR_IMMEDIATE_MANDATORY_RISK_CURE_BEFORE_UNAVAILABLE_CASH
@@ -105,8 +108,16 @@ proposed_accounting_contract:
       classification: PROPOSED_NOT_INHERITED_R1_GUARANTEE
     INHERITED_DEPOSIT_DAY_CAPACITY_AND_WEIGHTED_GAPS:
       source: margin_simulation.py deposit-day _leverage_capped_margin then _weighted_gap_allocate
-      meaning: CAPACITY_ONLY; ACTUAL_DRAW_MAY_BE_ZERO_OR_LOWER_DUE_TO_GAPS_LOTS_GATES
+      legacy_zero_buy_cost_comparator: x_legacy=max(0,H*(N_i+A)-G_i-A)
+      meaning: LEGACY_RAW_CAPACITY_IGNORES_BUY_FEES; ACTUAL_DRAW_MAY_BE_ZERO_OR_LOWER_DUE_TO_GAPS_LOTS_GATES
       prohibition: EFFECTIVE_LEVERAGE_CAP_IS_NOT_A_TARGET_OR_NO_BORROW_PROMISE
+    COST_AWARE_CAPACITY_PROPOSAL:
+      classification: PROPOSED_FEE_RESERVATION_BEFORE_WEIGHTED_GAP_ALLOCATION_NOT_IMPLEMENTED
+      capacity: x_cap=max(0,((1+b)*(H*N_i-G_i)+(H-1)*A)/(1+H*b))
+      execution: CASH_FIRST; x_actual=max(0,(1+b)*p_executed-A); x_actual_le_x_cap
+      partial_allocation: GAPS_LOTS_GATES_MAY_BIND; UNUSED_CASH_REMAINS_CASH; ACTUAL_FEE=b*p_executed
+      infeasible: IF_N_i_LE_0_OR_OPENING_LEVERAGE_ABOVE_H_THEN_NO_NEW_DRAW_AND_MANDATORY_CURE_OR_FAILED_CELL
+      limitation: CASH_PURCHASES_ARE_NOT_PROMISED_TO_REPAIR_AN_ALREADY_INFEASIBLE_CAP
     GENUINE_END_CYCLE_TARGET_PROPOSAL:
       prerequisite: SEPARATELY_REGISTERED_TARGET_AND_FEASIBLE_DRAW
       meaning: SOLVE_TARGET_PURCHASE_IDENTITY_SUBJECT_TO_ALL_GATES
@@ -123,7 +134,8 @@ proposed_accounting_contract:
     inputs: {G: '180', D: '80', deposit_A: '100', L_star: '1.25', sale_cost_s: '0.001', buy_cost_b: '0.001'}
     r1_cash_repayment: '44'
     cash_only: {purchase_p: '55.9440559441', new_draw_x: '0'}
-    inherited_capacity: {max_additional_margin_before_gap_allocation: '14', actual_draw: GAP_LOT_GATE_DEPENDENT_NOT_PREDETERMINED}
+    inherited_zero_buy_cost_capacity: {raw_legacy_comparator_x: '14', full_deployment_with_10bps_purchase_p: '69.9300699301', resulting_leverage: '1.2500874432', disposition: OVERSHOOTS_1_25_NOT_COST_SAFE_CAPACITY_NOT_ACTUAL_DRAW}
+    proposed_cost_aware_capacity: {maximum_new_draw_x: '13.9825218477', full_gap_purchase_p: '69.9126092385', resulting_leverage: '1.25', actual_draw: GAP_LOT_GATE_DEPENDENT_MAY_BE_LOWER_OR_ZERO}
     genuine_target: {purchase_p: '69.9126092385', new_draw_x: '13.9825218477'}
     trim_only: {gross_sale_q: '55.0688360451'}
   unresolved_choices:

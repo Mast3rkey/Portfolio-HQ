@@ -1,5 +1,5 @@
 from pathlib import Path
-from decimal import Decimal
+from decimal import Decimal, localcontext
 
 import pytest
 import yaml
@@ -115,30 +115,106 @@ def test_margin_cost_source_and_whole_portfolio_costs_are_not_conflated():
 
 
 def test_cost_aware_synthetic_oracle_and_book_conservation():
-    G, D, A, L = map(Decimal, ("180", "80", "100", "1.25"))
-    s = b = Decimal("0.001")
-    N = G - D
-    repayment = min(A, D, max(Decimal(0), G / L - N))
-    assert repayment == Decimal("44")
-    D_i, A_i, N_i = D - repayment, A - repayment, N + repayment
-    capacity = _leverage_capped_margin(float(G), float(D_i), float(A_i), float(L), float("inf"))
-    assert capacity == pytest.approx(14.0)
+    with localcontext() as context:
+        context.prec = 50
+        G, D, A, L = map(Decimal, ("180", "80", "100", "1.25"))
+        s = b = Decimal("0.001")
+        N = G - D
+        repayment = min(A, D, max(Decimal(0), G / L - N))
+        assert repayment == Decimal("44")
+        D_i, A_i, N_i = D - repayment, A - repayment, N + repayment
 
-    p_cash = A_i / (1 + b)
-    assert p_cash.quantize(Decimal("0.0000000001")) == Decimal("55.9440559441")
-    assert G + p_cash + Decimal(0) - D_i == N_i + A_i - b * p_cash
+        legacy_capacity = Decimal(str(_leverage_capped_margin(
+            float(G), float(D_i), float(A_i), float(L), float("inf"))))
+        assert legacy_capacity == Decimal("14")
+        legacy_purchase = (A_i + legacy_capacity) / (1 + b)
+        legacy_leverage = (G + legacy_purchase) / (N_i + legacy_purchase - legacy_capacity)
+        assert legacy_purchase.quantize(Decimal("0.0000000001")) == Decimal("69.9300699301")
+        assert legacy_leverage.quantize(Decimal("0.0000000001")) == Decimal("1.2500874432")
+        assert legacy_leverage > L  # raw helper is not fee-safe when its full capacity is used
 
-    p_target = (L * (N_i + A_i) - G) / (1 + L * b)
-    draw = (1 + b) * p_target - A_i
-    assert p_target.quantize(Decimal("0.0000000001")) == Decimal("69.9126092385")
-    assert draw.quantize(Decimal("0.0000000001")) == Decimal("13.9825218477")
-    assert (G + p_target) / ((G + p_target) - (D_i + draw)) == L
+        cost_capacity = (
+            (1 + b) * (L * N_i - G) + (L - 1) * A_i
+        ) / (1 + L * b)
+        p_cap = (A_i + cost_capacity) / (1 + b)
+        assert cost_capacity.quantize(Decimal("0.0000000001")) == Decimal("13.9825218477")
+        assert p_cap.quantize(Decimal("0.0000000001")) == Decimal("69.9126092385")
+        assert (G + p_cap) / (N_i + p_cap - cost_capacity) == L
+        assert G + p_cap + (A_i + cost_capacity - (1 + b) * p_cap) - (D_i + cost_capacity) == N_i + A_i - b * p_cap
 
-    q = (G - L * N) / (1 - L * s)
-    assert q.quantize(Decimal("0.0000000001")) == Decimal("55.0688360451")
-    lhs = (G - q) - (D - (1 - s) * q)
-    rhs = N - s * q
-    assert abs(lhs - rhs) < Decimal("1e-24")
+        zero_cost_capacity = (L * N_i - G) + (L - 1) * A_i
+        assert zero_cost_capacity == legacy_capacity
+
+        p_cash = A_i / (1 + b)
+        assert p_cash.quantize(Decimal("0.0000000001")) == Decimal("55.9440559441")
+        assert G + p_cash - D_i == N_i + A_i - b * p_cash
+
+        partial_purchase = Decimal("20")
+        partial_cost = b * partial_purchase
+        partial_draw = max(Decimal(0), (1 + b) * partial_purchase - A_i)
+        residual_cash = A_i + partial_draw - partial_purchase - partial_cost
+        assert partial_draw == 0
+        assert residual_cash == Decimal("35.980")
+        assert partial_draw < cost_capacity
+
+        above_cap_G, above_cap_D, cash = map(Decimal, ("160", "40", "1"))
+        above_cap_N = above_cap_G - above_cap_D
+        assert above_cap_G / above_cap_N > L
+        infeasible_capacity = max(Decimal(0), (
+            (1 + b) * (L * above_cap_N - above_cap_G) + (L - 1) * cash
+        ) / (1 + L * b))
+        assert infeasible_capacity == 0
+        assert cash == Decimal("1")  # no gap means no draw, no fee, and explicit residual cash
+
+        q = (G - L * N) / (1 - L * s)
+        assert q.quantize(Decimal("0.0000000001")) == Decimal("55.0688360451")
+        lhs = (G - q) - (D - (1 - s) * q)
+        rhs = N - s * q
+        assert abs(lhs - rhs) < Decimal("1e-24")
+
+
+def _assert_cost_capacity_evidence(scope):
+    contract = scope["proposed_accounting_contract"]
+    oracle = contract["synthetic_oracle_10bps_fixture_only"]
+    legacy = oracle["inherited_zero_buy_cost_capacity"]
+    proposed = oracle["proposed_cost_aware_capacity"]
+    assert legacy == {
+        "raw_legacy_comparator_x": "14",
+        "full_deployment_with_10bps_purchase_p": "69.9300699301",
+        "resulting_leverage": "1.2500874432",
+        "disposition": "OVERSHOOTS_1_25_NOT_COST_SAFE_CAPACITY_NOT_ACTUAL_DRAW",
+    }
+    assert proposed == {
+        "maximum_new_draw_x": "13.9825218477",
+        "full_gap_purchase_p": "69.9126092385",
+        "resulting_leverage": "1.25",
+        "actual_draw": "GAP_LOT_GATE_DEPENDENT_MAY_BE_LOWER_OR_ZERO",
+    }
+    assert contract["deployment_semantics"]["COST_AWARE_CAPACITY_PROPOSAL"]["classification"] == (
+        "PROPOSED_FEE_RESERVATION_BEFORE_WEIGHTED_GAP_ALLOCATION_NOT_IMPLEMENTED"
+    )
+    proposal = contract["deployment_semantics"]["COST_AWARE_CAPACITY_PROPOSAL"]
+    assert proposal["execution"] == (
+        "CASH_FIRST; x_actual=max(0,(1+b)*p_executed-A); x_actual_le_x_cap"
+    )
+    assert proposal["infeasible"] == (
+        "IF_N_i_LE_0_OR_OPENING_LEVERAGE_ABOVE_H_THEN_NO_NEW_DRAW_AND_MANDATORY_CURE_OR_FAILED_CELL"
+    )
+
+
+def test_cost_capacity_claim_is_bound_to_adverse_evidence_mutations():
+    scope = yaml.safe_load(REGISTER.read_text())
+    _assert_cost_capacity_evidence(scope)
+    for section, field, bad in (
+        ("inherited_zero_buy_cost_capacity", "resulting_leverage", "1.25"),
+        ("inherited_zero_buy_cost_capacity", "disposition", "COST_SAFE"),
+        ("proposed_cost_aware_capacity", "maximum_new_draw_x", "14"),
+        ("proposed_cost_aware_capacity", "actual_draw", "FORCED_TO_CAPACITY"),
+    ):
+        mutated = yaml.safe_load(REGISTER.read_text())
+        mutated["proposed_accounting_contract"]["synthetic_oracle_10bps_fixture_only"][section][field] = bad
+        with pytest.raises(AssertionError):
+            _assert_cost_capacity_evidence(mutated)
 
 
 def test_three_deployment_semantics_and_source_ledger_remain_distinct():
@@ -147,10 +223,11 @@ def test_three_deployment_semantics_and_source_ledger_remain_distinct():
     assert set(contract["deployment_semantics"]) == {
         "CASH_ONLY_NO_NEW_DRAW_PROPOSAL",
         "INHERITED_DEPOSIT_DAY_CAPACITY_AND_WEIGHTED_GAPS",
+        "COST_AWARE_CAPACITY_PROPOSAL",
         "GENUINE_END_CYCLE_TARGET_PROPOSAL",
     }
     inherited = contract["deployment_semantics"]["INHERITED_DEPOSIT_DAY_CAPACITY_AND_WEIGHTED_GAPS"]
-    assert inherited["meaning"].startswith("CAPACITY_ONLY")
+    assert inherited["meaning"].startswith("LEGACY_RAW_CAPACITY_IGNORES_BUY_FEES")
     assert "same_cycle_reborrow" in contract["repayment_source_ledger"]["fields"]
     assert scope["candidate_mapping_proposal"]["status"] == "PARTIAL_SOURCE_DERIVED_NOT_ACCEPTED_REGISTRY"
 
