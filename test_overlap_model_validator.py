@@ -954,17 +954,20 @@ def _assert_no_unauthorized_change_since_base(
     )
 
 
-#: The ONE pre-existing governance decision a merged, effective authority permits this branch to
-#: modify. ``XASSET-0043`` SS-I.2 -- accepted, merged, and in force -- offers the separately
+#: Exact one-use modifications of pre-existing governance decisions. The historical XASSET entry
+#: remains the transition authorized by ``XASSET-0043`` SS-I.2; the MARGIN-0006 entry is the
+#: principal-authorized PR400 correction from merged main's exact old blob to the reviewed draft.
+#: ``XASSET-0043`` SS-I.2 -- accepted, merged, and in force -- offers the separately
 #: authorized rebinding unit a choice of "(a) **amend** ``XASSET-0042``'s declaration ... or
 #: (b) **retire** the current-identity role from ``XASSET-0042`` -- re-anchoring its declaration
 #: to the closed head range it truthfully describes", and requires the choice to be argued.
 #: ``XASSET-0044`` SS-H takes (b) and argues it, so re-anchoring that file's prose is authorized
 #: content, not an unauthorized modification.
 #:
-#: This is deliberately an exact single-path allow-list rather than a relaxed status filter: every
-#: other pre-existing decision stays protected exactly as before, and a second modified file --
-#: including a different XASSET decision -- still fails. It follows this check's own established
+#: This is deliberately an inventory of exact single-path transitions rather than a relaxed status
+#: filter: every other pre-existing decision stays protected exactly as before, and a modified file
+#: absent from the inventory -- including a different XASSET decision -- still fails. It follows
+#: this check's own established
 #: repair-not-delete precedent, recorded in the docstring below: a guard correct for one PR's
 #: scope, which a later lawfully-broader session outgrows, is narrowed to the real authority
 #: rather than removed.
@@ -982,6 +985,20 @@ AUTHORIZED_DECISION_MODIFICATIONS = {
         "old_blob": "e4cda7a5042da68f347598a62d9e6d5cfc40ae55",
         "new_blob": "b08a625a5adb840e9576e5cd9218be24e63bd57e",
     },
+    "governance/decisions/MARGIN-0006-current-architecture-s3-successor-proposal.md": {
+        "base_sha": "5e9a5b64086cdae6ad2fcc21e902a7e727abe6f8",
+        "old_blob": "da75d13c0a97214f95e26b7ef631bbd6e7c7a80e",
+        "new_blob": "bc0e3ab820686015ec7e03fca847d58b7ee9d9ac",
+    },
+}
+
+# This immutable proof describes PR #344 only. Later live allowances must not be mistaken for
+# members of that historical transition set.
+HISTORICAL_AUTHORIZED_DECISION_MODIFICATIONS = {
+    path: AUTHORIZED_DECISION_MODIFICATIONS[path]
+    for path in (
+        "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
+    )
 }
 
 
@@ -1029,7 +1046,7 @@ def _assert_authorized_decision_transitions_over_closed_range(
     accepted_head: str,
     merge_sha: str,
     merge_tree: str,
-    authorized: dict[str, dict[str, str]] = AUTHORIZED_DECISION_MODIFICATIONS,
+    authorized: dict[str, dict[str, str]] = HISTORICAL_AUTHORIZED_DECISION_MODIFICATIONS,
     repo_root: Path = REPO_ROOT,
 ) -> list[str]:
     """Prove the one-use governance-decision allowance over an IMMUTABLE closed range.
@@ -1308,7 +1325,7 @@ def test_real_repository_governance_decisions_pass_the_repaired_check():
         merge_sha=CLOSED_RANGE_MERGE_SHA,
         merge_tree=CLOSED_RANGE_MERGE_TREE,
     )
-    assert modified == list(AUTHORIZED_DECISION_MODIFICATIONS)
+    assert modified == list(HISTORICAL_AUTHORIZED_DECISION_MODIFICATIONS)
 
 
 def test_the_repaired_check_reads_no_moving_reference():
@@ -1703,7 +1720,7 @@ def test_closed_range_proof_is_invariant_to_head_and_origin_main(tmp_path, scena
         merge_tree=CLOSED_RANGE_MERGE_TREE,
         repo_root=clone,
     )
-    assert modified == list(AUTHORIZED_DECISION_MODIFICATIONS)
+    assert modified == list(HISTORICAL_AUTHORIZED_DECISION_MODIFICATIONS)
 
 
 def test_the_invariance_scenarios_cover_branch_merged_and_later_main():
@@ -2215,11 +2232,18 @@ def test_real_repository_manifest_reconciles_bidirectionally():
 # skipping, xfailing, or broadly relaxing the guard.
 # =============================================================================================
 
+_ALLOWED_DECISION_PATH = (
+    "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md"
+)
+_MARGIN_0006_DECISION_PATH = (
+    "governance/decisions/MARGIN-0006-current-architecture-s3-successor-proposal.md"
+)
 
-def _repo_with_decision(tmp_path: Path, content: str):
+
+def _repo_with_decision(tmp_path: Path, content: str, path: str = _ALLOWED_DECISION_PATH):
     run = _init_synthetic_repo(tmp_path)
     (tmp_path / "governance/decisions").mkdir(parents=True)
-    (tmp_path / _ALLOWED_DECISION_PATH).write_text(content)
+    (tmp_path / path).write_text(content)
     run("add", "-A")
     run("commit", "-q", "-m", "base")
     base = run("rev-parse", "HEAD").stdout.strip()
@@ -2227,18 +2251,109 @@ def _repo_with_decision(tmp_path: Path, content: str):
     return run, base
 
 
-_ALLOWED_DECISION_PATH = (
-    "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md"
-)
-
-
 def test_the_decision_allowance_names_an_exact_one_use_transition():
     """Not a path. A base, an old blob, and the single new blob it may become."""
-    assert set(AUTHORIZED_DECISION_MODIFICATIONS) == {_ALLOWED_DECISION_PATH}
+    assert set(AUTHORIZED_DECISION_MODIFICATIONS) == {
+        _ALLOWED_DECISION_PATH, _MARGIN_0006_DECISION_PATH,
+    }
     transition = AUTHORIZED_DECISION_MODIFICATIONS[_ALLOWED_DECISION_PATH]
     assert set(transition) == {"base_sha", "old_blob", "new_blob"}
     assert transition["base_sha"] == "0709d2f05ab031ecb6f69c40465ed4a227983aed"
     assert transition["old_blob"] != transition["new_blob"]
+
+
+def test_margin_0006_allowance_names_the_exact_reviewed_transition():
+    transition = AUTHORIZED_DECISION_MODIFICATIONS[_MARGIN_0006_DECISION_PATH]
+    assert set(transition) == {"base_sha", "old_blob", "new_blob"}
+    assert transition == {
+        "base_sha": "5e9a5b64086cdae6ad2fcc21e902a7e727abe6f8",
+        "old_blob": "da75d13c0a97214f95e26b7ef631bbd6e7c7a80e",
+        "new_blob": "bc0e3ab820686015ec7e03fca847d58b7ee9d9ac",
+    }
+
+    # Full CI has the published base object. The author checkout instead has the exact PR399
+    # tree in a local wrapper; that independently reconstructs the old endpoint without skipping.
+    if _commit_exists(REPO_ROOT, transition["base_sha"]):
+        old_blob = _blob_at(REPO_ROOT, transition["base_sha"], _MARGIN_0006_DECISION_PATH)
+    else:
+        wrapper = "7e53236543e6fc28bd96adc9d911259c0cd014bc"
+        assert subprocess.run(
+            ["git", "rev-parse", f"{wrapper}^{{tree}}"], cwd=REPO_ROOT,
+            capture_output=True, text=True, check=True,
+        ).stdout.strip() == "a9805e0ba452067344b497bd356b5ea7f9fafb84"
+        old_blob = _blob_at(REPO_ROOT, wrapper, _MARGIN_0006_DECISION_PATH)
+    assert old_blob == transition["old_blob"]
+    assert _worktree_blob(REPO_ROOT, _MARGIN_0006_DECISION_PATH) == transition["new_blob"]
+
+
+def _synthetic_margin_0006_transition(tmp_path: Path):
+    run, base = _repo_with_decision(tmp_path, "original proposal\n", _MARGIN_0006_DECISION_PATH)
+    target = tmp_path / _MARGIN_0006_DECISION_PATH
+    target.write_text("reviewed proposal\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "reviewed MARGIN-0006 transition")
+    transition = {
+        _MARGIN_0006_DECISION_PATH: {
+            "base_sha": base,
+            "old_blob": _blob_at(tmp_path, base, _MARGIN_0006_DECISION_PATH),
+            "new_blob": _worktree_blob(tmp_path, _MARGIN_0006_DECISION_PATH),
+        }
+    }
+    return run, base, target, transition
+
+
+def test_margin_0006_exact_transition_accepts_only_its_reviewed_bytes(tmp_path):
+    _run, _base, target, transition = _synthetic_margin_0006_transition(tmp_path)
+    _assert_no_unauthorized_change_since_base(
+        ["governance/decisions"], repo_root=tmp_path,
+        authorized_modifications=transition,
+    )
+    item = transition[_MARGIN_0006_DECISION_PATH]
+    for field in ("base_sha", "old_blob", "new_blob"):
+        forged = {**item, field: "0" * 40}
+        with pytest.raises(AssertionError, match="unauthorized modification"):
+            _assert_no_unauthorized_change_since_base(
+                ["governance/decisions"], repo_root=tmp_path,
+                authorized_modifications={_MARGIN_0006_DECISION_PATH: forged},
+            )
+    target.write_text("later rewrite\n")
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(
+            ["governance/decisions"], repo_root=tmp_path,
+            authorized_modifications=transition,
+        )
+
+
+@pytest.mark.parametrize("mutation", ["delete", "rename", "other-decision"])
+def test_margin_0006_transition_does_not_authorize_other_governance_changes(tmp_path, mutation):
+    run, base = _repo_with_decision(tmp_path, "original proposal\n", _MARGIN_0006_DECISION_PATH)
+    decisions = tmp_path / "governance" / "decisions"
+    other = decisions / "OTHER-0001.md"
+    other.write_text("original other decision\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "second protected decision")
+    base = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", base)
+    target = tmp_path / _MARGIN_0006_DECISION_PATH
+    old_blob = _blob_at(tmp_path, base, _MARGIN_0006_DECISION_PATH)
+    target.write_text("reviewed proposal\n")
+    authorized_new = _worktree_blob(tmp_path, _MARGIN_0006_DECISION_PATH)
+    if mutation == "delete":
+        target.unlink()
+    elif mutation == "rename":
+        target.rename(decisions / "MARGIN-0006-renamed.md")
+    else:
+        other.write_text("unauthorized other rewrite\n")
+    transition = {
+        _MARGIN_0006_DECISION_PATH: {
+            "base_sha": base, "old_blob": old_blob, "new_blob": authorized_new,
+        }
+    }
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(
+            ["governance/decisions"], repo_root=tmp_path,
+            authorized_modifications=transition,
+        )
 
 
 def test_the_allowance_matches_this_pull_requests_real_objects():
