@@ -1229,3 +1229,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, PHQ-2026-01, PHQ-2026-02, PHQ-2026-07]
     supporting_artifact: issuer_lookthrough.yaml
     file: governance/decisions/PHQ-2026-08-common-driver-measurement-authority-and-lookthrough-refresh.md
+  - decision_id: MARGIN-0006
+    date: 2026-09-20
+    status: Proposed
+    category: research_scoping
+    related_decisions: [GOV-0001, GOV-0002, MARGIN-0004, MARGIN-0005, NUM-0001, RISK-0005, PHQ-2026-01, PHQ-2026-08]
+    supporting_artifact: research/margin_target_study/S3_CURRENT_ARCHITECTURE_PREREGISTRATION.yaml
+    file: governance/decisions/MARGIN-0006-current-architecture-s3-successor-proposal.md

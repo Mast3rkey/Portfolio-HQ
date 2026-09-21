@@ -105,7 +105,7 @@ def synth_repo(tmp_path: Path) -> Path:
 
 def test_real_repository_catalog_builds_all_decisions_with_no_issues():
     cat = decisions.build_catalog(REPO_ROOT)
-    assert len(cat.decisions) == 168
+    assert len(cat.decisions) == 169
     assert len(cat.legacy) == 12
     assert cat.issues == ()
     assert sum(len(d.issues) for d in cat.decisions) == 0
@@ -522,7 +522,11 @@ def test_title_h1_fallback(tmp_path: Path):
 
 def test_title_filename_fallback_real_corpus():
     cat = decisions.build_catalog(REPO_ROOT)
-    assert all(d.title_source == "filename" for d in cat.decisions)
+    by_id = {d.decision_id: d for d in cat.decisions}
+    scoped = by_id.pop("MARGIN-0006")
+    assert scoped.title == "Current-architecture S3 successor scoping proposal"
+    assert scoped.title_source == "h1"
+    assert all(d.title_source == "filename" for d in by_id.values())
 
 
 def test_title_unusable_filename_falls_back_to_id(tmp_path: Path):
@@ -922,7 +926,7 @@ def test_real_repository_model_and_render_succeed_end_to_end():
     m = build_model(REPO_ROOT)
     html = render_html(m)
     assert html.startswith("<!DOCTYPE html>")
-    assert len(m.decision_catalog.decisions) == 168
+    assert len(m.decision_catalog.decisions) == 169
 
 
 def test_every_decision_renders_exactly_one_detail_section():

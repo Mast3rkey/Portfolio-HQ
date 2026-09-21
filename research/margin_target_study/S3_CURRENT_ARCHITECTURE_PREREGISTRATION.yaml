@@ -1,0 +1,90 @@
+schema_version: '1.1'
+study_id: MARGIN-CURRENT-S3-SCOPE-0001
+status: SPECIFICATION_INCOMPLETE_NOT_AUTHORIZED_NOT_EXECUTABLE
+artifact_role: RESULT_BLIND_SCOPING_REGISTER_NOT_A_FROZEN_PREREGISTRATION
+predecessor:
+  charter: governance/decisions/MARGIN-0005-margin-target-research-charter.md
+  preserve_original_bytes_seals_data_and_trial_history: true
+  s2_allowance: EXHAUSTED
+architecture:
+  current_shape: FLAT_DESTINATION
+  current_assigned_pct_observation: '99.25'
+  historical_shape: TIERED_103_25_PERCENT
+  mapping_rule: PROHIBITED_WITHOUT_ACCEPTED_SUCCESSOR_SPECIFICATION
+exposure_and_coverage_ledger:
+  original_margin_track_2:
+    development_exposed: '2021-06-01/2025-06-30'
+    original_seal_scope: TRACK_2_ONLY
+    original_untouched_start: '2025-07-01'
+    preservation: SEALED_UNDER_ORIGINAL_PROTOCOL_NO_ACCESS_AUTHORIZED
+  original_margin_track_3:
+    development_exposed: '1999-01-01/2020-12-31'
+    original_seal_scope: TRACK_3_SPY_QQQ_ONLY
+    original_untouched_start: '2021-01-01'
+    preservation: SEALED_UNDER_ORIGINAL_PROTOCOL_NO_ACCESS_AUTHORIZED
+  whole_portfolio_v2:
+    exposed_correction: '2024-04-02/2026-07-31'
+    exposed_context: '2021-06-01/2023-12-29'
+    classification: EXPOSED_NOT_FRESH
+  phq_architecture_matrix:
+    exposed_window: '2024-08-26/2026-07-28'
+    cases: 8
+    limitations: [SHORT_APPROX_23_MONTH_WINDOW, LOOKAHEAD, SURVIVORSHIP]
+  buy_ladder:
+    classification: EXECUTED_AND_HOLDOUT_PREVIOUSLY_EXPOSED
+    disposition: NO_QUALIFYING_WINNER
+  current_roster_coverage:
+    status: METADATA_RECONCILED_ADMISSIBILITY_UNRESOLVED
+    canonical_rows: 36
+    ladder_admitted_price_identities: 25
+    gated_equities_with_existing_receipt_metadata_not_ladder_admitted: 6
+    crypto_rows_with_existing_receipt_metadata_not_successor_admitted: 3
+    non_price_cash_or_reserve_rows: 2
+    binding_metadata_boundaries:
+      CEG_lawful_inception: '2022-02-02'
+      GEV_lawful_inception: '2024-04-02'
+      RKLB_lawful_inception: '2021-08-25'
+      SPGI_action_treatment: UNRESOLVED
+      SOL_successor_source: UNRESOLVED
+      DFF_vintage_and_release_clock: UNRESOLVED
+    rule: NO_SILENT_ASSET_DROP_NO_INVENTED_PREINCEPTION_HISTORY
+  successor_fresh_period:
+    status: NONE_ESTABLISHED
+    rule: REUSED_PERIODS_MUST_BE_EXPOSED_OR_CORRECTION_NEVER_FRESH
+preserved_design_requirements_from_margin_0005:
+  signal_lag: SIGNALS_FROM_T_MINUS_1_CLOSE
+  primary_execution_clock: EXECUTION_AT_T_CLOSE
+  survivor_sensitivity_clock: OPEN_OF_DAY
+  contribution_stresses: [TWELVE_MONTH_PAUSE, HALVED_CONTRIBUTIONS, ONE_TWENTY_PERCENT_WITHDRAWAL]
+  draw_frequency_max: ONCE_PER_WEEK
+  draw_size_max_net_equity_fraction: '0.10'
+  dead_band_leverage_units: '0.05'
+  costs_bps_one_way: ['0', '10', '25']
+  original_statistical_plan: PRESERVE_AND_RECONCILE_BEFORE_SUCCESSOR_SELECTION
+required_unresolved_decisions:
+  - FEASIBLE_COMMON_DATES_AND_PER_ASSET_COVERAGE
+  - CURRENT_FLAT_BASELINE_VERSION_AND_HASHES
+  - FULL_CANDIDATE_DECISION_RULES_INCLUDING_STATE_VARIABLES_LAGS_AND_TARGETS
+  - INITIAL_CAPITAL_CASH_DEBT_AND_NO_BORROWING_CONTROL_SEMANTICS
+  - DEPOSIT_EVENT_ORDER_AND_R1_CASH_FUNDED_VERSUS_TRIM_FUNDED_FORMULAS
+  - RATE_SERIES_SPREAD_FLOOR_AND_POINT_IN_TIME_AVAILABILITY
+  - MAINTENANCE_PROXY_MAPPING_NOT_BROKER_BUFFER_EQUIVALENCE
+  - EXACT_STRESS_TIMING_SEVERITY_AND_COMBINATIONS
+  - TAX_COST_BASIS_TRANSACTION_COST_AND_DIVIDEND_ACCOUNTING
+  - ASSET_ELIGIBILITY_GATED_CASH_AND_NEWER_ASSET_TREATMENT
+  - ENUMERATED_CANDIDATE_X_COST_X_CASHFLOW_X_RATE_X_MAINTENANCE_REGISTRY
+  - TRIAL_BUDGET_DERIVED_FROM_ENUMERATED_REGISTRY
+  - ACCEPTANCE_STATISTICS_UNCERTAINTY_MULTIPLE_TESTING_AND_THRESHOLD_SENSITIVITY
+  - HOLDOUT_STATUS_AND_ANY_LAWFUL_FUTURE_EVALUATION_SCOPE
+candidate_registry:
+  status: NOT_DEFINED
+  note: NAMES_ALONE_ARE_NOT_CANDIDATES_CAPS_ALONE_ARE_NOT_TARGET_LEVERAGE_RULES
+trial_budget:
+  status: NOT_DEFINED
+  note: NO_CEILING_UNTIL_THE_FULL_CARTESIAN_OR_EXPLICIT_CASE_REGISTRY_IS_REVIEWED
+execution:
+  implementation_authorized: false
+  historical_execution_authorized: false
+  sealed_access_authorized: false
+  runner_command: NONE
+  next_gate: RESULT_BLIND_COMPLETION_AND_INDEPENDENT_ACCEPTANCE_OF_AN_EXECUTABLE_SUCCESSOR_SPECIFICATION
