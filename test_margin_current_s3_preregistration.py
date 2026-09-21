@@ -222,29 +222,33 @@ def test_staged_cash_sources_none_partial_full_repayment_and_protected_cash(debt
     assert G_e + C_e - D_e == B_i - b * p_executed
 
 
-def _canonical_cash_source_fixture(scope):
+def _cash_source_fixture_from_clock(scope, *, require_canonical=True):
     clock = scope["proposed_accounting_contract"]["proposed_event_clock"]
+    interest_step = "DAILY_INTEREST_CAPITALIZATION"
+    existing_step = "OPTIONAL_SEPARATELY_ADMITTED_PRE_EXISTING_CASH_E_ROUTING; WITHOUT_SEPARATELY_ADMITTED_RULE_r_E=0"
     dividend_step = "SOURCE_TAGGED_DIVIDEND_OR_CORPORATE_ACTION_CASH_ARRIVAL"
     r2_step = "R2_ROUTING_EXACTLY_ONCE"
     deposit_step = "SOURCE_TAGGED_EXTERNAL_DEPOSIT_ARRIVAL_AND_FLOW_LEDGER_ENTRY"
     r1_step = "R1_CASH_REPAYMENT_EXACTLY_ONCE"
-    assert clock.index(dividend_step) < clock.index(r2_step) < clock.index(deposit_step) < clock.index(r1_step)
-    return (
-        ("E", "existing_explicit_rule", Decimal("0"), Decimal("20")),
-        ("F_dividend", "r2_treatment", Decimal("40"), Decimal("40")),
-        ("F_deposit", "r1", Decimal("60"), Decimal("60")),
-    )
+    for step in (interest_step, existing_step, dividend_step, r2_step, deposit_step, r1_step):
+        assert clock.count(step) == 1
+    if require_canonical:
+        assert (clock.index(interest_step) < clock.index(existing_step) < clock.index(dividend_step)
+                < clock.index(r2_step) < clock.index(deposit_step) < clock.index(r1_step))
+    sources = {
+        existing_step: ("E", "existing_explicit_rule", Decimal("0"), Decimal("20")),
+        dividend_step: ("F_dividend", "r2_treatment", Decimal("40"), Decimal("40")),
+        deposit_step: ("F_deposit", "r1", Decimal("60"), Decimal("60")),
+    }
+    return tuple(sources[step] for step in sorted(sources, key=clock.index))
 
 
-def test_two_arrivals_and_preexisting_cash_follow_declared_clock_without_reset_or_recredit():
-    scope = yaml.safe_load(REGISTER.read_text())
+def _run_cash_source_fixture(sequence):
     G, D, C = map(Decimal, ("180", "80", "30"))
     P, E = Decimal("10"), Decimal("20")
-    assert C == P + E
     opening_book = G + C - D
-    routed = []
-    residuals = {}
-    for source, family, arrival, eligible in _canonical_cash_source_fixture(scope):
+    routed, residuals = [], {}
+    for source, family, arrival, eligible in sequence:
         C += arrival
         N = G - D
         if family == "existing_explicit_rule":
@@ -259,12 +263,24 @@ def test_two_arrivals_and_preexisting_cash_follow_declared_clock_without_reset_o
         C, D = C - repay, D - repay
         routed.append(repay)
         residuals[source] = eligible - repay
-    R = sum(routed, Decimal(0))
     A_i = sum(residuals.values(), Decimal(0))
-    N_i, B_i = G - D, G + C - D
+    return routed, (G, D, C, G - D, G + C - D, A_i, P), opening_book
+
+
+def test_two_arrivals_and_preexisting_cash_follow_declared_clock_without_reset_or_recredit():
+    scope = yaml.safe_load(REGISTER.read_text())
+    existing_rule = scope["proposed_accounting_contract"]["stages"]["source_events_j"]["routing_rules"]["EXISTING_CASH_EXPLICIT_RULE"]
+    assert existing_rule.endswith("OTHERWISE_r_j=0")
+    G, D, C = map(Decimal, ("180", "80", "30"))
+    P, E = Decimal("10"), Decimal("20")
+    assert C == P + E
+    routed, ending, opening_book = _run_cash_source_fixture(
+        _cash_source_fixture_from_clock(scope)
+    )
+    G, D, C, N_i, B_i, A_i, P = ending
     assert routed == [Decimal("20"), Decimal("40"), Decimal("0")]
-    assert R == Decimal("60")  # includes r_E and each source exactly once
-    assert (G, D, C, N_i, B_i, A_i, P) == tuple(map(
+    assert sum(routed, Decimal(0)) == Decimal("60")
+    assert ending == tuple(map(
         Decimal, ("180", "20", "70", "160", "230", "60", "10")
     ))
     assert B_i == opening_book + Decimal("100")
@@ -278,7 +294,22 @@ def test_canonical_fixture_rejects_dividend_after_deposit_clock_mutation():
     deposit = clock.index("SOURCE_TAGGED_EXTERNAL_DEPOSIT_ARRIVAL_AND_FLOW_LEDGER_ENTRY")
     clock[dividend], clock[deposit] = clock[deposit], clock[dividend]
     with pytest.raises(AssertionError):
-        _canonical_cash_source_fixture(scope)
+        _cash_source_fixture_from_clock(scope)
+
+
+def test_canonical_fixture_rejects_and_exposes_e_after_dividend_mutation():
+    scope = yaml.safe_load(REGISTER.read_text())
+    clock = scope["proposed_accounting_contract"]["proposed_event_clock"]
+    existing = clock.index("OPTIONAL_SEPARATELY_ADMITTED_PRE_EXISTING_CASH_E_ROUTING; WITHOUT_SEPARATELY_ADMITTED_RULE_r_E=0")
+    dividend = clock.index("SOURCE_TAGGED_DIVIDEND_OR_CORPORATE_ACTION_CASH_ARRIVAL")
+    clock[existing], clock[dividend] = clock[dividend], clock[existing]
+    with pytest.raises(AssertionError):
+        _cash_source_fixture_from_clock(scope)
+    routed, ending, _ = _run_cash_source_fixture(
+        _cash_source_fixture_from_clock(scope, require_canonical=False)
+    )
+    assert routed == [Decimal("40"), Decimal("4"), Decimal("0")]
+    assert ending == tuple(map(Decimal, ("180", "36", "86", "144", "230", "76", "10")))
 
 
 def _route_source_cash(source, selection, eligible, debt, gross, target):
