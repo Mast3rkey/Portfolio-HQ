@@ -52,17 +52,47 @@ UniqueKeyLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, 
 
 
 def _finite(value: Any) -> bool:
-    if isinstance(value, bool) or value is None or isinstance(value, str):
-        return True
-    if isinstance(value, int):
-        return value.bit_length() <= 1024
-    if isinstance(value, float):
-        return math.isfinite(value)
-    if isinstance(value, list):
-        return all(_finite(item) for item in value)
-    if isinstance(value, dict):
-        return all(isinstance(key, str) and _finite(item) for key, item in value.items())
-    return False
+    """Validate scalar types/finiteness and reject cyclic containers.
+
+    Iterative traversal avoids Python recursion limits for deeply nested YAML.
+    Completed container identities are visited once, so ordinary aliases and
+    heavily shared acyclic structures remain valid without exponential work.
+    A container encountered while it is active is a genuine alias cycle.
+    """
+    active: set[int] = set()
+    completed: set[int] = set()
+    stack: list[tuple[Any, bool]] = [(value, False)]
+    while stack:
+        item, exiting = stack.pop()
+        if isinstance(item, (list, dict)):
+            identity = id(item)
+            if exiting:
+                active.remove(identity)
+                completed.add(identity)
+                continue
+            if identity in completed:
+                continue
+            if identity in active:
+                return False
+            active.add(identity)
+            stack.append((item, True))
+            if isinstance(item, dict):
+                if not all(isinstance(key, str) for key in item):
+                    return False
+                stack.extend((child, False) for child in item.values())
+            else:
+                stack.extend((child, False) for child in item)
+            continue
+        if isinstance(item, bool) or item is None or isinstance(item, str):
+            continue
+        if isinstance(item, int):
+            if item.bit_length() > 1024:
+                return False
+            continue
+        if isinstance(item, float) and math.isfinite(item):
+            continue
+        return False
+    return True
 
 
 def validate(path: Path = REGISTER) -> list[str]:
@@ -113,8 +143,8 @@ def validate(path: Path = REGISTER) -> list[str]:
     return errors
 
 
-def main() -> int:
-    errors = validate()
+def main(path: Path = REGISTER) -> int:
+    errors = validate(path)
     for error in errors:
         print(f"ERROR: {error}")
     if errors:

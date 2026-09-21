@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from margin_current_s3_preregistration_validator import REGISTER, validate
+from margin_current_s3_preregistration_validator import REGISTER, _finite, main, validate
 from margin_simulation import RepaymentDecision, ScenarioConfig, simulate
 from repayment_lib import r1_deposits_first
 
@@ -73,6 +73,35 @@ def test_huge_integer_returns_error_instead_of_crashing(tmp_path):
     path = tmp_path / "huge.yaml"
     path.write_text(REGISTER.read_text() + f"\nunexpected_huge_integer: {1 << 4096}\n")
     assert validate(path) == ["register must be a finite mapping with string keys"]
+
+
+def test_recursive_yaml_alias_returns_controlled_failure_without_traceback(tmp_path, capsys):
+    path = tmp_path / "recursive.yaml"
+    path.write_text(REGISTER.read_text() + "\nrecursive: &recursive [*recursive]\n")
+    expected = ["register must be a finite mapping with string keys"]
+    assert validate(path) == expected
+    assert main(path) == 1
+    captured = capsys.readouterr()
+    assert captured.out == "ERROR: register must be a finite mapping with string keys\n"
+    assert captured.err == ""
+
+
+def test_ordinary_reused_aliases_remain_valid(tmp_path):
+    path = tmp_path / "shared.yaml"
+    path.write_text(REGISTER.read_text() + "\nshared: &shared [alpha, {beta: 1}]\nleft: *shared\nright: *shared\n")
+    assert validate(path) == []
+
+
+def test_deep_and_exponentially_shared_acyclic_structures_are_bounded():
+    deep: object = "leaf"
+    for _ in range(5000):
+        deep = [deep]
+    assert _finite(deep)
+
+    shared: object = "leaf"
+    for _ in range(5000):
+        shared = [shared, shared]
+    assert _finite(shared)
 
 
 def test_r1_pretrade_reproduction_requires_future_event_order_regression():
