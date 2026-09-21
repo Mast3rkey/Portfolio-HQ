@@ -1,10 +1,11 @@
 from pathlib import Path
+from decimal import Decimal
 
 import pytest
 import yaml
 
 from margin_current_s3_preregistration_validator import REGISTER, _finite, main, validate
-from margin_simulation import RepaymentDecision, ScenarioConfig, simulate
+from margin_simulation import RepaymentDecision, ScenarioConfig, _leverage_capped_margin, simulate
 from repayment_lib import r1_deposits_first
 
 
@@ -102,6 +103,63 @@ def test_deep_and_exponentially_shared_acyclic_structures_are_bounded():
     for _ in range(5000):
         shared = [shared, shared]
     assert _finite(shared)
+
+
+def test_margin_cost_source_and_whole_portfolio_costs_are_not_conflated():
+    scope = yaml.safe_load(REGISTER.read_text())
+    inherited = scope["preserved_design_requirements_from_margin_0005"]
+    assert inherited["costs_bps_one_way"] == ["0", "5", "15"]
+    assert inherited["excluded_cost_registry"] == "PORTFOLIO_ROBUSTNESS_V2_0_10_25_BPS_NOT_IMPORTED"
+    oracle = scope["proposed_accounting_contract"]["synthetic_oracle_10bps_fixture_only"]
+    assert oracle["classification"] == "SYNTHETIC_ARITHMETIC_NOT_MARGIN_0005_COST_CELL_OR_ACCOUNT_FACT"
+
+
+def test_cost_aware_synthetic_oracle_and_book_conservation():
+    G, D, A, L = map(Decimal, ("180", "80", "100", "1.25"))
+    s = b = Decimal("0.001")
+    N = G - D
+    repayment = min(A, D, max(Decimal(0), G / L - N))
+    assert repayment == Decimal("44")
+    D_i, A_i, N_i = D - repayment, A - repayment, N + repayment
+    capacity = _leverage_capped_margin(float(G), float(D_i), float(A_i), float(L), float("inf"))
+    assert capacity == pytest.approx(14.0)
+
+    p_cash = A_i / (1 + b)
+    assert p_cash.quantize(Decimal("0.0000000001")) == Decimal("55.9440559441")
+    assert G + p_cash + Decimal(0) - D_i == N_i + A_i - b * p_cash
+
+    p_target = (L * (N_i + A_i) - G) / (1 + L * b)
+    draw = (1 + b) * p_target - A_i
+    assert p_target.quantize(Decimal("0.0000000001")) == Decimal("69.9126092385")
+    assert draw.quantize(Decimal("0.0000000001")) == Decimal("13.9825218477")
+    assert (G + p_target) / ((G + p_target) - (D_i + draw)) == L
+
+    q = (G - L * N) / (1 - L * s)
+    assert q.quantize(Decimal("0.0000000001")) == Decimal("55.0688360451")
+    lhs = (G - q) - (D - (1 - s) * q)
+    rhs = N - s * q
+    assert abs(lhs - rhs) < Decimal("1e-24")
+
+
+def test_three_deployment_semantics_and_source_ledger_remain_distinct():
+    scope = yaml.safe_load(REGISTER.read_text())
+    contract = scope["proposed_accounting_contract"]
+    assert set(contract["deployment_semantics"]) == {
+        "CASH_ONLY_NO_NEW_DRAW_PROPOSAL",
+        "INHERITED_DEPOSIT_DAY_CAPACITY_AND_WEIGHTED_GAPS",
+        "GENUINE_END_CYCLE_TARGET_PROPOSAL",
+    }
+    inherited = contract["deployment_semantics"]["INHERITED_DEPOSIT_DAY_CAPACITY_AND_WEIGHTED_GAPS"]
+    assert inherited["meaning"].startswith("CAPACITY_ONLY")
+    assert "same_cycle_reborrow" in contract["repayment_source_ledger"]["fields"]
+    assert scope["candidate_mapping_proposal"]["status"] == "PARTIAL_SOURCE_DERIVED_NOT_ACCEPTED_REGISTRY"
+
+
+def test_reviewer_source_dispositions_do_not_claim_acquisition_or_admission():
+    text = Path("research/current_architecture_readiness/EVIDENCE_AND_INPUT_REMEDIATION.md").read_text()
+    assert "illustrative first-day VWAP values 414.44/21.08" in text
+    assert "not proof of coverage or admission" in text
+    assert "no archive path, returned bytes, byte count, hash, or receipt" in text
 
 
 def test_r1_pretrade_reproduction_requires_future_event_order_regression():

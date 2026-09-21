@@ -30,3 +30,13 @@ The checklist validator is intentionally non-authoritative. It checks only the s
 ## R1 integration prerequisite
 
 A result-blind synthetic reproduction shows current research-engine pre-trade wiring can compute R1's trim-funded repay before a same-day deposit arrives. This is an isolated research integration gap, not a claim that production R1 is deployed or broken. Any successor must define separate cash-funded and trim-funded equations and add an integration regression proving deposit receipt precedes cash-funded R1 allocation without a spurious sell/rebuy. A genuine broker/maintenance cure still executes before an unavailable deposit.
+
+## Result-blind accounting and source correction proposed for the successor
+
+The supporting register now records the proposed cost-aware accounting contract, source-tagged event clock, three distinct deployment semantics, synthetic conservation oracle, partial source-derived candidate mapping, and the remaining choices. These additions remain `SPECIFICATION_INCOMPLETE_NOT_AUTHORIZED_NOT_EXECUTABLE`; they are proposed definitions for independent review, not implementation or acceptance.
+
+The original margin-study cost cells are **0/5/15 bps**, from `research/margin_target_study/PROTOCOL_V2.md` §§7–8 and `pre_registration.yaml::metrics.cost_activity`. The prior scoping value 0/10/25 was a source-attribution error imported from the separate whole-portfolio V2 contract and is corrected without modifying either frozen source. Ten bps appears only in the synthetic arithmetic oracle and is not a MARGIN-0005 study cell.
+
+R1 supplies `repay_amount` plus an `effective_leverage_cap`; it supplies neither a leverage target nor a no-borrow guarantee. The successor must keep separate: (a) a proposed cash-only/no-new-draw arm; (b) inherited deposit-day capacity followed by weighted-gap allocation, where capacity is not an actual draw and gaps/lots/gates may bind; and (c) a separately proposed genuine end-cycle target arm. Gross repayment, subsequent same-cycle borrowing, sale/buy costs and sell/rebuy must remain separately visible so a later draw cannot erase the measured repayment treatment.
+
+The original 300-trial allowance remains attached to the original frozen experiment and is not inherited. A successor trial ceiling cannot be stated until full economic configuration tuples exist, nominal duplicates are collapsed by full configuration hash, and path-affecting 0/5/15 cost cases are either enumerated as trials or kept strictly fixed-path analytical post-processing.

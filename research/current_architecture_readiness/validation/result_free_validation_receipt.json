@@ -1,98 +1,72 @@
 {
-  "recorded_at_utc": "2026-09-21T14:04:53Z",
-  "base_commit": "c62a98aad8217def4c10a4b021bef198b8a0fcc9",
-  "reviewed_draft_parent": "44acc234ad05c5dce28f2cf32f40f8ceda2f504b",
+  "recorded_at_utc": "2026-09-21T15:24:24Z",
+  "unit": "MARGIN-0006 result-blind accounting and source-attribution correction",
+  "authority": "SPECIFICATION_INCOMPLETE_NOT_AUTHORIZED_NOT_EXECUTABLE",
   "environment": {
     "python": "3.14.4",
     "pytest": "9.1.1",
-    "kernel": "Linux 6.18.44 x86_64"
+    "kernel": "Linux 6.18.44 x86_64 GNU/Linux"
+  },
+  "lineage": {
+    "local_start_head": "7e53236543e6fc28bd96adc9d911259c0cd014bc",
+    "local_start_tree": "a9805e0ba452067344b497bd356b5ea7f9fafb84",
+    "local_start_parent": "c62a98aad8217def4c10a4b021bef198b8a0fcc9",
+    "coordinator_reported_merged_main": "5e9a5b64086cdae6ad2fcc21e902a7e727abe6f8",
+    "coordinator_reported_merged_tree": "a9805e0ba452067344b497bd356b5ea7f9fafb84",
+    "coordinator_reported_merged_parents": [
+      "c62a98aad8217def4c10a4b021bef198b8a0fcc9",
+      "d18759d8b75277cd06605977a26d542d50a938ff"
+    ],
+    "disposition": "Local wrapper has the merged PR399 tree byte-for-byte but not the coordinator-reported merge object; no remote is configured, so this commit's actual parent must remain the local wrapper and coordinator transport must preserve the final tree."
   },
   "historical_simulation_executed": false,
   "sealed_data_opened": false,
+  "broker_or_account_accessed": false,
   "checks": [
+    {
+      "command": "python -m pytest -q test_margin_current_s3_preregistration.py",
+      "exit": 0,
+      "outcome": "24 passed in 1.29s",
+      "scope": "Focused result-blind source-contract, synthetic accounting, malformed-input, and scoping-checklist tests only."
+    },
     {
       "command": "python margin_current_s3_preregistration_validator.py",
       "exit": 0,
       "outcome": "PASS: scoping authority/status checklist predicates hold; narrative facts are unchecked"
     },
     {
-      "command": "python -m pytest -q test_margin_current_s3_preregistration.py",
+      "command": "python -m py_compile test_margin_current_s3_preregistration.py",
       "exit": 0,
-      "outcome": "20 passed in 0.62s",
-      "scope": "targeted checklist tests including recursive aliases, ordinary reused aliases, deep/shared acyclic structures, malformed types, and synthetic event-order reproduction; no historical data"
+      "outcome": "pass"
     },
     {
-      "command": "python -m pytest -q test_portfolio_hq_dashboard_decisions.py",
+      "command": "python - <<'PY' ... yaml.safe_load(...) ... PY",
       "exit": 0,
-      "outcome": "complete module returned exit 0 after H1 corpus assertion correction"
-    },
-    {
-      "command": "python -m pytest -q test_portfolio_hq_dashboard_decisions.py::test_title_filename_fallback_real_corpus test_portfolio_hq_dashboard_decisions.py::test_title_frontmatter_fallback test_portfolio_hq_dashboard_decisions.py::test_title_h1_fallback test_portfolio_hq_dashboard_decisions.py::test_title_unusable_filename_falls_back_to_id",
-      "exit": 0,
-      "outcome": "4 passed in 2.10s"
-    },
-    {
-      "command": "python -m pytest --collect-only -q test_portfolio_hq_dashboard_decisions.py | tail -1",
-      "exit": 0,
-      "outcome": "96 tests collected in 0.14s"
-    },
-    {
-      "command": "python -m py_compile margin_current_s3_preregistration_validator.py test_margin_current_s3_preregistration.py",
-      "exit": 0,
-      "outcome": "pass after recursive-alias correction"
-    },
-    {
-      "command": "python -m json.tool research/current_architecture_readiness/validation/result_free_validation_receipt.json >/dev/null",
-      "exit": 0,
-      "outcome": "pass after final receipt rewrite"
-    },
-    {
-      "command": "python whole_portfolio_robustness_v2_preregistration_validator.py",
-      "exit": 1,
-      "outcome": "ERROR: pin drift: issuer_lookthrough.yaml",
-      "classification": "UNRESOLVED_INPUT_GATE_NOT_A_RESEARCH_RESULT"
+      "outcome": "PASS: YAML parses and incomplete/non-executable status is preserved"
     },
     {
       "command": "git diff --check",
       "exit": 0,
       "outcome": "no whitespace errors"
-    },
-    {
-      "command": "PYENV_VERSION=3.11.15 python -m pytest -q test_margin_current_s3_preregistration.py",
-      "exit": 4,
-      "outcome": "conftest import failed: ModuleNotFoundError: No module named yaml",
-      "classification": "ENVIRONMENT_LIMITATION_PYTHON_3_11_DEPENDENCIES_NOT_INSTALLED"
-    },
-    {
-      "command": "PYENV_VERSION=3.11.15 python -m pytest -q test_portfolio_hq_dashboard_decisions.py",
-      "exit": 4,
-      "outcome": "conftest import failed: ModuleNotFoundError: No module named yaml",
-      "classification": "ENVIRONMENT_LIMITATION_PYTHON_3_11_DEPENDENCIES_NOT_INSTALLED"
     }
   ],
-  "r1_synthetic_reproduction": {
-    "historical_trial": false,
-    "observed": "day0 gross/debt 180/80; day1 pre-trade repayment 55 and 0.55 X sold before deposit 100; final gross/cash/debt 200/25/25",
-    "disposition": "MANDATORY_FUTURE_EVENT_ORDER_INTEGRATION_REGRESSION; NO_PRODUCTION_R1_CLAIM"
+  "source_attribution_dispositions": {
+    "margin_cost_cells": "Corrected to inherited 0/5/15 bps from MARGIN-0005 PROTOCOL_V2 sections 7-8 and pre_registration metrics.cost_activity; whole-portfolio V2 0/10/25 was not imported.",
+    "ten_bps_fixture": "Synthetic arithmetic fixture only, not an inherited study cell.",
+    "inherited_deposit_day_semantics": "The leverage calculation is capacity followed by weighted-gap allocation, not a commanded draw, leverage target, or no-new-draw promise.",
+    "spgi_action": "Coordinator-verified official methodological lead only; no author-retained bytes/hash or admission.",
+    "dff_alfred_attempt": "Coordinator-reported timed-out form attempt only; no archive path, returned bytes/hash, coverage proof, or admission."
   },
   "artifact_sha256": {
-    "docs/CURRENT_NUMERIC_POLICY_EVIDENCE_INVENTORY_20260920.md": "a49e9665a464130d4fbd1f7098034672980b68322c468fb43ed762bcbfcfe4cb",
-    "governance/decisions.yaml": "354fe4bc2a2c151df99cfef658dca5869d6b1a37c52935a3213615406e74cfc1",
-    "governance/decisions/MARGIN-0006-current-architecture-s3-successor-proposal.md": "3be1d7a2234f07cd04f755b5f95eb71ac28e51c013b5146a540ffd41e8f654e2",
-    "margin_current_s3_preregistration_validator.py": "c50524b7b23d6d6c801c54691938c2e0503a5c68f27b9775cc528e24d73e5387",
-    "research/current_architecture_readiness/EVIDENCE_AND_INPUT_REMEDIATION.md": "0805b2b37e4c102acede9303837e04d7e196a20a96b6e169bb4d99658a2332be",
-    "research/margin_target_study/S3_CURRENT_ARCHITECTURE_PREREGISTRATION.yaml": "f6324259c33003a34024158108b8d89cdfc29d4c116cc8dccb5861e031cd039d",
-    "test_margin_current_s3_preregistration.py": "7e960fa6c72a785b5fd70075a2c79e3e6de93bdfec4b0bf7be6d90d505cc48a2",
-    "test_portfolio_hq_dashboard_decisions.py": "55bf7ad4950b98b3a3c958134b7eae9abeaf4d9a5e210f8c19a7f2527bbbd8ef",
-    "issuer_lookthrough.yaml": "33d3797bd746de6825f58ba2ca2c0c67908e012a5118bb7d1d10d883fc0be294"
+    "governance/decisions/MARGIN-0006-current-architecture-s3-successor-proposal.md": "63e44db7efc79aa65949130eb525590768d19d70e52141f978a5382d513680c6",
+    "research/current_architecture_readiness/EVIDENCE_AND_INPUT_REMEDIATION.md": "701c67ca6673ae52674404de91f4979291c1b69275d2bb1c03562ef496f7da13",
+    "research/margin_target_study/S3_CURRENT_ARCHITECTURE_PREREGISTRATION.yaml": "1a7c8277f31d71af9bfa0f5d751415f604f9b2b22fe9f5f02fe31d7360477b4c",
+    "test_margin_current_s3_preregistration.py": "73c94b0706adc263d36a7f7626fb5e9a3e1503d6faca7c911f2ff21788da8b80"
   },
-  "published_pr399_head_before_correction": "44acc234ad05c5dce28f2cf32f40f8ceda2f504b",
-  "local_parent_before_correction": "a7e9d5f65a3a20c9ab54dd6225b4b96ab12a16b7",
-  "author_local_intermediate_observed_earlier": "aa14ea3ddcbfd33dd55ad9a1baa63bb492c4ec78",
-  "lineage_note": "aa14ea3d was an earlier author-local intermediate, not the published parent and no longer reachable in this checkout; published PR399 mapped the draft to 44acc234 while the correction checkout parent was a7e9d5f.",
-  "prior_dashboard_claim_correction": "The 2026-09-20 receipt claimed the dashboard command passed without retaining a complete result; CI later proved that claim false. This record supersedes it with the corrected corpus-title test and current command outcomes.",
-  "published_pr399_head_before_recursive_alias_correction": "adcd10d9d87dfe05ff8d05fd695f7cd74e800160",
-  "published_pr399_parent_before_recursive_alias_correction": "44acc234ad05c5dce28f2cf32f40f8ceda2f504b",
-  "local_parent_before_recursive_alias_correction": "119286b353d32ee940afa4f763d7aeb40b5eb06b",
-  "recursive_alias_defect_disposition": "Recursive YAML container aliases now return a controlled finite-mapping validation error; iterative identity-aware traversal preserves deep and shared acyclic containers without recursive or exponential traversal."
+  "limitations": [
+    "The three deployment semantics remain alternatives; none is selected or adopted.",
+    "The candidate registry, trial budget, rounding order, cost-path treatment, admissible common calendar, DFF evidence, SOL evidence, issuer-lookthrough successor authority, and corporate-action treatment remain unresolved.",
+    "The checklist does not validate narrative truth, simulator implementation, input admissibility, or execution readiness.",
+    "Supported final-head Python 3.11 full CI remains an independent-acceptance prerequisite and was not run in this local Python 3.14 environment."
+  ]
 }
