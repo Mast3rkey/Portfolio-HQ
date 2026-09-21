@@ -1,0 +1,31 @@
+{
+  "recorded_at_utc": "2026-09-20T23:11:08Z",
+  "base_commit": "c62a98aad8217def4c10a4b021bef198b8a0fcc9",
+  "reviewed_draft_parent": "aa14ea3ddcbfd33dd55ad9a1baa63bb492c4ec78",
+  "environment": {"python": "3.14.4", "pytest": "9.1.1", "kernel": "Linux 6.18.44 x86_64"},
+  "historical_simulation_executed": false,
+  "sealed_data_opened": false,
+  "checks": [
+    {"command": "python margin_current_s3_preregistration_validator.py", "exit": 0, "outcome": "PASS: incomplete scoping register is internally consistent; this is not execution readiness"},
+    {"command": "python -m pytest -q test_margin_current_s3_preregistration.py", "exit": 0, "outcome": "10 passed in 0.28s", "scope": "checklist mutations and synthetic accounting/event-order reproduction only"},
+    {"command": "python -m pytest -q test_portfolio_hq_dashboard_decisions.py", "exit": 0, "outcome": "command completed successfully after generated-index count update"},
+    {"command": "python whole_portfolio_robustness_v2_preregistration_validator.py", "exit": 1, "outcome": "ERROR: pin drift: issuer_lookthrough.yaml", "classification": "UNRESOLVED_INPUT_GATE_NOT_A_RESEARCH_RESULT"},
+    {"command": "git diff --check", "exit": 0, "outcome": "no whitespace errors"}
+  ],
+  "r1_synthetic_reproduction": {
+    "historical_trial": false,
+    "observed": "day0 gross/debt 180/80; day1 pre-trade repayment 55 and 0.55 X sold before deposit 100; final gross/cash/debt 200/25/25",
+    "disposition": "MANDATORY_FUTURE_EVENT_ORDER_INTEGRATION_REGRESSION; NO_PRODUCTION_R1_CLAIM"
+  },
+  "artifact_sha256": {
+    "docs/CURRENT_NUMERIC_POLICY_EVIDENCE_INVENTORY_20260920.md": "8191aa9d02dbc25655549465f92243cdd435f9b5d3953b5c0138636f4da0f82b",
+    "governance/decisions.yaml": "354fe4bc2a2c151df99cfef658dca5869d6b1a37c52935a3213615406e74cfc1",
+    "governance/decisions/MARGIN-0006-current-architecture-s3-successor-proposal.md": "ba0d71b7a35ab10912dbeb72018dd15e352b100cd3e5a49247bf4d45d1713961",
+    "margin_current_s3_preregistration_validator.py": "48d8ba8cd7a526245375a886746be7c8f0ebd556792a0a99a83d74498e76577a",
+    "research/current_architecture_readiness/EVIDENCE_AND_INPUT_REMEDIATION.md": "8457fbfed357125ab971dcc240a11895b731a47b22f82fe6ad6b5f94771e914d",
+    "research/margin_target_study/S3_CURRENT_ARCHITECTURE_PREREGISTRATION.yaml": "270194f2a83ab28e84e806d06d0e99555c9f9f110a7600856042ea0ce6ce2441",
+    "test_margin_current_s3_preregistration.py": "b943631bc6ce790a3863f110082e8809201d9948908bd25648a05709cb1f8c9b",
+    "test_portfolio_hq_dashboard_decisions.py": "451aca061892e8aa49aacd4d0ed2713ee7183d4a98ce58223dcf187f28112f80",
+    "issuer_lookthrough.yaml": "33d3797bd746de6825f58ba2ca2c0c67908e012a5118bb7d1d10d883fc0be294"
+  }
+}
