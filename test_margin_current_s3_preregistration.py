@@ -117,37 +117,58 @@ def test_margin_cost_source_and_whole_portfolio_costs_are_not_conflated():
 def test_cost_aware_synthetic_oracle_and_book_conservation():
     with localcontext() as context:
         context.prec = 50
-        G, D, A, L = map(Decimal, ("180", "80", "100", "1.25"))
+        G_o, D_o, C_o, F, L = map(Decimal, ("180", "80", "0", "100", "1.25"))
         s = b = Decimal("0.001")
-        N = G - D
-        repayment = min(A, D, max(Decimal(0), G / L - N))
+        N_o, B_o = G_o - D_o, G_o + C_o - D_o
+        C_a, B_a = C_o + F, B_o + F
+        repayment = min(F, D_o, max(Decimal(0), G_o / L - N_o))
         assert repayment == Decimal("44")
-        D_i, A_i, N_i = D - repayment, A - repayment, N + repayment
+        G_i, D_i, C_i = G_o, D_o - repayment, C_a - repayment
+        N_i, B_i = G_i - D_i, G_i + C_i - D_i
+        A_i, P_i = F - repayment, C_o
+        assert (G_i, D_i, C_i, N_i, B_i, A_i, P_i) == tuple(map(
+            Decimal, ("180", "36", "56", "144", "200", "56", "0")
+        ))
+        assert B_i == B_a  # cash repayment lowers cash and debt equally
+        assert C_i == A_i + P_i
 
         legacy_capacity = Decimal(str(_leverage_capped_margin(
-            float(G), float(D_i), float(A_i), float(L), float("inf"))))
+            float(G_i), float(D_i), float(A_i), float(L), float("inf"))))
         assert legacy_capacity == Decimal("14")
         legacy_purchase = (A_i + legacy_capacity) / (1 + b)
-        legacy_leverage = (G + legacy_purchase) / (N_i + legacy_purchase - legacy_capacity)
+        legacy_leverage = (G_i + legacy_purchase) / (N_i + legacy_purchase - legacy_capacity)
         assert legacy_purchase.quantize(Decimal("0.0000000001")) == Decimal("69.9300699301")
         assert legacy_leverage.quantize(Decimal("0.0000000001")) == Decimal("1.2500874432")
         assert legacy_leverage > L  # raw helper is not fee-safe when its full capacity is used
 
+        wrong_arrival_reuse = (
+            (1 + b) * (L * N_i - G_i) + (L - 1) * F
+        ) / (1 + L * b)
+        wrong_purchase = (A_i + wrong_arrival_reuse) / (1 + b)
+        wrong_leverage = (G_i + wrong_purchase) / (
+            N_i + wrong_purchase - wrong_arrival_reuse
+        )
+        assert wrong_arrival_reuse.quantize(Decimal("0.0000000001")) == Decimal("24.9687890137")
+        assert wrong_leverage.quantize(Decimal("0.000000000001")) == Decimal("1.304967285887")
+        assert wrong_leverage > L
+
         cost_capacity = (
-            (1 + b) * (L * N_i - G) + (L - 1) * A_i
+            (1 + b) * (L * N_i - G_i) + (L - 1) * A_i
         ) / (1 + L * b)
         p_cap = (A_i + cost_capacity) / (1 + b)
         assert cost_capacity.quantize(Decimal("0.0000000001")) == Decimal("13.9825218477")
         assert p_cap.quantize(Decimal("0.0000000001")) == Decimal("69.9126092385")
-        assert (G + p_cap) / (N_i + p_cap - cost_capacity) == L
-        assert G + p_cap + (A_i + cost_capacity - (1 + b) * p_cap) - (D_i + cost_capacity) == N_i + A_i - b * p_cap
+        assert (G_i + p_cap) / (N_i + p_cap - cost_capacity) == L
+        C_e, D_e, G_e = C_i + cost_capacity - (1 + b) * p_cap, D_i + cost_capacity, G_i + p_cap
+        assert C_e == P_i
+        assert G_e + C_e - D_e == B_i - b * p_cap
 
-        zero_cost_capacity = (L * N_i - G) + (L - 1) * A_i
+        zero_cost_capacity = (L * N_i - G_i) + (L - 1) * A_i
         assert zero_cost_capacity == legacy_capacity
 
         p_cash = A_i / (1 + b)
         assert p_cash.quantize(Decimal("0.0000000001")) == Decimal("55.9440559441")
-        assert G + p_cash - D_i == N_i + A_i - b * p_cash
+        assert G_i + (C_i - (1 + b) * p_cash) + p_cash - D_i == B_i - b * p_cash
 
         partial_purchase = Decimal("20")
         partial_cost = b * partial_purchase
@@ -166,16 +187,143 @@ def test_cost_aware_synthetic_oracle_and_book_conservation():
         assert infeasible_capacity == 0
         assert cash == Decimal("1")  # no gap means no draw, no fee, and explicit residual cash
 
-        q = (G - L * N) / (1 - L * s)
+        q = (G_o - L * N_o) / (1 - L * s)
         assert q.quantize(Decimal("0.0000000001")) == Decimal("55.0688360451")
-        lhs = (G - q) - (D - (1 - s) * q)
-        rhs = N - s * q
+        lhs = (G_o - q) - (D_o - (1 - s) * q)
+        rhs = N_o - s * q
         assert abs(lhs - rhs) < Decimal("1e-24")
+
+
+@pytest.mark.parametrize("debt, repayment, expected", [
+    pytest.param("80", "0", ("180", "80", "110", "100", "210", "100", "10"), id="none"),
+    pytest.param("80", "44", ("180", "36", "66", "144", "210", "56", "10"), id="partial-source"),
+    pytest.param("80", "80", ("180", "0", "30", "180", "210", "20", "10"), id="full-debt-not-full-source"),
+    pytest.param("150", "100", ("180", "50", "10", "130", "140", "0", "10"), id="full-source"),
+])
+def test_staged_cash_sources_none_partial_full_repayment_and_protected_cash(debt, repayment, expected):
+    G_o, D_o, C_o, F = map(Decimal, ("180", debt, "10", "100"))
+    P_o, E_o, R = Decimal("10"), Decimal("0"), Decimal(repayment)
+    assert C_o == P_o + E_o
+    G_a, D_a, C_a = G_o, D_o, C_o + F
+    B_a = G_a + C_a - D_a
+    G_i, D_i, C_i = G_a, D_a - R, C_a - R
+    N_i, B_i = G_i - D_i, G_i + C_i - D_i
+    A_i, P_i = E_o + F - R, P_o
+    assert (G_i, D_i, C_i, N_i, B_i, A_i, P_i) == tuple(map(Decimal, expected))
+    assert B_i == B_a
+    assert C_i == A_i + P_i
+    b = Decimal("0.001")
+    p_executed = min(Decimal("10"), A_i / (1 + b))
+    x_actual = max(Decimal(0), (1 + b) * p_executed - A_i)
+    assert x_actual == 0
+    G_e, D_e = G_i + p_executed, D_i + x_actual
+    C_e = C_i + x_actual - (1 + b) * p_executed
+    assert C_e == P_i + (A_i - (1 + b) * p_executed)
+    assert G_e + C_e - D_e == B_i - b * p_executed
+
+
+def test_two_arrivals_and_preexisting_cash_route_sequentially_without_reset_or_recredit():
+    G, D, C = map(Decimal, ("180", "80", "30"))
+    P, E = Decimal("10"), Decimal("20")
+    assert C == P + E
+    opening_book = G + C - D
+    routed = []
+    residuals = {}
+    for source, arrival, eligible in (
+        ("E", Decimal("0"), E),
+        ("F_deposit", Decimal("60"), Decimal("60")),
+        ("F_dividend", Decimal("40"), Decimal("40")),
+    ):
+        C += arrival
+        N = G - D
+        repay = min(eligible, D, max(Decimal(0), G / Decimal("1.25") - N))
+        C, D = C - repay, D - repay
+        routed.append(repay)
+        residuals[source] = eligible - repay
+    R = sum(routed, Decimal(0))
+    A_i = sum(residuals.values(), Decimal(0))
+    N_i, B_i = G - D, G + C - D
+    assert routed == [Decimal("20"), Decimal("24"), Decimal("0")]
+    assert R == Decimal("44")  # includes r_E exactly once
+    assert (G, D, C, N_i, B_i, A_i, P) == tuple(map(
+        Decimal, ("180", "36", "86", "144", "230", "76", "10")
+    ))
+    assert B_i == opening_book + Decimal("100")
+    assert C == P + A_i
+
+
+def test_optional_trim_off_and_on_branches_are_distinct_and_conserve_book_net_of_cost():
+    G_c, D_c, C_c, L, s = map(Decimal, ("180", "80", "10", "1.25", "0.001"))
+    N_c, B_c = G_c - D_c, G_c + C_c - D_c
+    candidate_q = max(Decimal(0), (G_c - L * N_c) / (1 - L * s))
+    assert candidate_q.quantize(Decimal("0.0000000001")) == Decimal("55.0688360451")
+
+    # No selected/authorized trim event: the candidate formula is not executed.
+    q_off = r_off = Decimal(0)
+    assert (G_c - q_off, D_c - r_off, C_c, N_c, B_c) == (G_c, D_c, C_c, N_c, B_c)
+
+    # Selected/authorized synthetic branch: direct net proceeds repay debt and sale cost reduces book.
+    q_on = candidate_q
+    r_on = (1 - s) * q_on
+    assert q_on <= G_c and r_on <= D_c
+    G_i, D_i, C_i = G_c - q_on, D_c - r_on, C_c
+    N_i, B_i = G_i - D_i, G_i + C_i - D_i
+    assert abs(N_i - (N_c - s * q_on)) < Decimal("1e-24")
+    assert abs(B_i - (B_c - s * q_on)) < Decimal("1e-24")
 
 
 def _assert_cost_capacity_evidence(scope):
     contract = scope["proposed_accounting_contract"]
+    stages = contract["stages"]
+    assert stages == {
+        "window_open_0": {
+            "scope": "LOCAL_ACCOUNTING_WINDOW_AFTER_ANY_PRIOR_MANDATORY_CURE_AND_INTEREST; NOT_A_FULL_DAILY_ENGINE",
+            "definitions": ["G_0", "D_0", "C_0", "N_0=G_0-D_0", "B_0=G_0+C_0-D_0"],
+            "cash_partition": "C_0=P_0+E_0; P_0=PROTECTED_OR_NONDEPLOYABLE; E_0=EXPLICITLY_ADMITTED_PRE_EXISTING_CASH",
+        },
+        "source_events_j": {
+            "disjoint_indices": "J={E} UNION K; E=PRE_EXISTING_ADMITTED_BUCKET; K=SOURCE_ARRIVAL_BUCKETS; E_NOT_IN_K",
+            "event_amounts": "f_E=0; U_E=E_0; FOR_k_IN_K f_k=F_k_AND_U_k=F_k",
+            "predecessor": "EACH_j_READS_ONLY_STATE_j_minus_1; NO_EVENT_READS_WINDOW_OPEN_0_AFTER_A_PREDECESSOR_EXISTS",
+            "before_route": ["G_j_pre=G_j_minus_1", "D_j_pre=D_j_minus_1", "C_j_pre=C_j_minus_1+f_j", "N_j_pre=G_j_pre-D_j_pre", "B_j_pre=G_j_pre+C_j_pre-D_j_pre"],
+            "route": "r_j=min(U_j,D_j_pre,max(0,G_j_pre/L_star-N_j_pre)); 0_le_r_j_le_U_j",
+            "after_route": ["G_j=G_j_pre", "D_j=D_j_pre-r_j", "C_j=C_j_pre-r_j", "N_j=N_j_pre+r_j", "B_j=B_j_pre"],
+            "classification": "EACH_F_k_RETAINS_EXTERNAL_FLOW_OR_RETURN_CASH_CLASSIFICATION; EACH_U_j_IS_ROUTED_AT_MOST_ONCE",
+        },
+        "cash_routing_c": {
+            "total": "R=r_E+sum_k_in_K(r_k)",
+            "terminal_state": ["G_c=G_last", "D_c=D_0-R", "C_c=C_0+sum_k_in_K(F_k)-R", "N_c=G_c-D_c", "B_c=G_c+C_c-D_c"],
+            "residual_partition": "A_c=(E_0-r_E)+sum_k_in_K(F_k-r_k); P_c=P_0; C_c=P_c+A_c",
+            "bounds": ["0_le_r_E_le_E_0", "0_le_r_k_le_F_k", "0_le_A_c_le_C_c", "NO_RESET_NO_CUMULATIVE_RECREDIT_NO_DOUBLE_ROUTE"],
+        },
+        "post_routing_i": {
+            "trim_off_branch": "IF_NO_SEPARATELY_SELECTED_AND_AUTHORIZED_TRIM_EVENT_THEN_q=0_AND_r_trim=0_AND_STATE_i=STATE_c",
+            "trim_on_branch": "IF_SELECTED_AUTHORIZED_TRIM_EVENT_THEN_q=max(0,(G_c-L_star*N_c)/(1-L_star*s))_SUBJECT_TO_0_le_q_le_G_c_AND_0_le_(1-s)*q_le_D_c; r_trim=(1-s)*q",
+            "trim_on_identities": ["G_i=G_c-q", "D_i=D_c-r_trim", "C_i=C_c", "N_i=N_c-s*q", "B_i=B_c-s*q"],
+            "residual_deployable_cash": "A_i=A_c; P_i=P_c; C_i=P_i+A_i",
+            "admission_rule": "ONLY_UNROUTED_DISJOINT_BUCKET_RESIDUALS_ENTER_A_i; ALL_OTHER_CASH_IS_P_i",
+            "bounds": ["0_le_A_i_le_C_i", "0_le_P_i_le_C_i", "NO_SOURCE_DOLLAR_ROUTED_OR_DEPLOYED_TWICE"],
+        },
+        "purchase_e": {
+            "identities": ["x_actual=max(0,(1+b)*p_executed-A_i)", "G_e=G_i+p_executed", "D_e=D_i+x_actual", "C_e=C_i+x_actual-(1+b)*p_executed", "N_e=G_e-D_e", "B_e=G_e+C_e-D_e=B_i-b*p_executed"],
+            "residual": "C_e=P_i+(A_i+x_actual-(1+b)*p_executed)",
+        },
+    }
+    assert contract["identities"]["cost_aware_full_deployment_capacity"] == (
+        "x_cap=max(0,((1+b)*(H*N_i-G_i)+(H-1)*A_i)/(1+H*b))"
+    )
+    assert contract["identities"]["executed_draw_cash_first"] == (
+        "x_actual=max(0,(1+b)*p_executed-A_i)"
+    )
     oracle = contract["synthetic_oracle_10bps_fixture_only"]
+    assert oracle["inputs"] == {
+        "G_o": "180", "D_o": "80", "C_o": "0", "source_arrival_F_deposit": "100",
+        "L_star": "1.25", "sale_cost_s": "0.001", "buy_cost_b": "0.001",
+    }
+    assert oracle["staged_state"] == {
+        "R": "44", "G_i": "180", "D_i": "36", "C_i": "56", "N_i": "144",
+        "B_i": "200", "residual_deployable_A_i": "56", "protected_P_i": "0",
+    }
     legacy = oracle["inherited_zero_buy_cost_capacity"]
     proposed = oracle["proposed_cost_aware_capacity"]
     assert legacy == {
@@ -195,10 +343,10 @@ def _assert_cost_capacity_evidence(scope):
     )
     proposal = contract["deployment_semantics"]["COST_AWARE_CAPACITY_PROPOSAL"]
     assert proposal["execution"] == (
-        "CASH_FIRST; x_actual=max(0,(1+b)*p_executed-A); x_actual_le_x_cap"
+        "CASH_FIRST; x_actual=max(0,(1+b)*p_executed-A_i); x_actual_le_x_cap"
     )
     assert proposal["infeasible"] == (
-        "IF_N_i_LE_0_OR_OPENING_LEVERAGE_ABOVE_H_THEN_NO_NEW_DRAW_AND_MANDATORY_CURE_OR_FAILED_CELL"
+        "IF_N_i_LE_0_OR_PRE_PURCHASE_G_i/N_i_ABOVE_H_THEN_NO_NEW_DRAW_AND_MANDATORY_CURE_OR_FAILED_CELL"
     )
 
 
@@ -213,6 +361,33 @@ def test_cost_capacity_claim_is_bound_to_adverse_evidence_mutations():
     ):
         mutated = yaml.safe_load(REGISTER.read_text())
         mutated["proposed_accounting_contract"]["synthetic_oracle_10bps_fixture_only"][section][field] = bad
+        with pytest.raises(AssertionError):
+            _assert_cost_capacity_evidence(mutated)
+
+    for mutate in (
+        lambda d: d["proposed_accounting_contract"]["stages"].pop("post_routing_i"),
+        lambda d: d["proposed_accounting_contract"]["stages"]["post_routing_i"].update(
+            residual_deployable_cash="A_i=F"
+        ),
+        lambda d: d["proposed_accounting_contract"]["stages"]["cash_routing_c"].update(total="R=0"),
+        lambda d: d["proposed_accounting_contract"]["stages"]["source_events_j"].update(
+            after_route=["G_j=G_j_pre", "D_j=D_j_pre", "C_j=C_j_pre"]
+        ),
+        lambda d: d["proposed_accounting_contract"]["stages"]["source_events_j"].update(
+            predecessor="EVERY_EVENT_RESETS_TO_WINDOW_OPEN_0"
+        ),
+        lambda d: d["proposed_accounting_contract"]["stages"]["post_routing_i"].update(
+            trim_off_branch="ALWAYS_COMPUTE_q"
+        ),
+        lambda d: d["proposed_accounting_contract"]["identities"].update(
+            cost_aware_full_deployment_capacity="x_cap=FORMULA_USING_ORIGINAL_F"
+        ),
+        lambda d: d["proposed_accounting_contract"]["synthetic_oracle_10bps_fixture_only"]["staged_state"].update(
+            residual_deployable_A_i="100"
+        ),
+    ):
+        mutated = yaml.safe_load(REGISTER.read_text())
+        mutate(mutated)
         with pytest.raises(AssertionError):
             _assert_cost_capacity_evidence(mutated)
 
