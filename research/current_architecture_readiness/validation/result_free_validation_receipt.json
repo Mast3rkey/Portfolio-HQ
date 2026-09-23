@@ -1,6 +1,6 @@
 {
-  "recorded_at_utc": "2026-09-21T20:34:47Z",
-  "unit": "PR400 admitted pre-existing-cash event-clock correction",
+  "recorded_at_utc": "2026-09-21T21:01:36Z",
+  "unit": "PR400 explicit optional pre-existing-cash rule correction",
   "authority": "SPECIFICATION_INCOMPLETE_NOT_AUTHORIZED_NOT_EXECUTABLE",
   "environment": {
     "python": "3.14.4",
@@ -8,12 +8,12 @@
     "kernel": "Linux 6.18.44 x86_64 GNU/Linux"
   },
   "lineage": {
-    "local_parent_for_this_delta": "841dbbd23873baa8bc117e2b913bf23e008812b6",
-    "local_parent_tree": "3bad0ab9b9ca46af56468898b1ecfe32cdc4e632",
+    "local_parent_for_this_delta": "c649ff073996bbcd7ea8fbda88ab95b82d96ea4e",
+    "local_parent_tree": "75b4833c8b637640c862b459bcfa11ed515b248a",
     "local_parent_parent": "c62a98aad8217def4c10a4b021bef198b8a0fcc9",
-    "published_equivalent_head": "ae1ccc63a2b375cd35f8338df532bfe34836cd08",
-    "published_equivalent_tree": "3bad0ab9b9ca46af56468898b1ecfe32cdc4e632",
-    "published_author_commit": "8efa8c172867993e6f4d5cd4e29b9f1a57458605",
+    "published_equivalent_head": "e62313f1a8a945270be9f4863124afd0df156bb1",
+    "published_equivalent_tree": "75b4833c8b637640c862b459bcfa11ed515b248a",
+    "published_author_commit": "2b47c4a4e3d6602550d8d8f063fd4edbb032b420",
     "published_base": "5e9a5b64086cdae6ad2fcc21e902a7e727abe6f8",
     "disposition": "The local wrapper parent, prior author commit, and published head share the same input tree; coordinator transport to the same draft PR400 branch remains required."
   },
@@ -24,8 +24,8 @@
     {
       "command": "python -m pytest -q test_margin_current_s3_preregistration.py",
       "exit": 0,
-      "outcome": "44 passed in 1.63s",
-      "scope": "Canonical E/dividend/deposit order, exactly-once clock occurrence, zero default without an admitted E rule, and adverse dividend/deposit and E/dividend mutations."
+      "outcome": "45 passed in 3.20s",
+      "scope": "Explicit optional E-rule selection, zero-repayment no-rule default, canonical and noncanonical source order, R1/R2 routing, conservation, fees, and prior adversarial checks."
     },
     {
       "command": "python -m py_compile test_margin_current_s3_preregistration.py",
@@ -33,9 +33,9 @@
       "outcome": "pass"
     },
     {
-      "command": "python - <<'PY' [JSON/YAML load and complete E/dividend/deposit event-clock assertion] PY",
+      "command": "python - <<'PY' [JSON/YAML load and exact optional E-rule assertion] PY",
       "exit": 0,
-      "outcome": "PASS: YAML/JSON and complete E/dividend/deposit event-clock order"
+      "outcome": "PASS: YAML/JSON and explicit optional E rule"
     },
     {
       "command": "git diff --check",
@@ -43,18 +43,18 @@
       "outcome": "no whitespace errors"
     }
   ],
-  "canonical_fixture": {
-    "declared_order": "prior mandatory cure; interest; optional separately admitted E routing; dividend arrival/R2; deposit arrival/R1",
-    "no_admitted_e_rule": "r_E=0",
-    "opening": "G=180,D=80,C=30,P=10,E=20",
-    "repayments": "[20,40,0]",
-    "ending": "G=180,D=20,C=70,N=160,B=230,A=60,P=10",
-    "reversed_e_dividend_sensitivity": "dividend/E/deposit repayments [40,4,0], ending G=180,D=36,C=86,N=144,B=230,A=76,P=10",
-    "disposition": "The reversed sequence is an adverse noncanonical sensitivity, not an alternative event clock."
+  "optional_existing_cash_rule": {
+    "name": "E_TARGET_RESTORATION_PROPOSAL",
+    "source": "E only; not an external-deposit or R1 reclassification",
+    "selected_formula": "r_E=min(E_0,D_E_pre,max(0,G_E_pre/L_star-N_E_pre))",
+    "default_without_selection": "r_E=0",
+    "selected_canonical_result": "E/dividend/deposit repayments [20,40,0], ending G=180,D=20,C=70,N=160,B=230,A=60,P=10",
+    "no_rule_result": "E/dividend/deposit repayments [0,40,4], ending G=180,D=36,C=86,N=144,B=230,A=76,P=10",
+    "noncanonical_sensitivity": "dividend/E/deposit repayments [40,4,0], ending G=180,D=36,C=86,N=144,B=230,A=76,P=10"
   },
   "artifact_sha256_before_receipt_rewrite": {
-    "research/margin_target_study/S3_CURRENT_ARCHITECTURE_PREREGISTRATION.yaml": "8ea8af746a85b99cc266299a9d9920633be13eb713f18551a19f1efea252d0e3",
-    "test_margin_current_s3_preregistration.py": "f337a95227ce7df8a2d6c2ed6accd97931d805c2f17bf2e28aa70fd82edcc715"
+    "research/margin_target_study/S3_CURRENT_ARCHITECTURE_PREREGISTRATION.yaml": "11b72ebd654d7b0a7b2817c5e8136f95361e1a8e81ab6562027c22f31c4683cb",
+    "test_margin_current_s3_preregistration.py": "57447b5be273acc9db8b93b53da280f24015de80c8dfed4a2086a06e508888a4"
   },
   "byte_identical_protected_surfaces": [
     "margin_current_s3_preregistration_validator.py",
@@ -65,6 +65,6 @@
   "limitations": [
     "MARGIN-0006 remains Proposed and the register remains specification-incomplete, unauthorized, and non-executable.",
     "No historical/sealed run, input acquisition/admission, production change, brokerage access, numeric-policy adoption, or Stage1 action occurred.",
-    "No previous-head CI run certifies this correction. Full final-head Python 3.11 CI is required after byte-identical publication and was not run locally."
+    "The e623 previous-head CI cannot certify these changed bytes. Full final-head Python 3.11 CI is required after byte-identical publication and was not run locally."
   ]
 }

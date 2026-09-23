@@ -222,7 +222,7 @@ def test_staged_cash_sources_none_partial_full_repayment_and_protected_cash(debt
     assert G_e + C_e - D_e == B_i - b * p_executed
 
 
-def _cash_source_fixture_from_clock(scope, *, require_canonical=True):
+def _cash_source_fixture_from_clock(scope, *, require_canonical=True, select_existing_rule=True):
     clock = scope["proposed_accounting_contract"]["proposed_event_clock"]
     interest_step = "DAILY_INTEREST_CAPITALIZATION"
     existing_step = "OPTIONAL_SEPARATELY_ADMITTED_PRE_EXISTING_CASH_E_ROUTING; WITHOUT_SEPARATELY_ADMITTED_RULE_r_E=0"
@@ -235,8 +235,15 @@ def _cash_source_fixture_from_clock(scope, *, require_canonical=True):
     if require_canonical:
         assert (clock.index(interest_step) < clock.index(existing_step) < clock.index(dividend_step)
                 < clock.index(r2_step) < clock.index(deposit_step) < clock.index(r1_step))
+    existing = scope["proposed_accounting_contract"]["stages"]["source_events_j"]["optional_existing_cash_rule_proposal"]
+    assert existing == {
+        "name": "E_TARGET_RESTORATION_PROPOSAL",
+        "source": "E_ONLY_NOT_EXTERNAL_DEPOSIT",
+        "selected_formula": "r_E=min(E_0,D_E_pre,max(0,G_E_pre/L_star-N_E_pre))",
+        "default_without_selection": "r_E=0",
+    }
     sources = {
-        existing_step: ("E", "existing_explicit_rule", Decimal("0"), Decimal("20")),
+        existing_step: ("E", existing["name"] if select_existing_rule else "E_NO_RULE_SELECTED", Decimal("0"), Decimal("20")),
         dividend_step: ("F_dividend", "r2_treatment", Decimal("40"), Decimal("40")),
         deposit_step: ("F_deposit", "r1", Decimal("60"), Decimal("60")),
     }
@@ -251,9 +258,12 @@ def _run_cash_source_fixture(sequence):
     for source, family, arrival, eligible in sequence:
         C += arrival
         N = G - D
-        if family == "existing_explicit_rule":
+        if family == "E_TARGET_RESTORATION_PROPOSAL":
             assert source == "E" and eligible == E
             repay = min(eligible, D, max(Decimal(0), G / Decimal("1.25") - N))
+        elif family == "E_NO_RULE_SELECTED":
+            assert source == "E" and eligible == E
+            repay = Decimal(0)
         elif family == "r1":
             assert source == "F_deposit"
             repay = min(eligible, D, max(Decimal(0), G / Decimal("1.25") - N))
@@ -285,6 +295,17 @@ def test_two_arrivals_and_preexisting_cash_follow_declared_clock_without_reset_o
     ))
     assert B_i == opening_book + Decimal("100")
     assert C == P + A_i
+
+
+def test_preexisting_cash_without_selected_optional_rule_defaults_to_zero_repayment():
+    scope = yaml.safe_load(REGISTER.read_text())
+    routed, ending, opening_book = _run_cash_source_fixture(
+        _cash_source_fixture_from_clock(scope, select_existing_rule=False)
+    )
+    assert routed == [Decimal("0"), Decimal("40"), Decimal("4")]
+    assert ending == tuple(map(Decimal, ("180", "36", "86", "144", "230", "76", "10")))
+    assert ending[4] == opening_book + Decimal("100")
+    assert ending[2] == ending[5] + ending[6]
 
 
 def test_canonical_fixture_rejects_dividend_after_deposit_clock_mutation():
@@ -421,6 +442,12 @@ def _assert_cost_capacity_evidence(scope):
                 "R2_DIVIDEND_REINVEST_CONTROL": "SOURCE_MUST_BE_ADMITTED_DIVIDEND; r_j=0",
                 "EXISTING_CASH_EXPLICIT_RULE": "SOURCE_MUST_BE_E; ROUTE_REQUIRES_SEPARATELY_ADMITTED_RULE_AND_AMOUNT_OTHERWISE_r_j=0",
                 "NO_REPAYMENT_ROUTE": "r_j=0",
+            },
+            "optional_existing_cash_rule_proposal": {
+                "name": "E_TARGET_RESTORATION_PROPOSAL",
+                "source": "E_ONLY_NOT_EXTERNAL_DEPOSIT",
+                "selected_formula": "r_E=min(E_0,D_E_pre,max(0,G_E_pre/L_star-N_E_pre))",
+                "default_without_selection": "r_E=0",
             },
             "source_applicability": "CORPORATE_ACTION_PROTECTED_AND_PRE_EXISTING_CASH_ARE_NOT_DIVIDENDS; EXTERNAL_DEPOSIT_IS_NOT_DIVIDEND; CLASSIFICATION_CANNOT_CHANGE_TO_SELECT_A_RULE",
             "route_bounds": "0_le_r_j_le_min(U_j,D_j_pre); REPAYMENT_RULES_NEVER_BORROW",
