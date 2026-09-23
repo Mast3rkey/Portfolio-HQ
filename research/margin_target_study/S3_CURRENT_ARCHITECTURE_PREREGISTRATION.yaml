@@ -59,8 +59,150 @@ preserved_design_requirements_from_margin_0005:
   draw_frequency_max: ONCE_PER_WEEK
   draw_size_max_net_equity_fraction: '0.10'
   dead_band_leverage_units: '0.05'
-  costs_bps_one_way: ['0', '10', '25']
+  costs_bps_one_way: ['0', '5', '15']
+  costs_source: research/margin_target_study/PROTOCOL_V2.md sections 7 and 8; research/margin_target_study/pre_registration.yaml metrics.cost_activity
+  excluded_cost_registry: PORTFOLIO_ROBUSTNESS_V2_0_10_25_BPS_NOT_IMPORTED
   original_statistical_plan: PRESERVE_AND_RECONCILE_BEFORE_SUCCESSOR_SELECTION
+proposed_accounting_contract:
+  authority: PROPOSED_RESULT_BLIND_NOT_EXECUTABLE
+  state:
+    G: GROSS_MARKET_VALUE_OF_SECURITIES
+    D: MARGIN_DEBT
+    C: SETTLED_CASH
+    N: G_MINUS_D_SECURITY_NET_EQUITY
+    B: G_PLUS_C_MINUS_D_WHOLE_BOOK_EQUITY
+  stages:
+    window_open_0:
+      scope: LOCAL_ACCOUNTING_WINDOW_AFTER_ANY_PRIOR_MANDATORY_CURE_AND_INTEREST; NOT_A_FULL_DAILY_ENGINE
+      definitions: [G_0, D_0, C_0, N_0=G_0-D_0, B_0=G_0+C_0-D_0]
+      cash_partition: C_0=P_0+E_0; P_0=PROTECTED_OR_NONDEPLOYABLE; E_0=EXPLICITLY_ADMITTED_PRE_EXISTING_CASH
+    source_events_j:
+      disjoint_indices: J={E} UNION K; E=PRE_EXISTING_ADMITTED_BUCKET; K=SOURCE_ARRIVAL_BUCKETS; E_NOT_IN_K
+      event_amounts: f_E=0; U_E=E_0; FOR_k_IN_K f_k=F_k_AND_U_k=F_k
+      predecessor: EACH_j_READS_ONLY_STATE_j_minus_1; NO_EVENT_READS_WINDOW_OPEN_0_AFTER_A_PREDECESSOR_EXISTS
+      before_route: [G_j_pre=G_j_minus_1, D_j_pre=D_j_minus_1, C_j_pre=C_j_minus_1+f_j, N_j_pre=G_j_pre-D_j_pre, B_j_pre=G_j_pre+C_j_pre-D_j_pre]
+      routing_selection: EXACTLY_ONE_FAMILY_SOURCE_CONTROL_RULE_PER_EVENT; NO_IMPLICIT_COMPOSITION
+      routing_rules:
+        R1_DEPOSIT_TARGET_RESTORATION: SOURCE_MUST_BE_EXTERNAL_DEPOSIT; r_j=min(U_j,D_j_pre,max(0,G_j_pre/L_star-N_j_pre))
+        R2_DIVIDEND_TREATMENT: SOURCE_MUST_BE_ADMITTED_DIVIDEND; r_j=min(U_j,D_j_pre); EXCESS_U_j_MINUS_r_j_REMAINS_RESIDUAL_ONLY_AFTER_DEBT_CLEARS
+        R2_DIVIDEND_REINVEST_CONTROL: SOURCE_MUST_BE_ADMITTED_DIVIDEND; r_j=0
+        EXISTING_CASH_EXPLICIT_RULE: SOURCE_MUST_BE_E; ROUTE_REQUIRES_SEPARATELY_ADMITTED_RULE_AND_AMOUNT_OTHERWISE_r_j=0
+        NO_REPAYMENT_ROUTE: r_j=0
+      optional_existing_cash_rule_proposal:
+        name: E_TARGET_RESTORATION_PROPOSAL
+        source: E_ONLY_NOT_EXTERNAL_DEPOSIT
+        selected_formula: r_E=min(E_0,D_E_pre,max(0,G_E_pre/L_star-N_E_pre))
+        default_without_selection: r_E=0
+      source_applicability: CORPORATE_ACTION_PROTECTED_AND_PRE_EXISTING_CASH_ARE_NOT_DIVIDENDS; EXTERNAL_DEPOSIT_IS_NOT_DIVIDEND; CLASSIFICATION_CANNOT_CHANGE_TO_SELECT_A_RULE
+      route_bounds: 0_le_r_j_le_min(U_j,D_j_pre); REPAYMENT_RULES_NEVER_BORROW
+      after_route: [G_j=G_j_pre, D_j=D_j_pre-r_j, C_j=C_j_pre-r_j, N_j=N_j_pre+r_j, B_j=B_j_pre]
+      classification: EACH_F_k_RETAINS_EXTERNAL_FLOW_OR_RETURN_CASH_CLASSIFICATION; EACH_U_j_IS_ROUTED_AT_MOST_ONCE
+    cash_routing_c:
+      total: R=r_E+sum_k_in_K(r_k)
+      terminal_state: [G_c=G_last, D_c=D_0-R, C_c=C_0+sum_k_in_K(F_k)-R, N_c=G_c-D_c, B_c=G_c+C_c-D_c]
+      residual_partition: A_c=(E_0-r_E)+sum_k_in_K(F_k-r_k); P_c=P_0; C_c=P_c+A_c
+      bounds: [0_le_r_E_le_E_0, 0_le_r_k_le_F_k, 0_le_A_c_le_C_c, NO_RESET_NO_CUMULATIVE_RECREDIT_NO_DOUBLE_ROUTE]
+    post_routing_i:
+      trim_off_branch: IF_NO_SEPARATELY_SELECTED_AND_AUTHORIZED_TRIM_EVENT_THEN_q=0_AND_r_trim=0_AND_STATE_i=STATE_c
+      trim_on_branch: IF_SELECTED_AUTHORIZED_TRIM_EVENT_THEN_q=max(0,(G_c-L_star*N_c)/(1-L_star*s))_SUBJECT_TO_0_le_q_le_G_c_AND_0_le_(1-s)*q_le_D_c; r_trim=(1-s)*q
+      trim_on_identities: [G_i=G_c-q, D_i=D_c-r_trim, C_i=C_c, N_i=N_c-s*q, B_i=B_c-s*q]
+      residual_deployable_cash: A_i=A_c; P_i=P_c; C_i=P_i+A_i
+      admission_rule: ONLY_UNROUTED_DISJOINT_BUCKET_RESIDUALS_ENTER_A_i; ALL_OTHER_CASH_IS_P_i
+      bounds: [0_le_A_i_le_C_i, 0_le_P_i_le_C_i, NO_SOURCE_DOLLAR_ROUTED_OR_DEPLOYED_TWICE]
+    purchase_e:
+      identities: ['x_actual=max(0,(1+b)*p_executed-A_i)', G_e=G_i+p_executed, D_e=D_i+x_actual, C_e=C_i+x_actual-(1+b)*p_executed, N_e=G_e-D_e, B_e=G_e+C_e-D_e=B_i-b*p_executed]
+      residual: C_e=P_i+(A_i+x_actual-(1+b)*p_executed)
+  numeric_guards:
+    reject: [BOOLEAN_NUMERICS, NONFINITE, NEGATIVE_G_D_C_ARRIVALS_COSTS, COST_RATE_GTE_1]
+    target_domain: ONE_LE_L_STAR_LE_H_LE_1_8
+    nonpositive_N: NO_VOLUNTARY_TARGET_RESTORATION_OR_NEW_DRAW; MANDATORY_CURE_OR_FAILED_CELL_ONLY
+    trim_denominator: ONE_MINUS_L_STAR_TIMES_S_MUST_BE_POSITIVE
+    bounds: [REPAYMENT_LE_DEBT, CASH_REPAYMENT_LE_SETTLED_SOURCE_CASH, SALE_LE_GROSS, NO_NEGATIVE_ENDING_CASH_OR_DEBT]
+  identities:
+    cash_repayment_dispatch: r_j=THE_SINGLE_SELECTED_SOURCE_APPLICABLE_RULE_IN_stages.source_events_j.routing_rules
+    trim_gross_sale: q=0_UNLESS_SELECTED_AUTHORIZED; IF_SELECTED_q=max(0,(G_c-L_star*N_c)/(1-L_star*s))_SUBJECT_TO_FEASIBILITY
+    trim_net_debt_repayment: r_trim=(1-s)*q
+    purchase_cash: C_e=C_i+x_actual-(1+b)*p_executed
+    purchase_gross: G_e=G_i+p_executed
+    purchase_debt: D_e=D_i+x_actual
+    purchase_book: B_e=B_i-b*p_executed
+    genuine_target_purchase_using_all_residual: p_target=(L_star*(N_i+A_i)-G_i)/(1+L_star*b)
+    genuine_target_draw: x_target=(1+b)*p_target-A_i
+    cost_aware_full_deployment_capacity: x_cap=max(0,((1+b)*(H*N_i-G_i)+(H-1)*A_i)/(1+H*b))
+    capacity_purchase_if_full_gap: p_cap=(A_i+x_cap)/(1+b)
+    executed_draw_cash_first: x_actual=max(0,(1+b)*p_executed-A_i)
+  proposed_event_clock:
+    - OPENING_ENTITLEMENT_SNAPSHOT
+    - PENDING_OR_IMMEDIATE_MANDATORY_RISK_CURE_BEFORE_UNAVAILABLE_CASH
+    - DAILY_INTEREST_CAPITALIZATION
+    - OPTIONAL_SEPARATELY_ADMITTED_PRE_EXISTING_CASH_E_ROUTING; WITHOUT_SEPARATELY_ADMITTED_RULE_r_E=0
+    - SOURCE_TAGGED_DIVIDEND_OR_CORPORATE_ACTION_CASH_ARRIVAL
+    - R2_ROUTING_EXACTLY_ONCE
+    - SOURCE_TAGGED_EXTERNAL_DEPOSIT_ARRIVAL_AND_FLOW_LEDGER_ENTRY
+    - R1_CASH_REPAYMENT_EXACTLY_ONCE
+    - SEPARATELY_AUTHORIZED_VOLUNTARY_TRIM_ROUTING
+    - RESIDUAL_WEIGHTED_GAP_ALLOCATION_UNDER_SELECTED_DEPLOYMENT_SEMANTIC
+    - END_OF_CYCLE_VALUATION_AND_SOURCE_LEDGER
+  deployment_semantics:
+    CASH_ONLY_NO_NEW_DRAW_PROPOSAL:
+      x: '0'
+      max_purchase: p_executed_le_A_i/(1+b)
+      classification: PROPOSED_NOT_INHERITED_R1_GUARANTEE
+    INHERITED_DEPOSIT_DAY_CAPACITY_AND_WEIGHTED_GAPS:
+      source: margin_simulation.py deposit-day _leverage_capped_margin then _weighted_gap_allocate
+      legacy_zero_buy_cost_comparator: x_legacy=max(0,H*(N_i+A_i)-G_i-A_i)
+      meaning: LEGACY_RAW_CAPACITY_IGNORES_BUY_FEES; ACTUAL_DRAW_MAY_BE_ZERO_OR_LOWER_DUE_TO_GAPS_LOTS_GATES
+      prohibition: EFFECTIVE_LEVERAGE_CAP_IS_NOT_A_TARGET_OR_NO_BORROW_PROMISE
+    COST_AWARE_CAPACITY_PROPOSAL:
+      classification: PROPOSED_FEE_RESERVATION_BEFORE_WEIGHTED_GAP_ALLOCATION_NOT_IMPLEMENTED
+      capacity: x_cap=max(0,((1+b)*(H*N_i-G_i)+(H-1)*A_i)/(1+H*b))
+      execution: CASH_FIRST; x_actual=max(0,(1+b)*p_executed-A_i); x_actual_le_x_cap
+      partial_allocation: GAPS_LOTS_GATES_MAY_BIND; UNUSED_CASH_REMAINS_CASH; ACTUAL_FEE=b*p_executed
+      infeasible: IF_N_i_LE_0_OR_PRE_PURCHASE_G_i/N_i_ABOVE_H_THEN_NO_NEW_DRAW_AND_MANDATORY_CURE_OR_FAILED_CELL
+      limitation: CASH_PURCHASES_ARE_NOT_PROMISED_TO_REPAIR_AN_ALREADY_INFEASIBLE_CAP
+    GENUINE_END_CYCLE_TARGET_PROPOSAL:
+      prerequisite: SEPARATELY_REGISTERED_TARGET_AND_FEASIBLE_DRAW
+      meaning: SOLVE_TARGET_PURCHASE_IDENTITY_SUBJECT_TO_ALL_GATES
+  performance_accounting:
+    external_deposits: EXCLUDED_FROM_TWR_REPORTED_SEPARATELY_AS_CONTRIBUTED_WEALTH
+    dividends: RETURN_CASH_CREDITED_AND_ROUTED_ONCE_NOT_EXTERNAL_FLOW
+    interest_and_transaction_costs: REDUCE_BOOK_EXACTLY_ONCE
+    tax: PRE_TAX_ONLY_NO_PRIVATE_TAX_INPUT_OR_AFTER_TAX_CLAIM
+  repayment_source_ledger:
+    fields: [opening_debt, mandatory_cash_cure, mandatory_trim_cure, r1_deposit_cash_repayment, r2_dividend_cash_repayment, r3_trim_repayment, r8_r9_voluntary_trim_repayment, sale_cost, buy_cost, new_draw, gross_repayment, same_cycle_reborrow, same_cycle_sell_rebuy, ending_debt, net_debt_change]
+    rule: GROSS_REPAYMENT_AND_SUBSEQUENT_DRAW_REPORTED_SEPARATELY_NEVER_NETTED_INTO_APPARENT_TREATMENT
+  synthetic_oracle_10bps_fixture_only:
+    classification: SYNTHETIC_ARITHMETIC_NOT_MARGIN_0005_COST_CELL_OR_ACCOUNT_FACT
+    inputs: {G_o: '180', D_o: '80', C_o: '0', source_arrival_F_deposit: '100', L_star: '1.25', sale_cost_s: '0.001', buy_cost_b: '0.001'}
+    staged_state: {R: '44', G_i: '180', D_i: '36', C_i: '56', N_i: '144', B_i: '200', residual_deployable_A_i: '56', protected_P_i: '0'}
+    cash_only: {purchase_p: '55.9440559441', new_draw_x: '0'}
+    inherited_zero_buy_cost_capacity: {raw_legacy_comparator_x: '14', full_deployment_with_10bps_purchase_p: '69.9300699301', resulting_leverage: '1.2500874432', disposition: OVERSHOOTS_1_25_NOT_COST_SAFE_CAPACITY_NOT_ACTUAL_DRAW}
+    proposed_cost_aware_capacity: {maximum_new_draw_x: '13.9825218477', full_gap_purchase_p: '69.9126092385', resulting_leverage: '1.25', actual_draw: GAP_LOT_GATE_DEPENDENT_MAY_BE_LOWER_OR_ZERO}
+    genuine_target: {purchase_p: '69.9126092385', new_draw_x: '13.9825218477'}
+    trim_only: {gross_sale_q: '55.0688360451'}
+  unresolved_choices:
+    - PER_ARM_CEILING_VS_GENUINE_TARGET_SEMANTIC
+    - R1_CASH_ONLY_VS_INHERITED_CAPACITY_VS_PAIRED_GENUINE_TARGET_PRIMARY_COMPARISON
+    - FRACTIONAL_SHARE_CENT_AND_MINIMUM_LOT_ROUNDING_ORDER
+    - PATH_AFFECTING_COST_TRIALS_VS_FIXED_PATH_ANALYTICAL_COST_SENSITIVITY
+candidate_mapping_proposal:
+  status: PARTIAL_SOURCE_DERIVED_NOT_ACCEPTED_REGISTRY
+  study_a: RETAIN_SOURCE_DEFINED_CONTROLS_AND_A2_THROUGH_A11_WITH_CURRENT_FLAT_BASELINE; HASH_EACH_TARGET_OR_CEILING_SEMANTIC
+  repayment:
+    retain_when_inputs_admitted: [R1, R2, R4, R5, R8, R9, R_B]
+    R3: OMIT_NO_CURRENT_GOVERNED_TRIM_TRIGGER
+    R6: BLOCKED_MAINTENANCE_PROXY_MAPPING_NOT_BROKER_BUFFER
+    R7: PROSPECTIVE_SHADOW_ONLY_ZERO_HISTORICAL_CONFIGURATIONS
+  study_b:
+    B0: CURRENT_FLAT_99_25_BASELINE_ONLY
+    omit_obsolete: [B1_TIER_MULTIPLIERS, B4_T1_FLATTEN, B5_110_120_NOMINAL_BUDGETS]
+    unresolved_not_inferred: [B2_SLEEVE_ALTERNATIVES, B3_REALLOCATION_RECIPIENTS, B4_SEMIS_ETF_ABSORPTION]
+    B6: NON_ADOPTABLE_DIAGNOSTIC_ONLY_SUBJECT_TO_COVERAGE
+  study_c: BLOCKED_UNTIL_AT_LEAST_ONE_COMPLETE_STUDY_B_ALTERNATIVE_AND_FROZEN_A_SURVIVORS
+  enumeration:
+    rule: EXPLICIT_CONFIGURATION_TUPLES_BEFORE_ANY_TRIAL; NOMINAL_DUPLICATES_COLLAPSE_BY_FULL_ECONOMIC_CONFIG_HASH
+    cost_rule: PATH_AFFECTING_0_5_15_EACH_COUNT_AS_DISTINCT_TRIAL_OR_FIXED_PATH_POSTPROCESSING_COUNTS_ZERO; NEVER_MIX
+    successor_budget: NOT_DERIVABLE_NO_INHERITED_300_TRIAL_ALLOWANCE
 required_unresolved_decisions:
   - FEASIBLE_COMMON_DATES_AND_PER_ASSET_COVERAGE
   - CURRENT_FLAT_BASELINE_VERSION_AND_HASHES

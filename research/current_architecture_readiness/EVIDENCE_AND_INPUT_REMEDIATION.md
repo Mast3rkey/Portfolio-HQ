@@ -46,6 +46,16 @@ A lawful DFF reconciliation must retain, for every required observation: the exa
 
 The coordinator also verified that Alpha Vantage documents `DIGITAL_CURRENCY_DAILY` as daily cryptocurrency history refreshed midnight UTC with USD quotes and an API-key requirement: `https://www.alphavantage.co/documentation/`. SOL coverage, exchange identity, predecessor day, complete window, and raw response remain unverified, so it is not admitted. This PR registers no account, extracts no secret, purchases nothing, and bypasses no access control.
 
+### Coordinator-verified SPGI action leads — not admitted input
+
+The coordinator verified that S&P Global's issuer Form 8937 (`https://s29.q4cdn.com/690959130/files/doc_downloads/2026/07/IRS-Form-8937-for-Mobility-Global-distribution-July-1-2026.pdf`) states a 2026-07-01 distribution ratio of one Mobility Global child share per SPGI share. Its illustrative first-day VWAP values 414.44/21.08 and illustrative 95.16%/4.84% basis allocation are tax-basis examples; they are **not** an admitted ex-distribution close, execution price, or actual cash receipt. The issuer FAQ (`https://s29.q4cdn.com/690959130/files/doc_downloads/mobility-global/Distribution-and-Tax-FAQ-for-Mobility-Global.pdf`) contains due-bill and when-issued qualifications, so record date alone is insufficient to determine entitlement. The older 2020–2025 A-17 treatment cannot silently extend to this action. No author download, retained raw bytes, hash, receipt, transform, or admission was completed; SPGI-intersecting cells remain blocked.
+
+### Coordinator-verified ALFRED method and failed DFF acquisition — not admitted input
+
+The coordinator verified `https://alfred.stlouisfed.org/help/downloaddata` as an alternative web-form route for vintage/real-time-period ZIP exports. `https://alfred.stlouisfed.org/help` describes release-date fallback metadata involving source/provider and first FRED availability; a vintage date alone therefore does not establish the actual intraday publication clock.
+
+The coordinator attempted `https://alfred.stlouisfed.org/series/downloaddata?seid=DFF` with observations 2021-05-31–2026-07-31, 1,289 visible vintages from 2021-05-28 through 2026-08-03, units Percent, **Output Format** Observations by Real-Time Period, and Zipped CSV. The download event/path timed out and reset the browser kernel. The restored UI still displayed the form selection, but no archive path, returned bytes, byte count, hash, or receipt existed. This is an **unsuccessful acquisition attempt**, not proof of coverage or admission. Do not retry this route absent a concrete new basis; do not invent a receipt or use final-series values as vintage evidence.
+
 ## R1 synthetic integration reproduction (result-free)
 
 The focused synthetic test uses X closes `[100,100]`, weight `1`, min lot `1`, dates 2000-01-03/04, and deposits `100` each day. Scenario cap is 1.8, APR/free tier are zero. Day 0 returns `RepaymentDecision(leverage_target=1.8)`; day 1 calls `r1_deposits_first(..., is_deposit_day=True, target_leverage=1.25)`. Observed day-0 gross/debt are 180/80. On day 1 the pre-trade hook computes REPAY 55 and `_fund_repayment` sells 0.55 X **before** the 100 deposit event; ending gross/cash/debt are 200/25/25.
@@ -62,6 +72,8 @@ This reproduces a research-engine integration-order gap, not a historical result
 | Coinbase Exchange candle docs/API | Candidate provider semantics/raw-data route | Must prove single-provider identity, complete daily coverage and hashes | Docs blocked; candles not attempted; unresolved |
 | FRED vintagedates/observations docs | Reviewer-verified real-time/vintage query methods | Key required; unchanged releases excluded, requiring separate release-clock proof | Method lead only; no DFF records acquired |
 | Alpha Vantage digital-currency docs | Reviewer-verified daily/midnight-UTC/USD method description | Key required; SOL coverage and exchange identity unverified | Method lead only; not admitted |
+| SPGI Form 8937 and issuer FAQ | Reviewer-verified distribution ratio and entitlement qualifications | Illustrative VWAP/basis figures are not admitted prices or cash; old A-17 treatment cannot be assumed | Leads only; action unresolved |
+| ALFRED download/help pages and DFF form attempt | Reviewer-verified vintage export method and publication-metadata limitations | Download timed out/reset; no archive, bytes, hash or receipt | Failed acquisition; DFF remains unresolved |
 
 ## Completed versus planned
 
